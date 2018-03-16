@@ -1,0 +1,16 @@
+[
+{
+  "modid": "exotic_matter",
+  "name": "Exotic Matter",
+  "description": "Common utility library for Grondag's mods.",
+  "version": "0.1",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Grondag (aka Zaerudath)"],
+  "credits": "The Forge team and all the other mod authors who went before.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
