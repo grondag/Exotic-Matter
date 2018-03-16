@@ -1,6 +1,5 @@
 package grondag.exotic_matter;
 
-import org.eclipse.jdt.annotation.Nullable;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -31,7 +30,7 @@ public class ExoticMatter
 	public static ExoticMatter INSTANCE = new ExoticMatter();
 
 	@SidedProxy(clientSide = "grondag.exotic_matter.ClientProxy", serverSide = "grondag.exotic_matter.ServerProxy")
-	@Nullable
+	@SuppressWarnings("null")
 	public static CommonProxy proxy;
 
     static
@@ -42,38 +41,38 @@ public class ExoticMatter
     @EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		if(proxy != null) proxy.preInit(event);
+		proxy.preInit(event);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-	    if(proxy != null) proxy.init(event);
+	    proxy.init(event);
 	}
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-	    if(proxy != null) proxy.postInit(event);
+	    proxy.postInit(event);
 	}
 	
 	
    @EventHandler
     public void serverAboutToStart(FMLServerAboutToStartEvent event) 
    {
-       if(proxy != null) proxy.serverAboutToStart(event);
+       proxy.serverAboutToStart(event);
     }
    
 	@EventHandler
     public void serverStarting(FMLServerStartingEvent event) 
 	{
-	    if(proxy != null) proxy.serverStarting(event);
+	    proxy.serverStarting(event);
     }
 
    @EventHandler
    public void serverStopping(FMLServerStoppingEvent event)
    {
-       if(proxy != null) proxy.serverStopping(event);
+       proxy.serverStopping(event);
    }
    
    /**

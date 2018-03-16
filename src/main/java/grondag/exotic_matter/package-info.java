@@ -5,6 +5,6 @@
  * @author grondag
  *
  */
-@NonNullByDefault  
+@ParametersAreNonnullByDefault  
 package grondag.exotic_matter;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import javax.annotation.ParametersAreNonnullByDefault;
