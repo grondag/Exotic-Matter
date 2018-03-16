@@ -1,0 +1,195 @@
+buildscript {
+    repositories {
+        jcenter()
+		
+	    maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
+
+version = "0.1"
+group= "grondag.exotic_matter" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "exotic_matter"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+// Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = "1.12.2-14.23.1.2562"
+    runDir = "run"
+    mappings = "snapshot_20171003"
+    useDepAts = true
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'dev'
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+reobf {
+    jar {
+            extraLines += [ "PK: org/magicwerk/brownies/collections grondag/hard_science/shade/org/magicwerk/brownies/collections" ]
+    			extraLines += [ "PK: org/magicwerk/brownies/collections/exceptions grondag/hard_science/shade/org/magicwerk/brownies/collections/exceptions" ]
+		    extraLines += [ "PK: org/magicwerk/brownies/collections/function grondag/hard_science/shade/org/magicwerk/brownies/collections/function" ]
+		    extraLines += [ "PK: org/magicwerk/brownies/collections/helper grondag/hard_science/shade/org/magicwerk/brownies/collections/helper" ]
+		    extraLines += [ "PK: org/magicwerk/brownies/collections/helper/primitive grondag/hard_science/shade/org/magicwerk/brownies/collections/helper/primitive" ]
+		    extraLines += [ "PK: org/magicwerk/brownies/collections/primitive grondag/hard_science/shade/org/magicwerk/brownies/collections/primitive" ]
+    }
+}
+
+repositories {
+
+	mavenCentral()
+	
+    maven { url "http://maven.amadornes.com/" }
+        
+    maven { // The repo from which to get waila
+        name "Mobius Repo"
+        url "http://tehnut.info/maven"
+    }
+    
+    maven { // JEI
+        url "http://dvs1.progwml6.com/files/maven"
+    }
+    
+    maven { // TOP
+        name 'tterrag maven'
+        url "http://maven.tterrag.com/"
+    }
+    
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    
+ //   maven {
+ //   	url = "https://repo.adobe.com/nexus/content/repositories/public/"
+ //   }
+    
+        maven {
+        name = "CoFH Maven"
+        url = "http://maven.covers1624.net"
+    }
+    
+    maven {
+        name = "refinedstorage"
+        url = "https://dl.bintray.com/raoulvdberge/dev/"
+    }
+}
+
+artifacts {
+    archives sourceJar
+    archives deobfJar
+}
+
+dependencies {
+
+
+    // you may put jars on which you depend on in ./libs
+    // or you may define them like so..
+    //compile "some.group:artifact:version:classifier"
+    //compile "some.group:artifact:version"
+    
+    deobfCompile "org.magicwerk:brownies-collections:0.9.13"
+    shade "org.magicwerk:brownies-collections:0.9.13"
+    
+    // real examples
+    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
+    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+
+    // the 'provided' configuration is for optional dependencies that exist at compile-time but might not at runtime.
+    //provided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+
+    // the deobf configurations:  'deobfCompile' and 'deobfProvided' are the same as the normal compile and provided,
+    // except that these dependencies get remapped to your current MCP mappings
+    //deobfCompile 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+    //deobfProvided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+
+    deobfCompile "mezz.jei:jei_1.12.2:4.8.5.136"
+    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.19-11"
+
+	// not currently using these APIs
+	// here to support compatibility testing in dev environment
+	// or because thinking about using the APIs
+    deobfCompile "MCMultiPart2:MCMultiPart:2.3.3"
+    // deobfCompile "mod.chiselsandbits:chiselsandbits:14.0.88" 
+    // deobfCompile "refinedstorage:refinedstorage:1.5.19-1377"
+    
+
+    // deobfCompile "mcp.mobius.waila:Hwyla:1.8.18-B32_1.12:api"
+    // deobfCompile "cofh:RedstoneFlux:1.12-2.0.1.2:universal"
+    // deobfCompile "com.github.mcjty:intwheel:1.1x-1.2.4"
+    // for more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    
+	// https://repo.adobe.com/nexus/content/repositories/public/org/apache/commons/commons-imaging/1.0-R1534292/commons-imaging-1.0-R1534292.jar
+	// deobfCompile "org.apache.commons:commons-imaging:1.0-R1534292"
+}
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+sourceSets {
+	main {
+	        java {
+	            include 'grondag/**'
+	        }
+	        resources
+	        {
+	        	include '**'
+	        }
+	    }
+    test {
+        java {
+            exclude 'grondag/**'
+        }
+    }
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
+}
