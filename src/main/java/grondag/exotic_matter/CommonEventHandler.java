@@ -15,6 +15,7 @@ public class CommonEventHandler
         if (event.getModID().equals(ExoticMatter.MODID))
         {
             ConfigManager.sync(ExoticMatter.MODID, Type.INSTANCE);
+            ConfigXM.recalcDerived();
         }
     }
 }
