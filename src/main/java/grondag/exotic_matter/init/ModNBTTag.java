@@ -13,5 +13,6 @@ public class ModNBTTag
 
     public final static String LOCATION_DIMENSION = "xm" + Integer.toUnsignedString(++nextID, Character.MAX_RADIX);
     public final static String LOCATION_POSITION = "xm" + Integer.toUnsignedString(++nextID, Character.MAX_RADIX);
+    public final static String BLOCK_SUBSTANCE = "xm" + Integer.toUnsignedString(++ModNBTTag.nextID, Character.MAX_RADIX);
 
 }
