@@ -7,19 +7,19 @@ import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.SideShape;
+import grondag.exotic_matter.serialization.IMessagePlus;
+import grondag.exotic_matter.serialization.IReadWriteNBT;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.Rotation;
 import grondag.exotic_matter.world.SimpleJoin;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public interface ISuperModelState
+public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 {
 
     int[] serializeToInts();
@@ -285,23 +285,6 @@ public interface ISuperModelState
     /** for compatibility with double-valued raw quad vertices */
     Matrix4d getMatrix4d();
 
-    void deserializeNBT(NBTTagCompound tag);
-
-    /**
-     * Use when you need to avoid tag name conflicts / have more than one.
-     */
-    void deserializeNBT(NBTTagCompound tag, String tagName);
-
-    void serializeNBT(NBTTagCompound tag);
-
-    /**
-     * Use when you need to avoid tag name conflicts / have more than one.
-     */
-    void serializeNBT(NBTTagCompound tag, String tagName);
-
-    void fromBytes(PacketBuffer pBuff);
-
-    void toBytes(PacketBuffer pBuff);
     
     ISuperModelState clone();
 

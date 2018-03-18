@@ -125,4 +125,9 @@ public class ModelShape<T extends ShapeMeshGenerator>
     {
         return this.ordinal;
     }
+
+    public String systemName()
+    {
+        return this.systemName;
+    }
 }
