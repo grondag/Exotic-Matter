@@ -3,9 +3,9 @@ package grondag.exotic_matter.world;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.PackedBlockPos;
 import grondag.exotic_matter.varia.Useful;
-import grondag.exotic_matter.init.ModNBTTag;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -13,6 +13,9 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class Location extends BlockPos
 {
+    private static final String NBT_DIMENSION = NBTDictionary.claim("locDim");
+    private static final String NBT_POSITION = NBTDictionary.claim("locPos");
+    
     public static interface ILocated
     {
         @Nullable
@@ -45,18 +48,18 @@ public class Location extends BlockPos
     {
         if(loc != null)
         {
-            nbt.setInteger(ModNBTTag.LOCATION_DIMENSION, loc.dimensionID);
-            nbt.setLong(ModNBTTag.LOCATION_POSITION, PackedBlockPos.pack(loc));
+            nbt.setInteger(NBT_DIMENSION, loc.dimensionID);
+            nbt.setLong(NBT_POSITION, PackedBlockPos.pack(loc));
         }
     }
     
     @Nullable
     public static Location fromNBT(@Nullable NBTTagCompound nbt)
     {
-        if(nbt != null && nbt.hasKey(ModNBTTag.LOCATION_POSITION))
+        if(nbt != null && nbt.hasKey(NBT_POSITION))
         {
-            int dim = nbt.getInteger(ModNBTTag.LOCATION_DIMENSION);
-            long pos = nbt.getLong(ModNBTTag.LOCATION_POSITION);
+            int dim = nbt.getInteger(NBT_DIMENSION);
+            long pos = nbt.getLong(NBT_POSITION);
             return new Location(PackedBlockPos.getX(pos), PackedBlockPos.getY(pos), PackedBlockPos.getZ(pos), dim);
         }
         else

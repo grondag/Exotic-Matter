@@ -8,8 +8,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.Log;
-import grondag.exotic_matter.init.ModNBTTag;
 import grondag.exotic_matter.init.SubstanceConfig;
+import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.ILocalized;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -17,12 +17,22 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.translation.I18n;
 
+//TODO
+// add vanilla materials?
+// add lookup from material to substance?
+// find way  to reduce number of block states needed to cover?
+// add default substance to be used if none are registered
+
+
+
 /**
  * Similar to Minecraft Material. Didn't want to tie to that implementation.
  * Determines Minecraft material and other physical properties.
  */
 public class BlockSubstance implements ILocalized
 {
+    private static final String NBT_SUBSTANCE = NBTDictionary.claim("substance");
+    
     public static final int MAX_SUBSTANCES = 32;
     
     private static final HashMap<String, BlockSubstance> allByName = new HashMap<>();
@@ -33,7 +43,7 @@ public class BlockSubstance implements ILocalized
     
 	public static BlockSubstance deserializeNBT(NBTTagCompound tag)
     {
-        return allByName.get(tag.getString(ModNBTTag.BLOCK_SUBSTANCE));
+        return allByName.get(tag.getString(NBT_SUBSTANCE));
     }
 
 
@@ -122,7 +132,7 @@ public class BlockSubstance implements ILocalized
     
     public void serializeNBT(NBTTagCompound tag)
     {
-        tag.setString(ModNBTTag.BLOCK_SUBSTANCE, this.systemName);
+        tag.setString(NBT_SUBSTANCE, this.systemName);
     }
     
     public void toBytes(PacketBuffer pBuff)

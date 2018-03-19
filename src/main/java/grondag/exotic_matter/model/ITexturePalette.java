@@ -9,10 +9,11 @@ public interface ITexturePalette
 {
 
     /**
-     * Max number of texture palettes that can be registered, loaded and represented in model state.
+     * The immutable name of this palette for identification and serialization.
+     * Must be globally unique.
      */
-    public static final int MAX_PALETTES = 4096;
-
+    String systemName();
+    
     /**
      * Identifies all textures needed for texture stitch.
      */
@@ -29,12 +30,28 @@ public interface ITexturePalette
      */
     EnhancedSprite getSampleSprite();
 
+    /**
+     * Returns the actual texture name for purpose of finding a texture sprite.
+     * For palettes with a single texture per version.
+     */
     String getTextureName(int version);
 
+    /**
+     * Returns the actual texture name for purpose of finding a texture sprite.
+     * For palettes with multiple textures per version.
+     */
     String getTextureName(int version, int index);
 
-    String localizedName();
+    /**
+     * Player-friendly, localized name for this texture palette
+     */
+    String displayName();
     
+    /**
+     * Base texture file name - used to construct other text name methods.
+     * Exposed to enable programmatic construction of semantically different palates
+     * that use the same underlying texture file(s).
+     */
     public String textureBaseName();
     
     /** number of texture versions must be a power of 2 */

@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model;
 
 import grondag.exotic_matter.render.SurfaceType;
+import grondag.exotic_matter.serialization.NBTDictionary;
 import net.minecraft.util.text.translation.I18n;
 
 public enum PaintLayer
@@ -84,10 +85,16 @@ public enum PaintLayer
     
     public final SurfaceType surfaceType;
     
+    /**
+     * NBT Tag name used to save textures for this paint layer.
+     */
+    public final String tagName;
+    
     private PaintLayer(int colorIndex, SurfaceType surfaceType)
     {
         this.dynamicIndex = colorIndex;
         this.surfaceType = surfaceType;
+        this.tagName = NBTDictionary.claim("tex_" + this.name().toLowerCase());
     }
     
     @SuppressWarnings("deprecation")

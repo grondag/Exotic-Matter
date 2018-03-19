@@ -63,7 +63,7 @@ public class ModelStateData
         long borderMask1 = 0;
         for(int i = 0; i < PaintLayer.STATIC_SIZE; i++)
         {
-            P1_PAINT_TEXTURE[i] = PACKER_1.createIntElement(ITexturePalette.MAX_PALETTES);
+            P1_PAINT_TEXTURE[i] = PACKER_1.createIntElement(TexturePaletteRegistry.MAX_PALETTES);
         }
 
         for(int i = 0; i < PaintLayer.DYNAMIC_SIZE; i++)
