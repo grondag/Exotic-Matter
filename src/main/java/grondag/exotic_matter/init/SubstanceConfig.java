@@ -1,5 +1,6 @@
 package grondag.exotic_matter.init;
 
+import grondag.exotic_matter.model.BlockHarvestTool;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RangeDouble;
 import net.minecraftforge.common.config.Config.RangeInt;
@@ -13,8 +14,8 @@ public class SubstanceConfig
     public int hardness;
 
     @RequiresMcRestart
-    @Comment("Tool used to break block. Normal values are pickaxe, shovel and axe")
-    public String harvestTool;
+    @Comment("Tool used to break block.")
+    public BlockHarvestTool harvestTool;
 
     @RequiresMcRestart
     @Comment("Level of tool needed to break block. Range 1-3 is normal for vanilla.")
@@ -31,7 +32,7 @@ public class SubstanceConfig
     @RangeDouble(min = 0.25, max = 2.0)
     public double walkSpeedFactor;
 
-    public SubstanceConfig(int hardness, String harvestTool, int harvestLevel, int resistance, double walkSpeedFactor)
+    public SubstanceConfig(int hardness, BlockHarvestTool harvestTool, int harvestLevel, int resistance, double walkSpeedFactor)
     {
         this.hardness = hardness;
         this.harvestTool = harvestTool;

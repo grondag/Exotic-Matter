@@ -17,14 +17,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.translation.I18n;
 
-//TODO
-// add vanilla materials?
-// add lookup from material to substance?
-// find way  to reduce number of block states needed to cover?
-// add default substance to be used if none are registered
-
-
-
 /**
  * Similar to Minecraft Material. Didn't want to tie to that implementation.
  * Determines Minecraft material and other physical properties.
@@ -33,7 +25,10 @@ public class BlockSubstance implements ILocalized
 {
     private static final String NBT_SUBSTANCE = NBTDictionary.claim("substance");
     
-    public static final int MAX_SUBSTANCES = 32;
+    /**
+     * Finite number of substances defined to facilitate bit-wise serialization to client GUIs
+     */
+    public static final int MAX_SUBSTANCES = 4096;
     
     private static final HashMap<String, BlockSubstance> allByName = new HashMap<>();
     private static final ArrayList<BlockSubstance> allByOrdinal = new ArrayList<>();
@@ -65,19 +60,27 @@ public class BlockSubstance implements ILocalized
         return ordinal < 0 || ordinal >= allByOrdinal.size() ? null : allByOrdinal.get(ordinal);
     }
 	    
-    public static BlockSubstance create(String systemName, SubstanceConfig config, Material material, SoundType sound, int defaultColorMapID)
-    {
-        return new BlockSubstance(systemName, config, material, sound, defaultColorMapID, false);
-    }
-    
     public static BlockSubstance create(String systemName, SubstanceConfig config, Material material, SoundType sound, int defaultColorMapID, boolean isHyperMaterial)
     {
+        BlockSubstance existing = get(systemName);
+        if(existing != null)
+        {
+            assert false : "Duplicate substance name";
+            Log.warn("Block substance with duplicate name %s not created.  Existing substance with that name be used instead.", systemName);
+            return existing;
+        }
+        
         return new BlockSubstance(systemName, config, material, sound, defaultColorMapID, isHyperMaterial);
     }
-	    
+    
+    public static BlockSubstance create(String systemName, SubstanceConfig config, Material material, SoundType sound, int defaultColorMapID)
+    {
+        return create(systemName, config, material, sound, defaultColorMapID, false);
+    }
+    
     public static BlockSubstance createHypermatter(String systemName, SubstanceConfig config, Material material, SoundType sound, int defaultColorMapID)
     {
-        return new BlockSubstance(systemName, config, material, sound, defaultColorMapID, true);
+        return create(systemName, config, material, sound, defaultColorMapID, true);
     }
     
 	public final Material material;
@@ -87,7 +90,7 @@ public class BlockSubstance implements ILocalized
 	public final int ordinal;
 	public final int hardness;
 	public final int resistance;
-	public final String harvestTool;
+	public final BlockHarvestTool harvestTool;
 	public final int harvestLevel;
 	public final int defaultColorMapID;
 	public final boolean isHyperMaterial;
@@ -111,13 +114,13 @@ public class BlockSubstance implements ILocalized
 		this.walkSpeedFactor = substance.walkSpeedFactor;
 		
 		if(this.ordinal < MAX_SUBSTANCES)
-		{
+		{  
 		    allByName.put(systemName, this);
             allByOrdinal.add(this);
 		}
         else
         {
-            Log.warn("Block substance imit of %d exceeded.  Substance %s will not be usable.", MAX_SUBSTANCES, systemName);
+            Log.warn("Block substance limit of %d exceeded.  Substance %s will not be usable.", MAX_SUBSTANCES, systemName);
         }
 		
 	}
