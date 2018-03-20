@@ -7,7 +7,9 @@ import grondag.exotic_matter.serialization.IReadWriteNBT;
  * Must be registered with simulator. Simulator will register with PersistenceManager.  
  * 
  */
-public interface IPersistenceNode extends IDirtKeeper, IReadWriteNBT
+public interface ISimulationNode extends IDirtKeeper, IReadWriteNBT
 {
     public abstract String tagName();
+    
+    public 
 }

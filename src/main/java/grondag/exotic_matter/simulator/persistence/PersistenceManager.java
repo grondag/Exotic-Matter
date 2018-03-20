@@ -5,7 +5,7 @@ import net.minecraft.world.storage.MapStorage;
 public class PersistenceManager 
 {
     /** use to persist new nodes */
-    public static void registerNode(MapStorage mapStore, IPersistenceNode node)
+    public static void registerNode(MapStorage mapStore, ISimulationNode node)
     {
         PersistenceDelegate instance = new PersistenceDelegate(node);
         mapStore.setData(instance.mapName, instance);
@@ -15,7 +15,7 @@ public class PersistenceManager
      * Use to load nodes persisted earlier.
      * Returns true if node checked and loaded, false otherwise.
      */
-    public static boolean loadNode(MapStorage mapStore, IPersistenceNode node)
+    public static boolean loadNode(MapStorage mapStore, ISimulationNode node)
     {
         PersistenceDelegate instance = (PersistenceDelegate) mapStore.getOrLoadData(PersistenceDelegate.class, node.tagName());
         if(instance == null) return false;
