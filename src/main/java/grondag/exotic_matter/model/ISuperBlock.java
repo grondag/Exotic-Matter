@@ -375,10 +375,47 @@ public interface ISuperBlock
     boolean isHypermatter();
 
     /**
-     * Only true for virtual blocks.  Prevents "instanceof" checking.
+     * Only true for virtual blocks.  Avoids "instanceof" checking.
      */
-    boolean isVirtual();
+    default boolean isVirtual() { return false; }
 
+    
+    /**
+     * True if block at the given position is actually solid (not replaceable)
+     * or is virtual and visible to the given player.
+     */
+    default boolean isVirtuallySolid(BlockPos pos, EntityPlayer player) { return !this.isReplaceable(player.world, pos); }
+    
+    /**
+     * Convenience call for {@link #isVirtual()} when you don't know what type of block it is.
+     * Will return false for any block that doesn't implement ISuperBlock.
+     */
+    public static boolean isVirtualBlock(Block block)
+    {
+        return block instanceof ISuperBlock && ((ISuperBlock)block).isVirtual();
+    }
+    
+    /**
+     * Convenience call for {@link #isVirtuallySolid(IBlockAccess, BlockPos, EntityPlayer)} when you don't know what type of block it is.
+     * Will return false for any block that doesn't implement ISuperBlock.
+     */
+    public static boolean isVirtuallySolidBlock(BlockPos pos, EntityPlayer player)
+    {
+        return isVirtuallySolidBlock(player.world.getBlockState(pos), pos, player);
+    }
+    
+    /**
+     * Convenience call for {@link #isVirtuallySolid(IBlockAccess, BlockPos, EntityPlayer)} when you don't know what type of block it is.
+     * Will return negation of {@link #isReplaceable(IBlockAccess, BlockPos)} for any block that doesn't implement ISuperBlock.
+     */
+    public static boolean isVirtuallySolidBlock(IBlockState state, BlockPos pos, EntityPlayer player)
+    {
+        Block block = state.getBlock();
+        return isVirtualBlock(block)
+                ? ((ISuperBlock)block).isVirtuallySolid(pos, player)
+                : !block.isReplaceable(player.world, pos);
+    }
+    
     /**
      * {@inheritDoc} <br><br>
      * 

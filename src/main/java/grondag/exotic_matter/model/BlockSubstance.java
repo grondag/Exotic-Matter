@@ -25,6 +25,9 @@ public class BlockSubstance implements ILocalized
 {
     private static final String NBT_SUBSTANCE = NBTDictionary.claim("substance");
     
+    public static final BlockSubstance DEFAULT = create("default", new SubstanceConfig(1, BlockHarvestTool.ANY, 0, 10, 1.0),  Material.GROUND, SoundType.CLOTH, 
+            BlockColorMapProvider.INSTANCE.getColorMap(Hue.AZURE, Chroma.WHITE, Luminance.MEDIUM_LIGHT).ordinal);
+    
     /**
      * Finite number of substances defined to facilitate bit-wise serialization to client GUIs
      */

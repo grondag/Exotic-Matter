@@ -2,10 +2,13 @@ package grondag.exotic_matter.world;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import grondag.exotic_matter.model.ISuperBlock;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
 
 public class WorldHelper
 {
@@ -190,6 +193,25 @@ public class WorldHelper
                     .getOpposite();
         
         }
+    }
+
+    /**
+     * Convenience method to keep code more readable.
+     * Call with replaceVirtualBlocks = true to behave as if virtual blocks not present.
+     * Should generally be true if placing a normal block.
+     */
+    public static boolean isBlockReplaceable(IBlockAccess worldIn, BlockPos pos, boolean replaceVirtualBlocks)
+    {
+        if(replaceVirtualBlocks)
+        {
+            return worldIn.getBlockState(pos).getBlock().isReplaceable(worldIn, pos);
+        }
+        else
+        {
+            Block block = worldIn.getBlockState(pos).getBlock();
+            return !ISuperBlock.isVirtualBlock(block) && block.isReplaceable(worldIn, pos);
+        }
+        
     }
 
 }
