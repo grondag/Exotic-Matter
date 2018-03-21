@@ -1,15 +1,21 @@
 package grondag.exotic_matter.simulator.persistence;
 
-import grondag.exotic_matter.serialization.IReadWriteNBT;
-
 /**
  * Should be implemented by all top-level simulation components.
  * Must be registered with simulator. Simulator will register with PersistenceManager.  
  * 
  */
-public interface ISimulationNode extends IDirtKeeper, IReadWriteNBT
+public interface ISimulationNode extends IPersistenceNode
 {
-    public abstract String tagName();
+    /**
+     * Called by simulator at shutdown
+     */
+    public void unload();
     
-    public 
+    /**
+     * Called by simulator after all top-level nodes are deserialized (if anything found) 
+     * but before first simulation tick.  This is the time to re-create references to other nodes if needed.
+     */
+    public void afterDeserialization();
+    
 }

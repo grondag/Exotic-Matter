@@ -10,9 +10,9 @@ public class PersistenceDelegate extends WorldSavedData
     /** saves initial nbt load until we know our node reference */
     private NBTTagCompound nbtCache;
     
-    private ISimulationNode pnode = null;
+    private IPersistenceNode pnode = null;
     
-    public PersistenceDelegate(ISimulationNode pnode) 
+    public PersistenceDelegate(IPersistenceNode pnode) 
     {
         super(pnode.tagName());
         this.pnode = pnode;
@@ -32,7 +32,7 @@ public class PersistenceDelegate extends WorldSavedData
      * Necessary because WorldSavedData thingymabobber creates the instance
      * and doesn't know / isn't able to do this.
      */
-    public void setNode(ISimulationNode pnode)
+    public void setNode(IPersistenceNode pnode)
     {
         this.pnode = pnode;
     }
