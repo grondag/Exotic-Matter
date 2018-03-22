@@ -1,8 +1,8 @@
 package grondag.exotic_matter.simulator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,12 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
 
+import grondag.exotic_matter.Log;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
-import grondag.exotic_matter.simulator.persistence.ISimulationNode;
+import grondag.exotic_matter.simulator.persistence.ISimulationTopNode;
 import grondag.exotic_matter.simulator.persistence.PersistenceManager;
-import grondag.exotic_matter.Log;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.MapStorage;
@@ -66,9 +66,9 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
      */
     public static final Simulator RAW_INSTANCE_DO_NOT_USE = new Simulator();
     
-    private static final HashSet<Class<? extends ISimulationNode>> nodeTypes = new HashSet<>();
+    private static final HashSet<Class<? extends ISimulationTopNode>> nodeTypes = new HashSet<>();
     
-    public static void register(Class<? extends ISimulationNode> nodeType)
+    public static void register(Class<? extends ISimulationTopNode> nodeType)
     {
         nodeTypes.add(nodeType);
     }
@@ -117,7 +117,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
 
     public AssignedNumbersAuthority assignedNumbersAuthority() { return this.assignedNumbersAuthority; }
     
-    private final HashMap<Class<? extends ISimulationNode>, ISimulationNode> nodes = new HashMap<>();
+    private final IdentityHashMap<Class<? extends ISimulationTopNode>, ISimulationTopNode> nodes = new IdentityHashMap<>();
 
     private List<ISimulationTickable> tickables = new ArrayList<ISimulationTickable>();
 
@@ -150,7 +150,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     private volatile long worldTickOffset = 0; 
     
     @SuppressWarnings("unchecked")
-    public <V extends ISimulationNode> V getNode(Class<V> nodeType)
+    public <V extends ISimulationTopNode> V getNode(Class<V> nodeType)
     {
         return (V) this.nodes.get(nodeType);
     }
@@ -186,7 +186,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
             
             if(PersistenceManager.loadNode(mapStore, this))
             {
-                for(IPersistenceNode node : this.nodes.values())
+                for(ISimulationTopNode node : this.nodes.values())
                 {
                     if(!PersistenceManager.loadNode(mapStore, node))
                     {
@@ -207,7 +207,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                 this.setSaveDirty(true);
                 PersistenceManager.registerNode(mapStore, this);
 
-                for(IPersistenceNode node : this.nodes.values())
+                for(ISimulationTopNode node : this.nodes.values())
                 {
                     node.loadNew();
                     PersistenceManager.registerNode(mapStore, node);  

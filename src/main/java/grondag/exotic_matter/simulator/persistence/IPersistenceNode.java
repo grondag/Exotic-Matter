@@ -10,8 +10,4 @@ public interface IPersistenceNode extends IDirtKeeper, IReadWriteNBT
 {
     public abstract String tagName();
 
-    /**
-     * Called by simulator if starting new world/simulation.
-     */
-    public default void loadNew() {};
 }
