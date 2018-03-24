@@ -3,12 +3,14 @@ package grondag.exotic_matter.block;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.BlockHarvestTool;
 import grondag.exotic_matter.model.BlockRenderMode;
 import grondag.exotic_matter.model.BlockSubstance;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.WorldLightOpacity;
+import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -27,6 +29,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.event.RegistryEvent.Register;
 
 /**
  * User-configurable HardScience building blocks.<br><br>
@@ -61,6 +64,54 @@ public class SuperModelBlock extends SuperBlockPlus
      * so that harvest/tool methods can have access to location-dependent substance information.
      */
     public static final PropertyInteger HARVEST_LEVEL = PropertyInteger.create("harvest_level", 0, MAX_HARVEST_LEVEL);
+    
+    /** dimensions are BlockRenderMode, worldOpacity, hypermatter (y = 1 /n = 0), cube (y = 1 /n = 0) */
+    public static final SuperModelBlock[][][][] superModelBlocks = new SuperModelBlock[BlockRenderMode.values().length][WorldLightOpacity.values().length][2][2];
+    
+    public static SuperModelBlock findAppropriateSuperModelBlock(BlockSubstance substance, ISuperModelState modelState)
+    {
+        WorldLightOpacity opacity = WorldLightOpacity.getClosest(substance, modelState);
+        BlockRenderMode blockRenderMode = modelState.getRenderPassSet().blockRenderMode;
+        int hypermaterIndex = substance.isHyperMaterial ? 1 : 0;
+        int cubeIndex = modelState.isCube() ? 1 : 0;
+        return superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][hypermaterIndex][cubeIndex];
+    }
+
+    public static void registerSuperModelBlocks(Register<Block> event)
+    {
+        int superModelIndex = 0;
+        
+        for(BlockRenderMode blockRenderMode : BlockRenderMode.values())
+        {
+            for(WorldLightOpacity opacity : WorldLightOpacity.values())
+            {
+                // mundane non-cube
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][0][0]
+                        = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, false)
+                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][0][0]);
+                
+                // mundane cube
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][0][1]
+                        = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, true)
+                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][0][1]);
+                
+                // hypermatter non-cube
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][1][0]
+                        = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, false)
+                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][1][0]);
+                
+                // hypermatter cube
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][1][1]
+                        = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, true)
+                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal()][opacity.ordinal()][1][1]);
+                
+            }
+        }
+    }
     
     protected final WorldLightOpacity worldLightOpacity;
     

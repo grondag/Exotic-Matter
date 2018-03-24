@@ -1,6 +1,15 @@
 package grondag.exotic_matter;
 
 
+import javax.annotation.Nonnull;
+
+import grondag.exotic_matter.block.SuperModelBlock;
+import grondag.exotic_matter.model.BlockSubstance;
+import grondag.exotic_matter.model.ModelState;
+import grondag.exotic_matter.network.PacketHandler;
+import grondag.exotic_matter.network.PacketUpdateModifierKeys;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -13,6 +22,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(   modid = ExoticMatter.MODID, 
         name = ExoticMatter.MODNAME,
@@ -29,6 +40,16 @@ public class ExoticMatter
 	@Instance
 	public static ExoticMatter INSTANCE = new ExoticMatter();
 
+	public static CreativeTabs tabMod = new CreativeTabs("Hard Science") 
+    {
+        @Override
+        @SideOnly(Side.CLIENT)
+        public @Nonnull ItemStack getTabIconItem() 
+        {
+            return SuperModelBlock.findAppropriateSuperModelBlock(BlockSubstance.DEFAULT, new ModelState()).getSubItems().get(0);
+        }
+    };
+	    
 	@SidedProxy(clientSide = "grondag.exotic_matter.ClientProxy", serverSide = "grondag.exotic_matter.ServerProxy")
 	@SuppressWarnings("null")
 	public static CommonProxy proxy;
@@ -36,6 +57,11 @@ public class ExoticMatter
     static
     {
         FluidRegistry.enableUniversalBucket();
+        
+        // Packets handled on Server side, sent from Client
+        PacketHandler.registerMessage(PacketUpdateModifierKeys.class, PacketUpdateModifierKeys.class, Side.SERVER);
+        
+        // Packets handled on Client side, sent from Server        
     }
     
     @EventHandler

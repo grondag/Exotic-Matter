@@ -16,11 +16,17 @@ import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.TextureLayout;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.BlockHighlighter;
+import grondag.exotic_matter.network.PacketHandler;
+import grondag.exotic_matter.network.PacketUpdateModifierKeys;
+import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.render.CompressedAnimatedSprite;
 import grondag.exotic_matter.render.EnhancedSprite;
 import grondag.exotic_matter.render.TextureHelper;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiOptions;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
@@ -34,6 +40,7 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -44,6 +51,33 @@ import net.minecraftforge.registries.IForgeRegistry;
 @Mod.EventBusSubscriber(Side.CLIENT)
 public class ClientEventHandler
 {
+    /** used to detect key down/up for modifier keys */
+    private static int modifierKeyFlags = 0;
+    
+    
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent event) 
+    {
+        if(event.phase == Phase.START) 
+        {
+            Minecraft mc = Minecraft.getMinecraft();
+            EntityPlayerSP player = mc.player;
+            
+            if(player != null && player.world != null)
+            {
+                int keyFlags = (GuiScreen.isCtrlKeyDown() ? ModifierKeys.ModifierKey.CTRL_KEY.flag : 0) 
+                        | (GuiScreen.isAltKeyDown() ? ModifierKeys.ModifierKey.ALT_KEY.flag : 0);
+                
+                if(keyFlags != modifierKeyFlags)
+                {
+                    modifierKeyFlags = keyFlags;
+                    ModifierKeys.setModifierFlags(Minecraft.getMinecraft().player, keyFlags);
+                    PacketHandler.CHANNEL.sendToServer(new PacketUpdateModifierKeys(keyFlags));
+                }
+            }
+            
+        }
+    }
     
     @SubscribeEvent()
     public static void onRenderTick(TickEvent.RenderTickEvent event)

@@ -2,7 +2,6 @@ package grondag.exotic_matter.placement;
 
 public enum PlacementItemFeature
 {
-    GUI, 
     BLOCK_ORIENTATION, 
     REGION_ORIENTATION, 
     TARGET_MODE, 
