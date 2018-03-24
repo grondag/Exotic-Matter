@@ -1,12 +1,7 @@
 package grondag.exotic_matter.init;
 
-import static grondag.exotic_matter.model.TextureRotationType.CONSISTENT;
-import static grondag.exotic_matter.model.TextureRotationType.FIXED;
-import static grondag.exotic_matter.model.TextureRotationType.RANDOM;
-import static grondag.exotic_matter.world.Rotation.ROTATE_180;
-import static grondag.exotic_matter.world.Rotation.ROTATE_270;
-import static grondag.exotic_matter.world.Rotation.ROTATE_90;
-import static grondag.exotic_matter.world.Rotation.ROTATE_NONE;
+import static grondag.exotic_matter.model.TextureRotationType.*;
+import static grondag.exotic_matter.world.Rotation.*;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.ITexturePalette;

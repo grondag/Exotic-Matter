@@ -1,13 +1,17 @@
 package grondag.exotic_matter.render;
 
 import java.nio.ByteBuffer;
+
 import org.lwjgl.opengl.EXTBgra;
 import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -23,6 +27,28 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class TextureHelper
 {
+    
+    private static int blockGlTextureId;
+
+    public static int blockGlTextureId()
+    {
+        return blockGlTextureId;
+    }
+    
+    private static ITextureObject blockGlTextureObject;
+    
+    public static ITextureObject blockGlTextureObject()
+    {
+        return blockGlTextureObject;
+    }
+    
+    public static void postStitch()
+    {
+        blockGlTextureId = Minecraft.getMinecraft().getTextureMapBlocks().getGlTextureId();
+        
+        blockGlTextureObject = Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+    }
+    
     /**
      * Minecraft only allows up to 4 mimmap levels
      * but just in case this limit is exceeded we 

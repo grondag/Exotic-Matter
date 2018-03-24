@@ -1,23 +1,56 @@
 package grondag.exotic_matter;
 
+import java.io.IOException;
+import java.util.Map;
+
+import grondag.exotic_matter.block.SuperBlockTESR;
+import grondag.exotic_matter.block.SuperDispatcher;
+import grondag.exotic_matter.block.SuperModelTileEntityTESR;
+import grondag.exotic_matter.block.SuperStateMapper;
+import grondag.exotic_matter.block.SuperTileEntity;
+import grondag.exotic_matter.block.SuperTileEntityTESR;
+import grondag.exotic_matter.block.SuperDispatcher.DispatchDelegate;
+import grondag.exotic_matter.font.FontHolder;
+import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.TextureLayout;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
+import grondag.exotic_matter.model.varia.BlockHighlighter;
 import grondag.exotic_matter.render.CompressedAnimatedSprite;
 import grondag.exotic_matter.render.EnhancedSprite;
+import grondag.exotic_matter.render.TextureHelper;
+import net.minecraft.block.Block;
+import net.minecraft.client.gui.GuiOptions;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
 
 @SideOnly(Side.CLIENT)
 @Mod.EventBusSubscriber(Side.CLIENT)
 public class ClientEventHandler
 {
-
+    
+    @SubscribeEvent()
+    public static void onRenderTick(TickEvent.RenderTickEvent event)
+    {
+        if(event.phase == Phase.START) ClientProxy.updateCamera();
+    }
+    
     /**
      * Register all textures that will be needed for associated models. 
      * Happens before model bake.
@@ -49,6 +82,73 @@ public class ClientEventHandler
                     map.registerSprite(loc);
                 }
             }
+        }
+        
+        FontHolder.preStitch(event);
+    }
+    
+    @SubscribeEvent
+    public static void stitcherEventPost(TextureStitchEvent.Post event)
+    {
+        TextureHelper.postStitch();
+        FontHolder.postStitch(event);
+        
+        if(ConfigXM.RENDER.enableAnimationStatistics && CompressedAnimatedSprite.perfLoadRead.runCount() > 0)
+        {
+            CompressedAnimatedSprite.perfCollectorLoad.outputStats();
+            CompressedAnimatedSprite.perfCollectorLoad.clearStats();
+            CompressedAnimatedSprite.reportMemoryUsage();
+        }
+        
+        CompressedAnimatedSprite.tearDown();
+    }
+    
+    /**
+     * Check for blocks that need a custom block highlight and draw if checked.
+     * Adapted from the vanilla highlight code.
+     */
+    @SubscribeEvent
+    public static void onDrawBlockHighlightEvent(DrawBlockHighlightEvent event) 
+    {
+        BlockHighlighter.handleDrawBlockHighlightEvent(event);
+    }
+    
+    @SubscribeEvent
+    public static void onActionPerformed(ActionPerformedEvent.Pre event)
+    {
+        if(event.getGui() != null && event.getGui() instanceof GuiOptions )
+        {
+            SuperTileEntity.updateRenderDistance();
+        }
+    }
+    
+    @SubscribeEvent
+    public static void modelRegistryEvent(ModelRegistryEvent event)
+    {
+        IForgeRegistry<Block> blockReg = GameRegistry.findRegistry(Block.class);
+    
+        for(Map.Entry<ResourceLocation, Block> entry: blockReg.getEntries())
+        {
+            Block block = entry.getValue();
+            if(block instanceof ISuperBlock)
+            {
+                ModelLoader.setCustomStateMapper(block, SuperStateMapper.INSTANCE);
+            }
+        }
+        
+        // Bind TESR to tile entity
+        ClientRegistry.bindTileEntitySpecialRenderer(SuperTileEntityTESR.class, SuperBlockTESR.INSTANCE);
+        ClientRegistry.bindTileEntitySpecialRenderer(SuperModelTileEntityTESR.class, SuperBlockTESR.INSTANCE);
+    }
+    
+    @SubscribeEvent()
+    public static void onModelBakeEvent(ModelBakeEvent event) throws IOException
+    {
+        SuperDispatcher.INSTANCE.clear();
+     
+        for(DispatchDelegate delegate : SuperDispatcher.INSTANCE.delegates)
+        {
+            event.getModelRegistry().putObject(new ModelResourceLocation(delegate.getModelResourceString()), delegate);
         }
     }
 }

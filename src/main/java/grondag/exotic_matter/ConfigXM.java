@@ -135,9 +135,36 @@ public class ConfigXM
         }
     }
 
+    ////////////////////////////////////////////////////        
+    // HYPERSTONE
+    ////////////////////////////////////////////////////
+    @LangKey("config.hypermaterial")
+    @Comment("Settings for hyperdimensional building materials.")
+    public static HyperStone HYPERSTONE = new HyperStone();
+    
+    public static class HyperStone
+    {
+        @Comment("If false, mobs cannot spawn on hyper-dimensional blocks in darkness; similar to slabs.")
+        public boolean allowMobSpawning = false;
+    
+        @Comment("If false, normal fires directly above hyper-dimensional blocks are immediately extinguished.")
+        public boolean allowFire = false;
+    
+        @Comment("If false, players cannot harvest hyper-dimensional blocks without silk touch - they can be broken but drop rubble.")
+        public boolean allowHarvest = false;
+    
+        @Comment("If true, hyper-dimensional blocks can be harvested intact with silk touch. Only matters if allowHarvest is true.")
+        public boolean allowSilkTouch = true;
+    
+        @Comment("If true, hyper-dimensional blocks have a chance to lose durability due to damage from entities or explosions.")
+        public boolean canBeDamaged;
+    }
+
     public static void recalcDerived()
     {
         Render.recalcDerived();
     }
+
+
     
 }

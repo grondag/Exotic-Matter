@@ -15,6 +15,7 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.util.text.translation.I18n;
 
 /**
@@ -99,6 +100,9 @@ public class BlockSubstance implements ILocalized
 	public final boolean isHyperMaterial;
 	public final boolean isTranslucent;
 	public final double walkSpeedFactor;
+	public final int flammability;
+	public final boolean isBurning;
+	public final PathNodeType pathNodeType;
 	
 	private BlockSubstance(String systemName, SubstanceConfig substance, Material material, SoundType sound, int defaultColorMapID, boolean isHyperMaterial) 
 	{
@@ -115,6 +119,9 @@ public class BlockSubstance implements ILocalized
 		this.harvestTool = substance.harvestTool;
 		this.harvestLevel = substance.harvestLevel;
 		this.walkSpeedFactor = substance.walkSpeedFactor;
+		this.flammability = substance.flammability;
+		this.isBurning = substance.isBurning;
+		this.pathNodeType = substance.pathNodeType.pathNodeType;
 		
 		if(this.ordinal < MAX_SUBSTANCES)
 		{  

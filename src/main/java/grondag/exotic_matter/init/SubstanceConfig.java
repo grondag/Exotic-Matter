@@ -32,6 +32,18 @@ public class SubstanceConfig
     @RangeDouble(min = 0.25, max = 2.0)
     public double walkSpeedFactor;
 
+    @RequiresMcRestart
+    @Comment("If non-zero, can catch flame and spread. Numbers are typically small (1 or 2)")
+    public int flammability = 0;
+    
+    @RequiresMcRestart
+    @Comment("If true, will damage and set fire to colliding entities.")
+    public boolean isBurning = false;
+
+    @RequiresMcRestart
+    @Comment("Determeins AI handling for this block. Normal value is BLOCKED.")
+    public ConfigPathNodeType pathNodeType = ConfigPathNodeType.BLOCKED;
+
     public SubstanceConfig(int hardness, BlockHarvestTool harvestTool, int harvestLevel, int resistance, double walkSpeedFactor)
     {
         this.hardness = hardness;
@@ -39,5 +51,23 @@ public class SubstanceConfig
         this.harvestLevel = harvestLevel;
         this.resistance = resistance;
         this.walkSpeedFactor = walkSpeedFactor;
+    }
+    
+    public SubstanceConfig withFlammability(int flammability)
+    {
+        this.flammability = flammability;
+        return this;
+    }
+    
+    public SubstanceConfig setBurning()
+    {
+        this.isBurning = true;
+        return this;
+    }
+    
+    public SubstanceConfig withPathNodeType(ConfigPathNodeType pathNodeType)
+    {
+        this.pathNodeType = pathNodeType;
+        return this;
     }
 }
