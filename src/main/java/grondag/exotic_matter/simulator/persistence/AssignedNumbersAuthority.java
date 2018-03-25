@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.IReadWriteNBT;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,7 +37,7 @@ public class AssignedNumbersAuthority implements IReadWriteNBT, IDirtNotifier
             
             if(prior != null && !prior.equals(thing))
             {
-                Log.warn("Assigned number index overwrote registered object due to index collision.  This is a bug.");
+                ExoticMatter.INSTANCE.warn("Assigned number index overwrote registered object due to index collision.  This is a bug.");
             }
         }
         
@@ -46,7 +46,7 @@ public class AssignedNumbersAuthority implements IReadWriteNBT, IDirtNotifier
             IIdentified prior = this.remove(thing.getId());
             if(prior == null || !prior.equals(thing))
             {
-                Log.warn("Assigned number index unregistered wrong object due to index collision.  This is a bug.");
+                ExoticMatter.INSTANCE.warn("Assigned number index unregistered wrong object due to index collision.  This is a bug.");
             }
         }
         
@@ -127,7 +127,7 @@ public class AssignedNumbersAuthority implements IReadWriteNBT, IDirtNotifier
             }
             else
             {
-                Log.warn("Simulation assigned numbers save data appears to be corrupt.  World may be borked.");
+                ExoticMatter.INSTANCE.warn("Simulation assigned numbers save data appears to be corrupt.  World may be borked.");
                 this.clear();
                 int commonLength = Math.min(lastID.length, input.length);
                 System.arraycopy(input, 0, lastID, 0, commonLength);

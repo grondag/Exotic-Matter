@@ -7,7 +7,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.init.SubstanceConfig;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.ILocalized;
@@ -70,7 +70,7 @@ public class BlockSubstance implements ILocalized
         if(existing != null)
         {
             assert false : "Duplicate substance name";
-            Log.warn("Block substance with duplicate name %s not created.  Existing substance with that name be used instead.", systemName);
+            ExoticMatter.INSTANCE.warn("Block substance with duplicate name %s not created.  Existing substance with that name be used instead.", systemName);
             return existing;
         }
         
@@ -130,7 +130,7 @@ public class BlockSubstance implements ILocalized
 		}
         else
         {
-            Log.warn("Block substance limit of %d exceeded.  Substance %s will not be usable.", MAX_SUBSTANCES, systemName);
+            ExoticMatter.INSTANCE.warn("Block substance limit of %d exceeded.  Substance %s will not be usable.", MAX_SUBSTANCES, systemName);
         }
 		
 	}

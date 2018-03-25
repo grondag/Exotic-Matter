@@ -2,7 +2,7 @@ package grondag.exotic_matter.simulator;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.network.PacketHandler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -94,12 +94,12 @@ public class WorldTaskManager
     {
         if(sendNowIfPossible && FMLCommonHandler.instance().getMinecraftServerInstance().isCallingFromMinecraftThread())
         {
-            Log.info("sending direct packet");
+            ExoticMatter.INSTANCE.info("sending direct packet");
             PacketHandler.CHANNEL.sendTo(message, player);
         }
         else
         {
-            Log.info("sending queued packet");
+            ExoticMatter.INSTANCE.info("sending queued packet");
             enqueueImmediate(new Runnable()
             {
                 @Override

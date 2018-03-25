@@ -5,11 +5,11 @@ import java.util.Map;
 
 import grondag.exotic_matter.block.SuperBlockTESR;
 import grondag.exotic_matter.block.SuperDispatcher;
+import grondag.exotic_matter.block.SuperDispatcher.DispatchDelegate;
 import grondag.exotic_matter.block.SuperModelTileEntityTESR;
 import grondag.exotic_matter.block.SuperStateMapper;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.block.SuperTileEntityTESR;
-import grondag.exotic_matter.block.SuperDispatcher.DispatchDelegate;
 import grondag.exotic_matter.font.FontHolder;
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ITexturePalette;
@@ -21,6 +21,7 @@ import grondag.exotic_matter.network.PacketUpdateModifierKeys;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.render.CompressedAnimatedSprite;
 import grondag.exotic_matter.render.EnhancedSprite;
+import grondag.exotic_matter.render.QuadCache;
 import grondag.exotic_matter.render.TextureHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -31,10 +32,10 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -54,6 +55,8 @@ public class ClientEventHandler
     /** used to detect key down/up for modifier keys */
     private static int modifierKeyFlags = 0;
     
+    private static int clientStatCounter = ConfigXM.RENDER.clientStatReportingInterval * 20;
+
     
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent event) 
@@ -75,7 +78,26 @@ public class ClientEventHandler
                     PacketHandler.CHANNEL.sendToServer(new PacketUpdateModifierKeys(keyFlags));
                 }
             }
-            
+        }
+        else
+        {
+            if ((ConfigXM.RENDER.enableQuadCacheStatistics || ConfigXM.RENDER.enableAnimationStatistics)
+                    && --clientStatCounter == 0) 
+            {
+                clientStatCounter = ConfigXM.RENDER.clientStatReportingInterval * 20;
+                
+                if(ConfigXM.RENDER.enableQuadCacheStatistics)
+                {
+                    ExoticMatter.INSTANCE.info("QuadCache stats = " + QuadCache.INSTANCE.cache.stats().toString());
+                }
+    
+                if(ConfigXM.RENDER.enableAnimatedTextures && ConfigXM.RENDER.enableAnimationStatistics)
+                {
+                    CompressedAnimatedSprite.perfCollectorUpdate.outputStats();
+                    CompressedAnimatedSprite.perfCollectorUpdate.clearStats();
+                }
+            }
+
         }
     }
     

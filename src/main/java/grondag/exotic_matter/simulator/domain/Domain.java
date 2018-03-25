@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.IReadWriteNBT;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumber;
@@ -63,7 +63,7 @@ public class Domain implements IReadWriteNBT, IDirtListenerProvider, IIdentified
                 }
                 catch (Exception e)
                 {
-                    Log.error("Unable to create domain capability", e);
+                    ExoticMatter.INSTANCE.error("Unable to create domain capability", e);
                 }
             }
         }

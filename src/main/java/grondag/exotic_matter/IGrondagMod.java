@@ -2,6 +2,10 @@ package grondag.exotic_matter;
 
 import java.util.ArrayList;
 
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -53,5 +57,62 @@ public interface IGrondagMod
                 resource(this.modID()),
                 ForgeRegistries.ITEMS.getValue(resource(itemName)).getDefaultInstance(),
                 params.toArray());
+    }
+    
+    @Nullable
+    public Logger getLog();
+    
+    public default void error(String message, Object o1, Object o2)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.error(message, o1, o2);
+    }
+
+    public default void error(String message, Throwable t)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.error(message, t);
+    }
+
+    public default void error(String message)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.error(message);
+    }
+
+    public default void debug(String message, Object...args)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.debug(String.format(message, args));
+    }
+
+    public default void debug(String message)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.debug(message);
+    }
+
+    public default void info(String message, Object...args)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.info(String.format(message, args));
+    }
+
+    public default void info(String message)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.info(message);
+    }
+
+    public default void warn(String message, Object...args)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.warn(String.format(message, args));
+    }
+
+    public default void warn(String message)
+    {
+        Logger log = this.getLog();
+        if(log != null) log.warn(message);
     }
 }

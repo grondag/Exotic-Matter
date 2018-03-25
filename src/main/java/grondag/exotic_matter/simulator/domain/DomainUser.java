@@ -3,7 +3,7 @@ package grondag.exotic_matter.simulator.domain;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.IReadWriteNBT;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import net.minecraft.nbt.NBTTagCompound;
@@ -58,7 +58,7 @@ public class DomainUser implements IReadWriteNBT, IDomainMember
                 }
                 catch (Exception e)
                 {
-                    Log.error("Unable to create domain user capability", e);
+                    ExoticMatter.INSTANCE.error("Unable to create domain user capability", e);
                 }
             }
         }

@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.Log;
 import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
 import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.BlockRenderMode;
@@ -190,14 +189,14 @@ public class SuperDispatcher
         SparseLayerMap map = modelCache.get(modelState);
         if(map == null)
         {
-            Log.warn("Missing layer map for occlusion key.");
+            ExoticMatter.INSTANCE.warn("Missing layer map for occlusion key.");
             return 0;
         }
 
         QuadContainer container = map.get(BlockRenderLayer.SOLID);
         if(container == null) 
         {
-            Log.warn("Missing model for occlusion key.");
+            ExoticMatter.INSTANCE.warn("Missing model for occlusion key.");
             return 0;
         }
         return container.getOcclusionHash(face);

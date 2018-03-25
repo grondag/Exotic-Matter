@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
@@ -159,7 +159,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     {
         synchronized(this)
         {
-            Log.info("Simulator initialization started.");
+            ExoticMatter.INSTANCE.info("Simulator initialization started.");
     
             this.assignedNumbersAuthority = new AssignedNumbersAuthority();
             this.assignedNumbersAuthority.setDirtKeeper(this);
@@ -178,7 +178,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                 }
                 catch (Exception e)
                 {
-                    Log.error("Unable to create simulation node " + t.getName(),  e);
+                    ExoticMatter.INSTANCE.error("Unable to create simulation node " + t.getName(),  e);
                 }
             });
             
@@ -190,7 +190,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                 {
                     if(!PersistenceManager.loadNode(mapStore, node))
                     {
-                        Log.warn("Persisted date for %s not found.  Some world state may be lost.", node.getClass().getName());
+                        ExoticMatter.INSTANCE.warn("Persisted date for %s not found.  Some world state may be lost.", node.getClass().getName());
                         node.loadNew();
                         PersistenceManager.registerNode(mapStore, node);  
                     }
@@ -198,7 +198,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
             }
             else
             {
-                Log.info("Creating new simulation.");
+                ExoticMatter.INSTANCE.info("Creating new simulation.");
                 
                 // Assume new game and new simulation
                 this.lastSimTick = 0; 
@@ -220,7 +220,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
             this.nodes.values().forEach(n -> {if(n instanceof ISimulationTickable) this.tickables.add((ISimulationTickable) n);});
  
             
-            Log.info("Simulator initialization complete. Simulator running.");
+            ExoticMatter.INSTANCE.info("Simulator initialization complete. Simulator running.");
         }
     }
 
@@ -230,20 +230,20 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
      */
     public synchronized void stop()
     {
-        Log.info("stopping server");
+        ExoticMatter.INSTANCE.info("stopping server");
         this.isRunning = false;
 
         // wait for simulation to catch up
         if(this.lastTickFuture != null && !this.lastTickFuture.isDone())
         {
-            Log.info("waiting for last frame task completion");
+            ExoticMatter.INSTANCE.info("waiting for last frame task completion");
             try
             {
                 this.lastTickFuture.get(5, TimeUnit.SECONDS);
             }
             catch (Exception e)
             {
-                Log.warn("Timeout waiting for simulation shutdown");
+                ExoticMatter.INSTANCE.warn("Timeout waiting for simulation shutdown");
                 e.printStackTrace();
             }
         }
@@ -281,9 +281,9 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                     this.setSaveDirty(true);
                     if(isClockSetbackNotificationNeeded)
                     {
-                        Log.warn("World clock appears to have run backwards.  Simulation clock offset was adjusted to compensate.");
-                        Log.warn("Next tick according to world was " + newLastSimTick + ", using " + this.lastSimTick + " instead.");
-                        Log.warn("If this recurs, simulation clock will be similarly adjusted without notification.");
+                        ExoticMatter.INSTANCE.warn("World clock appears to have run backwards.  Simulation clock offset was adjusted to compensate.");
+                        ExoticMatter.INSTANCE.warn("Next tick according to world was " + newLastSimTick + ", using " + this.lastSimTick + " instead.");
+                        ExoticMatter.INSTANCE.warn("If this recurs, simulation clock will be similarly adjusted without notification.");
                         isClockSetbackNotificationNeeded = false;
                     }
                 }
@@ -304,7 +304,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     @Override
     public void deserializeNBT(NBTTagCompound nbt)
     {
-        Log.info("Simulator read from NBT");
+        ExoticMatter.INSTANCE.info("Simulator read from NBT");
         this.assignedNumbersAuthority.deserializeNBT(nbt);
         this.lastSimTick = nbt.getInteger(NBT_TAG_LAST_TICK);
         this.worldTickOffset = nbt.getLong(NBT_TAG_WORLD_TICK_OFFSET);
@@ -313,7 +313,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     @Override
     public void serializeNBT(NBTTagCompound nbt)
     {
-        Log.info("saving simulation state");
+        ExoticMatter.INSTANCE.info("saving simulation state");
         this.assignedNumbersAuthority.serializeNBT(nbt);
         nbt.setInteger(NBT_TAG_LAST_TICK, lastSimTick);
         nbt.setLong(NBT_TAG_WORLD_TICK_OFFSET, worldTickOffset);
@@ -338,7 +338,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                     }
                     catch(Exception e)
                     {
-                        Log.error("Exception during simulator off-tick processing", e);
+                        ExoticMatter.INSTANCE.error("Exception during simulator off-tick processing", e);
                     }
                 }
             }

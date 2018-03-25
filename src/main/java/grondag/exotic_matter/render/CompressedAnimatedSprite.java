@@ -18,7 +18,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi;
 
 import grondag.exotic_matter.ConfigXM;
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.concurrency.PerformanceCollector;
 import grondag.exotic_matter.concurrency.PerformanceCounter;
 
@@ -166,7 +166,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
                     
                     if(this.width != this.height || this.width == 0)
                     {
-                        Log.error(String.format("Unable to load animated texture %s because textures file did not contain a square image.", this.getIconName()));
+                        ExoticMatter.INSTANCE.error(String.format("Unable to load animated texture %s because textures file did not contain a square image.", this.getIconName()));
                         this.isValid = false;
                         perfLoadRead.endRun();
                         return true;
@@ -195,7 +195,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
             
         if(frameIndex == 0)
         {
-            Log.error(String.format("Unable to load animated texture %s because textures files not checked.", this.getIconName()));
+            ExoticMatter.INSTANCE.error(String.format("Unable to load animated texture %s because textures files not checked.", this.getIconName()));
             this.isValid = false;
             return true;
         }
@@ -226,7 +226,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
                 {
                     if(loaderPool.getActiveCount() == 0)
                     {
-                        Log.error(String.format("Unable to load animated texture due to unknown error.", this.getIconName()));
+                        ExoticMatter.INSTANCE.error(String.format("Unable to load animated texture due to unknown error.", this.getIconName()));
                         this.isValid = false;
                         perfLoadProcessing.endRun();
 //                        perfLoadTransfer.endRun(start);
@@ -265,7 +265,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
         }
         catch (Exception e)
         {
-            Log.error(String.format("Unable to load animated texture %s due to error.", this.getIconName()), e);
+            ExoticMatter.INSTANCE.error(String.format("Unable to load animated texture %s due to error.", this.getIconName()), e);
             this.isValid = false;
             perfLoadProcessing.endRun();
             return true;
@@ -300,7 +300,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
                 
                 if(image == null)
                 {
-                    Log.warn(String.format("Unable to load frame for animated texture %s. Texture will not animate.", CompressedAnimatedSprite.this.getIconName()));
+                    ExoticMatter.INSTANCE.warn(String.format("Unable to load frame for animated texture %s. Texture will not animate.", CompressedAnimatedSprite.this.getIconName()));
                     CompressedAnimatedSprite.this.isValid = false;
                     return null;
                 }
@@ -336,7 +336,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
             }
             catch (Exception e)
             {
-                Log.error(String.format("Unable to load frame for animated texture %s. Texture will not animate.", CompressedAnimatedSprite.this.getIconName()), e);
+                ExoticMatter.INSTANCE.error(String.format("Unable to load frame for animated texture %s. Texture will not animate.", CompressedAnimatedSprite.this.getIconName()), e);
                 CompressedAnimatedSprite.this.isValid = false;
                 return null;
             }
@@ -398,7 +398,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
                 }
                 catch(Exception e)
                 {
-                    Log.error(String.format("Unable to load frame for animated texture %s. Texture will not animate.", this.getIconName()), e);
+                    ExoticMatter.INSTANCE.error(String.format("Unable to load frame for animated texture %s. Texture will not animate.", this.getIconName()), e);
                     this.isValid = false;
                 }
             }
@@ -415,17 +415,17 @@ public class CompressedAnimatedSprite extends EnhancedSprite
             {
                 if(ConfigXM.RENDER.enableAnimatedTextureCompression)
                 {
-                    Log.info("Animated texture memory consumption is " + (vanillaBytes >> 22) + "MB. (Compression enabled.)");
+                    ExoticMatter.INSTANCE.info("Animated texture memory consumption is " + (vanillaBytes >> 22) + "MB. (Compression enabled.)");
                 }
                 else
                 {
-                    Log.info("Animated texture memory consumption is " + (vanillaBytes >> 20) + "MB. (Compression disabled.)");
+                    ExoticMatter.INSTANCE.info("Animated texture memory consumption is " + (vanillaBytes >> 20) + "MB. (Compression disabled.)");
                 }
             }
         }
         else
         {
-            Log.info("Animated textures are disabled.");
+            ExoticMatter.INSTANCE.info("Animated textures are disabled.");
         }
     }
 

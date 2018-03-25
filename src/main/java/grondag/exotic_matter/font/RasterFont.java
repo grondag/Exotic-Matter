@@ -24,7 +24,6 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.RawQuad;
 import grondag.exotic_matter.render.TextureHelper;
-import grondag.exotic_matter.Log;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -308,7 +307,7 @@ public class RasterFont extends TextureAtlasSprite
             }
             catch (Exception e)
             {
-                Log.error("Failed to create font. Stuff won't render correctly if it renders at all.", e);
+                ExoticMatter.INSTANCE.error("Failed to create font. Stuff won't render correctly if it renders at all.", e);
             }
         }
         this.fontHeight = fontHeight;

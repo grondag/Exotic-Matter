@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import net.minecraft.util.text.translation.I18n;
 
 public class ModelShape<T extends ShapeMeshGenerator>
@@ -47,7 +47,7 @@ public class ModelShape<T extends ShapeMeshGenerator>
         if(this.ordinal < MAX_SHAPES)
             allByOrdinal.add(this);
         else
-            Log.warn("Model shape limit of %d exceeded.  Shape %s added but will not be rendered.", MAX_SHAPES, systemName);
+            ExoticMatter.INSTANCE.warn("Model shape limit of %d exceeded.  Shape %s added but will not be rendered.", MAX_SHAPES, systemName);
         
     }
     
@@ -98,7 +98,7 @@ public class ModelShape<T extends ShapeMeshGenerator>
             }
             catch (Exception e)
             {
-                Log.error("Unable to load model factory for shape " + this.systemName + " due to error.", e);
+                ExoticMatter.INSTANCE.error("Unable to load model factory for shape " + this.systemName + " due to error.", e);
             }
             factoryNeedLoad = false;
         }

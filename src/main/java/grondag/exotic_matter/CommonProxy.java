@@ -22,7 +22,7 @@ public class CommonProxy
 {
     public void preInit(FMLPreInitializationEvent event) 
     {
-        Log.setLog(event.getModLog());
+        ExoticMatter.setLog(event.getModLog());
         ConfigXM.recalcDerived();
         ModTileEntities.preInit(event);
         

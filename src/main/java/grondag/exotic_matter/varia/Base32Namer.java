@@ -4,7 +4,7 @@ import java.util.HashSet;
 
 import com.google.gson.Gson;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 
 /**
  * Generates 1 to 4 digit alphanumeric IDs from input values.
@@ -29,7 +29,7 @@ public class Base32Namer
         }
         catch(Exception e)
         {
-            Log.warn("Unable to parse bad names.  Naughtiness might ensue.");
+            ExoticMatter.INSTANCE.warn("Unable to parse bad names.  Naughtiness might ensue.");
         }
     }
     

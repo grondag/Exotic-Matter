@@ -8,13 +8,13 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.Simulator;
 import grondag.exotic_matter.simulator.persistence.AssignedNumber;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority.IdentifiedIndex;
 import grondag.exotic_matter.simulator.persistence.IIdentified;
 import grondag.exotic_matter.simulator.persistence.ISimulationTopNode;
-import grondag.exotic_matter.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -254,7 +254,7 @@ public class DomainManager implements ISimulationTopNode
     {
         if(!this.isLoaded)
         {
-            Log.warn("Domain manager accessed before it was loaded.  This is a bug and probably means simulation state has been lost.");
+            ExoticMatter.INSTANCE.warn("Domain manager accessed before it was loaded.  This is a bug and probably means simulation state has been lost.");
         }
         return this.isLoaded;
     }

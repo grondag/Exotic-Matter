@@ -3,7 +3,7 @@ package grondag.exotic_matter.concurrency;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 
 
 public class PerformanceCollector
@@ -46,15 +46,15 @@ public class PerformanceCollector
         }
         if(total == 0) total = 1;  // prevent div by zero below
         
-        Log.info("======================================================================================");
-        Log.info("Performance Measurement for " + this.title);
-        Log.info("--------------------------------------------------------------------------------------");
+        ExoticMatter.INSTANCE.info("======================================================================================");
+        ExoticMatter.INSTANCE.info("Performance Measurement for " + this.title);
+        ExoticMatter.INSTANCE.info("--------------------------------------------------------------------------------------");
         for(PerformanceCounter counter : this.counters)
         {
-            Log.info((counter.runTime() * 100 / total) + "% " + counter.stats());
+            ExoticMatter.INSTANCE.info((counter.runTime() * 100 / total) + "% " + counter.stats());
         }
-        Log.info("--------------------------------------------------------------------------------------");
-        Log.info(String.format("TOTAL TIME = %1$.3fs (%2$,dns)", (double)total/1000000000L, total));
+        ExoticMatter.INSTANCE.info("--------------------------------------------------------------------------------------");
+        ExoticMatter.INSTANCE.info(String.format("TOTAL TIME = %1$.3fs (%2$,dns)", (double)total/1000000000L, total));
     }
     
     public void clearStats()

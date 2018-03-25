@@ -2,6 +2,10 @@ package grondag.exotic_matter;
 
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import grondag.exotic_matter.block.SuperModelBlock;
 import grondag.exotic_matter.model.BlockSubstance;
@@ -39,6 +43,26 @@ public class ExoticMatter implements IGrondagMod
 	@Instance
 	public static ExoticMatter INSTANCE = new ExoticMatter();
 
+    @Nullable
+    private static Logger log;
+    
+    @Override
+    @Nullable
+    public Logger getLog()
+    {
+        // allow access to log during unit testing or other debug scenarios
+        if(ExoticMatter.log == null)
+        {
+            ExoticMatter.log = LogManager.getLogger();
+        }
+        return ExoticMatter.log;
+    }
+
+    public static void setLog(Logger lOG)
+    {
+        ExoticMatter.log = lOG;
+    }
+    
 	public static CreativeTabs tabMod = new CreativeTabs("Hard Science") 
     {
         @Override
@@ -62,7 +86,8 @@ public class ExoticMatter implements IGrondagMod
         
         // Packets handled on Client side, sent from Server        
     }
-    
+
+
     @EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{

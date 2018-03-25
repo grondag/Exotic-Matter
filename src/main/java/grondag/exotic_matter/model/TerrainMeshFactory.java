@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.CSGShape;
 import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.RawQuad;
@@ -529,7 +529,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         }
         catch (Exception ex)
         {
-            Log.error("TerrainMeshFactory received Collision Bounding Box check for a foreign block.", ex);
+            ExoticMatter.INSTANCE.error("TerrainMeshFactory received Collision Bounding Box check for a foreign block.", ex);
             return Block.FULL_BLOCK_AABB;
         }
     }

@@ -21,7 +21,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.ConfigXM;
-import grondag.exotic_matter.Log;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.serialization.NBTDictionary;
@@ -515,7 +515,7 @@ public class ModelState implements ISuperModelState
         this.populateStateFlagsIfNeeded();
 
         if(ConfigXM.BLOCKS.debugModelState && !this.hasSpecies())
-            Log.warn("getSpecies on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("getSpecies on model state does not apply for shape");
 
         return this.hasSpecies() ? ModelStateData.P3B_SPECIES.getValue(bits3) : 0;
     }
@@ -526,7 +526,7 @@ public class ModelState implements ISuperModelState
         this.populateStateFlagsIfNeeded();
 
         if(ConfigXM.BLOCKS.debugModelState && !this.hasSpecies())
-            Log.warn("setSpecies on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("setSpecies on model state does not apply for shape");
 
         if(this.hasSpecies())
         {
@@ -542,7 +542,7 @@ public class ModelState implements ISuperModelState
         {
             populateStateFlagsIfNeeded();
             if((stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) == 0 || this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
-                Log.warn("getCornerJoin on model state does not apply for shape");
+                ExoticMatter.INSTANCE.warn("getCornerJoin on model state does not apply for shape");
         }
 
         return CornerJoinBlockStateSelector.getJoinState(MathHelper.clamp(ModelStateData.P3B_BLOCK_JOIN.getValue(bits3), 0, CornerJoinBlockStateSelector.BLOCK_JOIN_STATE_COUNT - 1));
@@ -555,7 +555,7 @@ public class ModelState implements ISuperModelState
         {
             populateStateFlagsIfNeeded();
             if((stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) == 0 || this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
-                Log.warn("setCornerJoin on model state does not apply for shape");
+                ExoticMatter.INSTANCE.warn("setCornerJoin on model state does not apply for shape");
         }
 
         bits3 = ModelStateData.P3B_BLOCK_JOIN.setValue(join.getIndex(), bits3);
@@ -566,7 +566,7 @@ public class ModelState implements ISuperModelState
     public SimpleJoin getSimpleJoin()
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
-            Log.warn("getSimpleJoin on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("getSimpleJoin on model state does not apply for shape");
 
 
         // If this state is using corner join, join index is for a corner join
@@ -584,14 +584,14 @@ public class ModelState implements ISuperModelState
         {
             if(this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
             {
-                Log.warn("Ignored setSimpleJoin on model state that does not apply for shape");
+                ExoticMatter.INSTANCE.warn("Ignored setSimpleJoin on model state that does not apply for shape");
                 return;
             }
 
             populateStateFlagsIfNeeded();
             if((stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) != 0)
             {
-                Log.warn("Ignored setSimpleJoin on model state that uses corner join instead");
+                ExoticMatter.INSTANCE.warn("Ignored setSimpleJoin on model state that uses corner join instead");
                 return;
             }
         }
@@ -604,7 +604,7 @@ public class ModelState implements ISuperModelState
     public SimpleJoin getMasonryJoin()
     {
         if(ConfigXM.BLOCKS.debugModelState && (this.getShape().meshFactory().stateFormat != StateFormat.BLOCK || (stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) == 0) || ((stateFlags & STATE_FLAG_NEEDS_MASONRY_JOIN) == 0))
-            Log.warn("getMasonryJoin on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("getMasonryJoin on model state does not apply for shape");
 
         populateStateFlagsIfNeeded();
         return new SimpleJoin(ModelStateData.P3B_MASONRY_JOIN.getValue(bits3));
@@ -618,13 +618,13 @@ public class ModelState implements ISuperModelState
             populateStateFlagsIfNeeded();
             if(this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
             {
-                Log.warn("Ignored setMasonryJoin on model state that does not apply for shape");
+                ExoticMatter.INSTANCE.warn("Ignored setMasonryJoin on model state that does not apply for shape");
                 return;
             }
 
             if(((stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) == 0) || ((stateFlags & STATE_FLAG_NEEDS_MASONRY_JOIN) == 0))
             {
-                Log.warn("Ignored setMasonryJoin on model state for which it does not apply");
+                ExoticMatter.INSTANCE.warn("Ignored setMasonryJoin on model state for which it does not apply");
                 return;
             }
         }
@@ -645,13 +645,13 @@ public class ModelState implements ISuperModelState
         populateStateFlagsIfNeeded();
         if(this.getShape().meshFactory().stateFormat != StateFormat.BLOCK)
         {
-            if(ConfigXM.BLOCKS.debugModelState) Log.warn("Ignored setAxisRotation on model state that does not apply for shape");
+            if(ConfigXM.BLOCKS.debugModelState) ExoticMatter.INSTANCE.warn("Ignored setAxisRotation on model state that does not apply for shape");
             return;
         }
 
         if((stateFlags & STATE_FLAG_HAS_AXIS_ROTATION) == 0)
         {
-            if(ConfigXM.BLOCKS.debugModelState) Log.warn("Ignored setAxisRotation on model state for which it does not apply");
+            if(ConfigXM.BLOCKS.debugModelState) ExoticMatter.INSTANCE.warn("Ignored setAxisRotation on model state for which it does not apply");
             return;
         }
 
@@ -667,7 +667,7 @@ public class ModelState implements ISuperModelState
     public long getMultiBlockBits()
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.MULTIBLOCK)
-            Log.warn("getMultiBlockBits on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("getMultiBlockBits on model state does not apply for shape");
 
         return bits3;
     }
@@ -676,7 +676,7 @@ public class ModelState implements ISuperModelState
     public void setMultiBlockBits(long bits)
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.MULTIBLOCK)
-            Log.warn("setMultiBlockBits on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("setMultiBlockBits on model state does not apply for shape");
 
         bits3 = bits;
         invalidateHashCode();
@@ -690,7 +690,7 @@ public class ModelState implements ISuperModelState
     public TerrainState getTerrainState()
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
-            Log.warn("getTerrainState on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("getTerrainState on model state does not apply for shape");
 
         return new TerrainState(ModelStateData.P3F_FLOW_JOIN.getValue(bits3));
     }
@@ -699,7 +699,7 @@ public class ModelState implements ISuperModelState
     public void setTerrainState(TerrainState flowState)
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
-            Log.warn("setTerrainState on model state does not apply for shape");
+            ExoticMatter.INSTANCE.warn("setTerrainState on model state does not apply for shape");
 
         bits3 = ModelStateData.P3F_FLOW_JOIN.setValue(flowState.getStateKey(), bits3);
         invalidateHashCode();
@@ -825,7 +825,7 @@ public class ModelState implements ISuperModelState
 
         case NONE:
         default:
-            if(ConfigXM.BLOCKS.debugModelState) Log.warn("ModelState.getMetaData called for inappropriate shape");
+            if(ConfigXM.BLOCKS.debugModelState) ExoticMatter.INSTANCE.warn("ModelState.getMetaData called for inappropriate shape");
             return 0;
         }            
     }
@@ -972,7 +972,7 @@ public class ModelState implements ISuperModelState
         int[] stateBits = tag.getIntArray(NBT_MODEL_BITS);
         if(stateBits == null || stateBits.length != 8)
         {
-            Log.warn("Bad or missing data encounter during ModelState NBT deserialization.");
+            ExoticMatter.INSTANCE.warn("Bad or missing data encounter during ModelState NBT deserialization.");
             return;
         }
         this.deserializeFromInts(stateBits);
