@@ -26,6 +26,7 @@ import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.Translucency;
 import grondag.exotic_matter.model.WorldLightOpacity;
 import grondag.exotic_matter.model.varia.ParticleDiggingSuperBlock;
+import grondag.exotic_matter.placement.SuperItemBlock;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.varia.Color.EnumHCLFailureMode;
@@ -53,6 +54,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.stats.StatList;
@@ -77,6 +79,7 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
 
 /**
  * Base class for HardScience building blocks.
@@ -883,6 +886,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> items)
     {
         items.addAll(getSubItems());
+    }
+
+    @Override
+    public void registerItems(IForgeRegistry<Item> itemReg)
+    {
+        ItemBlock itemBlock = new SuperItemBlock(this);
+        itemBlock.setRegistryName(this.getRegistryName());
+        itemReg.register(itemBlock);        
     }
 
     @Override

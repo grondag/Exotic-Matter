@@ -3,6 +3,7 @@ package grondag.exotic_matter.model;
 import java.util.List;
 import java.util.Random;
 
+import grondag.exotic_matter.init.IBlockItemRegistrator;
 import grondag.exotic_matter.world.IBlockTest;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.PropertyInteger;
@@ -31,7 +32,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
-public interface ISuperBlock
+public interface ISuperBlock extends IBlockItemRegistrator
 {
 
     /**
@@ -275,7 +276,7 @@ public interface ISuperBlock
     void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> items);
 
     List<ItemStack> getSubItems();
-
+    
     /**
      * Controls material-dependent properties
      */

@@ -10,7 +10,6 @@ import grondag.exotic_matter.network.PacketHandler;
 import grondag.exotic_matter.network.PacketUpdateModifierKeys;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -31,7 +30,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
         acceptedMinecraftVersions = "[1.12]",
         dependencies = "after:theoneprobe")
 
-public class ExoticMatter 
+public class ExoticMatter implements IGrondagMod
 {
 	public static final String MODID = "exotic_matter";
 	public static final String MODNAME = "Exotic Matter";
@@ -100,22 +99,10 @@ public class ExoticMatter
    {
        proxy.serverStopping(event);
    }
-   
-   /**
-    * Puts mod ID and . in front of whatever is passed in
-    */
-   public static String prefixName(String name)
-   {
-       return String.format("%s.%s", MODID, name.toLowerCase());
-   }
-   
-   public static String prefixResource(String name)
-   {
-       return String.format("%s:%s", MODID, name.toLowerCase());
-   }
-   
-   public static ResourceLocation resource(String name)
-   {
-       return new ResourceLocation(prefixResource(name));
-   }
+
+    @Override
+    public String modID()
+    {
+        return MODID;
+    }
 }

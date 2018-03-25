@@ -194,7 +194,7 @@ public class RasterFont extends TextureAtlasSprite
         sizeloop:
         while(!isSizeRight)
         {
-            Font font = getFont(new ResourceLocation(ExoticMatter.prefixResource("fonts/" + fontName)), fontSize);
+            Font font = getFont(new ResourceLocation(ExoticMatter.INSTANCE.prefixResource("fonts/" + fontName)), fontSize);
             
             // Create a temporary image to extract the character's size
             

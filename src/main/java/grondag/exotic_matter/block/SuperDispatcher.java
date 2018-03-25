@@ -302,7 +302,7 @@ public class SuperDispatcher
         private DispatchDelegate(BlockRenderMode blockRenderMode)
         {
             this.blockRenderMode = blockRenderMode;
-            this.modelResourceString = ExoticMatter.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderMode.ordinal());
+            this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderMode.ordinal());
         }
 
         /** only used for block layer version */
