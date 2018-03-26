@@ -13,6 +13,26 @@ import net.minecraftforge.common.config.Config.Type;
 @Config(modid = ExoticMatter.MODID, type = Type.INSTANCE)
 public class ConfigXM
 {
+    ////////////////////////////////////////////////////
+    // EXECUTION
+    ////////////////////////////////////////////////////
+    @LangKey("config.execution")
+    @Comment("General settings for game logic execution.")
+    public static ExecutionSettings EXECUTION = new ExecutionSettings();
+    
+    public static class ExecutionSettings
+    {
+        
+        @Comment({"Maximum number of queued 'operations' to be executed each server tick.",
+        " Operations are submitted by game logic that runs outside the main server thread.",
+        " The size of each operation varies, and some tasks consume more than one op. ",
+        " Try smaller values if seeing tick lag on the server. Some game actions or events may take ",
+        " longer to complete with small values.  Could have indirect effects on client if results in",
+        " large numbers of block update, for example."})
+        @RangeInt(min = 128, max = 1000000)
+        public int maxQueuedWorldOperationsPerTick = 4096;
+    }
+    
     ////////////////////////////////////////////////////        
     // BLOCKS
     ////////////////////////////////////////////////////

@@ -2,6 +2,7 @@ package grondag.exotic_matter.simulator;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.network.PacketHandler;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -45,8 +46,7 @@ public class WorldTaskManager
         
         if(tasks.isEmpty()) return;
         
-        //TODO: make configurable
-        int operations = 4096;
+        int operations = ConfigXM.EXECUTION.maxQueuedWorldOperationsPerTick;
         
         IWorldTask task = tasks.peek();
         while(operations > 0 && task != null)

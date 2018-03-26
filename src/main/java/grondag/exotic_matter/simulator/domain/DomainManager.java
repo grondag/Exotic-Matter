@@ -18,6 +18,7 @@ import grondag.exotic_matter.simulator.persistence.ISimulationTopNode;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.MinecraftForge;
 
 public class DomainManager implements ISimulationTopNode
@@ -301,6 +302,7 @@ public class DomainManager implements ISimulationTopNode
     /**
      * The player's private, default domain. Created if does not already exist.
      */
+    @SuppressWarnings("deprecation")
     @Nonnull
     public IDomain getIntrinsicDomain(EntityPlayerMP player)
     {
@@ -314,8 +316,7 @@ public class DomainManager implements ISimulationTopNode
                 {
                     result = this.createDomain();
                     result.setSecurityEnabled(true);
-                    //TODO: localize
-                    result.setName("Default domain for " + player.getName());
+                    result.setName(I18n.translateToLocalFormatted("misc.default_domain_template", player.getName()));
                     DomainUser user = result.addPlayer(player);
                     user.setPrivileges(Privilege.ADMIN);
                     this.playerIntrinsicDomains.put(player.getName(), result);
