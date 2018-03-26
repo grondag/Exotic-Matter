@@ -1,6 +1,7 @@
 package grondag.exotic_matter.simulator.persistence;
 
 import grondag.exotic_matter.serialization.IReadWriteNBT;
+import grondag.exotic_matter.simulator.Simulator;
 
 /**
  * Lifecycle events for simulator.  Simulator calls top-level nodes
@@ -14,6 +15,15 @@ public interface ISimulationNode extends IReadWriteNBT, IDirtListener
      * Called by simulator at shutdown
      */
     public default void unload() {}
+    
+    /**
+     * Called immediately after object is instantiated and added to parent collection.
+     * Will <em>always</em> be called, and will be followed by {@link #afterDeserialization()} or {@link #loadNew()}. <p>
+     * 
+     * Difference from constructor is that can be used to distinguish instances created by the simulator vs
+     * an instance created by a test harness or for some other purpose.
+     */
+    public default void afterCreated(Simulator sim) {};
     
     /**
      * Called by simulator after all top-level nodes are deserialized (if anything found) 

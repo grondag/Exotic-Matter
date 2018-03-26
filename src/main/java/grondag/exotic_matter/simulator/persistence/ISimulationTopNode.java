@@ -6,6 +6,6 @@ package grondag.exotic_matter.simulator.persistence;
  */
 public interface ISimulationTopNode extends IPersistenceNode, ISimulationNode
 {
-   
+
     
 }

@@ -28,19 +28,12 @@ public class DomainManager implements ISimulationTopNode
     private static final String NBT_DOMAIN_ACTIVE_DOMAINS = NBTDictionary.claim("domMgrActive");
     
     /**
-     * A bit ugly but convenient.  Set to null when any 
-     * instance is created, retrieved lazily from Simulator.
-     * 
-     * TODO do this in a better way, is asking for trouble
+     * Set to null when Simulator creates singleton and when it shuts down to force retrieval of current instance.
      */
     private static DomainManager instance;
     
     public static DomainManager instance()
     {
-        if(instance == null)
-        {
-            instance = Simulator.instance().getNode(DomainManager.class);
-        }
         return instance;
     }
     
@@ -85,6 +78,12 @@ public class DomainManager implements ISimulationTopNode
         this.isLoaded = false;
     }
     
+    @Override
+    public void afterCreated(Simulator sim)
+    {
+        instance = this;
+    }
+
     @Override
     public void loadNew()
     {

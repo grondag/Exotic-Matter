@@ -174,7 +174,9 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
             nodeTypes.forEach(t -> {
                 try
                 {
-                    this.nodes.put(t, t.newInstance());
+                    ISimulationTopNode node = t.newInstance();
+                    this.nodes.put(t, node);
+                    node.afterCreated(this);
                 }
                 catch (Exception e)
                 {
