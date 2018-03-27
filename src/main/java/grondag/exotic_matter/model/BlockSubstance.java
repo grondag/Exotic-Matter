@@ -11,6 +11,7 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.init.SubstanceConfig;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.ILocalized;
+import grondag.exotic_matter.varia.NullHandler;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
@@ -43,7 +44,7 @@ public class BlockSubstance implements ILocalized
     
 	public static BlockSubstance deserializeNBT(NBTTagCompound tag)
     {
-        return allByName.get(tag.getString(NBT_SUBSTANCE));
+        return NullHandler.defaultIfNull(allByName.get(tag.getString(NBT_SUBSTANCE)), BlockSubstance.DEFAULT);
     }
 
 
