@@ -3,6 +3,8 @@ package grondag.exotic_matter.concurrency;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.ExoticMatter;
 
 
@@ -33,7 +35,7 @@ public class PerformanceCollector
         {
 
             @Override
-            public int compare(PerformanceCounter o1, PerformanceCounter o2)
+            public int compare(@Nullable PerformanceCounter o1, @Nullable PerformanceCounter o2)
             {
                 return Long.compare(o2.runTime(), o1.runTime());
             }

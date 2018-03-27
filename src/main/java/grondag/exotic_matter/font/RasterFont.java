@@ -43,100 +43,24 @@ import net.minecraft.util.ResourceLocation;
 @SuppressWarnings("restriction")
 public class RasterFont extends TextureAtlasSprite
 {
-    public class GlyphInfo
+    
+    /**
+     * Characters we support for in-world rendering. Limited to reduce texture map consumption.
+     */
+    private static final String CHARSET = "+-%.=?!/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static final char[] SUBSCRIPTS = {0x2080, 0x2081, 0x2082, 0x2083, 0x2084, 0x2085, 0x2086, 0x2087, 0x2088, 0x2089};
+    
+    /**
+     * Pixels around each glyph in texture map to prevent bleeding
+     */
+    private static int GLYPH_MARGIN = 2;
+    private static int GLYPH_MARGIN_X2 = GLYPH_MARGIN * 2;
+    
+    public static String getSpriteResourceName(String fontName, int fontSize)
     {
-
-        /**
-         * Character's pixelWidth
-         */
-        public final int pixelWidth;
-        
-        /**
-         * Includes the padding constant.
-         */
-        public final int renderWidth;
-
-        /**
-         * Character's height
-         */
-        public final int height;
-
-        
-        /**
-         * Character's x location within texture
-         */
-        public final int positionX;
-
-        /**
-         * Character's y position within texture
-         */
-        public final int positionY;
-        
-        /** texture coordinate relative to sprite, scaled 0-16 */
-        public final float uMinMinecraft;
-        /** texture coordinate relative to sprite, scaled 0-16 */
-        public final float vMinMinecraft;
-        /** texture coordinate relative to sprite, scaled 0-16 */
-        public final float uMaxMinecraft;
-        /** texture coordinate relative to sprite, scaled 0-16 */
-        public final float vMaxMinecraft;
-        
-        /** texture coordinate relative to sprite, scaled 0-1 */
-        public final float uMinNormal;
-        /** texture coordinate relative to sprite, scaled 0-1 */
-        public final float vMinNormal;
-        /** texture coordinate relative to sprite, scaled 0-1 */
-        public final float uMaxNormal;
-        /** texture coordinate relative to sprite, scaled 0-1 */
-        public final float vMaxNormal;
-
-        /** texture coordinate within OpenGL texture, scaled 0-1  */
-        public float interpolatedMinU;
-        /** texture coordinate within OpenGL texture, scaled 0-1  */
-        public float interpolatedMinV;
-        /** texture coordinate within OpenGL texture, scaled 0-1  */
-        public float interpolatedMaxU;
-        /** texture coordinate within OpenGL texture, scaled 0-1  */
-        public float interpolatedMaxV;
-        
-        /** 
-         * Shift character this many pixels right if rendering monospace.
-         */
-        public final int monoOffset;
-
-        
-        private GlyphInfo(int width, int height, int positionX, int positionY, int monoWidth)
-        {
-            this.positionX = positionX;
-            this.positionY = positionY;
-            this.pixelWidth = width;
-            this.renderWidth = width + horizontalSpacing;
-            this.height = height;
-            int size = RasterFont.this.getIconWidth();
-            
-            
-            this.uMinNormal = (float) positionX / size;
-            this.uMaxNormal = (float) (positionX + width) / size;
-            this.vMinNormal = (float) positionY / size;
-            this.vMaxNormal = (float) (positionY + height) / size;
-
-            this.uMinMinecraft = 16f * uMinNormal;
-            this.uMaxMinecraft = 16f * uMaxNormal;
-            this.vMinMinecraft = 16f * vMinNormal;
-            this.vMaxMinecraft = 16f * vMaxNormal;
-
-            this.monoOffset = monoWidth > 0 ? (monoWidth - width) / 2 : 0;
-        }
-        
-        /** must be called after texture map creation */
-        private void updateInterpolated()
-        {
-            this.interpolatedMinU = RasterFont.this.getInterpolatedU(this.uMinMinecraft);
-            this.interpolatedMaxU = RasterFont.this.getInterpolatedU(this.uMaxMinecraft);
-            this.interpolatedMinV = RasterFont.this.getInterpolatedV(this.vMinMinecraft);
-            this.interpolatedMaxV = RasterFont.this.getInterpolatedV(this.vMaxMinecraft);
-        }
+        return "hard_science:blocks/" + fontName + "-" + fontSize;
     }
+    
     
     /**
      * Array that holds necessary information about the font characters
@@ -162,19 +86,7 @@ public class RasterFont extends TextureAtlasSprite
      */
     private BufferedImage fontMap;
 
-    /**
-     * Characters we support for in-world rendering. Limited to reduce texture map consumption.
-     */
-    private static final String CHARSET = "+-%.=?!/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    private static final char[] SUBSCRIPTS = {0x2080, 0x2081, 0x2082, 0x2083, 0x2084, 0x2085, 0x2086, 0x2087, 0x2088, 0x2089};
-    
-    /**
-     * Pixels around each glyph in texture map to prevent bleeding
-     */
-    private static int GLYPH_MARGIN = 2;
-    private static int GLYPH_MARGIN_X2 = GLYPH_MARGIN * 2;
-    
-    
+
     /**
      * Font name should include the extension.
      */
@@ -607,10 +519,99 @@ public class RasterFont extends TextureAtlasSprite
     {
         //noop - all done in load
     }
-  
-
-    public static String getSpriteResourceName(String fontName, int fontSize)
+    
+    public class GlyphInfo
     {
-        return "hard_science:blocks/" + fontName + "-" + fontSize;
+
+        /**
+         * Character's pixelWidth
+         */
+        public final int pixelWidth;
+        
+        /**
+         * Includes the padding constant.
+         */
+        public final int renderWidth;
+
+        /**
+         * Character's height
+         */
+        public final int height;
+
+        
+        /**
+         * Character's x location within texture
+         */
+        public final int positionX;
+
+        /**
+         * Character's y position within texture
+         */
+        public final int positionY;
+        
+        /** texture coordinate relative to sprite, scaled 0-16 */
+        public final float uMinMinecraft;
+        /** texture coordinate relative to sprite, scaled 0-16 */
+        public final float vMinMinecraft;
+        /** texture coordinate relative to sprite, scaled 0-16 */
+        public final float uMaxMinecraft;
+        /** texture coordinate relative to sprite, scaled 0-16 */
+        public final float vMaxMinecraft;
+        
+        /** texture coordinate relative to sprite, scaled 0-1 */
+        public final float uMinNormal;
+        /** texture coordinate relative to sprite, scaled 0-1 */
+        public final float vMinNormal;
+        /** texture coordinate relative to sprite, scaled 0-1 */
+        public final float uMaxNormal;
+        /** texture coordinate relative to sprite, scaled 0-1 */
+        public final float vMaxNormal;
+
+        /** texture coordinate within OpenGL texture, scaled 0-1  */
+        public float interpolatedMinU;
+        /** texture coordinate within OpenGL texture, scaled 0-1  */
+        public float interpolatedMinV;
+        /** texture coordinate within OpenGL texture, scaled 0-1  */
+        public float interpolatedMaxU;
+        /** texture coordinate within OpenGL texture, scaled 0-1  */
+        public float interpolatedMaxV;
+        
+        /** 
+         * Shift character this many pixels right if rendering monospace.
+         */
+        public final int monoOffset;
+
+        
+        private GlyphInfo(int width, int height, int positionX, int positionY, int monoWidth)
+        {
+            this.positionX = positionX;
+            this.positionY = positionY;
+            this.pixelWidth = width;
+            this.renderWidth = width + horizontalSpacing;
+            this.height = height;
+            int size = RasterFont.this.getIconWidth();
+            
+            
+            this.uMinNormal = (float) positionX / size;
+            this.uMaxNormal = (float) (positionX + width) / size;
+            this.vMinNormal = (float) positionY / size;
+            this.vMaxNormal = (float) (positionY + height) / size;
+
+            this.uMinMinecraft = 16f * uMinNormal;
+            this.uMaxMinecraft = 16f * uMaxNormal;
+            this.vMinMinecraft = 16f * vMinNormal;
+            this.vMaxMinecraft = 16f * vMaxNormal;
+
+            this.monoOffset = monoWidth > 0 ? (monoWidth - width) / 2 : 0;
+        }
+        
+        /** must be called after texture map creation */
+        private void updateInterpolated()
+        {
+            this.interpolatedMinU = RasterFont.this.getInterpolatedU(this.uMinMinecraft);
+            this.interpolatedMaxU = RasterFont.this.getInterpolatedU(this.uMaxMinecraft);
+            this.interpolatedMinV = RasterFont.this.getInterpolatedV(this.vMinMinecraft);
+            this.interpolatedMaxV = RasterFont.this.getInterpolatedV(this.vMaxMinecraft);
+        }
     }
 }

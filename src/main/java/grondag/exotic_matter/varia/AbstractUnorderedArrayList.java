@@ -34,7 +34,7 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
     }
     
     @Override
-    public boolean add(T newItem)
+    public boolean add(@Nullable T newItem)
     {
         if(this.size == this.items.length)
         {
@@ -79,7 +79,7 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
     }
     
     @Override
-    public boolean remove(Object itemToRemove)
+    public boolean remove(@Nullable Object itemToRemove)
     {
         for(int i = this.size - 1; i >= 0; i--)
         {
@@ -93,7 +93,7 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
     }
     
     @Override
-    public boolean contains(Object itemToFind)
+    public boolean contains(@Nullable Object itemToFind)
     {
         for(int i = this.size - 1; i >= 0; i--)
         {
@@ -133,7 +133,6 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
         {
             private int i = 0;
             
-            @SuppressWarnings("null")
             @Override
             protected T computeNext()
             {

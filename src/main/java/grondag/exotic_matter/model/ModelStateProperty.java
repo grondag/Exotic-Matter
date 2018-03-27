@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model;
 
+import javax.annotation.Nullable;
+
 import net.minecraftforge.common.property.IUnlistedProperty;
 
 public class ModelStateProperty implements IUnlistedProperty<ISuperModelState> {
@@ -10,13 +12,13 @@ public class ModelStateProperty implements IUnlistedProperty<ISuperModelState> {
     }
 
     @Override
-    public boolean isValid(ISuperModelState value)
+    public boolean isValid(@Nullable ISuperModelState value)
     {
         return true;
     }
 
     @Override
-    public String valueToString(ISuperModelState value)
+    public String valueToString(@Nullable ISuperModelState value)
     {
         return value.toString();
     }

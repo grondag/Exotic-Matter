@@ -2,12 +2,14 @@ package grondag.exotic_matter.model;
 
 import java.util.List;
 
+import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.model.TextureRotationType.TextureRotationSetting;
 import grondag.exotic_matter.render.EnhancedSprite;
 
 public interface ITexturePalette
 {
-
+    IGrondagMod mod();
+    
     /**
      * The immutable name of this palette for identification and serialization.
      * Must be globally unique.

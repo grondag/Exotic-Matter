@@ -95,43 +95,54 @@ public class IntegerAABB
         this.maxZ = Math.max(pos1.getZ(), pos2.getZ()) + 1;
     }
  
-    private AxisAlignedBB aabb = null;
+    @Nullable private AxisAlignedBB aabb = null;
     
     public AxisAlignedBB toAABB()
     {
-        if(this.aabb == null)
+        AxisAlignedBB result = this.aabb;
+        if(result == null)
         {
-            this.aabb = new AxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+            result = new AxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+            this.aabb = result;
         }
-        return this.aabb;
+        return result;
     }
     
-    private BlockPos minPos = null;
+    @Nullable private BlockPos minPos = null;
     
     public BlockPos minPos()
     {
-        if(this.minPos == null)
+        BlockPos result = this.minPos;
+        
+        if(result == null)
         {
-            this.minPos = new BlockPos(this.minX, this.minY, this.minZ);
+            result = new BlockPos(this.minX, this.minY, this.minZ);
+            this.minPos = result;
         }
-        return this.minPos;
+        return result;
     }
     
- private BlockPos maxPos = null;
+    @Nullable private BlockPos maxPos = null;
     
     public BlockPos maxPos()
     {
-        if(this.maxPos == null)
+        BlockPos result = this.maxPos;
+        if(result == null)
         {
-            this.maxPos = new BlockPos(this.maxX - 1, this.maxY - 1, this.maxZ - 1);
+            result = new BlockPos(this.maxX - 1, this.maxY - 1, this.maxZ - 1);
+            this.maxPos = result;
         }
-        return this.maxPos;
+        return result;
     }
     
     @Override
-    public boolean equals(Object other)
+    public boolean equals(@Nullable Object other)
     {
-        if (this == other)
+        if(other == null)
+        {
+            return false;
+        }
+        else if (this == other)
         {
             return true;
         }

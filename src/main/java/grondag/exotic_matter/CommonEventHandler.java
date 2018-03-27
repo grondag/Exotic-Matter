@@ -54,12 +54,22 @@ public class CommonEventHandler
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) 
     {
+        handleRegisterItems(ExoticMatter.MODID, event);
+    }
+    
+    /**
+     * Call from each mod's event handler.  Could do all in library mod handler
+     * but Forge will spam warning messages because domain names don't match the 
+     * current handler.
+     */
+    public static void handleRegisterItems(String modID, RegistryEvent.Register<Item> event)
+    {
         IForgeRegistry<Item> itemReg = event.getRegistry();
         IForgeRegistry<Block> blockReg = GameRegistry.findRegistry(Block.class);
         
         for(Map.Entry<ResourceLocation, Block> entry: blockReg.getEntries())
         {
-            if(entry.getValue() instanceof IBlockItemRegistrator)
+            if(entry.getKey().getResourceDomain().equals(modID) && entry.getValue() instanceof IBlockItemRegistrator)
             {
                 ((IBlockItemRegistrator)entry.getValue()).registerItems(itemReg);
             }

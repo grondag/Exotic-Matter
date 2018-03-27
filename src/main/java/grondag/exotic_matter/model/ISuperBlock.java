@@ -3,6 +3,8 @@ package grondag.exotic_matter.model;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.init.IBlockItemRegistrator;
 import grondag.exotic_matter.world.IBlockTest;
 import net.minecraft.block.Block;
@@ -52,7 +54,7 @@ public interface ISuperBlock extends IBlockItemRegistrator
      */
     IBlockTest<ISuperModelState> blockJoinTest(IBlockAccess worldIn, IBlockState state, BlockPos pos, ISuperModelState modelState);
 
-    void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entityIn,
+    void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn,
             boolean p_185477_7_);
 
     boolean addDestroyEffects(World world, BlockPos pos, ParticleManager manager);
@@ -124,7 +126,7 @@ public interface ISuperBlock extends IBlockItemRegistrator
 
     boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player);
 
-    RayTraceResult collisionRayTrace(IBlockState blockState, World worldIn, BlockPos pos, Vec3d start, Vec3d end);
+    @Nullable RayTraceResult collisionRayTrace(IBlockState blockState, World worldIn, BlockPos pos, Vec3d start, Vec3d end);
 
     int damageDropped(IBlockState state);
 

@@ -1,5 +1,7 @@
 package grondag.exotic_matter.network;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.serialization.IMessagePlus;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -10,7 +12,7 @@ public abstract class AbstractPlayerToServerPacket<T extends IMessagePlus> imple
 {
 
     @Override
-    public IMessage onMessage(final T message, MessageContext context) {
+    public IMessage onMessage(final @Nullable T message, @Nullable MessageContext context) {
         final EntityPlayerMP player = context.getServerHandler().player;
 
         player.getServerWorld().addScheduledTask(() -> handle(message, player));

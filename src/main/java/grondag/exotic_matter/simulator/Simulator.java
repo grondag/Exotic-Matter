@@ -11,6 +11,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Lists;
 
 import grondag.exotic_matter.ExoticMatter;
@@ -83,7 +85,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     {
         private AtomicInteger count = new AtomicInteger(1);
         @Override
-        public Thread newThread(Runnable r)
+        public Thread newThread(@Nullable Runnable r)
         {
             Thread thread = new Thread(r, "Hard Science Simulation Thread -" + count.getAndIncrement());
             thread.setDaemon(true);
@@ -100,7 +102,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
             {
                 private AtomicInteger count = new AtomicInteger(1);
                 @Override
-                public Thread newThread(Runnable r)
+                public Thread newThread(@Nullable Runnable r)
                 {
                     Thread thread = new Thread(r, "Hard Science Simulation Control Thread -" + count.getAndIncrement());
                     thread.setDaemon(true);
@@ -350,7 +352,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     // CHUNK LOADING START UP HANDLERS
 
     @Override
-    public void ticketsLoaded(List<Ticket> tickets, World world)
+    public void ticketsLoaded(@Nullable List<Ticket> tickets, @Nullable World world)
     {
         // For volcanos we re-force chunks when simulation loaded
         // or when activation changes. Should get no tickets.
@@ -358,7 +360,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     }
 
     @Override
-    public List<Ticket> ticketsLoaded(List<Ticket> tickets, World world, int maxTicketCount)
+    public List<Ticket> ticketsLoaded(@Nullable List<Ticket> tickets, @Nullable World world, int maxTicketCount)
     {
         // For volcanos we re-force chunks when simulation loaded
         // or when activation changes. Dispose of all tickets.

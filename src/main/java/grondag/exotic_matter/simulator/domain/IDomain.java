@@ -2,6 +2,8 @@ package grondag.exotic_matter.simulator.domain;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.eventbus.EventBus;
 
 import grondag.exotic_matter.simulator.persistence.IDirtListenerProvider;
@@ -16,9 +18,9 @@ public interface IDomain extends ISimulationNode, IDirtListenerProvider, IIdenti
     
     List<DomainUser> getAllUsers();
 
-    DomainUser findPlayer(EntityPlayer player);
+    @Nullable DomainUser findPlayer(EntityPlayer player);
 
-    DomainUser findUser(String userName);
+    @Nullable DomainUser findUser(String userName);
 
     boolean hasPrivilege(EntityPlayer player, Privilege privilege);
 

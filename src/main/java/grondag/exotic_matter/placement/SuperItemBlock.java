@@ -5,14 +5,19 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.SuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
+import grondag.exotic_matter.block.SuperDispatcher;
 import grondag.exotic_matter.block.SuperTileEntity;
+import grondag.exotic_matter.init.IItemModelRegistrant;
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelBakery;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,21 +25,49 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.registries.IForgeRegistry;
 
 /**
  * Provides sub-items and handles item logic for NiceBlocks.
  */
-public class SuperItemBlock extends ItemBlock implements IPlacementItem
+public class SuperItemBlock extends ItemBlock implements IPlacementItem, IItemModelRegistrant
 {
     
     public static final int FEATURE_FLAGS = IPlacementItem.BENUMSET_FEATURES.getFlagsForIncludedValues(
             PlacementItemFeature.BLOCK_ORIENTATION,
             PlacementItemFeature.SPECIES_MODE);
+    
+    
+    @Override
+    public void handleRegister(IForgeRegistry<Item> itemReg)
+    {
+        SuperBlock block = (SuperBlock) this.getBlock();
+        for (ItemStack stack : block.getSubItems())
+        {
+            String variantName = SuperDispatcher.INSTANCE.getDelegate(block).getModelResourceString() + "." + stack.getMetadata();
+            ModelBakery.registerItemVariants(this, new ResourceLocation(variantName));
+            ModelLoader.setCustomModelResourceLocation(this, stack.getMetadata(), new ModelResourceLocation(variantName, "inventory"));     
+        }
+    }
+    
+    @Override
+    public void handleBake(ModelBakeEvent event)
+    {
+        SuperBlock block = (SuperBlock)this.getBlock();
+        for (ItemStack stack : block.getSubItems())
+        {
+            event.getModelRegistry().putObject(new ModelResourceLocation(this.getRegistryName() + "." + stack.getMetadata(), "inventory"),
+                    SuperDispatcher.INSTANCE.getDelegate(block));
+        }
+    }
     
     /**
      * Called client-side before {@link #onItemUse(EntityPlayer, World, BlockPos, EnumHand, EnumFacing, float, float, float)}.  

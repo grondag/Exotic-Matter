@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 
 import org.lwjgl.util.vector.Vector3f;
@@ -48,7 +49,7 @@ public class Useful
         offsetList.sort(new Comparator<Vec3i>() {
 
             @Override
-            public int compare(Vec3i o1, Vec3i o2)
+            public int compare(@Nullable Vec3i o1, @Nullable Vec3i o2)
             {
                 return Integer.compare(o1.getY(), o2.getY());
             }});

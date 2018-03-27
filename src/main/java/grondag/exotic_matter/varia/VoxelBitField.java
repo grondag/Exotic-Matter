@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Comparator;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
@@ -42,7 +44,7 @@ public class VoxelBitField
         private static final DistanceComparator INSTANCE = new DistanceComparator();
         
         @Override
-        public int compare(DistanceRankedVoxel o1, DistanceRankedVoxel o2)
+        public int compare(@Nullable DistanceRankedVoxel o1, @Nullable DistanceRankedVoxel o2)
         {
             if(o1.distanceSq < o2.distanceSq)
                 return -1;

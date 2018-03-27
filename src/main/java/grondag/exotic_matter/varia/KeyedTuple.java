@@ -1,6 +1,7 @@
 package grondag.exotic_matter.varia;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** 
  * Base class for tuple objects with an object key.
@@ -17,7 +18,7 @@ public abstract class KeyedTuple<T>
 
     @SuppressWarnings("rawtypes")
     @Override
-    public boolean equals(Object other)
+    public boolean equals(@Nullable Object other)
     {
         if(other instanceof KeyedTuple)
         {

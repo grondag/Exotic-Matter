@@ -1,5 +1,7 @@
 package grondag.exotic_matter.serialization;
 
+import javax.annotation.Nullable;
+
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -10,7 +12,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 public interface IMessagePlus extends IMessage
 {
     @Override
-    public default void fromBytes(ByteBuf buf)
+    public default void fromBytes(@Nullable ByteBuf buf)
     {
         this.fromBytes(new PacketBuffer(buf));
     }
@@ -18,7 +20,7 @@ public interface IMessagePlus extends IMessage
     public void fromBytes(PacketBuffer pBuff);
 
     @Override
-    public default void toBytes(ByteBuf buf)
+    public default void toBytes(@Nullable ByteBuf buf)
     {
         this.toBytes(new PacketBuffer(buf));
         

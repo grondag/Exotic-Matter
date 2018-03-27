@@ -1,5 +1,7 @@
 package grondag.exotic_matter.serialization;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -10,7 +12,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 public interface IReadWriteNBT extends INBTSerializable<NBTTagCompound>
 {
     @Override
-    public abstract void deserializeNBT(NBTTagCompound tag);
+    public abstract void deserializeNBT(@Nullable NBTTagCompound tag);
     
     public abstract void serializeNBT(NBTTagCompound tag);
     

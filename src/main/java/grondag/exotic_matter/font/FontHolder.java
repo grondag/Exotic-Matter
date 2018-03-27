@@ -12,10 +12,10 @@ public class FontHolder
     public static String FONT_NAME_LARGE = "ubuntu-m.ttf";
     public static int FONT_SIZE_SMALL = 512;
     public static int FONT_SIZE_LARGE = 512;
-    public static RasterFont FONT_RENDERER_SMALL;
-    public static RasterFont FONT_RENDERER_LARGE;
     public static String FONT_RESOURCE_STRING_SMALL = RasterFont.getSpriteResourceName(FONT_NAME_SMALL, FONT_SIZE_SMALL);
     public static String FONT_RESOURCE_STRING_LARGE = RasterFont.getSpriteResourceName(FONT_NAME_LARGE, FONT_SIZE_LARGE);
+    public static RasterFont FONT_RENDERER_SMALL;
+    public static RasterFont FONT_RENDERER_LARGE;
     
     public static void preStitch(TextureStitchEvent.Pre event)
     {

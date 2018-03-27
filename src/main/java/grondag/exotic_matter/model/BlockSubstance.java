@@ -22,12 +22,10 @@ import net.minecraft.util.text.translation.I18n;
  * Similar to Minecraft Material. Didn't want to tie to that implementation.
  * Determines Minecraft material and other physical properties.
  */
+@SuppressWarnings("deprecation")
 public class BlockSubstance implements ILocalized
 {
     private static final String NBT_SUBSTANCE = NBTDictionary.claim("substance");
-    
-    public static final BlockSubstance DEFAULT = create("default", new SubstanceConfig(1, BlockHarvestTool.ANY, 0, 10, 1.0),  Material.GROUND, SoundType.CLOTH, 
-            BlockColorMapProvider.INSTANCE.getColorMap(Hue.AZURE, Chroma.WHITE, Luminance.MEDIUM_LIGHT).ordinal);
     
     /**
      * Finite number of substances defined to facilitate bit-wise serialization to client GUIs
@@ -39,6 +37,9 @@ public class BlockSubstance implements ILocalized
     private static final List<BlockSubstance> allReadOnly = Collections.unmodifiableList(allByOrdinal);
     
     private static int nextOrdinal = 0;
+
+    public static final BlockSubstance DEFAULT = create("default", new SubstanceConfig(1, BlockHarvestTool.ANY, 0, 10, 1.0),  Material.GROUND, SoundType.CLOTH, 
+            BlockColorMapProvider.INSTANCE.getColorMap(Hue.AZURE, Chroma.WHITE, Luminance.MEDIUM_LIGHT).ordinal);
     
 	public static BlockSubstance deserializeNBT(NBTTagCompound tag)
     {
@@ -134,10 +135,8 @@ public class BlockSubstance implements ILocalized
         }
 		
 	}
-	
 
     @Override
-    @SuppressWarnings("deprecation")
     public String localizedName()
     {
         return I18n.translateToLocal("material." + this.systemName.toLowerCase());

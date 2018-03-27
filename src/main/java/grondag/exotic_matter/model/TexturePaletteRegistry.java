@@ -17,6 +17,8 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
+import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.init.SubstanceConfig;
 import grondag.exotic_matter.model.TextureRotationType.TextureRotationSetting;
 import grondag.exotic_matter.render.EnhancedSprite;
@@ -25,6 +27,7 @@ import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SuppressWarnings("deprecation")
 public class TexturePaletteRegistry implements Iterable<ITexturePalette>
 {
     /**
@@ -32,20 +35,20 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
      */
     public static final int MAX_PALETTES = 4096;
     
+    private static int nextOrdinal = 0;
+    private static final HashMap<String, ITexturePalette> allByName = new HashMap<>();
+    private static final ArrayList<ITexturePalette> allByOrdinal = new ArrayList<ITexturePalette>();
+    private static final List<ITexturePalette> allReadOnly = Collections.unmodifiableList(allByOrdinal);
+    
     /**
      * Important that we have at least one texture and should have ordinal zero so that it is the default value returned by modelState.
      * Is not meant for user selection. For CUT paint layer means should use same texture as base layer.
      * For DETAIL and OVERLAY layers, indicates those layers are disabled. 
      */
      public static final ITexturePalette NONE = addTexturePallette("none", "noise_moderate", 
-            new TexturePaletteSpec().withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SPLIT_X_8)
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SPLIT_X_8)
             .withRotation(RANDOM.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.ALWAYS_HIDDEN));
     
-     
-    private static int nextOrdinal = 0;
-    private static final HashMap<String, ITexturePalette> allByName = new HashMap<>();
-    private static final ArrayList<ITexturePalette> allByOrdinal = new ArrayList<ITexturePalette>();
-    private static final List<ITexturePalette> allReadOnly = Collections.unmodifiableList(allByOrdinal);
     
     public static List<ITexturePalette> all()
     {
@@ -131,34 +134,27 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         return builder.build();
     }
 
-    public static ITexturePalette addBorderRandom(String textureName, boolean allowTile, boolean renderNoBorderAsTile)
+    public static ITexturePalette addBorderRandom(IGrondagMod mod, String textureName, boolean allowTile, boolean renderNoBorderAsTile)
     {
         return addTexturePallette(textureName, textureName, 
-                new TexturePaletteSpec().withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
+                new TexturePaletteSpec(mod).withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
                 .withRotation(FIXED.with(ROTATE_NONE))
                 .withRenderIntent(allowTile ? TextureRenderIntent.BASE_OR_OVERLAY_NO_CUTOUT : TextureRenderIntent.OVERLAY_ONLY)
                 .withGroups( allowTile ? TextureGroup.STATIC_BORDERS : TextureGroup.STATIC_TILES, TextureGroup.STATIC_BORDERS)
                 .withRenderNoBorderAsTile(renderNoBorderAsTile));
     }
 
-    public static ITexturePalette addBorderSingle(String textureName)
+    public static ITexturePalette addBorderSingle(IGrondagMod mod, String textureName)
     {
         return addTexturePallette(textureName, textureName, 
-                new TexturePaletteSpec().withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
+                new TexturePaletteSpec(mod).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
                 .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.OVERLAY_ONLY).withGroups(TextureGroup.STATIC_BORDERS));
     }
-    
-//  private static ITexturePallette addBorderRandomTile(String textureName, boolean renderNoBorderAsTile)
-//  {
-//      return REGISTRY.addTexturePallette("replaceme", textureName, 
-//              new TexturePalletteInfo().withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
-//              .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_OR_OVERLAY_NO_CUTOUT)
-//              .withGroups(TextureGroup.STATIC_BORDERS, TextureGroup.STATIC_TILES)
-//              .withRenderNoBorderAsTile(true));
-//  }
 
     private static class TexturePallette implements ITexturePalette
     {
+        private final IGrondagMod mod;
+        
         private final String systemName;
         
         private final String textureBaseName;
@@ -214,6 +210,7 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
 
         protected TexturePallette(String systemName, String textureBaseName, TexturePaletteSpec info)
         {
+            this.mod = info.mod;
             this.ordinal = nextOrdinal++;
             this.systemName = systemName;
             this.textureBaseName = textureBaseName;
@@ -245,9 +242,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
                     
         }
         
-        /* (non-Javadoc)
-         * @see grondag.hard_science.superblock.texture.ITexturePallette#getTexturesForPrestich()
-         */
         @Override
         public List<String> getTexturesForPrestich()
         {
@@ -304,17 +298,14 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         
         private String buildTextureName_X_8(int offset)
         {
-            return "hard_science:blocks/" + textureBaseName + "_" + (offset >> 3) + "_" + (offset & 7);
+            return this.mod.modID() + ":blocks/" + textureBaseName + "_" + (offset >> 3) + "_" + (offset & 7);
         }
 
         private String buildTextureNameBigTex()
         {
-            return "hard_science:blocks/" + textureBaseName;
+            return this.mod.modID() + ":blocks/" + textureBaseName;
         }
         
-        /* (non-Javadoc)
-         * @see grondag.hard_science.superblock.texture.ITexturePallette#getSampleTextureName()
-         */
         @Override
         public String getSampleTextureName() 
         { 
@@ -341,9 +332,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         @SideOnly(Side.CLIENT)
         private EnhancedSprite sampleSprite;
         
-        /* (non-Javadoc)
-         * @see grondag.hard_science.superblock.texture.ITexturePallette#getSampleSprite()
-         */
         @Override
         @SideOnly(Side.CLIENT)
         public EnhancedSprite getSampleSprite()
@@ -357,9 +345,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
             return result;
         }
         
-        /* (non-Javadoc)
-         * @see grondag.hard_science.superblock.texture.ITexturePallette#getTextureName(int)
-         */
         @Override
         public String getTextureName(int version)
         {
@@ -401,7 +386,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         }
         
         @Override
-        @SuppressWarnings("deprecation")
         public String displayName()
         {
             return I18n.translateToLocal("texture." + this.systemName.toLowerCase());
@@ -475,6 +459,12 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         public String systemName()
         {
             return this.systemName;
+        }
+
+        @Override
+        public IGrondagMod mod()
+        {
+            return this.mod;
         }
         
         

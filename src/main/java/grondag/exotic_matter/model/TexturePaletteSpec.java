@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model;
 
+import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.model.TextureRotationType.TextureRotationSetting;
 import grondag.exotic_matter.world.Rotation;
 
@@ -10,6 +11,7 @@ import grondag.exotic_matter.world.Rotation;
  */
 public class TexturePaletteSpec
 {
+    public IGrondagMod mod;
     public int textureVersionCount = 1;
     public TextureScale textureScale = TextureScale.SINGLE; 
     public TextureLayout layout = TextureLayout.BIGTEX; 
@@ -22,13 +24,14 @@ public class TexturePaletteSpec
     /** for border-layout textures, controls if "no border" texture is rendered */
     public boolean renderNoBorderAsTile = false;
     
-    public TexturePaletteSpec()
+    public TexturePaletteSpec(IGrondagMod mod)
     {
-        
+        this.mod = mod;
     }
     
     public TexturePaletteSpec(ITexturePalette source)
     {
+        this.mod = source.mod();
         this.textureVersionCount = source.textureVersionCount();
         this.textureScale = source.textureScale();
         this.layout = source.textureLayout();

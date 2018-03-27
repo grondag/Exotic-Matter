@@ -1,6 +1,8 @@
 package grondag.exotic_matter.simulator.domain;
 
+import javax.annotation.Nullable;
+
 public interface IDomainMember
 {
-    public IDomain getDomain();
+    public @Nullable IDomain getDomain();
 }

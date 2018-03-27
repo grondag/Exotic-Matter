@@ -16,6 +16,7 @@ import static grondag.exotic_matter.model.ModelStateData.TEST_GETTER_STATIC;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
@@ -151,7 +152,7 @@ public class ModelState implements ISuperModelState
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(@Nullable Object obj)
     {
         if(this == obj) return true;
 
@@ -428,7 +429,7 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public void setTexture(PaintLayer layer, ITexturePalette tex)
+    public void setTexture(PaintLayer layer, @Nonnull ITexturePalette tex)
     {
         bits1 = ModelStateData.P1_PAINT_TEXTURE[layer.ordinal()].setValue(tex.ordinal(), bits1);
         invalidateHashCode();
@@ -967,7 +968,7 @@ public class ModelState implements ISuperModelState
     
     
     @Override
-    public void deserializeNBT(NBTTagCompound tag)
+    public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
         int[] stateBits = tag.getIntArray(NBT_MODEL_BITS);
         if(stateBits == null || stateBits.length != 8)

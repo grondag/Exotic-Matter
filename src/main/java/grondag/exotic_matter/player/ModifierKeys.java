@@ -39,7 +39,7 @@ public class ModifierKeys implements ICapabilityProvider, IReadWriteNBT
     private int modifierKeyFlags;
 
     @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing)
+    public boolean hasCapability(@Nonnull @Nullable Capability<?> capability, EnumFacing facing)
     {
         return capability == CAP_INSTANCE;
     }
@@ -47,7 +47,7 @@ public class ModifierKeys implements ICapabilityProvider, IReadWriteNBT
     @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
+    public <T> T getCapability(@Nonnull @Nullable Capability<T> capability, EnumFacing facing)
     {
         return capability == CAP_INSTANCE ? (T) this : null;
     }

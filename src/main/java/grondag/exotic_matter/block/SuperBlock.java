@@ -148,7 +148,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     
     @Override
     public void addCollisionBoxToList(@Nonnull IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull AxisAlignedBB entityBox, @Nonnull List<AxisAlignedBB> collidingBoxes,
-            Entity entityIn, boolean p_185477_7_)
+            @Nullable Entity entityIn, boolean p_185477_7_)
     {       
         ISuperModelState modelState = this.getModelState(worldIn, pos, true);
         ICollisionHandler collisionHandler = modelState.getShape().meshFactory().collisionHandler();
@@ -323,7 +323,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 
     @Override
     @Optional.Method(modid = "theoneprobe")
-    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data)
+    public void addProbeInfo(@Nullable ProbeMode mode, @Nullable IProbeInfo probeInfo, @Nullable EntityPlayer player, @Nullable World world, @Nullable IBlockState blockState, @Nullable IProbeHitData data)
     {
         ISuperModelState modelState = this.getModelStateAssumeStateIsStale(blockState, world, data.getPos(), true);
         
@@ -504,7 +504,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     }
 
     @Override
-    public RayTraceResult collisionRayTrace(@Nonnull IBlockState blockState, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Vec3d start, @Nonnull Vec3d end)
+    public @Nullable RayTraceResult collisionRayTrace(@Nonnull IBlockState blockState, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Vec3d start, @Nonnull Vec3d end)
     {
         ArrayList<AxisAlignedBB> bounds = new ArrayList<AxisAlignedBB>();
         

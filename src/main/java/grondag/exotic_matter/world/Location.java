@@ -102,7 +102,7 @@ public class Location extends BlockPos
     }
     
     @Override
-    public boolean equals(Object o)
+    public boolean equals(@Nullable Object o)
     {
         if( o == null || !(o instanceof Location)) return false;
         Location other = (Location)o;

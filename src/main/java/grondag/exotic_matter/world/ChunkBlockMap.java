@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.ImmutableList;
@@ -108,14 +110,14 @@ public class ChunkBlockMap<T>
                         .map(new Function<HashMap.Entry<BlockPos, T>, Pair<BlockPos, T>>(){
 
                             @Override
-                            public Pair<BlockPos, T> apply(Entry<BlockPos, T> t)
+                            public Pair<BlockPos, T> apply(@Nullable Entry<BlockPos, T> t)
                             {
                                 return Pair.of(t.getKey(), t.getValue());
                             }})
                         .sorted(new Comparator<Pair<BlockPos, T>>() {
 
                             @Override
-                            public int compare(Pair<BlockPos, T> o1, Pair<BlockPos, T> o2)
+                            public int compare(@Nullable Pair<BlockPos, T> o1, @Nullable Pair<BlockPos, T> o2)
                             {
                                 return Integer.compare(o1.getLeft().getY(), o2.getLeft().getY());
                             }})

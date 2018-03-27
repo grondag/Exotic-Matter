@@ -11,6 +11,7 @@ import grondag.exotic_matter.block.SuperStateMapper;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.block.SuperTileEntityTESR;
 import grondag.exotic_matter.font.FontHolder;
+import grondag.exotic_matter.init.IItemModelRegistrant;
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.TextureLayout;
@@ -30,6 +31,7 @@ import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
@@ -192,10 +194,21 @@ public class ClientEventHandler
             }
         }
         
+        IForgeRegistry<Item> itemReg = GameRegistry.findRegistry(Item.class);
+        
+        for(Item item: itemReg.getValuesCollection())
+        {
+            if(item instanceof IItemModelRegistrant)
+            {
+                ((IItemModelRegistrant)item).handleRegister(itemReg);
+            }
+        }
+        
         // Bind TESR to tile entity
         ClientRegistry.bindTileEntitySpecialRenderer(SuperTileEntityTESR.class, SuperBlockTESR.INSTANCE);
         ClientRegistry.bindTileEntitySpecialRenderer(SuperModelTileEntityTESR.class, SuperBlockTESR.INSTANCE);
     }
+    
     
     @SubscribeEvent()
     public static void onModelBakeEvent(ModelBakeEvent event) throws IOException
@@ -205,6 +218,16 @@ public class ClientEventHandler
         for(DispatchDelegate delegate : SuperDispatcher.INSTANCE.delegates)
         {
             event.getModelRegistry().putObject(new ModelResourceLocation(delegate.getModelResourceString()), delegate);
+        }
+        
+        IForgeRegistry<Item> itemReg = GameRegistry.findRegistry(Item.class);
+        
+        for(Item item: itemReg.getValuesCollection())
+        {
+            if(item instanceof IItemModelRegistrant)
+            {
+                ((IItemModelRegistrant)item).handleBake(event);
+            }
         }
     }
 }

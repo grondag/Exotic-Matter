@@ -1,5 +1,7 @@
 package grondag.exotic_matter;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.init.ModTileEntities;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
@@ -32,13 +34,13 @@ public class CommonProxy
         {
 
             @Override
-            public NBTBase writeNBT(Capability<ModifierKeys> capability, ModifierKeys instance, EnumFacing side) 
+            public NBTBase writeNBT(@Nullable Capability<ModifierKeys> capability, @Nullable ModifierKeys instance, @Nullable EnumFacing side) 
             {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void readNBT(Capability<ModifierKeys> capability, ModifierKeys instance, EnumFacing side, NBTBase nbt)
+            public void readNBT(@Nullable Capability<ModifierKeys> capability, @Nullable ModifierKeys instance, @Nullable EnumFacing side, @Nullable NBTBase nbt)
             {
                 throw new UnsupportedOperationException();
             }

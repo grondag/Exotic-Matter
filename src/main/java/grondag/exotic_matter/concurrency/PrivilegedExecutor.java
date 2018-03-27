@@ -12,6 +12,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 /**
  * Single-thread executor service with ability to submit privileged tasks
  * that run before non-privileged tasks that have not yet started.
@@ -44,7 +46,7 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
             {
 
                 @Override
-                public int compare(Runnable o1, Runnable o2)
+                public int compare(@Nullable Runnable o1, @Nullable Runnable o2)
                 {
                     // note reverse order because we want true (privileged) start
                     return Boolean.compare(
@@ -55,7 +57,7 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
             new ThreadFactory()
             {
                 @Override
-                public Thread newThread(Runnable r)
+                public Thread newThread(@Nullable Runnable r)
                 {
                     Thread thread = new Thread(r, threadName);
                     thread.setDaemon(true);
@@ -75,13 +77,13 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
     }
     
     @Override
-    protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value)
+    protected <T> RunnableFuture<T> newTaskFor(@Nullable Runnable runnable, @Nullable T value)
     {
         throw new UnsupportedOperationException("ambiguous execution on privileged executor");
     }
     
     @Override
-    protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable)
+    protected <T> RunnableFuture<T> newTaskFor(@Nullable Callable<T> callable)
     {
         throw new UnsupportedOperationException("ambiguous execution on privileged executor");
     }
@@ -168,31 +170,31 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
     }
     
     @Override 
-    public void execute(Runnable command)
+    public void execute(@Nullable Runnable command)
     {
         this.execute(command, false);
     }
     
     @Override
-    public Future<?> submit(Runnable task)
+    public Future<?> submit(@Nullable Runnable task)
     {
         return this.submit(task, false);
     }
 
     @Override
-    public <T> Future<T> submit(Runnable task, T result)
+    public <T> Future<T> submit(@Nullable Runnable task, @Nullable T result)
     {
         return this.submit(task, result, false);
     }
 
     @Override
-    public <T> Future<T> submit(Callable<T> task)
+    public <T> Future<T> submit(@Nullable Callable<T> task)
     {
         return this.submit(task, false);
     }
 
     @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException
+    public <T> T invokeAny(@Nullable Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException
     {
         throw new UnsupportedOperationException("Unsupported operation on privileged executor");
     }

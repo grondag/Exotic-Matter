@@ -1,5 +1,7 @@
 package grondag.exotic_matter.render;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -35,7 +37,7 @@ public class CachedBakedQuad extends BakedQuad
     }
     
     @Override
-    public boolean equals(Object other)
+    public boolean equals(@Nullable Object other)
     {
         if(other instanceof CachedBakedQuad)
         {
