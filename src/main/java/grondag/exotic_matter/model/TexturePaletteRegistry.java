@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
@@ -22,6 +20,7 @@ import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.init.SubstanceConfig;
 import grondag.exotic_matter.model.TextureRotationType.TextureRotationSetting;
 import grondag.exotic_matter.render.EnhancedSprite;
+import grondag.exotic_matter.varia.NullHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.fml.relauncher.Side;
@@ -55,22 +54,20 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         return allReadOnly;
     }
 
-    @Nullable
     public static ITexturePalette get(String systemName)
     {
-        return allByName.get(systemName);
+        return NullHandler.defaultIfNull(allByName.get(systemName), NONE);
     }
     
-    @Nullable
     public static ITexturePalette get(int ordinal)
     {
-        return ordinal < 0 || ordinal >= allByOrdinal.size() ? null : allByOrdinal.get(ordinal);
+        return ordinal < 0 || ordinal >= allByOrdinal.size() ? NONE : NullHandler.defaultIfNull(allByOrdinal.get(ordinal), NONE);
     }
     
     public static ITexturePalette addTexturePallette(String systemName, String textureBaseName, TexturePaletteSpec info)
     {
         ITexturePalette result = new TexturePallette(systemName, textureBaseName, info);
-        allByOrdinal.add(result);
+        addToCollections(result);
         return result;
     }
     
@@ -82,10 +79,15 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
                 new TexturePaletteSpec(source)
                     .withZoomLevel(source.zoomLevel() + 1)
                     .withScale(source.textureScale().zoom()));
-        allByOrdinal.add(result);
+        addToCollections(result);
         return result;
     }
 
+    private static void addToCollections(ITexturePalette palette)
+    {
+        allByOrdinal.add(palette);
+        allByName.put(palette.systemName(), palette);
+    }
     public int size() { return allByOrdinal.size(); }
 
     public boolean isEmpty() { return allByOrdinal.isEmpty(); }
