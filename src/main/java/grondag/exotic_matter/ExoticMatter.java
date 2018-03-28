@@ -63,7 +63,7 @@ public class ExoticMatter implements IGrondagMod
         ExoticMatter.log = lOG;
     }
     
-	public static CreativeTabs tabMod = new CreativeTabs("Hard Science") 
+	public static CreativeTabs tabMod = new CreativeTabs(MODID) 
     {
         @Override
         @SideOnly(Side.CLIENT)
@@ -74,7 +74,6 @@ public class ExoticMatter implements IGrondagMod
     };
 	    
 	@SidedProxy(clientSide = "grondag.exotic_matter.ClientProxy", serverSide = "grondag.exotic_matter.ServerProxy")
-	@SuppressWarnings("null")
 	public static CommonProxy proxy;
 
     static

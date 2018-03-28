@@ -930,6 +930,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
                 modelState.setMetaData(i);
             }
             SuperBlockStackHelper.setStackModelState(stack, modelState);
+            SuperBlockStackHelper.setStackSubstance(stack, this.defaultSubstance());
             itemBuilder.add(stack);
         }
         return itemBuilder.build();

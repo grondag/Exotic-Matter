@@ -285,6 +285,11 @@ public interface ISuperBlock extends IBlockItemRegistrator
     BlockSubstance getSubstance(IBlockState state, IBlockAccess world, BlockPos pos);
 
     BlockSubstance getSubstance(IBlockAccess world, BlockPos pos);
+    
+    /**
+     * Used to assigned substance to item stacks
+     */
+    default BlockSubstance defaultSubstance() { return BlockSubstance.DEFAULT; }
 
     /**
      * {@inheritDoc} <br><br>

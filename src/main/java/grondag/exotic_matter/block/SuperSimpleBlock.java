@@ -38,6 +38,12 @@ public class SuperSimpleBlock extends SuperBlock
     }
 
     @Override
+    public BlockSubstance defaultSubstance()
+    {
+        return this.substance;
+    }
+
+    @Override
     public boolean isGeometryFullCube(IBlockState state)
     {
         return this.isGeometryFullCube;

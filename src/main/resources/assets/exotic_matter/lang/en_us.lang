@@ -1,4 +1,5 @@
 #MISC
+itemGroup.exotic_matter=Exotic Matter
 misc.mode_set=Mode set to %s
 misc.rotate="Rotate"
 misc.connection="Connect"
@@ -158,6 +159,24 @@ placement.filter_mode.replace_all=Replace all solid blocks and fill empty spaces
 placement.filter_mode.replace_only=Replace specific block...  (Ctrl-left click to choose)
 placement.filter_mode.replace_all_except=Replace all blocks except... (Ctrl-left clock to choose)
 
+#SHAPES
+shape.box=Box
+shape.column_square=Square Column
+shape.cone=Cone
+shape.cube=Cube
+shape.cylinder=Cylinder
+shape.dodecahedron=Dodecahedron
+shape.dome=Dome
+shape.icosahedron=Icosahedron
+shape.pyramid=Pyramid
+shape.sphere=Sphere
+shape.staked_plates=Stacked Plates
+shape.terrain_filler=Flowing Terrain Filler
+shape.terrain_height=Flowing Terrain
+shape.tetrahedron=Tetrahedron
+shape.torus=Torus
+shape.tube=Tube
+
 
 #ITEMS
 
@@ -262,6 +281,7 @@ paintlayer.cut=Cut Surface
 
 #TEXTURES
 texture.cobble=Cobblestone
+texture.none=Default Noise
 texture.zoom2x_format=%s Zoom X2
 texture.zoom4x_format=%s Zoom X4
 texture.bigtex_single=Single BigTex Test Texture
@@ -270,3 +290,5 @@ texture.noise_strong=Strong Noise
 texture.noise_moderate=Moderate Noise
 texture.noise_subtle=Subtle Noise
 
+#SUBSTANCES
+material.default=Shaped Stone

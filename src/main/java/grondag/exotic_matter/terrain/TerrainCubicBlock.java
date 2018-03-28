@@ -4,24 +4,38 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.model.BlockSubstance;
 import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.TerrainBlockHelper;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
-public class TerrainCubicBlock extends TerrainDynamicBlock
+public class TerrainCubicBlock extends SuperSimpleBlock
 {
 
     public TerrainCubicBlock(String blockName, BlockSubstance substance, ISuperModelState defaultModelState)
     {
-        super(blockName, substance, defaultModelState, false);
-     }
+        super(blockName, substance, defaultModelState);
+        this.metaCount = 1;
+    }
    
+    /** 
+     * This is an egregious hack to avoid performance hit of instanceof.
+     * (Based on performance profile results.)
+     * Returns true if this is a type of IFlowBlock
+     */
+    @Override
+    public boolean isAssociatedBlock(Block other)
+    {
+        return other == TerrainBlockHelper.FLOW_BLOCK_INDICATOR || super.isAssociatedBlock(other);
+    }
+    
     //allow mined blocks to stack - consistent with appearance of a full-height block
     @Override
     public int damageDropped(@Nonnull IBlockState state)
@@ -59,12 +73,6 @@ public class TerrainCubicBlock extends TerrainDynamicBlock
     {
         IBlockState neighborState = blockAccess.getBlockState(pos.offset(side));
         return !neighborState.doesSideBlockRendering(blockAccess, pos.offset(side), side.getOpposite());
-    }
-
-    @Override
-    public void makeStatic(IBlockState state, World world, BlockPos pos)
-    {
-        // already effectively static
     }
     
     @Override

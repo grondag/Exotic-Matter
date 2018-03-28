@@ -390,7 +390,19 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         @Override
         public String displayName()
         {
-            return I18n.translateToLocal("texture." + this.systemName.toLowerCase());
+            // trim off the .zoom suffixes to get the localization string
+            final String token = "texture." + this.systemName.replaceAll(".zoom", "");
+            final String texName = I18n.translateToLocal(token.toLowerCase());
+                    
+            switch(this.zoomLevel)
+            {
+                case 1:
+                    return I18n.translateToLocalFormatted("texture.zoom2x_format", texName);
+                case 2:
+                    return I18n.translateToLocalFormatted("texture.zoom4x_format", texName);
+                default:
+                    return texName;
+            }
         }
         
         @Override
