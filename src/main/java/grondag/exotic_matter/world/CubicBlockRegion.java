@@ -19,7 +19,9 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
 {
     private final boolean isHollow;
     
-    private HashSet<BlockPos> exclusions;
+    private static final Set<BlockPos> EMPTY = ImmutableSet.of();
+    
+    private Set<BlockPos> exclusions = EMPTY;
     
     /**
      * Created region includes from from and to positions.
@@ -35,14 +37,15 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
         return this.isHollow;
     }
     
+    @SuppressWarnings("null")
     public final Set<BlockPos> exclusions()
     {
-        return this.exclusions == null ? Collections.emptySet() : Collections.unmodifiableSet(exclusions);
+        return Collections.unmodifiableSet(exclusions);
     }
     
     public void exclude(BlockPos pos)
     {
-        if(this.exclusions == null)
+        if(this.exclusions == EMPTY)
         {
             this.exclusions = new HashSet<BlockPos>();
         }
@@ -51,7 +54,7 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
     
     public void exclude(Collection<BlockPos> positions)
     {
-        if(this.exclusions == null)
+        if(this.exclusions == EMPTY)
         {
             this.exclusions = new HashSet<BlockPos>();
         }
@@ -60,13 +63,12 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
     
     public boolean isExcluded(BlockPos pos)
     {
-        if(this.exclusions == null) return false;
         return !this.exclusions.contains(pos);
     }
     
     public void clearExclusions()
     {
-        if(this.exclusions != null) this.exclusions.clear();
+        this.exclusions = EMPTY;
     }
     
     /** All positions contained in the region, including interior positions if it is hollow */
@@ -107,6 +109,7 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
             {
                 return new AbstractIterator<BlockPos.MutableBlockPos>()
                 {
+                    @SuppressWarnings("null")
                     Iterator<BlockPos.MutableBlockPos> wrapped = positions().iterator();
                     
                     @Override
@@ -115,7 +118,7 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
                         while(wrapped.hasNext())
                         {
                             BlockPos.MutableBlockPos result = wrapped.next();
-                            if(exclusions == null || !exclusions.contains(result)) return result;
+                            if(result != null && !exclusions.contains(result)) return result;
                         }
                         return (BlockPos.MutableBlockPos)this.endOfData();
                     }
@@ -153,15 +156,17 @@ public class CubicBlockRegion extends IntegerAABB implements IBlockRegion
             {
                 return new AbstractIterator<BlockPos.MutableBlockPos>()
                 {
-                    private BlockPos.MutableBlockPos pos;
+                    private boolean atStart = true;
                     private int x = x1, y = y1, z = z1;
+                    private BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x1, y1, z1);
+                    
                     @Override
                     protected @Nonnull BlockPos.MutableBlockPos computeNext()
                     {
-                        if (this.pos == null)
+                        if (this.atStart)
                         {
                             // at beginning
-                            this.pos = new BlockPos.MutableBlockPos(x1, y1, z1);
+                            this.atStart = false;
                             return this.pos;
                         }
                         else if (this.x == x2 && this.y == y2 && this.z == z2)
