@@ -5,6 +5,8 @@ import java.util.Map;
 import grondag.exotic_matter.block.SuperModelBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
 import grondag.exotic_matter.player.ModifierKeys;
+import grondag.exotic_matter.simulator.Simulator;
+import grondag.exotic_matter.simulator.WorldTaskManager;
 import mcjty.theoneprobe.TheOneProbe;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -18,12 +20,30 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @Mod.EventBusSubscriber
 public class CommonEventHandler 
 {
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent event) 
+    {
+        if(event.phase == Phase.START) 
+        {
+            // noop
+        }
+        else
+        {
+            WorldTaskManager.doServerTick();
+            
+            // thought it might be more determinism if simulator runs after block/entity ticks
+            Simulator.instance().onServerTick(event);
+        }
+    }
+    
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) 
     {
