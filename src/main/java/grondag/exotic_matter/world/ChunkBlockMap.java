@@ -1,6 +1,5 @@
 package grondag.exotic_matter.world;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +19,7 @@ public class ChunkBlockMap<T>
 {
     protected final HashMap<BlockPos, T> blocks = new HashMap<BlockPos, T>();
     
+    @Nullable
     protected List<Pair<BlockPos, T>> sortedList;
     
     public final AxisAlignedBB chunkAABB;
@@ -61,6 +61,7 @@ public class ChunkBlockMap<T>
      * ASSUMES POSITION IS IN THIS CHUNK!
      * Returns previous value.
      */
+    @Nullable
     public T put(BlockPos pos, T value)
     {
         this.sortedList = null;
@@ -72,6 +73,7 @@ public class ChunkBlockMap<T>
      * ASSUMES POSITION IS IN THIS CHUNK!
      * Returns previous value.
      */
+    @Nullable
     public T remove(BlockPos pos)
     {
         this.sortedList = null;
@@ -96,13 +98,14 @@ public class ChunkBlockMap<T>
     /**
      * Sorted from bottom to top.
      */
+    @SuppressWarnings("null")
     public List<Pair<BlockPos, T>> asSortedList()
     {
         if(this.sortedList == null)
         {
             if(this.blocks.isEmpty())
             {
-                this.sortedList = Collections.emptyList();
+                this.sortedList = ImmutableList.of();
             }
             else
             {

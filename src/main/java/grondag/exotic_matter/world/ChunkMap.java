@@ -3,6 +3,7 @@ package grondag.exotic_matter.world;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -44,6 +45,7 @@ public abstract class ChunkMap<T> implements Iterable<T>
         return result;
     }
     
+    @Nullable
     public T getIfExists(BlockPos pos)
     {
         long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
@@ -83,7 +85,6 @@ public abstract class ChunkMap<T> implements Iterable<T>
 
                 return (T)this.endOfData();
             }
-    
         };
     
     }

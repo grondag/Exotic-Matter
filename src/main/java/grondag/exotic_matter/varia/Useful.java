@@ -63,6 +63,7 @@ public class Useful
      * Values are sorted by distance from 0,0,0. Value at index 0 is the origin.<br>
      * Distance is up to 64 blocks from origin. Values outside that range return null.<br>
      */
+    @Nullable
     public static Vec3i getDistanceSortedCircularOffset(int index)
     {
         if(index < 0 || index >= DISTANCE_SORTED_CIRCULAR_OFFSETS.length) return null;
