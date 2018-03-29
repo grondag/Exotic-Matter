@@ -10,9 +10,9 @@ public class CountedJob<V> extends Job
 {
     private final ICountedJobBacker backer;
     private final int batchSize;
-    private final CountedJobTask<V> task;
+    private final JobTask<V> task;
 
-    public CountedJob(ICountedJobBacker backer, CountedJobTask<V> task, int batchSize, boolean enablePerfCounting, String jobTitle, PerformanceCollector perfCollector)
+    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int batchSize, boolean enablePerfCounting, String jobTitle, PerformanceCollector perfCollector)
     {
         super(enablePerfCounting, jobTitle, perfCollector);
         this.backer = backer;
@@ -20,7 +20,7 @@ public class CountedJob<V> extends Job
         this.batchSize = batchSize;
     }
     
-    public CountedJob(ICountedJobBacker backer, CountedJobTask<V> task, int batchSize, PerformanceCounter perfCounter)
+    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int batchSize, PerformanceCounter perfCounter)
     {
         super(perfCounter);
         this.backer = backer;
