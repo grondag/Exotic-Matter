@@ -152,6 +152,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     private volatile long worldTickOffset = 0; 
     
     @SuppressWarnings("unchecked")
+    @Nullable
     public <V extends ISimulationTopNode> V getNode(Class<V> nodeType)
     {
         return (V) this.nodes.get(nodeType);
