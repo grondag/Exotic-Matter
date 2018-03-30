@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 
 
@@ -25,9 +26,9 @@ public abstract class Job
      * Submits all batches to the given SIMULATION_POOL and adds futures to the given list.
      * Return value is the approximate number of things that ran - for performance counting.
      */
-    public abstract int executeOn(Executor executor, List<RunnableFuture<Void>> futures);
+    public abstract int executeOn(Executor executor, List<Future<Void>> futures);
     
-    private final ArrayList<RunnableFuture<Void>> futures = new ArrayList<RunnableFuture<Void>>();
+    private final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
     
     // not final so that we can share counters among same job
     public final PerformanceCounter perfCounter;
@@ -57,7 +58,7 @@ public abstract class Job
 
                     this.perfCounter.addCount(this.executeOn(executor, futures));
                     
-                    for (RunnableFuture<Void> f : futures)
+                    for (Future<Void> f : futures)
                     {
                         if (!f.isDone()) {
                             try 
@@ -76,7 +77,7 @@ public abstract class Job
                 {
                     if (!isDone)
                     {
-                        for (RunnableFuture<Void> f : futures)
+                        for (Future<Void> f : futures)
                         {
                             f.cancel(true);
                         }

@@ -6,6 +6,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -79,24 +82,28 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
      * General-purpose thread pool. Use for any simulation-related activity
      * so long as it doesn't have specific timing or sequencing requirements.
      */
-    public static final ExecutorService SIMULATION_POOL 
-        = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-            new ThreadFactory()
-    {
-        private AtomicInteger count = new AtomicInteger(1);
-        @Override
-        public Thread newThread(@Nullable Runnable r)
-        {
-            Thread thread = new Thread(r, "Hard Science Simulation Thread -" + count.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
-        }
-    });
+    @SuppressWarnings("null")
+    public static final ForkJoinPool SIMULATION_POOL = new ForkJoinPool(
+            Runtime.getRuntime().availableProcessors(),
+            new ForkJoinWorkerThreadFactory()
+            {
+                private AtomicInteger count = new AtomicInteger(1);
+
+                @Override
+                public ForkJoinWorkerThread newThread(ForkJoinPool pool)
+                {
+                    ForkJoinWorkerThread result = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                    result.setName("Exotic Matter Simulation Thread -" + count.getAndIncrement());
+                    return result;
+                }
+            },
+            null, true);
 
 
     /**
      * For simulation step control - do not use for actual work.
      */
+    @SuppressWarnings("null")
     private static final ExecutorService CONTROL_THREAD = Executors.newSingleThreadExecutor(
             new ThreadFactory()
             {

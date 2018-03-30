@@ -2,6 +2,7 @@ package grondag.exotic_matter.concurrency;
 
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 
@@ -58,7 +59,7 @@ public class CountedJob<V> extends Job
     }
 
     @Override
-    public int executeOn(Executor executor, List<RunnableFuture<Void>> futures)
+    public int executeOn(Executor executor, List<Future<Void>> futures)
     {
         Object[] operands = backer.getOperands();
         int size = Math.min(backer.size(), operands.length);
