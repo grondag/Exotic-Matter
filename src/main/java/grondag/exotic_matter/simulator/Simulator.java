@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.annotation.Nullable;
 
@@ -97,8 +98,14 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                     return result;
                 }
             },
-            null, true);
-
+            new UncaughtExceptionHandler()
+            {
+                @Override
+                public void uncaughtException(Thread t, Throwable e)
+                {
+                    ExoticMatter.INSTANCE.getLog().error("Simulator thread terminated due to uncaught exception.  Badness may ensue.", e);
+                }}, 
+            true);
 
     /**
      * For simulation step control - do not use for actual work.
