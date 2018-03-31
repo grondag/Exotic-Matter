@@ -13,8 +13,7 @@ import java.util.stream.StreamSupport;
  * for a specific set of use cases. 
  * Intended for use where insertion and indexing are parallel but other housekeeping tasks will 
  * only occur on a single thread, while nothing else is being done.
- * Iteration is as for an array (access to the array is provided) but not intended to happen concurrently with adds
- * because memory consistency is not guaranteed while adds are ongoing.<br><br>
+ * Iteration is not guaranteed to provide consistent results while addition or removal operations are ongoing. <p>
  *  
  * It has *significant* limitations:
  *  1) Items can be added only at the end of the list, and only individually. Adding items is non-blocking. 
@@ -237,11 +236,12 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
     @SuppressWarnings("unchecked")
     public Stream<T> stream(boolean isParallel)
     {
-        assert !this.isMaintaining : "Unsupported stream operation on simple concurrent list while maintenance operation ongoing";
-        
         return (Stream<T>) StreamSupport.stream(Arrays.spliterator(items, 0, this.size.get()), isParallel);
     }
 
+    /**
+     * May return null elements or be inconsistent if called during maintenance operations.
+     */
     @Override
     public Iterator<T> iterator()
     {
