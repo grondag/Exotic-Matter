@@ -106,14 +106,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     /** see {@link #isAssociatedBlock(Block)} */
     protected Block associatedBlock;
     
-    public final BlockRenderMode blockRenderMode;
+    private final BlockRenderMode blockRenderMode;
     
     /**
      * Sub-items for the block. Initialized in {@link #createSubItems()}
      */
     private List<ItemStack> subItems;
     
-    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, BlockRenderMode blockRenderMode)
+    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable BlockRenderMode blockRenderMode)
     {
         super(defaultMaterial);
         
@@ -488,7 +488,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean canRenderInLayer(@Nonnull IBlockState state, @Nonnull BlockRenderLayer layer)
     {
-        return this.blockRenderMode != BlockRenderMode.TESR && this.blockRenderMode.renderLayout.containsBlockRenderLayer(layer);
+        return this.blockRenderMode() != BlockRenderMode.TESR && this.blockRenderMode().renderLayout.containsBlockRenderLayer(layer);
     }
    
     @Override
@@ -827,6 +827,13 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
+        if(state instanceof IExtendedBlockState)
+        {
+            ISuperModelState result = ((IExtendedBlockState)state).getValue(ISuperBlock.MODEL_STATE);
+            if(result != null) 
+                return result;
+        }
+        
         // for mundane (non-TE) blocks don't need to worry about state being persisted, logic is same for old and current states
         return getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
     }
@@ -1291,4 +1298,10 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      * Has nothing to do with block geometry.
      */
     protected abstract WorldLightOpacity worldLightOpacity(IBlockState state);
+
+    @Override
+    public BlockRenderMode blockRenderMode()
+    {
+        return blockRenderMode;
+    }
 }

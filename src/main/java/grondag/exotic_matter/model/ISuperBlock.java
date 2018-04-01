@@ -66,6 +66,8 @@ public interface ISuperBlock extends IBlockItemRegistrator
     boolean addLandingEffects(IBlockState state, WorldServer worldObj, BlockPos blockPosition, IBlockState iblockstate, EntityLivingBase entity,
             int numberOfParticles);
 
+    BlockRenderMode blockRenderMode();
+
     /**
      * {@inheritDoc} <br><br>
      * 

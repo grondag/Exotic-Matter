@@ -14,6 +14,7 @@ import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.TerrainBlockHelper;
 import grondag.exotic_matter.model.TerrainBlockRegistry;
 import grondag.exotic_matter.model.TerrainState;
+import grondag.exotic_matter.model.WorldLightOpacity;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -156,7 +157,15 @@ public class TerrainDynamicBlock extends SuperSimpleBlock
     {
         // don't have enough information without world access or extended state
         // to determine if is full cube.
-        return false;    }
+        return false;    
+    }
+    
+
+    @Override
+    protected WorldLightOpacity worldLightOpacity(IBlockState state)
+    {
+        return super.worldLightOpacity(state);
+    }
 
     @Override
     public boolean isOpaqueCube(IBlockState state)
@@ -178,36 +187,46 @@ public class TerrainDynamicBlock extends SuperSimpleBlock
         return true;
     }
 
+    @Override
+    public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+        
+        /// FIXME: is this right?  Retest after vertex normals are fixed
+        return 0;
+        // prevent filler blocks from blocking light to height block below
+//        return this.isFiller ? 0 : super.getLightOpacity(state, world, pos);
+    }
+    
     /** 
-         * Looks for nearby dynamic blocks that might depend on this block for height state
-         * and converts them to static blocks if possible. 
-         */
-        public static void freezeNeighbors(World worldIn, BlockPos pos, IBlockState state)
+     * Looks for nearby dynamic blocks that might depend on this block for height state
+     * and converts them to static blocks if possible. 
+     */
+    public static void freezeNeighbors(World worldIn, BlockPos pos, IBlockState state)
+    {
+        //only height blocks affect neighbors
+        if(!TerrainBlockHelper.isFlowHeight(state.getBlock())) return;
+                
+        IBlockState targetState;
+        Block targetBlock;
+        
+        for(int x = -2; x <= 2; x++)
         {
-            //only height blocks affect neighbors
-            if(!TerrainBlockHelper.isFlowHeight(state.getBlock())) return;
-                    
-            IBlockState targetState;
-            Block targetBlock;
-            
-            for(int x = -2; x <= 2; x++)
+            for(int z = -2; z <= 2; z++)
             {
-                for(int z = -2; z <= 2; z++)
+                for(int y = -4; y <= 4; y++)
                 {
-                    for(int y = -4; y <= 4; y++)
+//                    if(!(x == 0 && y == 0 && z == 0))
                     {
-    //                    if(!(x == 0 && y == 0 && z == 0))
+                        BlockPos targetPos = pos.add(x, y, z);
+                        targetState = worldIn.getBlockState(targetPos);
+                        targetBlock = targetState.getBlock();
+                        if(targetBlock instanceof TerrainDynamicBlock)
                         {
-                            BlockPos targetPos = pos.add(x, y, z);
-                            targetState = worldIn.getBlockState(targetPos);
-                            targetBlock = targetState.getBlock();
-                            if(targetBlock instanceof TerrainDynamicBlock)
-                            {
-                                ((TerrainDynamicBlock)targetBlock).makeStatic(targetState, worldIn, targetPos);
-                            }
+                            ((TerrainDynamicBlock)targetBlock).makeStatic(targetState, worldIn, targetPos);
                         }
                     }
                 }
             }
         }
+    }
 }

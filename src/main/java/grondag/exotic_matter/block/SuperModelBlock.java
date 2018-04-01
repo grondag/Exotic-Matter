@@ -139,7 +139,7 @@ public class SuperModelBlock extends SuperBlockPlus
     @Override
     public TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
-        return this.blockRenderMode == BlockRenderMode.TESR 
+        return this.blockRenderMode() == BlockRenderMode.TESR 
                 ? new SuperModelTileEntityTESR()
                 : new SuperModelTileEntity();
     }
@@ -247,7 +247,7 @@ public class SuperModelBlock extends SuperBlockPlus
         if(this.worldLightOpacity == WorldLightOpacity.SOLID 
                 && this.fullBlock 
                 && !this.isHyperMatter
-                && this.blockRenderMode == BlockRenderMode.SOLID_SHADED)
+                && this.blockRenderMode() == BlockRenderMode.SOLID_SHADED)
         {
             list.add(this.getSubItems().get(0));
         }

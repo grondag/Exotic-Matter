@@ -64,6 +64,18 @@ public class ConfigXM
         " for large multi-block placements."})
         @RangeInt(min = 16, max = 4096)
         public int maxPlacementCheckCount = 512;
+        
+        
+        @Comment({"If true, terrain block quads will be randomly recolored to show tesselation.",
+            " Will only be apparent if block model hasn't already been constructed/cached.",
+            " May also require a chunk rebuild. Only use is for debug and testing."})
+        public boolean enableTerrainQuadDebugRender = false;
+        
+        
+        @Comment({"If true, terrain block models will be generated with fewer quads for relatively flat regions.",
+            " Reduces memory consumption and may improve render performance but may also result in minor visual defects."})
+        public boolean simplifyTerrainBlockGeometry = true;
+
     }
     
     ////////////////////////////////////////////////////        
@@ -137,6 +149,9 @@ public class ConfigXM
     
         @Comment("Debug Feature: output generated color atlas in config folder to show possible hues.")
         public boolean debugOutputColorAtlas = false;
+
+        @Comment("Debug feature: draw quad outlines and vertex normals for the block currently being looked at.")
+        public boolean debugDrawQuadsOutlinesAndNormals = true;
     
         public static float normalLightFactor;
     

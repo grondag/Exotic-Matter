@@ -187,4 +187,12 @@ public class TerrainStaticBlock extends SuperStaticBlock
     {
         return true;
     }
+    
+    @Override
+    public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+        // FIXME: is this right?  Retest after vertex normals are fixed
+        // prevent filler blocks from blocking light to height block below
+        return this.isFiller ? 0 : super.getLightOpacity(state, world, pos);
+    }
 }

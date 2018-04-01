@@ -17,6 +17,7 @@ import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.TextureLayout;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.BlockHighlighter;
+import grondag.exotic_matter.model.varia.BlockModelDebugHighlighter;
 import grondag.exotic_matter.network.PacketHandler;
 import grondag.exotic_matter.network.PacketUpdateModifierKeys;
 import grondag.exotic_matter.player.ModifierKeys;
@@ -161,13 +162,10 @@ public class ClientEventHandler
         CompressedAnimatedSprite.tearDown();
     }
     
-    /**
-     * Check for blocks that need a custom block highlight and draw if checked.
-     * Adapted from the vanilla highlight code.
-     */
     @SubscribeEvent
     public static void onDrawBlockHighlightEvent(DrawBlockHighlightEvent event) 
     {
+        if(ConfigXM.RENDER.debugDrawQuadsOutlinesAndNormals) BlockModelDebugHighlighter.handleDrawBlockHighlightEvent(event);
         BlockHighlighter.handleDrawBlockHighlightEvent(event);
     }
     

@@ -58,7 +58,7 @@ public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
     protected void renderBlock(SuperTileEntity te, BufferBuilder buffer)
     {
         SuperBlock block = (SuperBlock) te.getBlockType();
-        if(block.blockRenderMode != BlockRenderMode.TESR) return;
+        if(block.blockRenderMode() != BlockRenderMode.TESR) return;
         
         if(MinecraftForgeClient.getRenderPass() == 0)
         {

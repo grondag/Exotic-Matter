@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.BlockRenderMode;
+import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.MetaUsage;
 import net.minecraft.block.ITileEntityProvider;
@@ -16,6 +17,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.IExtendedBlockState;
 
 /** base class for tile entity blocks */
 public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityProvider
@@ -33,7 +35,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
     @Override
     public TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
-        return this.blockRenderMode == BlockRenderMode.TESR 
+        return this.blockRenderMode() == BlockRenderMode.TESR 
                 ? new SuperTileEntityTESR()
                 : new SuperTileEntity();
     }
@@ -85,6 +87,13 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
     @Override
     public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
+        if(state instanceof IExtendedBlockState)
+        {
+            ISuperModelState result = ((IExtendedBlockState)state).getValue(ISuperBlock.MODEL_STATE);
+            if(result != null) 
+                return result;
+        }
+        
         TileEntity myTE = world.getTileEntity(pos);
         if(myTE != null && myTE instanceof SuperTileEntity) 
         {
@@ -93,9 +102,8 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         }
         else
         {
-            return super.getModelStateAssumeStateIsCurrent(state, world, pos, refreshFromWorldIfNeeded);
+            return getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
         }
-
     }
     
     @Override

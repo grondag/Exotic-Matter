@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.CSGShape;
 import grondag.exotic_matter.render.FaceVertex;
@@ -268,8 +269,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             normCorner[corner.ordinal()] = shadowEnhance(normTemp).normalize();
         }
 
+        final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple();
+        
         //single top face if it is relatively flat and all sides can be drawn without a mid vertex
-        if(flowState.isTopSimple())
+        if(isTopSimple)
         {
             RawQuad qi = new RawQuad(template, 4);
             qi.setupFaceQuad(
@@ -289,10 +292,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         for(HorizontalFace side: HorizontalFace.values())
         {
             // don't use middle vertex if it is close to being in line with corners
-            if(flowState.isSideSimple(side))
+            if(ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isSideSimple(side))
             {
                 // top
-                if(!flowState.isTopSimple())
+                if(!isTopSimple)
                 {
                     RawQuad qi = new RawQuad(template, 3);
                     qi.setupFaceQuad(
@@ -469,6 +472,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 }
             }
         }
+        
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) rawQuads.recolor();
+        
         return rawQuads;
     }
 

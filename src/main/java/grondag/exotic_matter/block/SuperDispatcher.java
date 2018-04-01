@@ -261,9 +261,9 @@ public class SuperDispatcher
         return itemCache.get(key);
     }
   
-    public DispatchDelegate getDelegate(SuperBlock block)
+    public DispatchDelegate getDelegate(ISuperBlock block)
     {
-        return this.delegates[block.blockRenderMode.ordinal()];
+        return this.delegates[block.blockRenderMode().ordinal()];
     }
     
     /**
