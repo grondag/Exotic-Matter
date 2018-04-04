@@ -77,13 +77,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     /**
      * Flowing terrain tends to appear washed out due to simplistic lighting model.
-     * Not hacking the lighter, but can scale horizontal component of vertex normals
+     * Not hacking the lighter, but can scale down the vertical component of vertex normals
      * to make the shadows a little deeper.
      */
     private Vec3d shadowEnhance(Vec3d vec)
     {
-        //FIXME: put back or remove
-        return vec; //new Vec3d(vec.x * 4, vec.y, vec.z * 2);
+      Vec3d temp = vec.normalize();
+      return new Vec3d(temp.x, temp.y * temp.y, temp.z);
     }
 
     @Override
