@@ -1,5 +1,7 @@
 package grondag.exotic_matter.block;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.model.BlockSubstance;
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
@@ -62,6 +64,7 @@ public class SuperBlockStackHelper
         tag.setTag(SuperBlockStackHelper.NBT_MODEL_STATE, modelState.serializeNBT());
     }
 
+    @Nullable
     public static ISuperModelState getStackModelState(ItemStack stack)
     {
         ISuperModelState stackState = stack.hasTagCompound()
