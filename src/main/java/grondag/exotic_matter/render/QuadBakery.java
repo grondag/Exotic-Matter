@@ -1,11 +1,9 @@
 package grondag.exotic_matter.render;
 
-import grondag.exotic_matter.ConfigXM;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -81,21 +79,10 @@ public class QuadBakery
                     break;
 
                 case COLOR:
-                    float shade;
-                    if(!raw.isFullBrightness && ConfigXM.RENDER.enableCustomShading && !raw.surfaceInstance.isLampGradient())
-                    {
-                        Vec3d surfaceNormal = raw.getVertex(v).hasNormal() ? raw.getVertex(v).getNormal() : raw.getFaceNormal();
-                        shade = ConfigXM.RENDER.minAmbientLight + 
-                                (float) ((surfaceNormal.dotProduct(ConfigXM.Render.lightingNormal) + 1) * ConfigXM.Render.normalLightFactor);
-                    }
-                    else
-                    {
-                        shade = 1.0F;
-                    }
                     float[] colorRGBA = new float[4];
-                    colorRGBA[0] = ((float) (raw.getVertex(v).color >> 16 & 0xFF)) * shade / 255f;
-                    colorRGBA[1] = ((float) (raw.getVertex(v).color >> 8 & 0xFF)) * shade / 255f;
-                    colorRGBA[2] = ((float) (raw.getVertex(v).color  & 0xFF)) * shade / 255f;
+                    colorRGBA[0] = ((float) (raw.getVertex(v).color >> 16 & 0xFF)) / 255f;
+                    colorRGBA[1] = ((float) (raw.getVertex(v).color >> 8 & 0xFF)) / 255f;
+                    colorRGBA[2] = ((float) (raw.getVertex(v).color  & 0xFF)) / 255f;
                     colorRGBA[3] = ((float) (raw.getVertex(v).color >> 24 & 0xFF)) / 255f;
                     LightUtil.pack(colorRGBA, vertexData, format, v, e);
                     break;
@@ -132,8 +119,7 @@ public class QuadBakery
         }
 
         boolean applyDiffuseLighting = !raw.isFullBrightness
-                && !raw.surfaceInstance.isLampGradient()  
-                && !ConfigXM.RENDER.enableCustomShading;
+                && !raw.surfaceInstance.isLampGradient();
         
         return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.face, textureSprite, applyDiffuseLighting, 
                 format));

@@ -1,10 +1,8 @@
 package grondag.exotic_matter;
 
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.LangKey;
-import net.minecraftforge.common.config.Config.RangeDouble;
 import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
 import net.minecraftforge.common.config.Config.Type;
@@ -113,30 +111,10 @@ public class ConfigXM
         @RangeInt(min = 10, max = 600)
         public int clientStatReportingInterval = 10;
     
-        @Comment({"Shade blocks from this mod with a uniform light vector. Provides a somewhat better appearance for flowing ",
-        "lava blocks (for example) but may appear odd when next to blocks from Vanilla or other mods."})
-        public boolean enableCustomShading = true;
-    
         @Comment({"If true, Dynamic flow block (volcanic lava and basalt) will not render faces occulded by adjacent flow blocks.",
             " True is harder on CPU and easier on your graphics card/chip.  Experiment if you have FPS problems.",
         " Probably won't matter on systems with both a fast CPU and fast graphics."})
         public boolean enableFaceCullingOnFlowBlocks = false;
-    
-        @Comment("Minimum lighting on any block face with custom shading. Smaller values give deeper shadows.")
-        @RangeDouble(min = 0, max = 0.9)
-        public float minAmbientLight =0.3F;
-    
-        @Comment("X component of ambient light source.")
-        @RangeDouble(min = -1, max = 1)
-        public float normalX = 0.0F;
-    
-        @Comment("Y component of ambient light source.")
-        @RangeDouble(min = -1, max = 1)
-        public float normalY = 1.0F;
-    
-        @Comment("Z component of ambient light source.")
-        @RangeDouble(min = -1, max = 1)
-        public float normalZ = 0.25F;
     
         @Comment("Debug Feature: draw block boundaries for non-cubic blocks.")
         public boolean debugDrawBlockBoundariesForNonCubicBlocks = false;
@@ -153,14 +131,8 @@ public class ConfigXM
         @Comment("Debug feature: draw quad outlines and vertex normals for the block currently being looked at.")
         public boolean debugDrawQuadsOutlinesAndNormals = true;
     
-        public static float normalLightFactor;
-    
-        public static Vec3d lightingNormal = new Vec3d(1.0, 1.0, 1.0);
-    
         public static void recalcDerived()
         {
-            normalLightFactor = 0.5F * (1F - RENDER.minAmbientLight);
-            lightingNormal = new Vec3d(RENDER.normalX, RENDER.normalY, RENDER.normalZ).normalize();
         }
     
         public static enum PreviewMode
