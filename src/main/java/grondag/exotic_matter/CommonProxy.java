@@ -34,7 +34,7 @@ public class CommonProxy
         {
 
             @Override
-            public NBTBase writeNBT(@Nullable Capability<ModifierKeys> capability, @Nullable ModifierKeys instance, @Nullable EnumFacing side) 
+            public @Nullable NBTBase writeNBT(@Nullable Capability<ModifierKeys> capability, @Nullable ModifierKeys instance, @Nullable EnumFacing side) 
             {
                 throw new UnsupportedOperationException();
             }

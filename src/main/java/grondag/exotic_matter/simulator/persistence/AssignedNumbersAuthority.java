@@ -112,7 +112,7 @@ public class AssignedNumbersAuthority implements IReadWriteNBT, IDirtNotifier
     }
     
     @Override
-    public synchronized void deserializeNBT(NBTTagCompound tag)
+    public synchronized void deserializeNBT(@Nullable NBTTagCompound tag)
     {
         int input[] = tag.getIntArray(NBT_TAG);
         if(input.length == 0)

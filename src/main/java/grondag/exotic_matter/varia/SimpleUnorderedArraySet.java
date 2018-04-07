@@ -94,7 +94,7 @@ public class SimpleUnorderedArraySet<T> extends AbstractUnorderedArrayList<T>
     }
     
     @Override
-    public boolean contains(Object itemToFind)
+    public boolean contains(@Nullable Object itemToFind)
     {
         for(int i = this.size - 1; i >= 0; i--)
         {

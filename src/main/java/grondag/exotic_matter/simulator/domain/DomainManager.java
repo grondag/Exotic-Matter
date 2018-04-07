@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -163,7 +164,7 @@ public class DomainManager implements ISimulationTopNode
     }
     
     @Override
-    public void deserializeNBT(NBTTagCompound tag)
+    public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
         this.isDeserializationInProgress = true;
         

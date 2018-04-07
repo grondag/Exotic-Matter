@@ -1,6 +1,7 @@
 package grondag.exotic_matter.block;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -24,7 +25,7 @@ public class SuperModelItemOverrideList extends ItemOverrideList
 	}
 
 	@Override
-	public IBakedModel handleItemState(@Nonnull IBakedModel originalModel, @Nonnull ItemStack stack, World world, EntityLivingBase entity)
+	public IBakedModel handleItemState(@Nonnull IBakedModel originalModel, @Nonnull ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity)
 	{
 		return dispatcher.handleItemState(originalModel, stack, world, entity);
 	}

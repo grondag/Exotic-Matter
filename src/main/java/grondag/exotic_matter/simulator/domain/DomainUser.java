@@ -3,6 +3,8 @@ package grondag.exotic_matter.simulator.domain;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.serialization.IReadWriteNBT;
 import grondag.exotic_matter.serialization.NBTDictionary;
@@ -109,7 +111,7 @@ public class DomainUser implements IReadWriteNBT, IDomainMember
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt)
+    public void deserializeNBT(@Nullable NBTTagCompound nbt)
     {
         this.userName = nbt.getString(DOMAIN_USER_NAME);
         this.privilegeFlags = nbt.getInteger(DOMAIN_USER_FLAGS);
@@ -128,7 +130,7 @@ public class DomainUser implements IReadWriteNBT, IDomainMember
     }
 
     @Override
-    public IDomain getDomain()
+    public @Nullable IDomain getDomain()
     {
         return this.domain;
     }

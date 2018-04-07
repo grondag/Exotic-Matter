@@ -134,9 +134,9 @@ public interface ISuperBlock extends IBlockItemRegistrator
 
     boolean doesSideBlockRendering(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing face);
 
-    PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos);
+    @Nullable  PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos);
 
-    float[] getBeaconColorMultiplier(IBlockState state, World world, BlockPos pos, BlockPos beaconPos);
+    @Nullable float[] getBeaconColorMultiplier(IBlockState state, World world, BlockPos pos, BlockPos beaconPos);
 
     /** Only meaningful use is for itemRenderer which 
      * checks this to know if it should do depth checking on item renders.
@@ -151,7 +151,7 @@ public interface ISuperBlock extends IBlockItemRegistrator
      */
     AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos);
 
-    AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos);
+    @Nullable AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos);
 
     /** 
      * Returns an instance of the default model state for this block.

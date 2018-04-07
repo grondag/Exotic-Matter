@@ -210,7 +210,7 @@ public class Domain implements IReadWriteNBT, IDirtListenerProvider, IIdentified
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound tag)
+    public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
         this.deserializeID(tag);
         this.isSecurityEnabled = tag.getBoolean(NBT_DOMAIN_SECURITY_ENABLED);

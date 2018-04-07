@@ -2,6 +2,7 @@ package grondag.exotic_matter.block;
 
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
@@ -168,7 +169,7 @@ public class SuperTileEntity extends TileEntity
      * then to ByteBuffer but that is how MC does it and the packet only accepts NBT.
      */
     @Override
-    public SPacketUpdateTileEntity getUpdatePacket()
+    public @Nullable SPacketUpdateTileEntity getUpdatePacket()
     {
         return new SPacketUpdateTileEntity(this.pos, getBlockMetadata(), this.getUpdateTag());
     }

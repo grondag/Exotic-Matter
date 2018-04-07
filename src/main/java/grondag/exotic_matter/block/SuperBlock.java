@@ -420,7 +420,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 //    }
 
     @Override
-    public boolean canConnectRedstone(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EnumFacing side)
+    public boolean canConnectRedstone(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, @Nullable EnumFacing side)
     {
         return false;
     }
@@ -550,7 +550,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     }
     
     @Override
-    public PathNodeType getAiPathNodeType(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
+    public @Nullable PathNodeType getAiPathNodeType(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
     {
         if(this.isBurning(world, pos))
             return PathNodeType.DAMAGE_FIRE;
@@ -559,7 +559,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     }
 
     @Override
-    public float[] getBeaconColorMultiplier(@Nonnull IBlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockPos beaconPos)
+    public @Nullable float[] getBeaconColorMultiplier(@Nonnull IBlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull BlockPos beaconPos)
     {
         if(this.getSubstance(state, world, pos).isTranslucent)
         {
@@ -617,7 +617,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
+    public @Nullable AxisAlignedBB getCollisionBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
     {
         ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, worldIn, pos, true);
         ICollisionHandler handler = modelState.getShape().meshFactory().collisionHandler();
@@ -1224,7 +1224,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 
     /** should never be used - all handled in {@link #collisionRayTrace(IBlockState, World, BlockPos, Vec3d, Vec3d)} */
     @Override
-    protected RayTraceResult rayTrace(BlockPos pos, Vec3d start, Vec3d end, AxisAlignedBB boundingBox)
+    protected @Nullable RayTraceResult rayTrace(BlockPos pos, Vec3d start, Vec3d end, AxisAlignedBB boundingBox)
     {
         assert false : "Unsupported call to SuperBlock.rayTrace on block with custom collision handler";
         return super.rayTrace(pos, start, end, boundingBox);

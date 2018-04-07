@@ -33,7 +33,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
     }
 
     @Override
-    public TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
+    public @Nullable TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
         return this.blockRenderMode() == BlockRenderMode.TESR 
                 ? new SuperTileEntityTESR()

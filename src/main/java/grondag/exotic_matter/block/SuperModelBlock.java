@@ -137,7 +137,7 @@ public class SuperModelBlock extends SuperBlockPlus
      }
 
     @Override
-    public TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
+    public @Nullable TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
         return this.blockRenderMode() == BlockRenderMode.TESR 
                 ? new SuperModelTileEntityTESR()
@@ -201,13 +201,13 @@ public class SuperModelBlock extends SuperBlockPlus
     }
 
     @Override
-    public float getExplosionResistance(@Nonnull World world, @Nonnull BlockPos pos, Entity exploder, @Nonnull Explosion explosion)
+    public float getExplosionResistance(@Nonnull World world, @Nonnull BlockPos pos, @Nullable Entity exploder, @Nonnull Explosion explosion)
     {
         return this.getSubstance(world, pos).resistance;
     }
 
     @Override
-    public SoundType getSoundType(@Nonnull IBlockState state, @Nonnull World world, @Nonnull BlockPos pos, Entity entity)
+    public SoundType getSoundType(@Nonnull IBlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nullable Entity entity)
     {
         return this.getSubstance(state, world, pos).soundType;
     }

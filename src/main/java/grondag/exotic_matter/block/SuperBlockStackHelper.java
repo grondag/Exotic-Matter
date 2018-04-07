@@ -5,7 +5,6 @@ import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.serialization.NBTDictionary;
-import grondag.exotic_matter.varia.NullHandler;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
