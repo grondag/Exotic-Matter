@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.init.ModTileEntities;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
+import grondag.exotic_matter.statecache.IWorldStateCache;
 import grondag.exotic_matter.varia.Base32Namer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
@@ -20,8 +21,14 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 
 @SuppressWarnings("deprecation")
-public class CommonProxy 
+public abstract class CommonProxy 
 {
+    /**
+     * Will error if accessed on physical server.
+     * Should only be used on logical client.
+     */
+    abstract public IWorldStateCache clientWorldStateCache();
+    
     public void preInit(FMLPreInitializationEvent event) 
     {
         ExoticMatter.setLog(event.getModLog());

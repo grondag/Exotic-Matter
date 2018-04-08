@@ -10,6 +10,8 @@ import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.model.BlockColorMapProvider;
 import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.statecache.IWorldStateCache;
+import grondag.exotic_matter.statecache.WorldStateCache;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -18,6 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.animation.Animation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -120,5 +123,14 @@ public class ClientProxy extends CommonProxy
     {
         super.postInit(event);
         SuperTileEntity.updateRenderDistance();
+    }
+    
+    static final WorldStateCache modelStateCache = new WorldStateCache();
+
+    @Override
+    public IWorldStateCache clientWorldStateCache()
+    {
+        assert FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT : "Client side world state cache access on server.";
+        return modelStateCache;
     }
 }

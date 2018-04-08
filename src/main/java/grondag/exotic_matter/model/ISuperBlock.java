@@ -36,7 +36,13 @@ import net.minecraft.world.WorldServer;
 
 public interface ISuperBlock extends IBlockItemRegistrator
 {
-
+    public static ISuperModelState computeModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos)
+    {
+        ISuperModelState result = block.getDefaultModelState();
+        result.refreshFromWorld(blockState, world, pos);
+        return result;
+    }
+    
     /**
      * Used for multiple purposes depending on the type of block. Thus the generic name.
      * Didn't find the block state property abstraction layer particularly useful for my purposes.

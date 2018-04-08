@@ -807,7 +807,6 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
-        
         ISuperModelState result = this.getDefaultModelState();
         if(refreshFromWorldIfNeeded)
         {

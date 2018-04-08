@@ -10,10 +10,12 @@ import net.minecraft.world.IBlockAccess;
 
 public class TerrainState
 {
-
+    
     public final static long FULL_BLOCK_STATE_KEY = TerrainState.computeStateKey(12, new int[] {12, 12, 12,12}, new int[] {12, 12, 12, 12}, 0 );
     public final static long EMPTY_BLOCK_STATE_KEY = TerrainState.computeStateKey(1, new int[] {1, 1, 1,1}, new int[] {1, 1, 1, 1}, 1 );
 
+    public final static TerrainState EMPTY_STATE = new TerrainState(EMPTY_BLOCK_STATE_KEY);
+    
     /** Eight 6-bit blocks that store a corner and side value,
      * plus 4 bits for center height and 3 bits for offset */
     public final static long STATE_BIT_COUNT = 55;
@@ -431,11 +433,7 @@ public class TerrainState
     {
         return getBitsFromWorldStatically(block.isFlowFiller(), state, world, pos);
     }
-    
-    public static long getBitsFromWorldStatically(ISuperModelState modelState, ISuperBlock block, IBlockState state, IBlockAccess world, BlockPos pos)
-    {
-        return getBitsFromWorldStatically(modelState.getShape() == ModShapes.TERRAIN_FILLER, state, world, pos);
-    }
+   
     
     private static long getBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, BlockPos pos)
     {
@@ -503,7 +501,8 @@ public class TerrainState
                 if(x == 1 && z == 1 ) continue;
                 mutablePos.setPos(pos.getX() - 1 + x, yOrigin, pos.getZ() - 1 + z);
     
-                neighborHeight[x][z] = getFlowHeight(world, mutablePos);
+                // use cache if available
+                neighborHeight[x][z] = TerrainBlockHelper.getFlowHeight(world, mutablePos);
     
             }
         }
@@ -524,6 +523,7 @@ public class TerrainState
     
     }
 
+    
     /** 
      * Pass in pos with Y of flow block for which we are getting data.
      * Returns relative flow height based on blocks 2 above through 2 down.

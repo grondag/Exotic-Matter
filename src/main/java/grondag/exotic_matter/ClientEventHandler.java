@@ -40,6 +40,7 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -60,6 +61,17 @@ public class ClientEventHandler
     
     private static int clientStatCounter = ConfigXM.RENDER.clientStatReportingInterval * 20;
 
+    @SubscribeEvent
+    public static void onClienWorldLoad(WorldEvent.Load event) 
+    {
+        if(event.getWorld().isRemote) ClientProxy.modelStateCache.setWorld(event.getWorld());
+    }
+    
+    @SubscribeEvent
+    public static void onClienWorldUnload(WorldEvent.Unload event) 
+    {
+        if(event.getWorld().isRemote) ClientProxy.modelStateCache.setWorld(null);
+    }
     
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent event) 
