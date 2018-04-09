@@ -272,10 +272,6 @@ public class SuperTileEntity extends TileEntity
                         && this.modelState.equals(modelState)
                         && modelState.isStatic()
                         && this.modelState.isStatic() != modelState.isStatic());
-            {
-                this.modelState = modelState;
-                this.onModelStateChange(!modelState.isStatic());
-            }
       
         this.modelState = modelState;
         this.onModelStateChange(needsClientRefresh);
