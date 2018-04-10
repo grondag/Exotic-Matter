@@ -2,6 +2,8 @@ package grondag.exotic_matter;
 
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
@@ -10,6 +12,8 @@ import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.model.BlockColorMapProvider;
 import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.statecache.IWorldStateCache;
+import grondag.exotic_matter.statecache.WorldStateCache;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -18,10 +22,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.animation.Animation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -121,4 +127,13 @@ public class ClientProxy extends CommonProxy
         super.postInit(event);
         SuperTileEntity.updateRenderDistance();
     }
+    
+    static final WorldStateCache worldStateCache = new WorldStateCache();
+
+    @Override
+    public IWorldStateCache clientWorldStateCache()
+    {
+        return worldStateCache;
+    }
+
 }

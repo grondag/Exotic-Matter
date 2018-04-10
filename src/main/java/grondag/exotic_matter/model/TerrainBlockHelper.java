@@ -4,17 +4,50 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.terrain.TerrainCubicBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class TerrainBlockHelper 
 {
     public static final Block FLOW_BLOCK_INDICATOR = new Block(Material.AIR);
+    
+    /**
+     * Exploits world state cache on logical client.  Will return EMPTY_STATE if not a terrain block.
+     * 
+     * FIXME: is this called on client often enough to be worth using client-side state cache?
+     */
+    public static TerrainState getTerrainState(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
+    {
+        Block block = blockState.getBlock();
+        if(!TerrainBlockHelper.isFlowHeight(block)) return TerrainState.EMPTY_STATE;
+        
+        // cubic blocks don't have terrain state in model state, and so can't rely on model state cache
+        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER || block instanceof TerrainCubicBlock
+                ? new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos))
+                : ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos).getTerrainState();
+    }
+    
+    /**
+     * Exploits world state cache on logical client.
+     */
+    public static int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
+    {
+        // this is explicitly a performance optimization called frequently for terrain blocks
+        // doing it this way to avoid overhead of instanceof in the FMLCommonHandler method
+        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
+                ? TerrainState.getFlowHeight(world, pos)
+                : ExoticMatter.proxy.clientWorldStateCache().getFlowHeight(world, pos);
+    }
     
     /**
      * Convenience method to check for flow block. 
@@ -79,16 +112,13 @@ public class TerrainBlockHelper
      */
     public static int topFillerNeeded(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
     {
-        Block block = blockState.getBlock();
-        if(!TerrainBlockHelper.isFlowHeight(block)) return 0;
-        
-     // don't use block model state because cubic blocks don't have it
-        return new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos)).topFillerNeeded();
+        return getTerrainState(blockState, blockAccess, pos).topFillerNeeded();
     }
     
     /**
      * Shorthand for {@link #adjustFillIfNeeded(World, BlockPos, Predicate)} with no predicate.
      */
+    @Nullable
     public static IBlockState adjustFillIfNeeded(World worldObj, BlockPos basePos)
     {
         return adjustFillIfNeeded(worldObj, basePos, null);
@@ -104,6 +134,7 @@ public class TerrainBlockHelper
      * true will be changed.
      * 
      */
+    @Nullable
     public static IBlockState adjustFillIfNeeded(World worldObj, BlockPos basePos, @Nullable Predicate<IBlockState> filter)
     {
         final IBlockState baseState = worldObj.getBlockState(basePos);
@@ -131,8 +162,8 @@ public class TerrainBlockHelper
          * Otherwise should be air.
          */
         final IBlockState stateBelow = worldObj.getBlockState(basePos.down());
-        if(TerrainBlockHelper.isFlowHeight(stateBelow.getBlock()) 
-                && TerrainBlockHelper.topFillerNeeded(stateBelow, worldObj, basePos.down()) > 0)
+        if(isFlowHeight(stateBelow.getBlock()) 
+                && topFillerNeeded(stateBelow, worldObj, basePos.down()) > 0)
         {
             targetMeta = 0;
 
@@ -141,15 +172,15 @@ public class TerrainBlockHelper
         else 
         {
             final IBlockState stateTwoBelow = worldObj.getBlockState(basePos.down(2));
-            if((TerrainBlockHelper.isFlowHeight(stateTwoBelow.getBlock()) 
-                    && TerrainBlockHelper.topFillerNeeded(stateTwoBelow, worldObj, basePos.down(2)) == 2))
+            if((isFlowHeight(stateTwoBelow.getBlock()) 
+                    && topFillerNeeded(stateTwoBelow, worldObj, basePos.down(2)) == 2))
             {
                 targetMeta = 1;
                 fillBlock = (ISuperBlock) TerrainBlockRegistry.TERRAIN_STATE_REGISTRY.getFillerBlock(stateTwoBelow.getBlock());
             }
         }
 
-        if(TerrainBlockHelper.isFlowFiller(baseBlock))
+        if(isFlowFiller(baseBlock))
         {
 
             if(targetMeta == SHOULD_BE_AIR)
@@ -179,22 +210,17 @@ public class TerrainBlockHelper
      */
     public static boolean shouldBeFullCube(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
     {
-        Block block = blockState.getBlock();
-        if(!isFlowBlock(block)) return false;
-        // don't use block model state because cubic blocks don't have it
-        return new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos)).isFullCube();
+        return getTerrainState(blockState, blockAccess, pos).isFullCube();
     }
     
     
     /** 
-     * Returns true if geometry of flow block has nothing in it.
-     * Returns false if otherwise or if is not a flow block. 
+     * Returns true if geometry of flow block has nothing in it or if is not a flow block.
+     * Returns false if otherwise. 
      */
     public static boolean isEmpty(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
     {
-        Block block = blockState.getBlock();
-        if(!isFlowBlock(block)) return false;
-        return ((ISuperBlock)block).getModelStateAssumeStateIsCurrent(blockState, blockAccess, pos, true).getTerrainState().isEmpty();
+        return getTerrainState(blockState, blockAccess, pos).isEmpty();
     }
     
     /**

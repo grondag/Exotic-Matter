@@ -85,6 +85,15 @@ public class TerrainStaticBlock extends SuperStaticBlock
         }
     }
 
+    /**
+     * Very expensive to check this for terrain blocks.  Only a thin layer of them on top of terrain - better just to render the quads.
+     */
+    @Override
+    public boolean doesSideBlockRendering(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing face)
+    {
+        return false;
+    }
+
     @Override
     protected List<ItemStack> createSubItems()
     {

@@ -256,8 +256,7 @@ public class ModelState implements ISuperModelState
         case FLOW:
             // terrain blocks need larger position space to drive texture randomization because doesn't have per-block rotation or version
             if((stateFlags & STATE_FLAG_NEEDS_POS) == STATE_FLAG_NEEDS_POS) refreshBlockPosFromWorld(pos, 255);
-
-            bits3 = ModelStateData.P3F_FLOW_JOIN.setValue(TerrainState.getBitsFromWorldStatically(this, (ISuperBlock)state.getBlock(), state, world, pos), bits3);
+            bits3 = ModelStateData.P3F_FLOW_JOIN.setValue(TerrainState.getBitsFromWorldStatically((ISuperBlock)state.getBlock(), state, world, pos), bits3);
             break;
 
         case MULTIBLOCK:
