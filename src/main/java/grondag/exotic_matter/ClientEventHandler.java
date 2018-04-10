@@ -34,12 +34,15 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -62,15 +65,24 @@ public class ClientEventHandler
     private static int clientStatCounter = ConfigXM.RENDER.clientStatReportingInterval * 20;
 
     @SubscribeEvent
-    public static void onClienWorldLoad(WorldEvent.Load event) 
+    public static void onClientWorldLoad(WorldEvent.Load event) 
     {
-        if(event.getWorld().isRemote) ClientProxy.modelStateCache.setWorld(event.getWorld());
+        if(event.getWorld().isRemote) ClientProxy.worldStateCache.setWorld(event.getWorld());
     }
     
     @SubscribeEvent
-    public static void onClienWorldUnload(WorldEvent.Unload event) 
+    public static void onClientWorldUnload(WorldEvent.Unload event) 
     {
-        if(event.getWorld().isRemote) ClientProxy.modelStateCache.setWorld(null);
+        if(event.getWorld().isRemote) ClientProxy.worldStateCache.setWorld(null);
+    }
+    
+    @SubscribeEvent
+    public static void onClientChunkUnload(ChunkEvent.Unload event) 
+    {
+        // release cache memory
+        ChunkPos pos = event.getChunk().getPos();
+        if(event.getWorld().isRemote) 
+            ClientProxy.worldStateCache.markBlockRangeForRenderUpdate(pos.getXStart(), 0, pos.getZStart(), pos.getXEnd(), 255, pos.getZEnd());
     }
     
     @SubscribeEvent

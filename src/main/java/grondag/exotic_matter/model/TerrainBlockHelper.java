@@ -32,9 +32,9 @@ public class TerrainBlockHelper
         if(!TerrainBlockHelper.isFlowHeight(block)) return TerrainState.EMPTY_STATE;
         
         // cubic blocks don't have terrain state in model state, and so can't rely on model state cache
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && !(block instanceof TerrainCubicBlock)
-                ? ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos).getTerrainState()
-                : new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos));
+        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER || block instanceof TerrainCubicBlock
+                ? new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos))
+                : ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos).getTerrainState();
     }
     
     /**
@@ -42,9 +42,11 @@ public class TerrainBlockHelper
      */
     public static int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
     {
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT
-                ? ExoticMatter.proxy.clientWorldStateCache().getFlowHeight(world, pos)
-                : TerrainState.getFlowHeight(world, pos);
+        // this is explicitly a performance optimization called frequently for terrain blocks
+        // doing it this way to avoid overhead of instanceof in the FMLCommonHandler method
+        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
+                ? TerrainState.getFlowHeight(world, pos)
+                : ExoticMatter.proxy.clientWorldStateCache().getFlowHeight(world, pos);
     }
     
     /**

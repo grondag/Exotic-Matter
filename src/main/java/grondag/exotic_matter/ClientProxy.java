@@ -2,6 +2,8 @@ package grondag.exotic_matter;
 
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +27,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -125,12 +128,12 @@ public class ClientProxy extends CommonProxy
         SuperTileEntity.updateRenderDistance();
     }
     
-    static final WorldStateCache modelStateCache = new WorldStateCache();
+    static final WorldStateCache worldStateCache = new WorldStateCache();
 
     @Override
     public IWorldStateCache clientWorldStateCache()
     {
-        assert FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT : "Client side world state cache access on server.";
-        return modelStateCache;
+        return worldStateCache;
     }
+
 }

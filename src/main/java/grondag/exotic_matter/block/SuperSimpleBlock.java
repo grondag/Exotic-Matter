@@ -67,10 +67,9 @@ public class SuperSimpleBlock extends SuperBlock
     @Override
     public ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
-        if(FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT)
-        {
-            return ExoticMatter.proxy.clientWorldStateCache().getModelState(this, world, state, pos);
-        }
-        else return super.getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
+        // exploit client-side state cache
+        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
+                ? super.getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded)
+                : ExoticMatter.proxy.clientWorldStateCache().getModelState(this, world, state, pos);
     }
 }
