@@ -59,45 +59,45 @@ public class CubeInputs{
         switch(side)
         {
         case UP:
-            qi.setVertex(0, new Vertex(minBound, maxBound, minBound, u0, v0, this.color));
-            qi.setVertex(1, new Vertex(minBound, maxBound, maxBound, u0, v1, this.color));
-            qi.setVertex(2, new Vertex(maxBound, maxBound, maxBound, u1, v1, this.color));
-            qi.setVertex(3, new Vertex(maxBound, maxBound, minBound, u1, v0, this.color));
+            qi.addVertex(0, new Vertex(minBound, maxBound, minBound, u0, v0, this.color));
+            qi.addVertex(1, new Vertex(minBound, maxBound, maxBound, u0, v1, this.color));
+            qi.addVertex(2, new Vertex(maxBound, maxBound, maxBound, u1, v1, this.color));
+            qi.addVertex(3, new Vertex(maxBound, maxBound, minBound, u1, v0, this.color));
             break;
 
         case DOWN:     
-            qi.setVertex(0, new Vertex(maxBound, minBound, maxBound, u0, v1, this.color));
-            qi.setVertex(1, new Vertex(minBound, minBound, maxBound, u1, v1, this.color)); 
-            qi.setVertex(2, new Vertex(minBound, minBound, minBound, u1, v0, this.color)); 
-            qi.setVertex(3, new Vertex(maxBound, minBound, minBound, u0, v0, this.color));
+            qi.addVertex(0, new Vertex(maxBound, minBound, maxBound, u0, v1, this.color));
+            qi.addVertex(1, new Vertex(minBound, minBound, maxBound, u1, v1, this.color)); 
+            qi.addVertex(2, new Vertex(minBound, minBound, minBound, u1, v0, this.color)); 
+            qi.addVertex(3, new Vertex(maxBound, minBound, minBound, u0, v0, this.color));
             break;
 
         case WEST:
-            qi.setVertex(0, new Vertex(minBound, minBound, minBound, u0, v1, this.color));
-            qi.setVertex(1, new Vertex(minBound, minBound, maxBound, u1, v1, this.color));
-            qi.setVertex(2, new Vertex(minBound, maxBound, maxBound, u1, v0, this.color));
-            qi.setVertex(3, new Vertex(minBound, maxBound, minBound, u0, v0, this.color));
+            qi.addVertex(0, new Vertex(minBound, minBound, minBound, u0, v1, this.color));
+            qi.addVertex(1, new Vertex(minBound, minBound, maxBound, u1, v1, this.color));
+            qi.addVertex(2, new Vertex(minBound, maxBound, maxBound, u1, v0, this.color));
+            qi.addVertex(3, new Vertex(minBound, maxBound, minBound, u0, v0, this.color));
             break;
 
         case EAST:
-            qi.setVertex(0, new Vertex(maxBound, minBound, minBound, u1, v1, this.color));
-            qi.setVertex(1, new Vertex(maxBound, maxBound, minBound, u1, v0, this.color));
-            qi.setVertex(2, new Vertex(maxBound, maxBound, maxBound, u0, v0, this.color));
-            qi.setVertex(3, new Vertex(maxBound, minBound, maxBound, u0, v1, this.color));
+            qi.addVertex(0, new Vertex(maxBound, minBound, minBound, u1, v1, this.color));
+            qi.addVertex(1, new Vertex(maxBound, maxBound, minBound, u1, v0, this.color));
+            qi.addVertex(2, new Vertex(maxBound, maxBound, maxBound, u0, v0, this.color));
+            qi.addVertex(3, new Vertex(maxBound, minBound, maxBound, u0, v1, this.color));
             break;
 
         case NORTH:
-            qi.setVertex(0, new Vertex(minBound, minBound, minBound, u1, v1, this.color));
-            qi.setVertex(1, new Vertex(minBound, maxBound, minBound, u1, v0, this.color));
-            qi.setVertex(2, new Vertex(maxBound, maxBound, minBound, u0, v0, this.color));
-            qi.setVertex(3, new Vertex(maxBound, minBound, minBound, u0, v1, this.color));
+            qi.addVertex(0, new Vertex(minBound, minBound, minBound, u1, v1, this.color));
+            qi.addVertex(1, new Vertex(minBound, maxBound, minBound, u1, v0, this.color));
+            qi.addVertex(2, new Vertex(maxBound, maxBound, minBound, u0, v0, this.color));
+            qi.addVertex(3, new Vertex(maxBound, minBound, minBound, u0, v1, this.color));
             break;
 
         case SOUTH:
-            qi.setVertex(0, new Vertex(minBound, minBound, maxBound, u0, v1, this.color));
-            qi.setVertex(1, new Vertex(maxBound, minBound, maxBound, u1, v1, this.color));
-            qi.setVertex(2, new Vertex(maxBound, maxBound, maxBound, u1, v0, this.color));
-            qi.setVertex(3, new Vertex(minBound, maxBound, maxBound, u0, v0, this.color));
+            qi.addVertex(0, new Vertex(minBound, minBound, maxBound, u0, v1, this.color));
+            qi.addVertex(1, new Vertex(maxBound, minBound, maxBound, u1, v1, this.color));
+            qi.addVertex(2, new Vertex(maxBound, maxBound, maxBound, u1, v0, this.color));
+            qi.addVertex(3, new Vertex(minBound, maxBound, maxBound, u0, v0, this.color));
             break;
         }
         

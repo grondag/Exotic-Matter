@@ -192,7 +192,7 @@ public abstract class QuadPainter
                 if(v != null)
                 {
                     int vColor = v.color == Color.WHITE ? lampColor : shadedColor;
-                    result.setVertex(i, v.withColor(vColor));
+                    result.setVertexColor(i, vColor);
                 }
             }
             

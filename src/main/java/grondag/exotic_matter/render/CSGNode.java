@@ -373,7 +373,7 @@ public class CSGNode
         RawQuad joinedQuad = new RawQuad(aQuad, joinedVertex.size());
         for(int i = 0; i < joinedVertex.size(); i++)
         {
-            joinedQuad.setVertex(i, joinedVertex.get(i));
+            joinedQuad.addVertex(i, joinedVertex.get(i));
             joinedQuad.setLineID(i, joinedLineID.get(i));
         }
 

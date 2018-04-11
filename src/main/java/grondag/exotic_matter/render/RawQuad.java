@@ -357,42 +357,42 @@ public class RawQuad
             setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
             break;
 
         case DOWN:     
             setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 16.0-rv0.u() * 16.0, 16.0-rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 16.0-rv1.u() * 16.0, 16.0-rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 16.0-rv2.u() * 16.0, 16.0-rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 16.0-rv3.u() * 16.0, 16.0-rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 16.0-rv3.u() * 16.0, 16.0-rv3.v() * 16.0, rv3.color(this.color)));
             break;
 
         case EAST:
             setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
             break;
 
         case WEST:
             setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
             break;
 
         case NORTH:
             setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
             break;
 
         case SOUTH:
             setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.color)));
             setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.color)));
             setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.color)));
-            setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.color)));
             break;
         }
 
@@ -511,15 +511,22 @@ public class RawQuad
     /** 
      * Using this instead of referencing vertex array directly.
      */
-    public void setVertex(int index, Vertex vertexIn)
+    private void setVertex(int index, Vertex vertexIn)
     {
-        if(index < this.vertexCount)
-        {
-            this.vertices[index] = vertexIn;
-            this.faceNormal = null;
-        }
+        this.vertices[index] = vertexIn;
     }
 
+    /**
+     * Enforces immutability of vertex geometry once a vertex is added
+     * by rejecting any attempt to set a vertex that already exists.
+     * Rejection is via an assertion, so no overhead in normal use.
+     */
+    public void addVertex(int index, Vertex vertexIn)
+    {
+        assert this.vertices[index] == null : "attempt to change existing vertex";
+        this.vertices[index] = vertexIn;
+    }
+    
     public Vertex getVertex(int index)
     {
         if(this.getVertexCount() == 3 && index == 3) return this.vertices[2];
@@ -992,5 +999,10 @@ public class RawQuad
         }
         
         return result;
+    }
+
+    public void setVertexColor(int index, int vColor)
+    {
+        this.setVertex(index, this.getVertex(index).withColor(vColor));        
     }
 }

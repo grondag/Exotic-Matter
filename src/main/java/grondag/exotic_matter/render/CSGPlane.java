@@ -192,7 +192,7 @@ public class CSGPlane
                     
                     for(int i = 0; i < frontVertex.size(); i++)
                     {
-                        frontQuad.setVertex(i, frontVertex.get(i));
+                        frontQuad.addVertex(i, frontVertex.get(i));
                         frontQuad.setLineID(i, frontLineID.get(i));
                     }
 
@@ -210,7 +210,7 @@ public class CSGPlane
 
                     for(int i = 0; i < backVertex.size(); i++)
                     {
-                        backQuad.setVertex(i, backVertex.get(i));
+                        backQuad.addVertex(i, backVertex.get(i));
                         backQuad.setLineID(i, backLineID.get(i));
                     }
                     
