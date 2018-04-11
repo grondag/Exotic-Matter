@@ -38,6 +38,9 @@ import java.util.HashSet;
 
 import java.util.List;
 import java.util.TreeMap;
+
+import javax.annotation.Nullable;
+
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 
@@ -46,22 +49,22 @@ public class CSGNode
     /**
      * RawQuads.
      */
-    private List<RawQuad> quads;
+    private @Nullable List<RawQuad> quads;
     
     /**
      * Plane used for BSP.
      */
-    private CSGPlane plane;
+    private @Nullable CSGPlane plane;
     
     /**
      * RawQuads in front of the plane.
      */
-    private CSGNode front;
+    private @Nullable CSGNode front;
     
     /**
      * RawQuads in back of the plane.
      */
-    private CSGNode back;
+    private @Nullable CSGNode back;
 
     /**
      * Constructor.
@@ -70,7 +73,7 @@ public class CSGNode
      *
      * @param quadsIn polygons
      */
-    public CSGNode(CSGShape shapeIn) {
+    public CSGNode(@Nullable CSGShape shapeIn) {
         this.quads = new ArrayList<RawQuad>();
         if (shapeIn != null) {
             this.build(shapeIn.clone().initCsg());
@@ -85,7 +88,10 @@ public class CSGNode
     }
 
     @Override
-    public CSGNode clone() {
+    public CSGNode clone()
+    {
+        assert this.quads != null : "Null quads";
+
         CSGNode node = new CSGNode();
         node.plane = this.plane == null ? null : this.plane.clone();
         node.front = this.front == null ? null : this.front.clone();
@@ -115,8 +121,11 @@ public class CSGNode
     /**
      * Converts solid space to empty space and vice verca.
      */
-    public void invert() {
-  
+    public void invert()
+    {
+
+        assert this.quads != null : "Null quads";
+
         if (this.plane == null && quads.isEmpty()) return;
 
         quads.forEach((quad) -> {
@@ -152,7 +161,7 @@ public class CSGNode
      *
      * @return the cliped list of polygons
      */
-    private List<RawQuad> clipQuads(List<RawQuad> quads) {
+    private List<RawQuad> clipQuads(@Nullable List<RawQuad> quads) {
 
         if (this.plane == null) {
             return new ArrayList<RawQuad>(quads);
@@ -187,7 +196,10 @@ public class CSGNode
      *
      * @param bsp bsp that shall be used for clipping
      */
-    public void clipTo(CSGNode bsp) {
+    public void clipTo(CSGNode bsp)
+    {
+        assert this.quads != null : "Null quads";
+
         this.quads = bsp.clipQuads(this.quads);
         if (this.front != null) {
             this.front.clipTo(bsp);
@@ -202,7 +214,10 @@ public class CSGNode
      *
      * @return a list of all polygons in this BSP tree
      */
-    public List<RawQuad> allRawQuads() {
+    public List<RawQuad> allRawQuads()
+    {
+        assert this.quads != null : "Null quads";
+        
         List<RawQuad> localRawQuads = new ArrayList<>(this.quads);
         if (this.front != null) {
             localRawQuads.addAll(this.front.allRawQuads());
@@ -246,27 +261,7 @@ public class CSGNode
         
         return retVal;
     }
-//
-//    private class CsgEdge
-//    {
-//        protected final long edgeId;
-//        protected final int lowVertexId;
-//        protected final int highVertexId;
-//        protected final IdHolder quadIdHolder;
-//        
-//        private class IdHolder
-//        {
-//            protected long id;
-//        }
-//    }
-//    
-//    private class CsgVertexTracker
-//    {
-//        protected int getVertexId(Vertex vertexIn)
-//        {
-//            return 0;
-//        }
-//    }
+
     
     /**
      * Tries to combine two quads along the given edge. To join, all must be true:
@@ -533,8 +528,9 @@ public class CSGNode
      *
      * @param quadsIn polygons used to build the BSP
      */
-    public final void build(List<RawQuad> quadsIn) {
-        
+    public final void build(List<RawQuad> quadsIn)
+    {
+        assert this.quads != null : "Null quads";
         
         if (quadsIn.isEmpty()) 
         {
