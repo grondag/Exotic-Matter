@@ -49,7 +49,7 @@ public class CSGNode
     /**
      * RawQuads.
      */
-    private @Nullable List<RawQuad> quads;
+    private List<RawQuad> quads = new ArrayList<>();
     
     /**
      * Plane used for BSP.
@@ -73,11 +73,9 @@ public class CSGNode
      *
      * @param quadsIn polygons
      */
-    public CSGNode(@Nullable CSGShape shapeIn) {
-        this.quads = new ArrayList<RawQuad>();
-        if (shapeIn != null) {
-            this.build(shapeIn.clone().initCsg());
-        }
+    public CSGNode(@Nullable CSGShape shapeIn)
+    {
+        if (shapeIn != null) this.build(shapeIn.clone().initCsg());
     }
 
     /**
@@ -90,13 +88,10 @@ public class CSGNode
     @Override
     public CSGNode clone()
     {
-        assert this.quads != null : "Null quads";
-
         CSGNode node = new CSGNode();
         node.plane = this.plane == null ? null : this.plane.clone();
         node.front = this.front == null ? null : this.front.clone();
         node.back = this.back == null ? null : this.back.clone();
-        node.quads = new ArrayList<RawQuad>();
         quads.forEach((RawQuad p) -> {
             node.quads.add(p.clone());
         });
@@ -123,8 +118,6 @@ public class CSGNode
      */
     public void invert()
     {
-
-        assert this.quads != null : "Null quads";
 
         if (this.plane == null && quads.isEmpty()) return;
 
@@ -157,20 +150,21 @@ public class CSGNode
      *
      * <b>Note:</b> polygons are splitted if necessary.
      *
-     * @param quads the polygons to clip
+     * @param quadsIn the polygons to clip
      *
      * @return the cliped list of polygons
      */
-    private List<RawQuad> clipQuads(@Nullable List<RawQuad> quads) {
+    private List<RawQuad> clipQuads(@Nullable List<RawQuad> quadsIn)
+    {
 
         if (this.plane == null) {
-            return new ArrayList<RawQuad>(quads);
+            return new ArrayList<RawQuad>(quadsIn);
         }
 
         List<RawQuad> frontP = new ArrayList<RawQuad>();
         List<RawQuad> backP = new ArrayList<RawQuad>();
 
-        for (RawQuad quad : quads) {
+        for (RawQuad quad : quadsIn) {
             this.plane.splitQuad(quad, frontP, backP, frontP, backP);
         }
         if (this.front != null) {
@@ -198,9 +192,8 @@ public class CSGNode
      */
     public void clipTo(CSGNode bsp)
     {
-        assert this.quads != null : "Null quads";
-
         this.quads = bsp.clipQuads(this.quads);
+        
         if (this.front != null) {
             this.front.clipTo(bsp);
         }
@@ -216,15 +209,11 @@ public class CSGNode
      */
     public List<RawQuad> allRawQuads()
     {
-        assert this.quads != null : "Null quads";
-        
         List<RawQuad> localRawQuads = new ArrayList<>(this.quads);
         if (this.front != null) {
             localRawQuads.addAll(this.front.allRawQuads());
-//            polygons = Utils.concat(polygons, this.front.allRawQuads());
         }
         if (this.back != null) {
-//            polygons = Utils.concat(polygons, this.back.allRawQuads());
             localRawQuads.addAll(this.back.allRawQuads());
         }
 
@@ -273,7 +262,7 @@ public class CSGNode
      * 
      * Returns null if quads cannot be joined.
      */
-    private RawQuad joinCsgQuads(RawQuad aQuad, RawQuad bQuad, long lineID)
+    private @Nullable RawQuad joinCsgQuads(RawQuad aQuad, RawQuad bQuad, long lineID)
     {
 
         // quads must be same orientation to be joined
