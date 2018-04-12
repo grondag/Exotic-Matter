@@ -852,16 +852,21 @@ public class RawQuad
 
     public Vec3d getFaceNormal()
     {
-        if(faceNormal == null && getVertex(0) != null && getVertex(1) != null && getVertex(2) != null && getVertex(3) != null)
-        {
-            faceNormal = computeFaceNormal();
-        }
-        return faceNormal;
+        if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
+        return this.faceNormal;
     }
     
     private Vec3d computeFaceNormal()
     {
-        return getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).normalize();
+        try
+        {
+            return getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).normalize();
+        }
+        catch(Exception e)
+        {
+            assert false : "Bad polygon structure during face normal request.";
+            return Vec3d.ZERO;
+        }
     }
 
     public float[] getFaceNormalArray()
