@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painter;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TextureRotationType;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.math.MathHelper;
@@ -33,7 +33,7 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
     }
 
     @Override
-    public RawQuad paintQuad(RawQuad quad)
+    public Poly paintQuad(Poly quad)
     {
         assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         

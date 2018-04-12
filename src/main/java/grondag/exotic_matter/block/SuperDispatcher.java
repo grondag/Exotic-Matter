@@ -25,7 +25,7 @@ import grondag.exotic_matter.model.varia.CraftingItem;
 import grondag.exotic_matter.render.QuadBakery;
 import grondag.exotic_matter.render.QuadContainer;
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SimpleItemBlockModel;
 import grondag.exotic_matter.render.SparseLayerMapBuilder;
 import grondag.exotic_matter.render.SparseLayerMapBuilder.SparseLayerMap;
@@ -73,16 +73,16 @@ public class SuperDispatcher
 		@Override
 		public SparseLayerMap load(ISuperModelState key) {
 			
-		    Collection<RawQuad> paintedQuads = getFormattedQuads(key, false);
+		    Collection<Poly> paintedQuads = getFormattedQuads(key, false);
 		    
 		    @SuppressWarnings("unchecked")
-            ArrayList<RawQuad>[] containers = new ArrayList[BlockRenderLayer.values().length];
+            ArrayList<Poly>[] containers = new ArrayList[BlockRenderLayer.values().length];
 		    for(int i = 0; i < containers.length; i++)
 		    {
-		        containers[i] = new ArrayList<RawQuad>();
+		        containers[i] = new ArrayList<Poly>();
 		    }
 		    
-			for(RawQuad quad : paintedQuads)
+			for(Poly quad : paintedQuads)
 			{
 			    containers[quad.getRenderPass().blockRenderLayer.ordinal()].add(quad);
 			}
@@ -110,7 +110,7 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	for(RawQuad quad : getFormattedQuads(key, true))
+	    	for(Poly quad : getFormattedQuads(key, true))
 	    	{
 	    	    switch(quad.getSurfaceInstance().surfaceType())
 	    	    {
@@ -137,9 +137,9 @@ public class SuperDispatcher
         @Override
         public QuadContainer load(ISuperModelState key) 
         {
-            List<RawQuad> quads = key.getShape().meshFactory().getShapeQuads(key);
+            List<Poly> quads = key.getShape().meshFactory().getShapeQuads(key);
             if(quads.isEmpty()) return QuadContainer.EMPTY_CONTAINER;
-            for(RawQuad q : quads)
+            for(Poly q : quads)
             {
                 // arbitrary choice - just needs to be a simple non-null texture
                 q.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
@@ -203,9 +203,9 @@ public class SuperDispatcher
         return container.getOcclusionHash(face);
     }
     
-    private Collection<RawQuad> getFormattedQuads(ISuperModelState modelState, boolean isItem)
+    private Collection<Poly> getFormattedQuads(ISuperModelState modelState, boolean isItem)
     {
-        ArrayList<RawQuad> result = new ArrayList<RawQuad>();
+        ArrayList<Poly> result = new ArrayList<Poly>();
          
         ShapeMeshGenerator mesher = modelState.getShape().meshFactory();
                 
@@ -243,7 +243,7 @@ public class SuperDispatcher
             }
         }
         
-        for(RawQuad shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
+        for(Poly shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
         {
             Surface qSurface = shapeQuad.getSurfaceInstance().surface();
             for(QuadPainter p : painters)

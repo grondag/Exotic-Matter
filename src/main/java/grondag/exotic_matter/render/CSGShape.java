@@ -40,11 +40,11 @@ import java.util.stream.Stream;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class CSGShape extends ArrayList<RawQuad>
+public class CSGShape extends ArrayList<Poly>
 {
     private static final long serialVersionUID = 796007237565914078L;
 
-    public CSGShape(List<RawQuad> quads)
+    public CSGShape(List<Poly> quads)
     {
         super(quads);
     }
@@ -58,7 +58,7 @@ public class CSGShape extends ArrayList<RawQuad>
     @Override
     public CSGShape clone()
     {
-        Stream<RawQuad> quadStream;
+        Stream<Poly> quadStream;
 
         if (this.size() > 200) {
             quadStream = this.parallelStream();
@@ -67,7 +67,7 @@ public class CSGShape extends ArrayList<RawQuad>
         }
 
         return new CSGShape(quadStream.
-                map((RawQuad p) -> p.clone()).collect(Collectors.toList()));
+                map((Poly p) -> p.clone()).collect(Collectors.toList()));
     }
     
     public CSGShape initCsg()
@@ -93,7 +93,7 @@ public class CSGShape extends ArrayList<RawQuad>
      */
     public void recolor()
     {
-        Stream<RawQuad> quadStream;
+        Stream<Poly> quadStream;
 
         if (this.size() > 200) {
             quadStream = this.parallelStream();
@@ -101,7 +101,7 @@ public class CSGShape extends ArrayList<RawQuad>
             quadStream = this.stream();
         }
 
-        quadStream.forEach((RawQuad quad) -> quad.replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+        quadStream.forEach((Poly quad) -> quad.replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
     
     
@@ -113,7 +113,7 @@ public class CSGShape extends ArrayList<RawQuad>
 
         AxisAlignedBB retVal = null;
 
-        for (RawQuad p : this)
+        for (Poly p : this)
         {
             if(retVal == null)
             {
@@ -190,8 +190,8 @@ public class CSGShape extends ArrayList<RawQuad>
      * @return difference of this csg and the specified csg
      */
     public CSGShape difference(CSGShape other) {
-        List<RawQuad> inner = new ArrayList<RawQuad>();
-        List<RawQuad> outer = new ArrayList<RawQuad>();
+        List<Poly> inner = new ArrayList<Poly>();
+        List<Poly> outer = new ArrayList<Poly>();
 
         CSGBounds bounds = other.getBounds();
 
@@ -298,8 +298,8 @@ public class CSGShape extends ArrayList<RawQuad>
     
         
         
-        List<RawQuad> inner = new ArrayList<RawQuad>();
-        List<RawQuad> outer = new ArrayList<RawQuad>();
+        List<Poly> inner = new ArrayList<Poly>();
+        List<Poly> outer = new ArrayList<Poly>();
 
         CSGBounds bounds = other.getBounds();
 

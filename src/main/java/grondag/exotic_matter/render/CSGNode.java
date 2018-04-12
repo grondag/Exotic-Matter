@@ -49,7 +49,7 @@ public class CSGNode
     /**
      * RawQuads.
      */
-    private List<RawQuad> quads = new ArrayList<>();
+    private List<Poly> quads = new ArrayList<>();
     
     /**
      * Plane used for BSP.
@@ -92,7 +92,7 @@ public class CSGNode
         node.plane = this.plane == null ? null : this.plane.clone();
         node.front = this.front == null ? null : this.front.clone();
         node.back = this.back == null ? null : this.back.clone();
-        quads.forEach((RawQuad p) -> {
+        quads.forEach((Poly p) -> {
             node.quads.add(p.clone());
         });
         return node;
@@ -105,7 +105,7 @@ public class CSGNode
     {
 
         HashSet<Long> ids = new HashSet<Long>();
-        for(RawQuad q : this.allRawQuads())
+        for(Poly q : this.allRawQuads())
         {
             if(ids.contains(q.quadID())) return q.quadID();
             ids.add(q.quadID());
@@ -154,17 +154,17 @@ public class CSGNode
      *
      * @return the cliped list of polygons
      */
-    private List<RawQuad> clipQuads(@Nullable List<RawQuad> quadsIn)
+    private List<Poly> clipQuads(@Nullable List<Poly> quadsIn)
     {
 
         if (this.plane == null) {
-            return new ArrayList<RawQuad>(quadsIn);
+            return new ArrayList<Poly>(quadsIn);
         }
 
-        List<RawQuad> frontP = new ArrayList<RawQuad>();
-        List<RawQuad> backP = new ArrayList<RawQuad>();
+        List<Poly> frontP = new ArrayList<Poly>();
+        List<Poly> backP = new ArrayList<Poly>();
 
-        for (RawQuad quad : quadsIn) {
+        for (Poly quad : quadsIn) {
             this.plane.splitQuad(quad, frontP, backP, frontP, backP);
         }
         if (this.front != null) {
@@ -173,7 +173,7 @@ public class CSGNode
         if (this.back != null) {
             backP = this.back.clipQuads(backP);
         } else {
-            backP = new ArrayList<RawQuad>();
+            backP = new ArrayList<Poly>();
         }
 
         frontP.addAll(backP);
@@ -207,9 +207,9 @@ public class CSGNode
      *
      * @return a list of all polygons in this BSP tree
      */
-    public List<RawQuad> allRawQuads()
+    public List<Poly> allRawQuads()
     {
-        List<RawQuad> localRawQuads = new ArrayList<>(this.quads);
+        List<Poly> localRawQuads = new ArrayList<>(this.quads);
         if (this.front != null) {
             localRawQuads.addAll(this.front.allRawQuads());
         }
@@ -229,20 +229,20 @@ public class CSGNode
      * during initialization of the tree because it uses the information populated then.
      * @return
      */
-    public List<RawQuad> recombinedRawQuads()
+    public List<Poly> recombinedRawQuads()
     {
-        TLongObjectHashMap<ArrayList<RawQuad>> ancestorBuckets = new TLongObjectHashMap<ArrayList<RawQuad>>();
+        TLongObjectHashMap<ArrayList<Poly>> ancestorBuckets = new TLongObjectHashMap<ArrayList<Poly>>();
         
         this.allRawQuads().forEach((quad) -> 
         {
             if(!ancestorBuckets.contains(quad.getAncestorQuadID()))
             {
-                ancestorBuckets.put(quad.getAncestorQuadID(), new ArrayList<RawQuad>());
+                ancestorBuckets.put(quad.getAncestorQuadID(), new ArrayList<Poly>());
             }
             ancestorBuckets.get(quad.getAncestorQuadID()).add(quad);
         });
         
-        ArrayList<RawQuad> retVal = new ArrayList<RawQuad>();
+        ArrayList<Poly> retVal = new ArrayList<Poly>();
         ancestorBuckets.valueCollection().forEach((quadList) ->
         {
             retVal.addAll(recombine(quadList));
@@ -262,7 +262,7 @@ public class CSGNode
      * 
      * Returns null if quads cannot be joined.
      */
-    private @Nullable RawQuad joinCsgQuads(RawQuad aQuad, RawQuad bQuad, long lineID)
+    private @Nullable Poly joinCsgQuads(Poly aQuad, Poly bQuad, long lineID)
     {
 
         // quads must be same orientation to be joined
@@ -270,7 +270,7 @@ public class CSGNode
 
         int aStartIndex = aQuad.findLineIndex(lineID);
         // shouldn't happen, but won't work if does
-        if(aStartIndex == RawQuad.LINE_NOT_FOUND) 
+        if(aStartIndex == Poly.LINE_NOT_FOUND) 
             return null;
         int aEndIndex = aStartIndex + 1 == aQuad.vertexCount() ? 0 : aStartIndex + 1;
         int aNextIndex = aEndIndex + 1 == aQuad.vertexCount() ? 0 : aEndIndex + 1;
@@ -278,7 +278,7 @@ public class CSGNode
 
         int bStartIndex = bQuad.findLineIndex(lineID);
         // shouldn't happen, but won't work if does
-        if(bStartIndex == RawQuad.LINE_NOT_FOUND) 
+        if(bStartIndex == Poly.LINE_NOT_FOUND) 
             return null;
         int bEndIndex = bStartIndex + 1 == bQuad.vertexCount() ? 0 : bStartIndex + 1;
         int bNextIndex = bEndIndex + 1 == bQuad.vertexCount() ? 0 : bEndIndex + 1;
@@ -354,7 +354,7 @@ public class CSGNode
 //        }
         
         // actually build the new quad!
-        RawQuad joinedQuad = new RawQuad(aQuad, joinedVertex.size());
+        Poly joinedQuad = new Poly(aQuad, joinedVertex.size());
         for(int i = 0; i < joinedVertex.size(); i++)
         {
             joinedQuad.addVertex(i, joinedVertex.get(i));
@@ -377,16 +377,16 @@ public class CSGNode
         
     }
     
-    private List<RawQuad> recombine(ArrayList<RawQuad> quadList)
+    private List<Poly> recombine(ArrayList<Poly> quadList)
     {
         if(quadList.get(0).getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR) return quadList;
         
-        TLongObjectHashMap<RawQuad> quadMap = new TLongObjectHashMap<RawQuad>(quadList.size());
+        TLongObjectHashMap<Poly> quadMap = new TLongObjectHashMap<Poly>(quadList.size());
         TreeMap<Long, TreeMap<Long, Integer>> edgeMap = new TreeMap<Long, TreeMap<Long, Integer>>();
         
 //        double totalArea = 0;
         
-        for(RawQuad q : quadList) 
+        for(Poly q : quadList) 
         {
             quadMap.put(q.quadID(), q);
 //            totalArea += q.getArea();
@@ -428,12 +428,12 @@ public class CSGNode
                         // Examining two quads that share an edge
                         // to determine if they can be combined.
 
-                        RawQuad iQuad = quadMap.get(edgeQuadIDs[i]);
-                        RawQuad jQuad = quadMap.get(edgeQuadIDs[j]);
+                        Poly iQuad = quadMap.get(edgeQuadIDs[i]);
+                        Poly jQuad = quadMap.get(edgeQuadIDs[j]);
                         
                         if(iQuad == null || jQuad == null) continue;
                         
-                        RawQuad joined = joinCsgQuads(iQuad, jQuad, edgeKey);
+                        Poly joined = joinCsgQuads(iQuad, jQuad, edgeKey);
                         
                         if(joined != null)
                         {    
@@ -502,7 +502,7 @@ public class CSGNode
 //            HardScience.log.info("too many");
 //        }
         
-        ArrayList<RawQuad> retVal = new ArrayList<RawQuad>();
+        ArrayList<Poly> retVal = new ArrayList<Poly>();
         quadMap.valueCollection().forEach((q) -> retVal.addAll(q.toQuads()));
         return retVal;
             
@@ -517,7 +517,7 @@ public class CSGNode
      *
      * @param quadsIn polygons used to build the BSP
      */
-    public final void build(List<RawQuad> quadsIn)
+    public final void build(List<Poly> quadsIn)
     {
         assert this.quads != null : "Null quads";
         
@@ -530,8 +530,8 @@ public class CSGNode
             this.plane = new CSGPlane(quadsIn.get(0));
         }
 
-        List<RawQuad> frontP = new ArrayList<RawQuad>();
-        List<RawQuad> backP = new ArrayList<RawQuad>();
+        List<Poly> frontP = new ArrayList<Poly>();
+        List<Poly> backP = new ArrayList<Poly>();
 
         // parallel version does not work here
         quadsIn.forEach((quad) -> {

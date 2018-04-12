@@ -9,7 +9,7 @@ import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.Vertex;
@@ -53,7 +53,7 @@ public abstract class QuadPainter
      * RenderLayer, lighting mode and color will already be set.
      * @return 
      */
-    protected abstract RawQuad paintQuad(RawQuad quad);
+    protected abstract Poly paintQuad(Poly quad);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -98,7 +98,7 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in tiem rendering.
      */
-    public void addPaintedQuadToList(RawQuad inputQuad, List<RawQuad> outputList, boolean isItem)
+    public void addPaintedQuadToList(Poly inputQuad, List<Poly> outputList, boolean isItem)
     {
         if(inputQuad.getSurfaceInstance().surface() != this.surface) return;
         
@@ -123,7 +123,7 @@ public abstract class QuadPainter
         
         }
     
-        RawQuad result = inputQuad.clone();
+        Poly result = inputQuad.clone();
         result.setRenderPass(this.renderPass);
         result.setFullBrightness(this.isFullBrightnessIntended);
 
@@ -163,7 +163,7 @@ public abstract class QuadPainter
     }
     
     
-    private void recolorQuad(RawQuad result)
+    private void recolorQuad(Poly result)
     {
         int color = this.myColorMap.getColor(this.isFullBrightnessIntended ? EnumColorMap.LAMP : EnumColorMap.BASE);
         
@@ -225,13 +225,13 @@ public abstract class QuadPainter
         };
         
         @Override
-        public void addPaintedQuadToList(RawQuad inputQuad, List<RawQuad> outputList, boolean isItem)
+        public void addPaintedQuadToList(Poly inputQuad, List<Poly> outputList, boolean isItem)
         {
             // NOOP
         }
 
         @Override
-        protected RawQuad paintQuad(RawQuad quad)
+        protected Poly paintQuad(Poly quad)
         {
             return null;
         }

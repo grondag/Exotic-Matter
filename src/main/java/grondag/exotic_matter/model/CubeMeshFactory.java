@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.SurfaceTopology;
@@ -24,7 +24,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
     
     /** never changes so may as well save it */
-    private final List<RawQuad> cachedQuads;
+    private final List<Poly> cachedQuads;
     
     public CubeMeshFactory()
     {
@@ -33,12 +33,12 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public @Nonnull List<RawQuad> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
     {
         return cachedQuads;
     }
     
-    private List<RawQuad> getCubeQuads()
+    private List<Poly> getCubeQuads()
     {
         CubeInputs result = new CubeInputs();
         result.color = 0xFFFFFFFF;
@@ -51,7 +51,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         result.isOverlay = false;
         result.surfaceInstance = SURFACE_MAIN.unitInstance;
         
-        ImmutableList.Builder<RawQuad> builder = new ImmutableList.Builder<RawQuad>();
+        ImmutableList.Builder<Poly> builder = new ImmutableList.Builder<Poly>();
        
         builder.add(result.makeRawFace(EnumFacing.DOWN));
         builder.add(result.makeRawFace(EnumFacing.UP));

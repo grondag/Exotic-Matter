@@ -17,7 +17,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class RawQuad implements IPolyProperties
+public class Poly implements IPolyProperties
 {
     private Vertex[] vertices;
     private Vec3d faceNormal = null;
@@ -66,17 +66,17 @@ public class RawQuad implements IPolyProperties
     private long ancestorQuadID = IPolyProperties.NO_ID;
     private long[] lineID;
 
-    public RawQuad()
+    public Poly()
     {
         this(4);
     }
 
-    public RawQuad(RawQuad template)
+    public Poly(Poly template)
     {
         this(template, template.vertexCount());
     }
 
-    public RawQuad(int vertexCount)
+    public Poly(int vertexCount)
     {
         super();
         this.vertexCount = Math.max(3, vertexCount);
@@ -84,21 +84,21 @@ public class RawQuad implements IPolyProperties
         this.lineID = new long[vertexCount];
     }
 
-    public RawQuad(RawQuad template, int vertexCount)
+    public Poly(Poly template, int vertexCount)
     {
         this(vertexCount);
         this.copyProperties(template);
     }
 
     @Override
-    public RawQuad clone()
+    public Poly clone()
     {
-        RawQuad retval = new RawQuad(this);
+        Poly retval = new Poly(this);
         retval.copyVertices(this);
         return retval;
     }
 
-    protected void copyVertices(RawQuad template)
+    protected void copyVertices(Poly template)
     {
         for(int i = 0; i < this.vertexCount(); i++)
         {
@@ -113,7 +113,7 @@ public class RawQuad implements IPolyProperties
         return this.vertexCount;
     }
 
-    private void copyProperties(RawQuad fromObject)
+    private void copyProperties(Poly fromObject)
     {
         this.setNominalFace(fromObject.getNominalFace());
         this.setTextureName(fromObject.getTextureName());
@@ -133,9 +133,9 @@ public class RawQuad implements IPolyProperties
         this.setSurfaceInstance(fromObject.getSurfaceInstance());
     }
 
-    public List<RawQuad> toQuads()
+    public List<Poly> toQuads()
     {
-        ArrayList<RawQuad> retVal = new ArrayList<RawQuad>();
+        ArrayList<Poly> retVal = new ArrayList<Poly>();
 
         if(this.vertexCount <= 4)
         {
@@ -145,7 +145,7 @@ public class RawQuad implements IPolyProperties
         {
             int head = vertexCount - 1;
             int tail = 2;
-            RawQuad work = new RawQuad(this, 4);
+            Poly work = new Poly(this, 4);
             work.setVertex(0, this.getVertex(head));
             work.setVertex(1, this.getVertex(0));
             work.setVertex(2, this.getVertex(1));
@@ -154,7 +154,7 @@ public class RawQuad implements IPolyProperties
 
             while(head - tail > 1)
             {
-                work = new RawQuad(this, head - tail == 2 ? 3 : 4);
+                work = new Poly(this, head - tail == 2 ? 3 : 4);
                 work.setVertex(0, this.getVertex(head));
                 work.setVertex(1, this.getVertex(tail));
                 work.setVertex(2, this.getVertex(++tail));
@@ -172,9 +172,9 @@ public class RawQuad implements IPolyProperties
      * If this is a quad, returns two tris.
      * If is already a tri, returns copy of self.
      */
-    public List<RawQuad> toTris()
+    public List<Poly> toTris()
     {
-        ArrayList<RawQuad>  retVal= new ArrayList<RawQuad>(this.vertexCount()-2);
+        ArrayList<Poly>  retVal= new ArrayList<Poly>(this.vertexCount()-2);
 
         if(this.vertexCount() == 3)
         {
@@ -211,7 +211,7 @@ public class RawQuad implements IPolyProperties
             int head = vertexCount - 1;
             int tail = 1;
 
-            RawQuad work = new RawQuad(this, 3);
+            Poly work = new Poly(this, 3);
             work.setVertex(0, this.getVertex(head));
             work.setLineID(0, this.getLineID(head));
             work.setVertex(1, this.getVertex(0));
@@ -223,7 +223,7 @@ public class RawQuad implements IPolyProperties
 
             while(head - tail > 1)
             {
-                work = new RawQuad(this, 3);
+                work = new Poly(this, 3);
                 work.setVertex(0, this.getVertex(head));
                 work.setLineID(0, splitLineID);
                 work.setVertex(1, this.getVertex(tail));
@@ -236,7 +236,7 @@ public class RawQuad implements IPolyProperties
 
                 if(head - tail > 1)
                 {
-                    work = new RawQuad(this, 3);
+                    work = new Poly(this, 3);
                     work.setVertex(0, this.getVertex(head));
                     work.setLineID(0, splitLineID);
                     splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
@@ -256,7 +256,7 @@ public class RawQuad implements IPolyProperties
     /**
      * Reverses winding order of this quad and returns itself
      */
-    public RawQuad invert()
+    public Poly invert()
     {
 
         for(int i = 0; i < vertices.length; i++)
@@ -303,7 +303,7 @@ public class RawQuad implements IPolyProperties
      * UV coordinates will be based on where rotated vertices project onto the nominal 
      * face for this quad (effectively lockedUV) unless face vertexes have UV coordinates.
      */
-    public RawQuad setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace)
+    public Poly setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace)
     {
         
         EnumFacing defaultTop = QuadHelper.defaultTopOf(this.getNominalFace());
@@ -397,7 +397,7 @@ public class RawQuad implements IPolyProperties
      * except also sets nominal face to the given face in the start parameter. 
      * Returns self for convenience.
      */
-    public RawQuad setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, EnumFacing topFace)
+    public Poly setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setNominalFace(side);
@@ -414,7 +414,7 @@ public class RawQuad implements IPolyProperties
      * 
      * @see #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)
      */
-    public RawQuad setupFaceQuad(double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public Poly setupFaceQuad(double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setupFaceQuad(
@@ -432,7 +432,7 @@ public class RawQuad implements IPolyProperties
      * but also sets nominal face with given face in start parameter.  
      * Returns self as convenience.
      */
-    public RawQuad setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public Poly setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setNominalFace(face);
@@ -442,7 +442,7 @@ public class RawQuad implements IPolyProperties
     /**
      * Triangular version of {@link #setupFaceQuad(EnumFacing, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    public RawQuad setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
+    public Poly setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
     {
         assert(this.vertexCount() == 3);
         this.setNominalFace(side);
@@ -452,7 +452,7 @@ public class RawQuad implements IPolyProperties
     /**
      * Triangular version of {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    public RawQuad setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
+    public Poly setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
     {
         assert(this.vertexCount() == 3);
         return this.setupFaceQuad(tv0, tv1, tv2, tv2, topFace);
@@ -472,7 +472,7 @@ public class RawQuad implements IPolyProperties
     /**
      * Changes all vertices and quad color to new color and returns itself
      */
-    public RawQuad replaceColor(int color)
+    public Poly replaceColor(int color)
     {
         this.setColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
@@ -486,7 +486,7 @@ public class RawQuad implements IPolyProperties
     /**
      * Multiplies all vertex color by given color and returns itself
      */
-    public RawQuad multiplyColor(int color)
+    public Poly multiplyColor(int color)
     {
         this.setColor(QuadHelper.multiplyColor(this.getColor(), color));
         for(int i = 0; i < this.vertexCount(); i++)
@@ -575,7 +575,7 @@ public class RawQuad implements IPolyProperties
         return this.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
     }
 
-    public RawQuad initCsg()
+    public Poly initCsg()
     {
         this.setAncestorQuadID(IPolyProperties.IS_AN_ANCESTOR);
         for(int i = 0; i < this.vertexCount(); i++)
@@ -892,7 +892,7 @@ public class RawQuad implements IPolyProperties
         else
         {
             double area = 0;
-            for(RawQuad q : this.toQuads())
+            for(Poly q : this.toQuads())
             {
                 area += q.getArea();
             }
@@ -959,22 +959,22 @@ public class RawQuad implements IPolyProperties
     }
     
     /** convenience method - sets surface value and returns self */
-    public RawQuad setSurfaceInstance(SurfaceInstance surfaceInstance)
+    public Poly setSurfaceInstance(SurfaceInstance surfaceInstance)
     {
         this.surfaceInstance = surfaceInstance;
         return this;
     }
     
     /** returns a copy of this quad with the given transformation applied */
-    public RawQuad transform(Matrix4f m)
+    public Poly transform(Matrix4f m)
     {
         return this.transform(new Matrix4d(m));
     }
     
     /** returns a copy of this quad with the given transformation applied */
-    public RawQuad transform(Matrix4d matrix)
+    public Poly transform(Matrix4d matrix)
     {
-        RawQuad result = this.clone();
+        Poly result = this.clone();
         
         // transform vertices
         for(int i = 0; i < result.vertexCount; i++)

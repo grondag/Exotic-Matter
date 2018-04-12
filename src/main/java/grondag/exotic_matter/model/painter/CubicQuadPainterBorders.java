@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painter;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.render.FaceQuadInputs;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
@@ -46,7 +46,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     }
 
     @Override
-    public RawQuad paintQuad(RawQuad quad)
+    public Poly paintQuad(Poly quad)
     {
         assert quad.isLockUV() : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
         

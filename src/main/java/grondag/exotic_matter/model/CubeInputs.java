@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model;
 
 import grondag.exotic_matter.render.IPolyProperties;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
@@ -42,9 +42,9 @@ public class CubeInputs{
         this.surfaceInstance = IPolyProperties.NO_SURFACE;
     }
 
-    public RawQuad makeRawFace(EnumFacing side){
+    public Poly makeRawFace(EnumFacing side){
 
-        RawQuad qi = new RawQuad();
+        Poly qi = new Poly();
         qi.setColor(this.color);
         
         qi.setLockUV(true);

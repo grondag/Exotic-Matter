@@ -22,7 +22,7 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.FaceVertex;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.TextureHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -426,9 +426,9 @@ public class RasterFont extends TextureAtlasSprite
      * @param leftSide If false will be centered.
      * @param list
      */
-    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<RawQuad> list)
+    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<Poly> list)
     {
-        RawQuad template = new RawQuad();
+        Poly template = new Poly();
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setColor(color);
         template.setLockUV(false);
@@ -463,7 +463,7 @@ public class RasterFont extends TextureAtlasSprite
                 
                 for(EnumFacing face : EnumFacing.VALUES)
                 {
-                    RawQuad quad = template.clone();
+                    Poly quad = template.clone();
                     quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                     quad.scaleFromBlockCenter(bumpFactor);
                     list.add(quad);

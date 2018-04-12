@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.RenderUtil;
 import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.varia.Useful;
@@ -26,7 +26,7 @@ public class CollisionBoxGenerator
     private final static int STOP_NORTH = 1 << EnumFacing.NORTH.ordinal();
     private final static int STOP_SOUTH = 1 << EnumFacing.SOUTH.ordinal();
 
-    public static List<AxisAlignedBB> makeCollisionBoxList(List<RawQuad> quads)
+    public static List<AxisAlignedBB> makeCollisionBoxList(List<Poly> quads)
     {
         if(quads.isEmpty())
         {
@@ -47,7 +47,7 @@ public class CollisionBoxGenerator
         return retVal;
     }
 
-    private static List<AxisAlignedBB> makeBoxVoxelMethod(List<RawQuad> quads)
+    private static List<AxisAlignedBB> makeBoxVoxelMethod(List<Poly> quads)
     {
 
         if(quads.isEmpty()) return Collections.emptyList();
@@ -75,7 +75,7 @@ public class CollisionBoxGenerator
         // Would be better to use Separating Axis Theorem tests to cover more edge cases,
         // but not willing to take time to implement that right now.
 
-        for(RawQuad quad : quads)
+        for(Poly quad : quads)
         {                  
             if(quad.isOnFace(EnumFacing.DOWN, QuadHelper.EPSILON))
             {
@@ -131,18 +131,18 @@ public class CollisionBoxGenerator
         return retVal.build();
     }
     
-    private static boolean isVoxelPresent(double x, double y, double z, List<RawQuad> quads)
+    private static boolean isVoxelPresent(double x, double y, double z, List<Poly> quads)
     {
         Vec3d point = new Vec3d((x+0.5)/8.0, (y+0.5)/8.0, (z+0.5)/8.0);
         return RenderUtil.isPointEnclosed(point, quads);
     }
     
     
-    public static AxisAlignedBB makeBoxSimpleMethod(List<RawQuad> quads)
+    public static AxisAlignedBB makeBoxSimpleMethod(List<Poly> quads)
     {
         double minX = 1.0, minY = 1.0, minZ = 1.0, maxX = 0, maxY = 0, maxZ = 0;
 
-        for(RawQuad quad : quads)
+        for(Poly quad : quads)
         {
             for(int i = 0; i < quad.vertexCount(); i++)
             {

@@ -67,7 +67,7 @@ public class CSGPlane
         this.dist = dist;
     }
 
-    public CSGPlane(RawQuad quad)
+    public CSGPlane(Poly quad)
     {
         this.normal = quad.getFaceNormal();
         this.dist = normal.dotProduct(quad.getVertex(0));    
@@ -102,11 +102,11 @@ public class CSGPlane
      */
             
     public void splitQuad(
-        RawQuad quad,
-        List<RawQuad> coplanarFront,
-        List<RawQuad> coplanarBack,
-        List<RawQuad> front,
-        List<RawQuad> back) 
+        Poly quad,
+        List<Poly> coplanarFront,
+        List<Poly> coplanarBack,
+        List<Poly> front,
+        List<Poly> back) 
     {
         final int COPLANAR = 0;
         final int FRONT = 1;
@@ -187,7 +187,7 @@ public class CSGPlane
                     // this allows it to be copied to the split quad and 
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
-                    RawQuad frontQuad = new RawQuad(quad, frontVertex.size());
+                    Poly frontQuad = new Poly(quad, frontVertex.size());
                     frontQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
                     
                     for(int i = 0; i < frontVertex.size(); i++)
@@ -205,7 +205,7 @@ public class CSGPlane
                     // this allows it to be copied to the split quad and 
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
-                    RawQuad backQuad = new RawQuad(quad, backVertex.size());
+                    Poly backQuad = new Poly(quad, backVertex.size());
                     backQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
 
                     for(int i = 0; i < backVertex.size(); i++)

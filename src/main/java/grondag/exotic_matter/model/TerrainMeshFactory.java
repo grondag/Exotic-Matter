@@ -9,7 +9,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.CSGShape;
 import grondag.exotic_matter.render.FaceVertex;
-import grondag.exotic_matter.render.RawQuad;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.SurfaceTopology;
@@ -87,10 +87,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public @Nonnull List<RawQuad> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
     {
         CSGShape rawQuads = new CSGShape();
-        RawQuad template = new RawQuad();
+        Poly template = new Poly();
 
         template.setColor(Color.WHITE);
         template.setLockUV(true);
@@ -108,12 +108,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Quads on left (west) side of the top face.<br>
          * Needed for model and to computer center normal.
          */
-        RawQuad quadInputsCenterLeft[] = new RawQuad[4];
+        Poly quadInputsCenterLeft[] = new Poly[4];
         /**
          * Quads on right (east) side of the top face.<br>
          * Needed for model and to computer center normal.
          */
-        RawQuad quadInputsCenterRight[] = new RawQuad[4];
+        Poly quadInputsCenterRight[] = new Poly[4];
         
         
         /**
@@ -121,14 +121,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Will always contains quads for this block but only contains quads
          * for adjacent space if it has a terrain height.
          */
-        ArrayList<ArrayList<RawQuad>> quadInputsSide = new ArrayList<ArrayList<RawQuad>>(4);
+        ArrayList<ArrayList<Poly>> quadInputsSide = new ArrayList<ArrayList<Poly>>(4);
         
         /**
          * Quads adjacent to each corner vertex.  Needed to compute normals.
          * Will always contains quads for this block but only contains quads
          * for adjacent spaces if the space has a terrain height.
          */
-        ArrayList<ArrayList<RawQuad>> quadInputsCorner = new ArrayList<ArrayList<RawQuad>>(4);
+        ArrayList<ArrayList<Poly>> quadInputsCorner = new ArrayList<ArrayList<Poly>>(4);
 
 
         ///////////////////////////////////////////////
@@ -169,7 +169,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             fvMidCorner[corner.ordinal()] = fvMidCorner[corner.ordinal()].withDepth(1.0 - flowState.getMidCornerVertexHeight(corner) + flowState.getYOffset());
             fvFarCorner[corner.ordinal()] = fvFarCorner[corner.ordinal()].withDepth(1.0 - flowState.getFarCornerVertexHeight(corner) + flowState.getYOffset());
 
-            quadInputsCorner.add(new ArrayList<RawQuad>(8));            
+            quadInputsCorner.add(new ArrayList<Poly>(8));            
         }
 
         // Coordinates assume quad will be set up with North=top orientation
@@ -191,13 +191,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             fvMidSide[side.ordinal()] = fvMidSide[side.ordinal()].withDepth(1.0 - flowState.getMidSideVertexHeight(side) + flowState.getYOffset());
             fvFarSide[side.ordinal()] = fvFarSide[side.ordinal()].withDepth(1.0 - flowState.getFarSideVertexHeight(side) + flowState.getYOffset());
 
-            quadInputsSide.add(new ArrayList<RawQuad>(8));   
+            quadInputsSide.add(new ArrayList<Poly>(8));   
 
 
             // build quads on the top of this block that that border this side (left and right)
             // these are always included in the vertex normal calculations for the side midpoint and corner vertices
 
-            RawQuad qiWork = new RawQuad(template, 3);
+            Poly qiWork = new Poly(template, 3);
             qiWork.setupFaceQuad(
                     fvMidSide[side.ordinal()],
                     fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
@@ -207,7 +207,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             quadInputsSide.get(side.ordinal()).add(qiWork);
             quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
 
-            qiWork = new RawQuad(template, 3);
+            qiWork = new Poly(template, 3);
             qiWork.setupFaceQuad(
                     fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
                     fvMidSide[side.ordinal()],
@@ -222,7 +222,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             // add side block tri that borders this block if it is there
             if(isSidePresent)
             {
-                qiWork = new RawQuad(template, 3);
+                qiWork = new Poly(template, 3);
                 qiWork.setupFaceQuad(
                         fvFarSide[side.ordinal()],
                         fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
@@ -231,7 +231,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 quadInputsSide.get(side.ordinal()).add(qiWork);
                 quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
     
-                qiWork = new RawQuad(template, 3);
+                qiWork = new Poly(template, 3);
                 qiWork.setupFaceQuad(
                         fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
                         fvFarSide[side.ordinal()],
@@ -262,7 +262,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 
             if(isSidePresent)
             {
-                qiWork = new RawQuad(template, 3);
+                qiWork = new Poly(template, 3);
                 
                 final FaceVertex leftFarCorner = isLeftCornerPresent
                         
@@ -282,7 +282,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
                 
                 
-                qiWork = new RawQuad(template, 3);
+                qiWork = new Poly(template, 3);
                 
                 final FaceVertex rightFarCorner = isRightCornerPresent
                         
@@ -306,7 +306,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 if(isLeftCornerPresent)
                 {
                     // only have the corner
-                    qiWork = new RawQuad(template, 3);
+                    qiWork = new Poly(template, 3);
                     qiWork.setupFaceQuad(
                             fvMidCorner[leftCorner.ordinal()],
                             midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
@@ -319,7 +319,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 if(isRightCornerPresent)
                 {
                     // only have the corner
-                    qiWork = new RawQuad(template, 3);
+                    qiWork = new Poly(template, 3);
                     qiWork.setupFaceQuad(
                             fvMidCorner[rightCorner.ordinal()],
                             fvFarCorner[rightCorner.ordinal()],
@@ -348,7 +348,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         for(HorizontalFace side : HorizontalFace.values())
         {
             Vec3d normTemp = null;
-            for(RawQuad qi : quadInputsSide.get(side.ordinal()))
+            for(Poly qi : quadInputsSide.get(side.ordinal()))
             {
                 if(normTemp == null) 
                 {
@@ -366,7 +366,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         for(HorizontalCorner corner : HorizontalCorner.values())
         {
             Vec3d normTemp = null;
-            for(RawQuad qi : quadInputsCorner.get(corner.ordinal()))
+            for(Poly qi : quadInputsCorner.get(corner.ordinal()))
             {
                 if(normTemp == null) 
                 {
@@ -385,7 +385,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //single top face if it is relatively flat and all sides can be drawn without a mid vertex
         if(isTopSimple)
         {
-            RawQuad qi = new RawQuad(template, 4);
+            Poly qi = new Poly(template, 4);
             qi.setupFaceQuad(
                     fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()],
                     fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()],
@@ -408,7 +408,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 // if side is simple top *may* be not necessarily so - build top if not simple
                 if(!isTopSimple)
                 {
-                    RawQuad qi = new RawQuad(template, 3);
+                    Poly qi = new Poly(template, 3);
                     qi.setupFaceQuad(
                             fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
                             fvCenter,
@@ -421,7 +421,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 }
 
                 // side
-                RawQuad qSide = new RawQuad(template);
+                Poly qSide = new Poly(template);
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 setupUVForSide(qSide, side.face);
@@ -438,7 +438,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             else
             {
                 //side is not simple so have to output tops
-                RawQuad qi = quadInputsCenterLeft[side.ordinal()];
+                Poly qi = quadInputsCenterLeft[side.ordinal()];
                 qi.setVertexNormal(0, normSide[side.ordinal()]);
                 qi.setVertexNormal(1, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
                 qi.setVertexNormal(2, normCenter);
@@ -451,7 +451,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 rawQuads.add(qi);
 
                 //Sides
-                RawQuad qSide = new RawQuad(template);
+                Poly qSide = new Poly(template);
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 setupUVForSide(qSide, side.face);
@@ -464,7 +464,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         EnumFacing.UP);
                 rawQuads.add(qSide);
 
-                qSide = new RawQuad(qSide);
+                qSide = new Poly(qSide);
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 qSide.setupFaceQuad(
@@ -478,7 +478,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         }     
 
         // Bottom face
-        RawQuad qBottom = new RawQuad(template);
+        Poly qBottom = new Poly(template);
         //flip X-orthogonalAxis texture on bottom face
 //        qBottom.minU = 14 - qBottom.minU;
 //        qBottom.maxU = qBottom.minU + 2;
@@ -491,7 +491,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
         CSGShape cubeQuads = new CSGShape();
         cubeQuads.add(template.clone().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
-        RawQuad faceQuad = template.clone();
+        Poly faceQuad = template.clone();
         
         //flip X-orthogonalAxis texture on bottom face
 //        faceQuad.minU = 14 - faceQuad.minU;
@@ -512,7 +512,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         // We want top face textures to always join irrespective of Y.
         // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(RawQuad quad : rawQuads)
+        for(Poly quad : rawQuads)
         {
             EnumFacing face = quad.getNominalFace();
             if(face == null)
@@ -594,7 +594,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         return new FaceVertex((first.x + second.x) / 2.0, (first.y + second.y) / 2.0, (first.depth + second.depth) / 2.0);
     }
     
-    private RawQuad setupUVForSide(RawQuad quad, EnumFacing face)
+    private Poly setupUVForSide(Poly quad, EnumFacing face)
     {
         
 //        quad.minU = (face.getAxis() == Axis.X ? flowTex.getZ() : flowTex.getX()) * 2;

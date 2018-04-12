@@ -38,14 +38,14 @@ public class QuadContainer
     
     private int[] occlusionHash;
 
-    public static QuadContainer fromRawQuads(List<RawQuad> rawQuads)
+    public static QuadContainer fromRawQuads(List<Poly> rawQuads)
     {
         if(rawQuads.isEmpty()) return EMPTY_CONTAINER;
 
         return new QuadContainer(rawQuads);
     }
 
-    private QuadContainer(List<RawQuad> rawQuads)
+    private QuadContainer(List<Poly> rawQuads)
     {
 
         @SuppressWarnings("unchecked")
@@ -56,7 +56,7 @@ public class QuadContainer
             buckets[i] = new ArrayList<BakedQuad>();
         }
 
-        for(RawQuad r : rawQuads)
+        for(Poly r : rawQuads)
         {
             EnumFacing facing = r.getActualFace();
             if(facing == null)
