@@ -18,20 +18,20 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert quad.lockUV : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV() : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
         
         Rotation rotation = this.textureRotationForFace(quad.getNominalFace());
         int textureVersion = this.textureVersionForFace(quad.getNominalFace());
         
-        if(quad.surfaceInstance.textureSalt != 0)
+        if(quad.getSurfaceInstance().textureSalt != 0)
         {
-            int saltHash = MathHelper.hash(quad.surfaceInstance.textureSalt);
+            int saltHash = MathHelper.hash(quad.getSurfaceInstance().textureSalt);
             rotation = Useful.offsetEnumValue(rotation, saltHash & 3);
             textureVersion = (textureVersion + (saltHash >> 2)) & this.texture.textureVersionMask();
         }
         
-        quad.rotation = rotation;
-        quad.textureName = this.texture.getTextureName(textureVersion);
+        quad.setRotation(rotation);
+        quad.setTextureName(this.texture.getTextureName(textureVersion));
         return quad;
     }
 }

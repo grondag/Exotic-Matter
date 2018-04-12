@@ -84,7 +84,7 @@ public class SuperDispatcher
 		    
 			for(RawQuad quad : paintedQuads)
 			{
-			    containers[quad.renderPass.blockRenderLayer.ordinal()].add(quad);
+			    containers[quad.getRenderPass().blockRenderLayer.ordinal()].add(quad);
 			}
 
 			RenderLayout renderLayout = key.getRenderPassSet().renderLayout;
@@ -112,7 +112,7 @@ public class SuperDispatcher
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
 	    	for(RawQuad quad : getFormattedQuads(key, true))
 	    	{
-	    	    switch(quad.surfaceInstance.surfaceType())
+	    	    switch(quad.getSurfaceInstance().surfaceType())
 	    	    {
                 case CUT:
                     break;
@@ -142,18 +142,18 @@ public class SuperDispatcher
             for(RawQuad q : quads)
             {
                 // arbitrary choice - just needs to be a simple non-null texture
-                q.textureName = grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName();
+                q.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
              
                 // Need to scale UV on non-cubic surfaces to be within a 1 block boundary.
                 // This causes breaking textures to be scaled to normal size.
                 // If we didn't do this, bigtex block break textures would appear abnormal.
-                if(q.surfaceInstance.topology() == SurfaceTopology.TILED)
+                if(q.getSurfaceInstance().topology() == SurfaceTopology.TILED)
                 {
                     // This is simple for tiled surface because UV scale is always 1.0
-                    q.minU = 0;
-                    q.maxU = 16;
-                    q.minV = 0;
-                    q.maxV = 16;
+                    q.setMinU(0);
+                    q.setMaxU(16);
+                    q.setMinV(0);
+                    q.setMaxV(16);
                 }
             }
             return QuadContainer.fromRawQuads(quads);
@@ -245,7 +245,7 @@ public class SuperDispatcher
         
         for(RawQuad shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
         {
-            Surface qSurface = shapeQuad.surfaceInstance.surface();
+            Surface qSurface = shapeQuad.getSurfaceInstance().surface();
             for(QuadPainter p : painters)
             {
                 if(qSurface == p.surface) p.addPaintedQuadToList(shapeQuad, result, isItem);

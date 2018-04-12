@@ -35,29 +35,29 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert !quad.lockUV : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
+        assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         
         int sliceCount = this.texture.textureScale().sliceCount;
         
-        float maxU = Math.max(quad.maxU, quad.minU);
+        float maxU = Math.max(quad.getMaxU(), quad.getMinU());
         int uOrdinal = ((Math.round(maxU) - 1) / sliceCount);
         
-        float maxV = Math.max(quad.maxV, quad.minV);
+        float maxV = Math.max(quad.getMaxV(), quad.getMinV());
         int vOrdinal = ((Math.round(maxV) - 1) / sliceCount);
         
         // bring unit uv coordinates within the range of our texture size
         int shiftU = uOrdinal * sliceCount;
         if(shiftU > 0)
         {
-            quad.maxU -= shiftU;
-            quad.minU -= shiftU;
+            quad.setMaxU(quad.getMaxU() - shiftU);
+            quad.setMinU(quad.getMinU() - shiftU);
         }
         
         int shiftV= vOrdinal * sliceCount;
         if(shiftV > 0)
         {
-            quad.maxV -= shiftV;
-            quad.minV -= shiftV;
+            quad.setMaxV(quad.getMaxV() - shiftV);
+            quad.setMinV(quad.getMinV() - shiftV);
         }
         
         // uv coordinates should now be in range 0 to sliceCount
@@ -69,7 +69,7 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
        int hash = MathHelper.hash(uOrdinal | (vOrdinal << 8));
         
         int textureVersion = this.texture.textureVersionMask() & (hash >> 4);
-        quad.textureName = this.texture.getTextureName(textureVersion);
+        quad.setTextureName(this.texture.getTextureName(textureVersion));
                 
         //FIXME - doubt that the rest of this still works at all after
         //lockUV and texture rotation were refactored.
@@ -80,18 +80,18 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
             rotationOrdinal = (rotationOrdinal + hash) & 3;
         }
         
-        quad.rotation = Rotation.values()[rotationOrdinal];
+        quad.setRotation(Rotation.values()[rotationOrdinal]);
         
         if(rotationOrdinal > 0)
         {
             for(int i = 0; i < rotationOrdinal; i++)
             {
-                float oldMinU = quad.minU;
-                float oldMaxU = quad.maxU;
-                quad.minU = quad.minV;
-                quad.maxU = quad.maxV;
-                quad.minV = 16 - oldMaxU;
-                quad.maxV = 16 - oldMinU;
+                float oldMinU = quad.getMinU();
+                float oldMaxU = quad.getMaxU();
+                quad.setMinU(quad.getMinV());
+                quad.setMaxU(quad.getMaxV());
+                quad.setMinV(16 - oldMaxU);
+                quad.setMaxV(16 - oldMinU);
 
             }
         }

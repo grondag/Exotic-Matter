@@ -183,10 +183,10 @@ public class QuadHelper
                 
                 RawQuad newQuad = new RawQuad(template);
                 
-                newQuad.addVertex(0, new Vertex(centerStart.add(n0.scale(quadStartRadius)), u0, v0, template.color, n0));
-                newQuad.addVertex(1, new Vertex(centerStart.add(n1.scale(quadStartRadius)), u1, v0, template.color, n1));
-                newQuad.addVertex(2, new Vertex(centerEnd.add(n1.scale(quadEndRadius)), u1, v1, template.color, n1));
-                newQuad.addVertex(3, new Vertex(centerEnd.add(n0.scale(quadEndRadius)), u0, v1, template.color, n0));
+                newQuad.addVertex(0, new Vertex(centerStart.add(n0.scale(quadStartRadius)), u0, v0, template.getColor(), n0));
+                newQuad.addVertex(1, new Vertex(centerStart.add(n1.scale(quadStartRadius)), u1, v0, template.getColor(), n1));
+                newQuad.addVertex(2, new Vertex(centerEnd.add(n1.scale(quadEndRadius)), u1, v1, template.getColor(), n1));
+                newQuad.addVertex(3, new Vertex(centerEnd.add(n0.scale(quadEndRadius)), u0, v1, template.getColor(), n0));
                 results.add(newQuad);
                 
                 if(j == 0 || j == raySlices - 1)
@@ -197,11 +197,11 @@ public class QuadHelper
 
                     if(j == 0)
                     {    
-                        bottom.addVertex(i, new Vertex(centerStart.add(n0.scale(quadStartRadius)), u, v, template.color, null));                
+                        bottom.addVertex(i, new Vertex(centerStart.add(n0.scale(quadStartRadius)), u, v, template.getColor(), null));                
                     }
                     if(j == raySlices - 1)
                     {
-                        top.addVertex(polySlices - i - 1, new Vertex(centerEnd.add(n0.scale(quadEndRadius)), u, v, template.color, null));
+                        top.addVertex(polySlices - i - 1, new Vertex(centerEnd.add(n0.scale(quadEndRadius)), u, v, template.getColor(), null));
                     }
                 }
             }
@@ -294,9 +294,9 @@ public class QuadHelper
     {
         RawQuad newQuad = new RawQuad(template, 3);
         
-        newQuad.addVertex(0, new Vertex(points[p1], 0, 0, template.color, normals[p1]));
-        newQuad.addVertex(1, new Vertex(points[p2], 1, 0, template.color, normals[p2]));
-        newQuad.addVertex(2, new Vertex(points[p3], 1, 1, template.color, normals[p3]));
+        newQuad.addVertex(0, new Vertex(points[p1], 0, 0, template.getColor(), normals[p1]));
+        newQuad.addVertex(1, new Vertex(points[p2], 1, 0, template.getColor(), normals[p2]));
+        newQuad.addVertex(2, new Vertex(points[p3], 1, 1, template.getColor(), normals[p3]));
 
         // used for testing
 //        newQuad.recolor((Useful.SALT_SHAKER.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
@@ -515,10 +515,10 @@ public class QuadHelper
        public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, double uvFraction, Rotation texturRotation, List<RawQuad> list)
        {
            RawQuad template = new RawQuad();
-           template.textureName = "hard_science:blocks/" + rawTextureName;
-           template.color = color;
-           template.lockUV = false;
-           template.shouldContractUVs = contractUVs;
+           template.setTextureName("hard_science:blocks/" + rawTextureName);
+           template.setColor(color);
+           template.setLockUV(false);
+           template.setShouldContractUVs(contractUVs);
            
            float bottom = top - size;
            float right = left + size;

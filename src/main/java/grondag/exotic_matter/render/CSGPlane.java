@@ -116,8 +116,8 @@ public class CSGPlane
         // Classify each point as well as the entire polygon into one of the above
         // four classes.
         int polygonType = 0;
-        int types[] = new int[quad.getVertexCount()];
-        for (int i = 0; i < quad.getVertexCount(); i++) {
+        int types[] = new int[quad.vertexCount()];
+        for (int i = 0; i < quad.vertexCount(); i++) {
             double t = this.normal.dotProduct(quad.getVertex(i)) - this.dist;
             
             int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
@@ -141,12 +141,12 @@ public class CSGPlane
                 break;
             case SPANNING:
                 
-                List<Vertex> frontVertex = new ArrayList<Vertex>(quad.getVertexCount()+1);
-                List<Vertex> backVertex = new ArrayList<Vertex>(quad.getVertexCount()+1);
-                List<Long> frontLineID = new ArrayList<Long>(quad.getVertexCount()+1);
-                List<Long> backLineID = new ArrayList<Long>(quad.getVertexCount()+1);
-                for (int i = 0; i < quad.getVertexCount(); i++) {
-                    int j = (i + 1) % quad.getVertexCount();
+                List<Vertex> frontVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
+                List<Vertex> backVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
+                List<Long> frontLineID = new ArrayList<Long>(quad.vertexCount()+1);
+                List<Long> backLineID = new ArrayList<Long>(quad.vertexCount()+1);
+                for (int i = 0; i < quad.vertexCount(); i++) {
+                    int j = (i + 1) % quad.vertexCount();
                     int iType = types[i];
                     int jType = types[j];
                     Vertex iVertex = quad.getVertex(i);
@@ -188,7 +188,7 @@ public class CSGPlane
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
                     RawQuad frontQuad = new RawQuad(quad, frontVertex.size());
-                    frontQuad.ancestorQuadID = quad.getAncestorQuadIDForDescendant();
+                    frontQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
                     
                     for(int i = 0; i < frontVertex.size(); i++)
                     {
@@ -206,7 +206,7 @@ public class CSGPlane
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
                     RawQuad backQuad = new RawQuad(quad, backVertex.size());
-                    backQuad.ancestorQuadID = quad.getAncestorQuadIDForDescendant();
+                    backQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
 
                     for(int i = 0; i < backVertex.size(); i++)
                     {

@@ -114,7 +114,7 @@ public class PointInPolygonTest
 
         Point2d testPoint = discardAxis.get2dPoint(point);
 
-        int size = quad.getVertexCount();
+        int size = quad.vertexCount();
         Point2d vertices[] = new Point2d[size + 1];
         {
             for(int i = 0; i < size; i++)

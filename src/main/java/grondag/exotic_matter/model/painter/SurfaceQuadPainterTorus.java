@@ -16,7 +16,7 @@ public class SurfaceQuadPainterTorus extends SurfaceQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert !quad.lockUV : "Toroidal surface quad painter received quad with lockUV semantics.  Not expected";
+        assert !quad.isLockUV() : "Toroidal surface quad painter received quad with lockUV semantics.  Not expected";
         
         return null;
     }

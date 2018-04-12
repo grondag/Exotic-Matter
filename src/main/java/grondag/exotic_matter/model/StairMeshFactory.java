@@ -23,23 +23,23 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         Matrix4d matrix = modelState.getMatrix4d();
         
         RawQuad template = new RawQuad();
-        template.color = 0xFFFFFFFF;
-        template.rotation = Rotation.ROTATE_NONE;
-        template.isFullBrightness = false;
-        template.lockUV = true;
+        template.setColor(0xFFFFFFFF);
+        template.setRotation(Rotation.ROTATE_NONE);
+        template.setFullBrightness(false);
+        template.setLockUV(true);
 
         ImmutableList.Builder<RawQuad> builder = new ImmutableList.Builder<RawQuad>();
         
         RawQuad quad = template.clone();
-        quad.surfaceInstance = BACK_AND_BOTTOM_INSTANCE;
-        quad.setFace(EnumFacing.NORTH);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);
       
         quad = template.clone();
-        quad.surfaceInstance = BACK_AND_BOTTOM_INSTANCE;
-        quad.setFace(EnumFacing.EAST);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);
@@ -49,19 +49,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         // a T-junction tends to mess about with the results.
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.UP, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.0, 1.0, 0.5, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
@@ -71,19 +71,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         // a T-junction tends to mess about with the results.
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.0, 0.5, 0.5, 0.0, EnumFacing.NORTH);
         quad = quad.transform(matrix);
         builder.add(quad);
@@ -91,25 +91,25 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.5, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = TOP_INSTANCE;
+        quad.setSurfaceInstance(TOP_INSTANCE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.0, 0.0, 0.5, 1.0, 0.5, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
+        quad.setSurfaceInstance(SIDE_INSTANCE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.0, 0.0, 0.5, 1.0, 0.0, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);
         
         quad = template.clone();
-        quad.surfaceInstance = TOP_INSTANCE;
+        quad.setSurfaceInstance(TOP_INSTANCE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.5, 0.0, 1.0, 1.0, 0.5, EnumFacing.UP);
         quad = quad.transform(matrix);
         builder.add(quad);

@@ -26,9 +26,9 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert quad.lockUV : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV() : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
         
-        if(!quad.surfaceInstance.allowBorders) return null;
+        if(!quad.getSurfaceInstance().allowBorders) return null;
         
         EnumFacing face = quad.getNominalFace();
         if(face == null) return null;
@@ -39,12 +39,12 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
         
         if(inputs == null) return null;
             
-        quad.rotation = inputs.rotation;
-        quad.minU = inputs.flipU ? 16 : 0;
-        quad.minV = inputs.flipV ? 16 : 0;
-        quad.maxU = inputs.flipU ? 0 : 16;
-        quad.maxV = inputs.flipV ? 0 : 16;
-        quad.textureName = this.texture.getTextureName(this.textureVersionForFace(quad.getNominalFace()), inputs.textureOffset);
+        quad.setRotation(inputs.rotation);
+        quad.setMinU(inputs.flipU ? 16 : 0);
+        quad.setMinV(inputs.flipV ? 16 : 0);
+        quad.setMaxU(inputs.flipU ? 0 : 16);
+        quad.setMaxV(inputs.flipV ? 0 : 16);
+        quad.setTextureName(this.texture.getTextureName(this.textureVersionForFace(quad.getNominalFace()), inputs.textureOffset));
         
         return quad;
     }

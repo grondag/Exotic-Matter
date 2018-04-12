@@ -429,10 +429,10 @@ public class RasterFont extends TextureAtlasSprite
     public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<RawQuad> list)
     {
         RawQuad template = new RawQuad();
-        template.textureName = FontHolder.FONT_RESOURCE_STRING_SMALL;
-        template.color = color;
-        template.lockUV = false;
-        template.shouldContractUVs = false;
+        template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
+        template.setColor(color);
+        template.setLockUV(false);
+        template.setShouldContractUVs(false);
         
         int pixelWidth = formatAsForumla ? this.getWidthFormula(text) : this.getWidth(text);
         

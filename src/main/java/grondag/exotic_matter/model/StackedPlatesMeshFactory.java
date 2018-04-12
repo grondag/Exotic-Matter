@@ -39,31 +39,31 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         double height = (meta + 1) / 16.0;
         
         RawQuad template = new RawQuad();
-        template.color = 0xFFFFFFFF;
-        template.rotation = Rotation.ROTATE_NONE;
-        template.isFullBrightness = false;
-        template.lockUV = true;
+        template.setColor(0xFFFFFFFF);
+        template.setRotation(Rotation.ROTATE_NONE);
+        template.setFullBrightness(false);
+        template.setLockUV(true);
 
         ImmutableList.Builder<RawQuad> builder = new ImmutableList.Builder<RawQuad>();
         
         RawQuad quad = template.clone();
-        quad.surfaceInstance = TOP_AND_BOTTOM.unitInstance;
-        quad.setFace(EnumFacing.UP);
+        quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
+        quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 1-height, EnumFacing.NORTH);
         builder.add(quad.transform(matrix));
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
             quad = template.clone();
-            quad.surfaceInstance = SIDES.unitInstance;
-            quad.setFace(face);
+            quad.setSurfaceInstance(SIDES.unitInstance);
+            quad.setNominalFace(face);
             quad.setupFaceQuad( 0.0, 0.0, 1.0, height, 0.0, EnumFacing.UP);
             builder.add(quad.transform(matrix));
         }
         
         quad = template.clone();
-        quad.surfaceInstance = TOP_AND_BOTTOM.unitInstance;
-        quad.setFace(EnumFacing.DOWN);
+        quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
+        quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         builder.add(quad.transform(matrix));
         

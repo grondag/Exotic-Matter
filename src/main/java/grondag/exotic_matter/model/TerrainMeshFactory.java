@@ -92,11 +92,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         CSGShape rawQuads = new CSGShape();
         RawQuad template = new RawQuad();
 
-        template.color = Color.WHITE;
-        template.lockUV = true;
-        template.surfaceInstance = SURFACE_TOP;
+        template.setColor(Color.WHITE);
+        template.setLockUV(true);
+        template.setSurfaceInstance(SURFACE_TOP);
         // default - need to change for sides and bottom
-        template.setFace(EnumFacing.UP);
+        template.setNominalFace(EnumFacing.UP);
 
 
         TerrainState flowState = modelState.getTerrainState();
@@ -422,8 +422,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                 // side
                 RawQuad qSide = new RawQuad(template);
-                qSide.surfaceInstance = SURFACE_SIDE;
-                qSide.setFace(side.face);
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
                 setupUVForSide(qSide, side.face);
 
                 qSide.setupFaceQuad(
@@ -452,8 +452,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                 //Sides
                 RawQuad qSide = new RawQuad(template);
-                qSide.surfaceInstance = SURFACE_SIDE;
-                qSide.setFace(side.face);
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
                 setupUVForSide(qSide, side.face);
 
                 qSide.setupFaceQuad(
@@ -465,8 +465,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 rawQuads.add(qSide);
 
                 qSide = new RawQuad(qSide);
-                qSide.surfaceInstance = SURFACE_SIDE;
-                qSide.setFace(side.face);
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
                 qSide.setupFaceQuad(
                         new FaceVertex(0.5, bottom, 0),
                         new FaceVertex(1, bottom, 0),
@@ -482,8 +482,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //flip X-orthogonalAxis texture on bottom face
 //        qBottom.minU = 14 - qBottom.minU;
 //        qBottom.maxU = qBottom.minU + 2;
-        qBottom.surfaceInstance = SURFACE_SIDE;
-        qBottom.setFace(EnumFacing.DOWN);        
+        qBottom.setSurfaceInstance(SURFACE_SIDE);
+        qBottom.setNominalFace(EnumFacing.DOWN);        
         qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
         rawQuads.add(qBottom);
 
@@ -526,55 +526,55 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 case NORTH:
                 {
                     int zHash = MathHelper.hash(modelState.getPosZ());
-                    quad.minU = 255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF);
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = 255 - ((modelState.getPosY() + zHash) & 0xFF);
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case SOUTH:
                 {
                     int zHash = MathHelper.hash(modelState.getPosZ());
-                    quad.minU = (modelState.getPosX() + (zHash >> 16)) & 0xFF;
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = 255 - ((modelState.getPosY() + zHash) & 0xFF);
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case EAST:
                 {
                     int xHash = MathHelper.hash(modelState.getPosX());
-                    quad.minU = 255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = 255 - ((modelState.getPosY() + xHash) & 0xFF);
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case WEST:
                 {
                     int xHash = MathHelper.hash(modelState.getPosX());
-                    quad.minU = (modelState.getPosZ() + (xHash >> 16)) & 0xFF;
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = 255 - ((modelState.getPosY() + xHash) & 0xFF);
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 } 
                 case DOWN:
                 {
                     int yHash = MathHelper.hash(modelState.getPosY());
-                    quad.minU = 255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF);
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = (modelState.getPosZ() + (yHash >> 16)) & 0xFF;
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case UP:
                 default:
                 {
-                    quad.minU = modelState.getPosX();
-                    quad.maxU = quad.minU +  1;
-                    quad.minV = modelState.getPosZ();
-                    quad.maxV = quad.minV + 1;
+                    quad.setMinU(modelState.getPosX());
+                    quad.setMaxU(quad.getMinU() +  1);
+                    quad.setMinV(modelState.getPosZ());
+                    quad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
             }
@@ -601,13 +601,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // need to flip U on these side faces so that textures align properly
         if(face == EnumFacing.EAST || face == EnumFacing.NORTH) 
         {
-            quad.minU = 16;
-            quad.maxU = 0;
+            quad.setMinU(16);
+            quad.setMaxU(0);
         }
         else
         {
-            quad.minU = 0;
-            quad.maxU = 16;
+            quad.setMinU(0);
+            quad.setMaxU(16);
         }
         return quad;
 //         quad.maxU = quad.minU + 2;

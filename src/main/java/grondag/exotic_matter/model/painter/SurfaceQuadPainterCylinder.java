@@ -16,7 +16,7 @@ public class SurfaceQuadPainterCylinder extends SurfaceQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert !quad.lockUV : "Cylindrical surface quad painter received quad with lockUV semantics.  Not expected";
+        assert !quad.isLockUV() : "Cylindrical surface quad painter received quad with lockUV semantics.  Not expected";
         return null;
     }
 }

@@ -48,9 +48,9 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     @Override
     public RawQuad paintQuad(RawQuad quad)
     {
-        assert quad.lockUV : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV() : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
         
-        if(!quad.surfaceInstance.allowBorders) return null;
+        if(!quad.getSurfaceInstance().allowBorders) return null;
         
         EnumFacing face = quad.getNominalFace();
         if(face == null) return null;
@@ -64,13 +64,13 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile())
             return null;
         
-        quad.rotation = inputs.rotation;
+        quad.setRotation(inputs.rotation);
 //        cubeInputs.rotateBottom = false;
-        quad.minU = inputs.flipU ? 16 : 0;
-        quad.minV = inputs.flipV ? 16 : 0;
-        quad.maxU = inputs.flipU ? 0 : 16;
-        quad.maxV = inputs.flipV ? 0 : 16;
-        quad.textureName = this.texture.getTextureName(textureVersionForFace(quad.getNominalFace()), inputs.textureOffset);
+        quad.setMinU(inputs.flipU ? 16 : 0);
+        quad.setMinV(inputs.flipV ? 16 : 0);
+        quad.setMaxU(inputs.flipU ? 0 : 16);
+        quad.setMaxV(inputs.flipV ? 0 : 16);
+        quad.setTextureName(this.texture.getTextureName(textureVersionForFace(quad.getNominalFace()), inputs.textureOffset));
         
         return quad;
     }

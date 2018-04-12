@@ -23,28 +23,28 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         Matrix4d matrix = modelState.getMatrix4d();
         
         RawQuad template = new RawQuad();
-        template.color = 0xFFFFFFFF;
-        template.rotation = Rotation.ROTATE_NONE;
-        template.isFullBrightness = false;
-        template.lockUV = true;
+        template.setColor(0xFFFFFFFF);
+        template.setRotation(Rotation.ROTATE_NONE);
+        template.setFullBrightness(false);
+        template.setLockUV(true);
 
         ImmutableList.Builder<RawQuad> builder = new ImmutableList.Builder<RawQuad>();
         
         RawQuad quad = template.clone();
-        quad.surfaceInstance = BACK_AND_BOTTOM_INSTANCE;
-        quad.setFace(EnumFacing.NORTH);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0, EnumFacing.UP);
         builder.add(quad.transform(matrix));
       
         quad = template.clone();
-        quad.surfaceInstance = BACK_AND_BOTTOM_INSTANCE;
-        quad.setFace(EnumFacing.EAST);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         builder.add(quad.transform(matrix));
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
-        quad.setFace(EnumFacing.UP);
+        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 1, 0),
                 new FaceVertex(1, 0, 0),
@@ -53,8 +53,8 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         builder.add(quad.transform(matrix));
         
         quad = template.clone();
-        quad.surfaceInstance = SIDE_INSTANCE;
-        quad.setFace(EnumFacing.DOWN);
+        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(EnumFacing.DOWN,
                 new FaceVertex(0, 0, 0),
                 new FaceVertex(1, 1, 0),
@@ -63,8 +63,8 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         builder.add(quad.transform(matrix));
         
         quad = template.clone();
-        quad.surfaceInstance = TOP_INSTANCE;
-        quad.setFace(EnumFacing.SOUTH);
+        quad.setSurfaceInstance(TOP_INSTANCE);
+        quad.setNominalFace(EnumFacing.SOUTH);
         quad.setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 1),
                 new FaceVertex(1, 0, 0),

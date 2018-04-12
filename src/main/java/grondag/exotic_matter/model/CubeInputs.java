@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model;
 
+import grondag.exotic_matter.render.IPolyProperties;
 import grondag.exotic_matter.render.RawQuad;
 import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
@@ -24,7 +25,7 @@ public class CubeInputs{
     {
         //Minimum needed to prevent NPE
         this.textureRotation = Rotation.ROTATE_NONE;
-        this.surfaceInstance = RawQuad.NO_SURFACE;
+        this.surfaceInstance = IPolyProperties.NO_SURFACE;
     }
     public CubeInputs(int color, Rotation textureRotation, String textureName, boolean flipU, boolean flipV, boolean isOverlay, boolean isItem)
     {
@@ -38,23 +39,23 @@ public class CubeInputs{
         this.u1 = flipU ? 0 : 16;
         this.v1 = flipV ? 0 : 16;
         this.rotateBottom = true;
-        this.surfaceInstance = RawQuad.NO_SURFACE;
+        this.surfaceInstance = IPolyProperties.NO_SURFACE;
     }
 
     public RawQuad makeRawFace(EnumFacing side){
 
         RawQuad qi = new RawQuad();
-        qi.color = this.color;
+        qi.setColor(this.color);
         
-        qi.lockUV = true;
-        qi.isFullBrightness = this.isFullBrightness;
-        qi.rotation = (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation;
-        qi.textureName = this.textureName;
-        qi.surfaceInstance = this.surfaceInstance;
+        qi.setLockUV(true);
+        qi.setFullBrightness(this.isFullBrightness);
+        qi.setRotation((rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
+        qi.setTextureName(this.textureName);
+        qi.setSurfaceInstance(this.surfaceInstance);
 
         double minBound = this.isOverlay ? -0.0002 : 0.0;
         double maxBound = this.isOverlay ? 1.0002 : 1.0;
-        qi.setFace(side);
+        qi.setNominalFace(side);
 
         switch(side)
         {

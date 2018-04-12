@@ -100,20 +100,20 @@ public abstract class QuadPainter
      */
     public void addPaintedQuadToList(RawQuad inputQuad, List<RawQuad> outputList, boolean isItem)
     {
-        if(inputQuad.surfaceInstance.surface() != this.surface) return;
+        if(inputQuad.getSurfaceInstance().surface() != this.surface) return;
         
         switch(this.paintLayer)
         {
         case BASE:
-            if(inputQuad.surfaceInstance.disableBase) return;
+            if(inputQuad.getSurfaceInstance().disableBase) return;
             break;
             
         case MIDDLE:
-            if(inputQuad.surfaceInstance.disableMiddle) return;
+            if(inputQuad.getSurfaceInstance().disableMiddle) return;
             break;
             
         case OUTER:
-            if(inputQuad.surfaceInstance.disableOuter) return;
+            if(inputQuad.getSurfaceInstance().disableOuter) return;
             break;
             
         case CUT:
@@ -124,8 +124,8 @@ public abstract class QuadPainter
         }
     
         RawQuad result = inputQuad.clone();
-        result.renderPass = this.renderPass;
-        result.isFullBrightness = this.isFullBrightnessIntended;
+        result.setRenderPass(this.renderPass);
+        result.setFullBrightness(this.isFullBrightnessIntended);
 
         recolorQuad(result);
      
@@ -135,7 +135,7 @@ public abstract class QuadPainter
         
         if(result != null) 
         {
-            if(result.lockUV)
+            if(result.isLockUV())
             {
                 // if lockUV is on, derive UV coords by projection
                 // of vertex coordinates on the plane of the quad's face
@@ -180,13 +180,13 @@ public abstract class QuadPainter
             result.replaceColor(color);
         }
         
-        else if(result.surfaceInstance.isLampGradient && this.lampColorMap != null)
+        else if(result.getSurfaceInstance().isLampGradient && this.lampColorMap != null)
         {
             // if surface has a lamp gradient and rendered with shading, need
             // to replace the colors to form the gradient.
             int shadedColor = QuadHelper.shadeColor(color, (LightUtil.diffuseLight(result.getNormalFace()) + 2) / 3, false);
             int lampColor = this.lampColorMap.getColor(EnumColorMap.LAMP);
-            for(int i = 0; i < result.getVertexCount(); i++)
+            for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
                 if(v != null)
@@ -199,7 +199,7 @@ public abstract class QuadPainter
             // if needed, change render pass of gradient surface to flat so that it doesn't get darkened by AO
             if(!this.lampRenderPass.isShaded && this.renderPass.isShaded)
             {
-                result.renderPass = this.renderPass.flipShading();
+                result.setRenderPass(this.renderPass.flipShading());
             }
         }
         else

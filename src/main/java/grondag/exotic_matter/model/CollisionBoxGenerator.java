@@ -144,7 +144,7 @@ public class CollisionBoxGenerator
 
         for(RawQuad quad : quads)
         {
-            for(int i = 0; i < quad.getVertexCount(); i++)
+            for(int i = 0; i < quad.vertexCount(); i++)
             {
                 Vertex v = quad.getVertex(i);
                 if(v.x > maxX) maxX = v.x;

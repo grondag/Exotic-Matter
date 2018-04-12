@@ -19,10 +19,10 @@ public class QuadBakery
      */
     public static BakedQuad createBakedQuad(RawQuad raw, boolean forceItemFormat)
     {
-        float spanU = raw.maxU - raw.minU;
-        float spanV = raw.maxV - raw.minV;
+        float spanU = raw.getMaxU() - raw.getMinU();
+        float spanV = raw.getMaxV() - raw.getMinV();
         
-        TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(raw.textureName);
+        TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(raw.getTextureName());
         
         //Dimensions are vertex 0-4 and u/v 0-1.
         float[][] uvData = new float[4][2];
@@ -38,11 +38,11 @@ public class QuadBakery
         // scale UV coordinates to size of texture sub-region
         for(int v = 0; v < 4; v++)
         {
-            uvData[v][0] = raw.minU + spanU * uvData[v][0] / 16F;
-            uvData[v][1] = raw.minV + spanV * uvData[v][1] / 16F;
+            uvData[v][0] = raw.getMinU() + spanU * uvData[v][0] / 16F;
+            uvData[v][1] = raw.getMinV() + spanV * uvData[v][1] / 16F;
         }
 
-        if(raw.shouldContractUVs)
+        if(raw.shouldContractUVs())
         {
             contractUVs(textureSprite, uvData);
         }
@@ -57,7 +57,7 @@ public class QuadBakery
          * not be used if the quad is full brightness and not being rendered as an item.
          * This should be OK, because we generally don't care about shading for full-brightness render.
          */
-        VertexFormat format = !forceItemFormat && (raw.isFullBrightness || raw.surfaceInstance.isLampGradient)
+        VertexFormat format = !forceItemFormat && (raw.isFullBrightness() || raw.getSurfaceInstance().isLampGradient)
                 ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.BLOCK
                 : net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM;
         
@@ -118,16 +118,16 @@ public class QuadBakery
             }
         }
 
-        boolean applyDiffuseLighting = !raw.isFullBrightness
-                && !raw.surfaceInstance.isLampGradient();
+        boolean applyDiffuseLighting = !raw.isFullBrightness()
+                && !raw.getSurfaceInstance().isLampGradient();
         
-        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.face, textureSprite, applyDiffuseLighting, 
+        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.getNominalFace(), textureSprite, applyDiffuseLighting, 
                 format));
     }
     
     private static void applyTextureRotation(RawQuad raw, float[][] uvData)
     {
-       switch(raw.rotation)
+       switch(raw.getRotation())
        {
        case ROTATE_NONE:
        default:
