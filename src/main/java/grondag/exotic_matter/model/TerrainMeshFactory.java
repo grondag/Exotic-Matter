@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.render.CSGShape;
+import grondag.exotic_matter.render.CSGMesh;
 import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
@@ -89,7 +89,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     @Override
     public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
     {
-        CSGShape rawQuads = new CSGShape();
+        CSGMesh rawQuads = new CSGMesh();
         Poly template = new Poly();
 
         template.setColor(Color.WHITE);
@@ -489,7 +489,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
 
 
-        CSGShape cubeQuads = new CSGShape();
+        CSGMesh cubeQuads = new CSGMesh();
         cubeQuads.add(template.clone().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         Poly faceQuad = template.clone();
         

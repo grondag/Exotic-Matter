@@ -169,8 +169,11 @@ public class Poly implements IPolyProperties
     }
 
     /** 
-     * If this is a quad, returns two tris.
-     * If is already a tri, returns copy of self.
+     * If this is a quad, returns two new tris.
+     * If is already a tri, returns copy of self.<p>
+     * 
+     * Does not mutate this object and does not 
+     * retain any reference to polygons in this object.
      */
     public List<Poly> toTris()
     {
@@ -180,31 +183,6 @@ public class Poly implements IPolyProperties
         {
             retVal.add(this.clone());
         }
-        //            else if(this.getVertexCount() == 4)
-        //            {
-        //                long splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
-        //                
-        //                RawQuad work = new RawQuad(this, 3);
-        //               work.setVertex(0, this.getVertex(0));
-        //               work.setVertex(1, this.getVertex(1));
-        //               work.setVertex(2, this.getVertex(2));
-        //               work.setLineID(0, this.getLineID(0));
-        //               work.setLineID(1, this.getLineID(1));
-        //               work.setLineID(2, splitLineID);
-        //               work.ancestorQuadID = this.getAncestorQuadIDForDescendant();
-        //               retVal.add(work);
-        //
-        //               work = new RawQuad(this, 3);
-        //               work.setVertex(0, this.getVertex(0));
-        //               work.setVertex(1, this.getVertex(2));
-        //               work.setVertex(2, this.getVertex(3));
-        //               work.setLineID(0, splitLineID);
-        //               work.setLineID(1, this.getLineID(2));
-        //               work.setLineID(2, this.getLineID(3));
-        //               work.ancestorQuadID = this.getAncestorQuadIDForDescendant();
-        //               retVal.add(work);
-        //
-        //            }
         else
         {
             long splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
@@ -575,7 +553,16 @@ public class Poly implements IPolyProperties
         return this.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
     }
 
-    public Poly initCsg()
+    /**
+     * Initializes metadata values that can be used for CSG operations.
+     * Has no effect on polygon geometry or appearance.<p>
+     * 
+     * So while it technically does mutate this object, generally
+     * not necessary to clone this object before using it.<p>
+     * 
+     * Returns self as convenience.
+     */
+    public Poly setupCsgMetadata()
     {
         this.setAncestorQuadID(IPolyProperties.IS_AN_ANCESTOR);
         for(int i = 0; i < this.vertexCount(); i++)

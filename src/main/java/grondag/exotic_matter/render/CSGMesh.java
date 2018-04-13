@@ -40,23 +40,29 @@ import java.util.stream.Stream;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class CSGShape extends ArrayList<Poly>
+/**
+ * Collection of polygons with convenient semantics
+ * for CSG and other group operations.  Polygons in 
+ * the mesh are "stateless" from a CSG perspective - CSG
+ * metadata does not live beyond/outside each CSG operation.
+ */
+public class CSGMesh extends ArrayList<Poly>
 {
     private static final long serialVersionUID = 796007237565914078L;
 
-    public CSGShape(List<Poly> quads)
+    public CSGMesh(List<Poly> quads)
     {
         super(quads);
     }
     
 
-    public CSGShape()
+    public CSGMesh()
     {
         super();
     }
     
     @Override
-    public CSGShape clone()
+    public CSGMesh clone()
     {
         Stream<Poly> quadStream;
 
@@ -66,26 +72,8 @@ public class CSGShape extends ArrayList<Poly>
             quadStream = this.stream();
         }
 
-        return new CSGShape(quadStream.
+        return new CSGMesh(quadStream.
                 map((Poly p) -> p.clone()).collect(Collectors.toList()));
-    }
-    
-    public CSGShape initCsg()
-    {
-        CSGShape retVal = new CSGShape();
-        this.forEach((q) -> 
-        {
-            q.initCsg();
-            if(q.isOnSinglePlane())
-            {
-                retVal.add(q);
-            }
-            else
-            {
-                retVal.addAll(q.toTris());
-            }
-         });
-        return retVal;
     }
     
     /**
@@ -189,7 +177,7 @@ public class CSGShape extends ArrayList<Poly>
      * @param other other csg
      * @return difference of this csg and the specified csg
      */
-    public CSGShape difference(CSGShape other) {
+    public CSGMesh difference(CSGMesh other) {
         List<Poly> inner = new ArrayList<Poly>();
         List<Poly> outer = new ArrayList<Poly>();
 
@@ -203,16 +191,16 @@ public class CSGShape extends ArrayList<Poly>
             }
         });
 
-        CSGShape innerCSG = new CSGShape(inner);
+        CSGMesh innerCSG = new CSGMesh(inner);
 
-        CSGShape result = new CSGShape();
+        CSGMesh result = new CSGMesh();
         result.addAll(outer);
         result.addAll(innerCSG.differenceClip(other));
 
         return result;
     }
     
-    private CSGShape differenceClip(CSGShape other) {
+    private CSGMesh differenceClip(CSGMesh other) {
 
         CSGNode a = new CSGNode(this);
         CSGNode b = new CSGNode(other);
@@ -226,7 +214,7 @@ public class CSGShape extends ArrayList<Poly>
         a.build(b.allRawQuads());
         a.invert();
 
-        return new CSGShape(a.recombinedRawQuads());
+        return new CSGMesh(a.recombinedRawQuads());
     }
     
     /**
@@ -252,7 +240,7 @@ public class CSGShape extends ArrayList<Poly>
      * @param csg other csg
      * @return intersection of this csg and the specified csg
      */
-    public CSGShape intersect(CSGShape other)
+    public CSGMesh intersect(CSGMesh other)
     {
         CSGNode a = new CSGNode(this);
         CSGNode b = new CSGNode(other);
@@ -263,7 +251,7 @@ public class CSGShape extends ArrayList<Poly>
         b.clipTo(a);
         a.build(b.allRawQuads());
         a.invert();
-        CSGShape retVal = new CSGShape(a.recombinedRawQuads());
+        CSGMesh retVal = new CSGMesh(a.recombinedRawQuads());
         
 //        HardScience.log.info("raw count " + a.allRawQuads().size() + "   combined count " + retVal.size());
 
@@ -294,7 +282,7 @@ public class CSGShape extends ArrayList<Poly>
      *
      * @return union of this csg and the specified csg
      */
-    public CSGShape union(CSGShape other) {
+    public CSGMesh union(CSGMesh other) {
     
         
         
@@ -311,10 +299,10 @@ public class CSGShape extends ArrayList<Poly>
             }
         });
         
-        CSGShape result = new CSGShape();
+        CSGMesh result = new CSGMesh();
         
         if (!inner.isEmpty()) {
-            CSGShape innerCSG = new CSGShape(inner);
+            CSGMesh innerCSG = new CSGMesh(inner);
 
             result.addAll(outer);
             result.addAll(innerCSG.unionClip(other));
@@ -327,7 +315,7 @@ public class CSGShape extends ArrayList<Poly>
     }
 
 
-    private CSGShape unionClip(CSGShape other)
+    private CSGMesh unionClip(CSGMesh other)
     {
         CSGNode a = new CSGNode(this);
         CSGNode b = new CSGNode(other);
@@ -339,6 +327,6 @@ public class CSGShape extends ArrayList<Poly>
         b.invert();
         a.build(b.allRawQuads());
 
-        return new CSGShape(a.recombinedRawQuads());
+        return new CSGMesh(a.recombinedRawQuads());
     }
 }

@@ -41,6 +41,8 @@ import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 
@@ -71,12 +73,27 @@ public class CSGNode
      *
      * Creates a BSP node consisting of the specified polygons.
      *
-     * The input CSGShape is cloned so that neither it nor any of
-     * the polygons in it are mutated.
+     * Polygons in the input are copied so that nothing is mutated.
      */
-    public CSGNode(CSGShape shapeIn)
+    public CSGNode(CSGMesh shapeIn)
     {
-        this.build(shapeIn.clone().initCsg());
+        ImmutableList.Builder<Poly> builder = ImmutableList.builder();
+        
+        for(Poly q : shapeIn)
+        {
+            if(q.isOnSinglePlane())
+            {
+                builder.add(q.clone().setupCsgMetadata());
+            }
+            else
+            {
+                for(Poly t : q.toTris())
+                {
+                    builder.add(t.setupCsgMetadata());
+                }
+            }
+         }
+        this.build(builder.build());
     }
 
     /**
@@ -520,8 +537,6 @@ public class CSGNode
      */
     public final void build(List<Poly> quadsIn)
     {
-        assert this.quads != null : "Null quads";
-        
         if (quadsIn.isEmpty()) 
         {
             return;
