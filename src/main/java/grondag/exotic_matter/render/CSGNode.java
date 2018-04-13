@@ -71,23 +71,24 @@ public class CSGNode
      *
      * Creates a BSP node consisting of the specified polygons.
      *
-     * @param quadsIn polygons
+     * The input CSGShape is cloned so that neither it nor any of
+     * the polygons in it are mutated.
      */
-    public CSGNode(@Nullable CSGShape shapeIn)
+    public CSGNode(CSGShape shapeIn)
     {
-        if (shapeIn != null) this.build(shapeIn.clone().initCsg());
+        this.build(shapeIn.clone().initCsg());
     }
 
     /**
      * Constructor. Creates a node without polygons.
      */
-    private CSGNode() {
-        this(null);
-    }
+    private CSGNode() { }
 
     @Override
     public CSGNode clone()
     {
+        assert false : "If going to actually use CSGNode.clone() should make it non-recursive.";
+    
         CSGNode node = new CSGNode();
         node.plane = this.plane == null ? null : this.plane.clone();
         node.front = this.front == null ? null : this.front.clone();

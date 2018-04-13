@@ -214,8 +214,8 @@ public class CSGShape extends ArrayList<Poly>
     
     private CSGShape differenceClip(CSGShape other) {
 
-        CSGNode a = new CSGNode(this.clone());
-        CSGNode b = new CSGNode(other.clone());
+        CSGNode a = new CSGNode(this);
+        CSGNode b = new CSGNode(other);
 
         a.invert();
         a.clipTo(b);
@@ -329,8 +329,8 @@ public class CSGShape extends ArrayList<Poly>
 
     private CSGShape unionClip(CSGShape other)
     {
-        CSGNode a = new CSGNode(this.clone());
-        CSGNode b = new CSGNode(other.clone());
+        CSGNode a = new CSGNode(this);
+        CSGNode b = new CSGNode(other);
         
         a.clipTo(b);
         b.clipTo(a);
