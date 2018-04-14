@@ -3,7 +3,14 @@ package grondag.exotic_matter;
 import java.util.Map;
 
 import grondag.exotic_matter.block.SuperModelBlock;
+import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
+import grondag.exotic_matter.model.BlockColorMapProvider;
+import grondag.exotic_matter.model.BlockSubstance;
+import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.ModShapes;
+import grondag.exotic_matter.model.ModelState;
+import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
 import grondag.exotic_matter.simulator.WorldTaskManager;
@@ -58,6 +65,17 @@ public class CommonEventHandler
     public static void registerBlocks(RegistryEvent.Register<Block> event) 
     {
         SuperModelBlock.registerSuperModelBlocks(event);
+        
+        //FIXME:  remove
+        ISuperModelState workingModel;
+        workingModel = new ModelState();
+        workingModel.setShape(ModShapes.CSGTEST);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+//        workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(56));
+        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
+//        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(4));
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+
     }
     
     @SubscribeEvent

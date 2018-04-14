@@ -3,6 +3,7 @@ package grondag.exotic_matter.render;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
 * Portions reproduced or adapted from JCSG.
@@ -38,14 +39,13 @@ import java.util.HashSet;
 */
 
 import java.util.List;
-import java.util.Stack;
 import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.AbstractIterator;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
 
@@ -93,6 +93,31 @@ public class CSGNode
                 }
             }
          }
+    }
+
+    /**
+     * Non-recursive iterator to visit all nodes in this tree.
+     */
+    private Iterator<CSGNode> allNodes()
+    {
+        return new AbstractIterator<CSGNode>()
+        {
+           ArrayDeque<CSGNode> stack = new ArrayDeque<>();
+           
+           {
+               stack.push(CSGNode.this);
+           }
+           
+            @Override
+            protected CSGNode computeNext()
+            {
+                if(stack.isEmpty()) return this.endOfData();
+                CSGNode result = stack.pop();
+                if(result.front != null) stack.push(result.front);
+                if(result.back != null) stack.push(result.back);
+                return result;
+            }
+        };
     }
 
     public void addAll(Iterable<Poly> polys)
@@ -156,16 +181,7 @@ public class CSGNode
     @Override
     public CSGNode clone()
     {
-        assert false : "If going to actually use CSGNode.clone() should make it non-recursive.";
-    
-        CSGNode node = new CSGNode();
-        node.plane = this.plane == null ? null : this.plane.clone();
-        node.front = this.front == null ? null : this.front.clone();
-        node.back = this.back == null ? null : this.back.clone();
-        quads.forEach((Poly p) -> {
-            node.quads.add(p.clone());
-        });
-        return node;
+        throw new UnsupportedOperationException();
     }
     
     /**
@@ -184,70 +200,120 @@ public class CSGNode
     }
 
     /**
-     * Converts solid space to empty space and vice verca.
+     * Converts solid space to empty space and vice versa
+     * for all nodes in this BSP tree
      */
     public void invert()
     {
-
+        Iterator<CSGNode> nodes = this.allNodes();
+        
+        while(nodes.hasNext())
+        {
+            // invert node can swap the front/back references in 
+            // each node, which are used for iteration, but should
+            // not matter because we don't care about the order of
+            // iteration - we just need to visit each node
+            nodes.next().invertNode();;
+        }
+    }
+    
+    private void invertNode()
+    {
         if (this.plane == null && quads.isEmpty()) return;
 
-        quads.forEach((quad) -> {
-            quad.invert();
-        });
-
-        if (this.plane == null)
-        {
-            // quads can't be empty if we get to here
-            this.plane = new CSGPlane(quads.get(0));
-        }
+        quads.forEach((quad) -> quad.invert());
 
         this.plane.flip();
 
-        if (this.front != null) {
-            this.front.invert();
-        }
-        if (this.back != null) {
-            this.back.invert();
-        }
         CSGNode temp = this.front;
         this.front = this.back;
         this.back = temp;
     }
 
     /**
-     * Recursively removes all polygons in the {@link polygons} list that are
-     * contained within this BSP tree.
-     *
-     * <b>Note:</b> polygons are splitted if necessary.
-     *
-     * @param quadsIn the polygons to clip
-     *
-     * @return the cliped list of polygons
+     * Returns a list excluding input polygons that are
+     * contained within this BSP tree, splitting polygons as necessary.<p>
+     * 
+     * The input list and its contents are not modified, but
+     * polys in the input list may be copied to the output list.
      */
-    private List<Poly> clipQuads(@Nullable List<Poly> quadsIn)
+    private List<Poly> clipQuads(List<Poly> quadsIn)
     {
-
         if (this.plane == null) {
             return new ArrayList<Poly>(quadsIn);
         }
 
+        List<Poly> result = new ArrayList<Poly>();
+        
+        for(Poly p : quadsIn)
+        {
+            this.clipQuad(p, result);
+        }
+        
+        return result;
+
+//        List<Poly> frontP = new ArrayList<Poly>();
+//        List<Poly> backP = new ArrayList<Poly>();
+//
+//        for (Poly quad : quadsIn) {
+//            this.plane.splitQuad(quad, frontP, backP, frontP, backP);
+//        }
+//        if (this.front != null) {
+//            frontP = this.front.clipQuads(frontP);
+//        }
+//        if (this.back != null) {
+//            backP = this.back.clipQuads(backP);
+//        } else {
+//            backP = new ArrayList<Poly>();
+//        }
+//
+//        frontP.addAll(backP);
+//        return frontP;
+    }
+
+    /**
+     * Clips the given poly against every node of this tree,
+     * adding it or split polygons that are in front of all node planes
+     * to the provided list.
+     */
+    private void clipQuad(final Poly poly, List<Poly> output)
+    {
+        Poly p = poly;
+        @Nullable CSGNode node  = this;
+        
+        ArrayDeque<Pair<CSGNode, Poly>> stack = new ArrayDeque<>();
         List<Poly> frontP = new ArrayList<Poly>();
         List<Poly> backP = new ArrayList<Poly>();
+        
+        while(true)
+        {
+            node.plane.splitQuad(p, frontP, backP, frontP, backP);
+            
+            if(!frontP.isEmpty())  
+            {
+                if(node.front == null)
+                    output.addAll(frontP);
+                else
+                    for(Poly fp : frontP) stack.push(Pair.of(node.front, fp));
 
-        for (Poly quad : quadsIn) {
-            this.plane.splitQuad(quad, frontP, backP, frontP, backP);
+                frontP.clear();
+            }
+            
+            if(!backP.isEmpty())  
+            {
+                // not adding back plane polys to the output when
+                // we get to leaf nodes is what does the clipping 
+                if(node.back != null)
+                    for(Poly bp : backP) stack.push(Pair.of(node.back, bp));
+                
+                backP.clear();
+            }
+            
+            if(stack.isEmpty())  break;
+            Pair<CSGNode, Poly> next = stack.pop();
+            node = next.getLeft();
+            p = next.getRight();
         }
-        if (this.front != null) {
-            frontP = this.front.clipQuads(frontP);
-        }
-        if (this.back != null) {
-            backP = this.back.clipQuads(backP);
-        } else {
-            backP = new ArrayList<Poly>();
-        }
-
-        frontP.addAll(backP);
-        return frontP;
     }
 
     // Remove all polygons in this BSP tree that are inside the other BSP tree
@@ -379,13 +445,17 @@ public class CSGNode
         final ArrayList<Vertex> joinedVertex = new ArrayList<Vertex>(8);
         final ArrayList<Long> joinedLineID = new ArrayList<Long>(8);
         
+        // don't try to eliminate co-linear vertices when joining two tris
+        // no cases when this is really essential and the line tests fail
+        // when joining two very small tris
+        final boolean skipLineTest = aQuad.vertexCount() == 3 && bQuad.vertexCount() == 3;
+        
         for(int a = 0; a < aQuad.vertexCount(); a++)
         {
             if(a == aStartIndex)
             {
                 //if vertex is on the same line as prev and next vertex, leave it out.
-                if(!aQuad.getVertex(aStartIndex).isOnLine(aQuad.getVertex(aPrevIndex), bQuad.getVertex(bNextIndex)))
-//                if(aQuad.getLineID(aPrevIndex) != bQuad.getLineID(bEndIndex))
+                if(skipLineTest || !aQuad.getVertex(aStartIndex).isOnLine(aQuad.getVertex(aPrevIndex), bQuad.getVertex(bNextIndex)))
                 {
                     joinedVertex.add(aQuad.getVertex(aStartIndex));
                     joinedLineID.add(bQuad.getLineID(bEndIndex));
@@ -402,9 +472,11 @@ public class CSGNode
             }
             else if(a == aEndIndex)
             {
-                //if vertex is on the same line as prev and next vertex, leave it out.
-                if(!aQuad.getVertex(aEndIndex).isOnLine(aQuad.getVertex(aNextIndex), bQuad.getVertex(bPrevIndex)))
-//                if(aQuad.getLineID(aEndIndex) != bQuad.getLineID(bPrevIndex))
+                //if vertex is on the same line as prev and next vertex, leave it out
+                //unless we are joining two tris - when we are joining very small tris
+                //the line test will fail, and not a problem to end up with a quad for
+                //when joining larg
+                if(skipLineTest || !aQuad.getVertex(aEndIndex).isOnLine(aQuad.getVertex(aNextIndex), bQuad.getVertex(bPrevIndex)))
                 {
                     joinedVertex.add(aQuad.getVertex(aEndIndex));
                     joinedLineID.add(aQuad.getLineID(aEndIndex));
@@ -416,8 +488,6 @@ public class CSGNode
                 joinedLineID.add(aQuad.getLineID(a));
            }
         }   
-        
-        assert joinedVertex.size() > 2 : "Bad join outcome";
         
         // actually build the new quad!
         Poly joinedQuad = new Poly(aQuad, joinedVertex.size());
@@ -587,46 +657,4 @@ public class CSGNode
         if(this.plane == null) this.plane = new CSGPlane(poly);
         this.quads.add(poly);
     }
-    
-//    /**
-//     * Build a BSP tree out of {@code polygons}. When called on an existing
-//     * tree, the new polygons are filtered down to the bottom of the tree and
-//     * become new nodes there. Each set of polygons is partitioned using the
-//     * start polygon (no heuristic is used to pick a good split).
-//     *
-//     * @param quadsIn polygons used to build the BSP
-//     */
-//    public final void build(List<Poly> quadsIn)
-//    {
-//        if (quadsIn.isEmpty()) 
-//        {
-//            return;
-//        }
-//
-//        if (this.plane == null) {
-//            this.plane = new CSGPlane(quadsIn.get(0));
-//        }
-//
-//        List<Poly> frontP = new ArrayList<Poly>();
-//        List<Poly> backP = new ArrayList<Poly>();
-//
-//        // parallel version does not work here
-//        quadsIn.forEach((quad) -> {
-//            this.plane.splitQuad(quad.clone(), this.quads, this.quads, frontP, backP);
-//        });
-//
-//        if (!frontP.isEmpty()) {
-//            if (this.front == null) {
-//                this.front = new CSGNode();
-//            }
-//            this.front.build(frontP);
-//        }
-//        if (!backP.isEmpty()) {
-//            if (this.back == null) {
-//                this.back = new CSGNode();
-//            }
-//            this.back.build(backP);
-//        }
-//    }
-    
 }
