@@ -50,7 +50,7 @@ import com.google.common.collect.AbstractIterator;
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 
-public class CSGNode
+public class CSGNode implements Iterable<Poly>
 {
     /**
      * RawQuads.
@@ -191,7 +191,7 @@ public class CSGNode
     {
 
         HashSet<Long> ids = new HashSet<Long>();
-        for(Poly q : this.allRawQuads())
+        for(Poly q : this)
         {
             if(ids.contains(q.quadID())) return q.quadID();
             ids.add(q.quadID());
@@ -312,23 +312,6 @@ public class CSGNode
         }
     }
 
-    /**
-     * Returns a list of all polygons in this BSP tree.
-     *
-     * @return a list of all polygons in this BSP tree
-     */
-    public List<Poly> allRawQuads()
-    {
-        List<Poly> localRawQuads = new ArrayList<>(this.quads);
-        if (this.front != null) {
-            localRawQuads.addAll(this.front.allRawQuads());
-        }
-        if (this.back != null) {
-            localRawQuads.addAll(this.back.allRawQuads());
-        }
-
-        return localRawQuads;
-    }
     
     /**
      * Returns all quads in this tree recombined as much as possible.
@@ -339,14 +322,14 @@ public class CSGNode
     {
         TLongObjectHashMap<ArrayList<Poly>> ancestorBuckets = new TLongObjectHashMap<ArrayList<Poly>>();
         
-        this.allRawQuads().forEach((quad) -> 
+        for(Poly quad : this) 
         {
             if(!ancestorBuckets.contains(quad.getAncestorQuadID()))
             {
                 ancestorBuckets.put(quad.getAncestorQuadID(), new ArrayList<Poly>());
             }
             ancestorBuckets.get(quad.getAncestorQuadID()).add(quad);
-        });
+        }
         
         ArrayList<Poly> retVal = new ArrayList<Poly>();
         ancestorBuckets.valueCollection().forEach((quadList) ->
@@ -614,5 +597,31 @@ public class CSGNode
     {
         if(this.plane == null) this.plane = new CSGPlane(poly);
         this.quads.add(poly);
+    }
+
+    @Override
+    public Iterator<Poly> iterator()
+    {
+        return new AbstractIterator<Poly>()
+        {
+           Iterator<CSGNode> nodes = CSGNode.this.allNodes();
+           CSGNode node = nodes.next();
+           Iterator<Poly> polys = node.quads.iterator();
+           
+            @Override
+            protected Poly computeNext()
+            {
+                if(polys.hasNext()) return polys.next();
+                
+                while(nodes.hasNext())
+                {
+                    node = nodes.next();
+                    polys = node.quads.iterator();
+                    if(polys.hasNext()) return polys.next();
+                }
+                
+                return this.endOfData();
+            }
+        };
     }
 }

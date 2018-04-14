@@ -5,7 +5,6 @@ import java.util.Map;
 import grondag.exotic_matter.block.SuperModelBlock;
 import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
-import grondag.exotic_matter.model.BlockColorMapProvider;
 import grondag.exotic_matter.model.BlockSubstance;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ModShapes;
