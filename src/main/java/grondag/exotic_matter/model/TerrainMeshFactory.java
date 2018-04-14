@@ -87,7 +87,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
       return new Vec3d(temp.x, temp.y * temp.y, temp.z);
     }
 
-    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 1000);
+    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
     
     @Override
     public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)

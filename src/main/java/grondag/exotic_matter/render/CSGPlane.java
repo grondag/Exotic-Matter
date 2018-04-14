@@ -1,5 +1,7 @@
 package grondag.exotic_matter.render;
 
+import java.awt.Polygon;
+
 /**
 * Portions reproduced or adapted from JCSG.
 * Copyright 2014-2014 Michael Hoffer <info@michaelhoffer.de>. All rights
@@ -37,6 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import grondag.exotic_matter.varia.MicroTimer;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import net.minecraft.util.math.Vec3d;
 
 public class CSGPlane
@@ -86,6 +91,8 @@ public class CSGPlane
         dist = -dist;
     }
 
+    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 1000000);
+
     /**
      * Splits a {@link Polygon} by this plane if needed. After that it puts the
      * polygons or the polygon fragments in the appropriate lists
@@ -100,8 +107,19 @@ public class CSGPlane
      * @param front front polygons
      * @param back back polgons
      */
-            
+    
     public void splitQuad(
+            Poly quad,
+            List<Poly> coplanarFront,
+            List<Poly> coplanarBack,
+            List<Poly> front,
+            List<Poly> back) 
+    {
+        splitTimer.start();
+        splitQuadInner(quad, coplanarFront, coplanarBack, front, back);
+        splitTimer.stop();
+    }
+    private void splitQuadInner(
         Poly quad,
         List<Poly> coplanarFront,
         List<Poly> coplanarBack,
@@ -143,15 +161,15 @@ public class CSGPlane
                 
                 List<Vertex> frontVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
                 List<Vertex> backVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
-                List<Long> frontLineID = new ArrayList<Long>(quad.vertexCount()+1);
-                List<Long> backLineID = new ArrayList<Long>(quad.vertexCount()+1);
+                LongList frontLineID = new LongArrayList(quad.vertexCount()+1);
+                LongList backLineID = new LongArrayList(quad.vertexCount()+1);
                 for (int i = 0; i < quad.vertexCount(); i++) {
                     int j = (i + 1) % quad.vertexCount();
                     int iType = types[i];
                     int jType = types[j];
                     Vertex iVertex = quad.getVertex(i);
                     Vertex jVertex = quad.getVertex(j);
-                    Long iLineID = quad.getLineID(i);
+                    long iLineID = quad.getLineID(i);
                     
                     if (iType != BACK) {
                         frontVertex.add(iVertex);
@@ -193,7 +211,7 @@ public class CSGPlane
                     for(int i = 0; i < frontVertex.size(); i++)
                     {
                         frontQuad.addVertex(i, frontVertex.get(i));
-                        frontQuad.setLineID(i, frontLineID.get(i));
+                        frontQuad.setLineID(i, frontLineID.getLong(i));
                     }
 
                     front.add(frontQuad);
@@ -211,7 +229,7 @@ public class CSGPlane
                     for(int i = 0; i < backVertex.size(); i++)
                     {
                         backQuad.addVertex(i, backVertex.get(i));
-                        backQuad.setLineID(i, backLineID.get(i));
+                        backQuad.setLineID(i, backLineID.getLong(i));
                     }
                     
                     back.add(backQuad);               
