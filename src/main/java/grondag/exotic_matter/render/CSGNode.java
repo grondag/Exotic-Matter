@@ -239,9 +239,7 @@ public class CSGNode
      */
     private List<Poly> clipQuads(List<Poly> quadsIn)
     {
-        if (this.plane == null) {
-            return new ArrayList<Poly>(quadsIn);
-        }
+        if (this.plane == null) return new ArrayList<Poly>(quadsIn);
 
         List<Poly> result = new ArrayList<Poly>();
         
@@ -251,24 +249,6 @@ public class CSGNode
         }
         
         return result;
-
-//        List<Poly> frontP = new ArrayList<Poly>();
-//        List<Poly> backP = new ArrayList<Poly>();
-//
-//        for (Poly quad : quadsIn) {
-//            this.plane.splitQuad(quad, frontP, backP, frontP, backP);
-//        }
-//        if (this.front != null) {
-//            frontP = this.front.clipQuads(frontP);
-//        }
-//        if (this.back != null) {
-//            backP = this.back.clipQuads(backP);
-//        } else {
-//            backP = new ArrayList<Poly>();
-//        }
-//
-//        frontP.addAll(backP);
-//        return frontP;
     }
 
     /**
@@ -316,25 +296,19 @@ public class CSGNode
         }
     }
 
-    // Remove all polygons in this BSP tree that are inside the other BSP tree
-    // `bsp`.
     /**
-     * Removes all polygons in this BSP tree that are inside the specified BSP
-     * tree ({@code bsp}).
+     * Remove all polygons in this BSP tree that are inside the input BSP tree.
      *
-     * <b>Note:</b> polygons are split if necessary.
-     *
-     * @param bsp bsp that shall be used for clipping
+     * This tree is modified, and polygons are split if necessary.
      */
     public void clipTo(CSGNode bsp)
     {
-        this.quads = bsp.clipQuads(this.quads);
+        Iterator<CSGNode> nodes = this.allNodes();
         
-        if (this.front != null) {
-            this.front.clipTo(bsp);
-        }
-        if (this.back != null) {
-            this.back.clipTo(bsp);
+        while(nodes.hasNext())
+        {
+            CSGNode node = nodes.next();
+            node.quads = bsp.clipQuads(node.quads);
         }
     }
 
@@ -358,17 +332,11 @@ public class CSGNode
     
     /**
      * Returns all quads in this tree recombined as much as possible.
-     * Use instead of allRawQuads() for anything to be rendered.
-     * Generally only useful on job node!
-     * 
-     * Will only work if build was called with initCSG parameter = true
-     * during initialization of the tree because it uses the information populated then.
-     * @return
+     * Use for anything to be rendered.
+     * Generally only useful on root node!
      */
     public List<Poly> recombinedRawQuads()
     {
-        
-        //TODO: can we limit comparisons to co-planar quads?  Probably much faster.
         TLongObjectHashMap<ArrayList<Poly>> ancestorBuckets = new TLongObjectHashMap<ArrayList<Poly>>();
         
         this.allRawQuads().forEach((quad) -> 
@@ -425,20 +393,10 @@ public class CSGNode
         // confirm vertices on either end of vertex match
         if(!aQuad.getVertex(aStartIndex).isCsgEqual(bQuad.getVertex(bEndIndex)))
         {
-//            HardScience.log.info("vertex mismatch for LineID = " + lineID + " face = " + aQuad.face);
-//            HardScience.log.info("A Start: " + aQuad.getVertex(aStartIndex).toString() );
-//            HardScience.log.info("B End: " + bQuad.getVertex(bEndIndex).toString() );
-//            HardScience.log.info("B Start: " + bQuad.getVertex(bStartIndex).toString() );
-//            HardScience.log.info("A End: " + aQuad.getVertex(aEndIndex).toString() );
             return null;
         }
         if(!aQuad.getVertex(aEndIndex).isCsgEqual(bQuad.getVertex(bStartIndex)))
         {
-//            HardScience.log.info("vertex mismatch for LineID = " + lineID);
-//            HardScience.log.info("A Start: " + aQuad.getVertex(aStartIndex).toString() );
-//            HardScience.log.info("A End: " + aQuad.getVertex(aEndIndex).toString() );
-//            HardScience.log.info("B Start: " + bQuad.getVertex(bStartIndex).toString() );
-//            HardScience.log.info("B End: " + bQuad.getVertex(bEndIndex).toString() );
             return null;
         }
 
