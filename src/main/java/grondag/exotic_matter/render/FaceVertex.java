@@ -6,11 +6,11 @@ package grondag.exotic_matter.render;
  */
 public class FaceVertex
 {
-    public final double x;
-    public final double y;
-    public final double depth;
+    public final float x;
+    public final float y;
+    public final float depth;
 
-    public FaceVertex(double x, double y, double depth)
+    public FaceVertex(float x, float y, float depth)
     {
         this.x = x;
         this.y = y;
@@ -23,12 +23,12 @@ public class FaceVertex
         return new FaceVertex(x, y, depth);
     }
 
-    public FaceVertex withXY(double x, double y)
+    public FaceVertex withXY(float x, float y)
     {
         return new FaceVertex(x, y, this.depth);
     }
     
-    public FaceVertex withDepth(double depth)
+    public FaceVertex withDepth(float depth)
     {
         return new FaceVertex(this.x, this.y, depth);
     }
@@ -38,7 +38,7 @@ public class FaceVertex
         return new FaceVertex.Colored(this.x, this.y, depth, color);
     }
     
-    public FaceVertex withUV(double u, double v)
+    public FaceVertex withUV(float u, float v)
     {
         return new FaceVertex.UV(this.x, this.y, this.depth, u, v);
     }
@@ -57,7 +57,7 @@ public class FaceVertex
      * 
      * The bottom face is handled differently and RawQuad will flip it automatically.. 
      */
-    public double u()
+    public float u()
     {
         return x;
     }
@@ -65,22 +65,22 @@ public class FaceVertex
     /**
      * See {@link #u()}
      */
-    public double v()
+    public float v()
     {
-        return 1.0-y;
+        return 1-y;
     }
 
     public static class Colored extends FaceVertex
     {
         private final int color;
 
-        public Colored(double x, double y, double depth, int color)
+        public Colored(float x, float y, float depth, int color)
         {
             super(x, y, depth);
             this.color = color;
         }
 
-        public Colored(double x, double y, double depth, double u, double v, int color)
+        public Colored(float x, float y, float depth, float u, float v, int color)
         {
             super(x, y, depth);
             this.color = color;
@@ -99,13 +99,13 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withXY(double x, double y)
+        public FaceVertex withXY(float x, float y)
         {
             return new FaceVertex.Colored(x, y, this.depth, this.color);
         }
         
         @Override
-        public FaceVertex withDepth(double depth)
+        public FaceVertex withDepth(float depth)
         {
             return new FaceVertex.Colored(this.x, this.y, depth, this.color);
         }
@@ -117,7 +117,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withUV(double u, double v)
+        public FaceVertex withUV(float u, float v)
         {
             return new FaceVertex.UVColored(this.x, this.y, this.depth, u, v, this.color);
         }
@@ -125,10 +125,10 @@ public class FaceVertex
     
     public static class UV extends FaceVertex
     {
-        private final double u;
-        private final double v;
+        private final float u;
+        private final float v;
         
-        public UV(double x, double y, double depth, double u, double v)
+        public UV(float x, float y, float depth, float u, float v)
         {
             super(x, y, depth);
             this.u = u;
@@ -136,13 +136,13 @@ public class FaceVertex
         }
 
         @Override
-        public double u()
+        public float u()
         {
             return this.u;
         }
         
         @Override
-        public double v()
+        public float v()
         {
             return this.v;
         }
@@ -154,13 +154,13 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withXY(double x, double y)
+        public FaceVertex withXY(float x, float y)
         {
             return new FaceVertex.UV(x, y, this.depth, this.u, this.v);
         }
         
         @Override
-        public FaceVertex withDepth(double depth)
+        public FaceVertex withDepth(float depth)
         {
             return new FaceVertex.UV(this.x, this.y, depth, this.u, this.v);
         }
@@ -172,7 +172,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withUV(double u, double v)
+        public FaceVertex withUV(float u, float v)
         {
             return new FaceVertex.UV(this.x, this.y, this.depth, u, v);
         }
@@ -180,11 +180,11 @@ public class FaceVertex
     
     public static class UVColored extends FaceVertex
     {
-        private final double u;
-        private final double v;
+        private final float u;
+        private final float v;
         private final int color;
         
-        public UVColored(double x, double y, double depth, double u, double v, int color)
+        public UVColored(float x, float y, float depth, float u, float v, int color)
         {
             super(x, y, depth);
             this.u = u;
@@ -199,13 +199,13 @@ public class FaceVertex
         }
 
         @Override
-        public double u()
+        public float u()
         {
             return this.u;
         }
         
         @Override
-        public double v()
+        public float v()
         {
             return this.v;
         }
@@ -217,13 +217,13 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withXY(double x, double y)
+        public FaceVertex withXY(float x, float y)
         {
             return new FaceVertex.UVColored(x, y, this.depth, this.u, this.v, this.color);
         }
         
         @Override
-        public FaceVertex withDepth(double depth)
+        public FaceVertex withDepth(float depth)
         {
             return new FaceVertex.UVColored(this.x, this.y, depth, this.u, this.v, this.color);
         }
@@ -235,7 +235,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withUV(double u, double v)
+        public FaceVertex withUV(float u, float v)
         {
             return new FaceVertex.UVColored(this.x, this.y, this.depth, u, v, this.color);
         }

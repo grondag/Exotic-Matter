@@ -36,7 +36,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
  
     private List<Poly> makeQuads(int meta, Matrix4d matrix)
     {
-        double height = (meta + 1) / 16.0;
+        float height = (meta + 1) / 16;
         
         Poly template = new Poly();
         template.setColor(0xFFFFFFFF);
@@ -49,7 +49,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         Poly quad = template.clone();
         quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
         quad.setNominalFace(EnumFacing.UP);
-        quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 1-height, EnumFacing.NORTH);
+        quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         builder.add(quad.transform(matrix));
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
@@ -57,14 +57,14 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
             quad = template.clone();
             quad.setSurfaceInstance(SIDES.unitInstance);
             quad.setNominalFace(face);
-            quad.setupFaceQuad( 0.0, 0.0, 1.0, height, 0.0, EnumFacing.UP);
+            quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             builder.add(quad.transform(matrix));
         }
         
         quad = template.clone();
         quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
         quad.setNominalFace(EnumFacing.DOWN);
-        quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0.0, EnumFacing.NORTH);
+        quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         builder.add(quad.transform(matrix));
         
         return builder.build();

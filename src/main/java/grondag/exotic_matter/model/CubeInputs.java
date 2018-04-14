@@ -8,10 +8,10 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
 public class CubeInputs{
-    public double u0;
-    public double v0;
-    public double u1;
-    public double v1;
+    public float u0;
+    public float v0;
+    public float u1;
+    public float v1;
     public String textureName;
     public int color = 0xFFFFFFFF;
     public Rotation textureRotation = Rotation.ROTATE_NONE;
@@ -53,8 +53,8 @@ public class CubeInputs{
         qi.setTextureName(this.textureName);
         qi.setSurfaceInstance(this.surfaceInstance);
 
-        double minBound = this.isOverlay ? -0.0002 : 0.0;
-        double maxBound = this.isOverlay ? 1.0002 : 1.0;
+        float minBound = this.isOverlay ? -0.0002f : 0.0f;
+        float maxBound = this.isOverlay ? 1.0002f : 1.0f;
         qi.setNominalFace(side);
 
         switch(side)

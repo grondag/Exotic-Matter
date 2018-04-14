@@ -5,14 +5,14 @@ import net.minecraft.util.EnumFacing;
 public class SimpleQuadBounds
 {
     public EnumFacing face;
-    public double x0;
-    public double y0;
-    public double x1;
-    public double y1;
-    public double depth;
+    public float x0;
+    public float y0;
+    public float x1;
+    public float y1;
+    public float depth;
     public EnumFacing topFace;
 
-    public SimpleQuadBounds(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public SimpleQuadBounds(EnumFacing face, float x0, float y0, float x1, float y1, float depth, EnumFacing topFace)
     {
         this.face = face;
         this.x0 = x0;

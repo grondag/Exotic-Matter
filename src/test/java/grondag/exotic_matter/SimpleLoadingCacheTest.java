@@ -1,4 +1,4 @@
-package cache;
+package grondag.exotic_matter;
 
 import java.util.ArrayList;
 import java.util.Random;

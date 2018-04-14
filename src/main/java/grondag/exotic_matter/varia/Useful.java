@@ -423,6 +423,15 @@ public class Useful
         return x * x;
     }
 
+    public static float distance(float x0, float y0, float  z0, float x1, float y1,  float z1)
+    {
+        float d0 = x0 - x1;
+        float d1 = y0 - y1;
+        float d2 = z0 - z1;
+        return (float) Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+    }
+    
+    
     /** 
      * Bit length needed to contain the given value.
      * Intended for unsigned values.

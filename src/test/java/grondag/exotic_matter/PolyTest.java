@@ -1,16 +1,16 @@
-package grondag.hard_science.library.model.quadfactory;
+package grondag.exotic_matter;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RawQuad;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public class RawQuadTest
+public class PolyTest
 {
 
     @Test
@@ -18,7 +18,7 @@ public class RawQuadTest
     {
         Vec3d direction;
         Vec3d point;
-        RawQuad quad = new RawQuad().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        Poly quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         
         // point on plane
@@ -48,11 +48,11 @@ public class RawQuadTest
         
         
         //convexity & area tests
-        quad = new RawQuad().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON);
         
-        quad = new RawQuad(3).setupFaceQuad(EnumFacing.UP,
+        quad = new Poly(3).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -60,33 +60,33 @@ public class RawQuadTest
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON);
         
-        quad = new RawQuad().setupFaceQuad(EnumFacing.UP,
+        quad = new Poly().setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
-                new FaceVertex(0.9, 0.1, 0), 
+                new FaceVertex(0.9f, 0.1f, 0), 
                 EnumFacing.NORTH);
         assertFalse(quad.isConvex());
         
         
         // normal facing calculation
-        quad = new RawQuad().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.UP);
         
-        quad = new RawQuad().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new Poly().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = new RawQuad().setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
+        quad = new Poly().setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
         assertTrue(quad.getNormalFace() == EnumFacing.EAST);
         
-        quad = new RawQuad().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new Poly().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = new RawQuad().setupFaceQuad(EnumFacing.SOUTH,
-                new FaceVertex(0, 0, 0.1), 
-                new FaceVertex(1, 0, 0.1), 
+        quad = new Poly().setupFaceQuad(EnumFacing.SOUTH,
+                new FaceVertex(0, 0, 0.1f), 
+                new FaceVertex(1, 0, 0.1f), 
                 new FaceVertex(1, 1, 0), 
-                new FaceVertex(0.9, 0.1, 0), 
+                new FaceVertex(0.9f, 0.1f, 0), 
                 EnumFacing.UP);
         assertTrue(quad.getNormalFace() == EnumFacing.SOUTH);
 

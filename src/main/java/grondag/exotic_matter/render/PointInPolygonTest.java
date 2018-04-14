@@ -119,7 +119,7 @@ public class PointInPolygonTest
         {
             for(int i = 0; i < size; i++)
             {
-                vertices[i] = discardAxis.get2dPoint(quad.getVertex(i));
+                vertices[i] = discardAxis.get2dPoint(quad.getVertex(i).toVec3d());
             }
             // make array wrap to simplify usage
             vertices[size] = vertices[0];

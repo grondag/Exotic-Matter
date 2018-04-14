@@ -1,4 +1,4 @@
-package concurrency;
+package grondag.exotic_matter;
 
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;

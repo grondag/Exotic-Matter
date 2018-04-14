@@ -147,11 +147,11 @@ public abstract class QuadPainter
                 switch(this.paintLayer)
                 {
                 case MIDDLE:
-                    result.scaleFromBlockCenter(1.01);
+                    result.scaleFromBlockCenter(1.01f);
                     break;
                     
                 case OUTER:
-                    result.scaleFromBlockCenter(1.02);
+                    result.scaleFromBlockCenter(1.02f);
                     break;
                     
                 default:

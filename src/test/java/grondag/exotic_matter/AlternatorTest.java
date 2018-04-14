@@ -1,4 +1,4 @@
-package world;
+package grondag.exotic_matter;
 
 import org.junit.Test;
 

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4d;
+import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
@@ -243,9 +243,10 @@ public class Poly implements IPolyProperties
 
         for(int i = 0; i < vertices.length; i++)
         {
-            if(getVertex(i) != null && getVertex(i).normal != null)
+            Vertex v = getVertex(i);
+            if(v != null)
             {
-                setVertexNormal(i, getVertex(i).normal.scale(-1));
+                this.setVertex(i, v.withNormal(-v.normalX, -v.normalY, -v.normalZ));
             }
         }            
 
@@ -305,69 +306,69 @@ public class Poly implements IPolyProperties
         }
         else if(topFace == QuadHelper.rightOf(this.getNominalFace(), defaultTop))
         {
-            rv0 = vertexIn0.withXY(vertexIn0.y, 1.0 - vertexIn0.x);
-            rv1 = vertexIn1.withXY(vertexIn1.y, 1.0 - vertexIn1.x);
-            rv2 = vertexIn2.withXY(vertexIn2.y, 1.0 - vertexIn2.x);
-            rv3 = vertexIn3.withXY(vertexIn3.y, 1.0 - vertexIn3.x);
+            rv0 = vertexIn0.withXY(vertexIn0.y, 1 - vertexIn0.x);
+            rv1 = vertexIn1.withXY(vertexIn1.y, 1 - vertexIn1.x);
+            rv2 = vertexIn2.withXY(vertexIn2.y, 1 - vertexIn2.x);
+            rv3 = vertexIn3.withXY(vertexIn3.y, 1 - vertexIn3.x);
         }
         else if(topFace == QuadHelper.bottomOf(this.getNominalFace(), defaultTop))
         {
-            rv0 = vertexIn0.withXY(1.0 - vertexIn0.x, 1.0 - vertexIn0.y);
-            rv1 = vertexIn1.withXY(1.0 - vertexIn1.x, 1.0 - vertexIn1.y);
-            rv2 = vertexIn2.withXY(1.0 - vertexIn2.x, 1.0 - vertexIn2.y);
-            rv3 = vertexIn3.withXY(1.0 - vertexIn3.x, 1.0 - vertexIn3.y);
+            rv0 = vertexIn0.withXY(1 - vertexIn0.x, 1 - vertexIn0.y);
+            rv1 = vertexIn1.withXY(1 - vertexIn1.x, 1 - vertexIn1.y);
+            rv2 = vertexIn2.withXY(1 - vertexIn2.x, 1 - vertexIn2.y);
+            rv3 = vertexIn3.withXY(1 - vertexIn3.x, 1 - vertexIn3.y);
         }
         else // left of
         {
-            rv0 = vertexIn0.withXY(1.0 - vertexIn0.y, vertexIn0.x);
-            rv1 = vertexIn1.withXY(1.0 - vertexIn1.y, vertexIn1.x);
-            rv2 = vertexIn2.withXY(1.0 - vertexIn2.y, vertexIn2.x);
-            rv3 = vertexIn3.withXY(1.0 - vertexIn3.y, vertexIn3.x);
+            rv0 = vertexIn0.withXY(1 - vertexIn0.y, vertexIn0.x);
+            rv1 = vertexIn1.withXY(1 - vertexIn1.y, vertexIn1.x);
+            rv2 = vertexIn2.withXY(1 - vertexIn2.y, vertexIn2.x);
+            rv3 = vertexIn3.withXY(1 - vertexIn3.y, vertexIn3.x);
         }
 
         
         switch(this.getNominalFace())
         {
         case UP:
-            setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
             break;
 
         case DOWN:     
-            setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 16.0-rv0.u() * 16.0, 16.0-rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 16.0-rv1.u() * 16.0, 16.0-rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 16.0-rv2.u() * 16.0, 16.0-rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 16.0-rv3.u() * 16.0, 16.0-rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 16-rv0.u() * 16, 16-rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 16-rv1.u() * 16, 16-rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 16-rv2.u() * 16, 16-rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 16-rv3.u() * 16, 16-rv3.v() * 16, rv3.color(this.getColor())));
             break;
 
         case EAST:
-            setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
             break;
 
         case WEST:
-            setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
             break;
 
         case NORTH:
-            setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
             break;
 
         case SOUTH:
-            setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u() * 16.0, rv0.v() * 16.0, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u() * 16.0, rv1.v() * 16.0, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u() * 16.0, rv2.v() * 16.0, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u() * 16.0, rv3.v() * 16.0, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
             break;
         }
 
@@ -396,7 +397,7 @@ public class Poly implements IPolyProperties
      * 
      * @see #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)
      */
-    public Poly setupFaceQuad(double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public Poly setupFaceQuad(float x0, float y0, float x1, float y1, float depth, EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setupFaceQuad(
@@ -414,13 +415,18 @@ public class Poly implements IPolyProperties
      * but also sets nominal face with given face in start parameter.  
      * Returns self as convenience.
      */
-    public Poly setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public Poly setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setNominalFace(face);
         return this.setupFaceQuad(x0, y0, x1, y1, depth, topFace);
     }
 
+    public Poly setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    {
+        return this.setupFaceQuad(face, (float)x0, (float)y0, (float)x1, (float)y1, (float)depth, topFace);
+    }
+    
     /**
      * Triangular version of {@link #setupFaceQuad(EnumFacing, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
@@ -443,12 +449,17 @@ public class Poly implements IPolyProperties
     /** Using this instead of method on vertex 
      * ensures normals are set correctly for tris.
      */
-    public void setVertexNormal(int index, Vec3d normalIn)
+    public void setVertexNormal(int index, float x, float y, float z)
     {
         if(index < this.vertexCount)
         {
-            this.setVertex(index, this.getVertex(index).withNormal(normalIn));
+            this.setVertex(index, this.getVertex(index).withNormal(x, y, z));
         }
+    }
+    
+    public void setVertexNormal(int index, Vec3d normal)
+    {
+        this.setVertexNormal(index, (float)normal.x, (float)normal.y, (float)normal.z);
     }
 
     /**
@@ -596,24 +607,46 @@ public class Poly implements IPolyProperties
     {
         if(this.vertexCount() == 3) return true;
 
-        Vec3d testVector = null;
-
-        for(int thisVertex = 0; thisVertex < this.vertexCount(); thisVertex++)
+        float testX = 0;
+        float testY = 0;
+        float testZ = 0;
+        boolean needTest = true;
+                
+        for(int thisIndex = 0; thisIndex < this.vertexCount(); thisIndex++)
         {
-            int nextVertex = thisVertex + 1;
-            if(nextVertex == this.vertexCount()) nextVertex = 0;
+            int nextIndex = thisIndex + 1;
+            if(nextIndex == this.vertexCount()) nextIndex = 0;
 
-            int priorVertex = thisVertex - 1;
-            if(priorVertex == -1) priorVertex = this.vertexCount() - 1;
+            int priorIndex = thisIndex - 1;
+            if(priorIndex == -1) priorIndex = this.vertexCount() - 1;
 
-            Vec3d lineA = getVertex(thisVertex).subtract(getVertex(priorVertex));
-            Vec3d lineB = getVertex(nextVertex).subtract(getVertex(thisVertex));
+            final Vertex thisVertex =  getVertex(thisIndex);
+            final Vertex nextVertex = getVertex(nextIndex);
+            final Vertex priorVertex = getVertex(priorIndex);
+            
+            final float ax = thisVertex.x - priorVertex.x;
+            final float ay = thisVertex.y - priorVertex.y;
+            final float az = thisVertex.z - priorVertex.z;
+            
+            final float bx = nextVertex.x - thisVertex.x;
+            final float by = nextVertex.y - thisVertex.y;
+            final float bz = nextVertex.z - thisVertex.z;
 
-            if(testVector == null)
+//            Vec3d lineA = getVertex(thisIndex).subtract(getVertex(priorIndex));
+//            Vec3d lineB = getVertex(nextIndex).subtract(getVertex(thisIndex));
+            
+            final float crossX = ay * bz - az * by;
+            final float crossY = az * bx - ax * bz;
+            final float crossZ = ax * by - ay * bx;
+            
+            if(needTest)
             {
-                testVector = lineA.crossProduct(lineB);
+                needTest = false;
+                testX = crossX;
+                testY = crossY;
+                testZ = crossZ;
             }
-            else if(testVector.dotProduct(lineA.crossProduct(lineB)) < 0)
+            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
             {
                 return false;
             }
@@ -633,18 +666,28 @@ public class Poly implements IPolyProperties
         Vec3d fn = this.getFaceNormal();
         if(fn == null) return false;
 
+        float faceX = (float) fn.x;
+        float faceY = (float) fn.y;
+        float faceZ = (float) fn.z;
+
+        Vertex first = this.getVertex(0);
+        
         for(int i = 3; i < this.vertexCount(); i++)
         {
             Vertex v = this.getVertex(i);
             if(v == null) return false;
+            
+            float dx = v.x - first.x;
+            float dy = v.y - first.y;
+            float dz = v.z - first.z;
 
-            if(Math.abs(v.subtract(this.getVertex(0)).dotProduct(fn)) > QuadHelper.EPSILON) return false;
+            if(Math.abs(faceX * dx + faceY * dy + faceZ * dz) > QuadHelper.EPSILON) return false;
         }
 
         return true;
     }
 
-    public boolean isOnFace(EnumFacing face, double tolerance)
+    public boolean isOnFace(EnumFacing face, float tolerance)
     {
         if(face == null) return false;
         boolean retVal = true;
@@ -670,7 +713,9 @@ public class Poly implements IPolyProperties
             return null;
         }
 
-        double distanceToPlane = -normal.dotProduct((origin.subtract(getVertex(0)))) / directionDotNormal;
+        Vec3d firstPoint = this.getVertex(0).toVec3d();
+        
+        double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
         // facing away from plane
         if(distanceToPlane < -QuadHelper.EPSILON) return null;
 
@@ -727,10 +772,12 @@ public class Poly implements IPolyProperties
             int nextVertex = i + 1;
             if(nextVertex == this.vertexCount()) nextVertex = 0;
 
-            Vec3d line = getVertex(nextVertex).subtract(getVertex(i));
+            Vec3d currentVertex = getVertex(i).toVec3d();
+            
+            Vec3d line = getVertex(nextVertex).toVec3d().subtract(currentVertex);
             Vec3d normalInPlane = faceNormal.crossProduct(line);
 
-            double sign = normalInPlane.dotProduct(point.subtract(getVertex(i)));
+            double sign = normalInPlane.dotProduct(point.subtract(currentVertex));
 
             if(lastSignum == 0)
             {
@@ -782,23 +829,23 @@ public class Poly implements IPolyProperties
             switch(face)
             {
             case EAST:
-                this.setVertex(i, v.withUV((1.0 - v.z) * 16, (1.0 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.z) * 16, (1 - v.y) * 16));
                 break;
                 
             case WEST:
-                this.setVertex(i, v.withUV(v.z * 16, (1.0 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.z * 16, (1 - v.y) * 16));
                 break;
                 
             case NORTH:
-                this.setVertex(i, v.withUV((1.0 - v.x) * 16, (1.0 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.x) * 16, (1 - v.y) * 16));
                 break;
                 
             case SOUTH:
-                this.setVertex(i, v.withUV(v.x * 16, (1.0 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.x * 16, (1 - v.y) * 16));
                 break;
                 
             case DOWN:
-                this.setVertex(i, v.withUV(v.x * 16, (1.0 - v.z) * 16));
+                this.setVertex(i, v.withUV(v.x * 16, (1 - v.z) * 16));
                 break;
                 
             case UP:
@@ -826,9 +873,9 @@ public class Poly implements IPolyProperties
      * Unique scale transformation of all vertex coordinates 
      * using block center (0.5, 0.5, 0.5) as origin.
      */
-    public void scaleFromBlockCenter(double scale)
+    public void scaleFromBlockCenter(float scale)
     {
-        double c = 0.5 * (1-scale);
+        float c = 0.5f * (1-scale);
         
         for(int i = 0; i < this.vertexCount(); i++)
         {
@@ -848,7 +895,7 @@ public class Poly implements IPolyProperties
     {
         try
         {
-            return getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).normalize();
+            return getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).normalize();
         }
         catch(Exception e)
         {
@@ -873,12 +920,12 @@ public class Poly implements IPolyProperties
     {
         if(this.vertexCount() == 3)
         {
-            return Math.abs(getVertex(1).subtract(getVertex(0)).crossProduct(getVertex(2).subtract(getVertex(0))).lengthVector()) / 2.0;
+            return Math.abs(getVertex(1).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d())).lengthVector()) / 2.0;
 
         }
         else if(this.vertexCount() == 4) //quad
         {
-            return Math.abs(getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).lengthVector()) / 2.0;
+            return Math.abs(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).lengthVector()) / 2.0;
         }
         else
         {
@@ -957,13 +1004,13 @@ public class Poly implements IPolyProperties
     }
     
     /** returns a copy of this quad with the given transformation applied */
-    public Poly transform(Matrix4f m)
+    public Poly transform(Matrix4d m)
     {
-        return this.transform(new Matrix4d(m));
+        return this.transform(new Matrix4f(m));
     }
     
     /** returns a copy of this quad with the given transformation applied */
-    public Poly transform(Matrix4d matrix)
+    public Poly transform(Matrix4f matrix)
     {
         Poly result = this.clone();
         
@@ -971,10 +1018,10 @@ public class Poly implements IPolyProperties
         for(int i = 0; i < result.vertexCount; i++)
         {
             Vertex vertex = result.getVertex(i);
-            Vector4d temp = new Vector4d(vertex.x, vertex.y, vertex.z, 1.0);
+            Vector4f temp = new Vector4f(vertex.x, vertex.y, vertex.z, 1);
             matrix.transform(temp);
-            if(Math.abs(temp.w - 1.0) > 1e-5) temp.scale(1.0 / temp.w);
-            result.setVertex(i, vertex.withXYZ(temp.x, temp.y, temp.z));
+            if(Math.abs(temp.w - 1) > 1e-5) temp.scale(1 / temp.w);
+            result.setVertex(i, vertex.withXYZ((float)temp.x, (float)temp.y, (float)temp.z));
         }
         
         // transform nominal face
@@ -984,7 +1031,7 @@ public class Poly implements IPolyProperties
         if(this.nominalFace != null)
         {
             Vec3i curNorm = this.nominalFace.getDirectionVec();
-            Vector4d newFaceVec = new Vector4d(curNorm.getX() + 0.5, curNorm.getY() + 0.5, curNorm.getZ() + 0.5, 1.0);
+            Vector4f newFaceVec = new Vector4f(curNorm.getX() + 0.5f, curNorm.getY() + 0.5f, curNorm.getZ() + 0.5f, 1);
             matrix.transform(newFaceVec);
             newFaceVec.x -= 0.5;
             newFaceVec.y -= 0.5;

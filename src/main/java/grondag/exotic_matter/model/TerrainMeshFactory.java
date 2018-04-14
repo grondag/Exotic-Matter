@@ -112,7 +112,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         TerrainState flowState = modelState.getTerrainState();
 
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex(0.5, 0.5, 1.0 - flowState.getCenterVertexHeight() + flowState.getYOffset());
+        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
 
         /**
          * Quads on left (west) side of the top face.<br>
@@ -155,10 +155,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Initialized to a height of one and changed based on world state.
          */
         FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1.0);
-        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1.0);
-        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1.0);
-        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1.0);
+        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1);
+        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1);
 
         /**
          * Top face vertex positions for centers of the block at the four corners.  
@@ -166,18 +166,18 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Used to generate tris needed to compute vertex normals
          */
         FaceVertex fvFarCorner[] = new FaceVertex[HorizontalFace.values().length];
-        fvFarCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1.5, 1.5, 1.0);
-        fvFarCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(-0.5, 1.5, 1.0);
-        fvFarCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1.5, -0.5, 1.0);
-        fvFarCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(-0.5, -0.5, 1.0);
+        fvFarCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1.5f, 1.5f, 1);
+        fvFarCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(-0.5f, 1.5f, 1);
+        fvFarCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1.5f, -0.5f, 1);
+        fvFarCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(-0.5f, -0.5f, 1);
 
 
 
         for(HorizontalCorner corner : HorizontalCorner.values())
         {
 
-            fvMidCorner[corner.ordinal()] = fvMidCorner[corner.ordinal()].withDepth(1.0 - flowState.getMidCornerVertexHeight(corner) + flowState.getYOffset());
-            fvFarCorner[corner.ordinal()] = fvFarCorner[corner.ordinal()].withDepth(1.0 - flowState.getFarCornerVertexHeight(corner) + flowState.getYOffset());
+            fvMidCorner[corner.ordinal()] = fvMidCorner[corner.ordinal()].withDepth(1 - flowState.getMidCornerVertexHeight(corner) + flowState.getYOffset());
+            fvFarCorner[corner.ordinal()] = fvFarCorner[corner.ordinal()].withDepth(1 - flowState.getFarCornerVertexHeight(corner) + flowState.getYOffset());
 
             quadInputsCorner.add(new ArrayList<Poly>(8));            
         }
@@ -185,21 +185,21 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // Coordinates assume quad will be set up with North=top orientation
         // Depth will be set separately.
         FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5, 1, 1.0);
-        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5, 0, 1.0);
-        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0, 0.5, 1.0);
-        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0, 0.5, 1.0);
+        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f);
+        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f);
+        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f);
+        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f);
 
         FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
-        fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5, 1.5, 1.0);
-        fvFarSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5, -0.5, 1.0);
-        fvFarSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.5, 0.5, 1.0);
-        fvFarSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(-0.5, 0.5, 1.0);
+        fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);
+        fvFarSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, -0.5f, 1.0f);
+        fvFarSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.5f, 0.5f, 1.0f);
+        fvFarSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(-0.5f, 0.5f, 1.0f);
 
         for(HorizontalFace side : HorizontalFace.values())
         {
-            fvMidSide[side.ordinal()] = fvMidSide[side.ordinal()].withDepth(1.0 - flowState.getMidSideVertexHeight(side) + flowState.getYOffset());
-            fvFarSide[side.ordinal()] = fvFarSide[side.ordinal()].withDepth(1.0 - flowState.getFarSideVertexHeight(side) + flowState.getYOffset());
+            fvMidSide[side.ordinal()] = fvMidSide[side.ordinal()].withDepth(1 - flowState.getMidSideVertexHeight(side) + flowState.getYOffset());
+            fvFarSide[side.ordinal()] = fvFarSide[side.ordinal()].withDepth(1 - flowState.getFarSideVertexHeight(side) + flowState.getYOffset());
 
             quadInputsSide.add(new ArrayList<Poly>(8));   
 
@@ -282,7 +282,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     // only have tri on side block, vertex for side of missing corner will
                     // be half a block lower than the side's center height
                     : midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
-                        .withDepth(fvFarSide[side.ordinal()].depth + 0.5);
+                        .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
                     
                 qiWork.setupFaceQuad(
                         fvMidCorner[leftCorner.ordinal()],
@@ -302,7 +302,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         // only have tri on side block, vertex for side of missing corner will
                         // be half a block lower than the side's center height
                         : midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
-                            .withDepth(fvFarSide[side.ordinal()].depth + 0.5);
+                            .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
                         
                 qiWork.setupFaceQuad(
                         fvMidCorner[rightCorner.ordinal()],
@@ -320,7 +320,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     qiWork.setupFaceQuad(
                             fvMidCorner[leftCorner.ordinal()],
                             midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
-                                .withDepth(fvFarCorner[leftCorner.ordinal()].depth + 0.5),
+                                .withDepth(fvFarCorner[leftCorner.ordinal()].depth + 0.5f),
                             fvFarCorner[leftCorner.ordinal()],
                             EnumFacing.NORTH);           
                     quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
@@ -334,7 +334,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                             fvMidCorner[rightCorner.ordinal()],
                             fvFarCorner[rightCorner.ordinal()],
                             midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
-                                .withDepth(fvFarCorner[rightCorner.ordinal()].depth + 0.5),
+                                .withDepth(fvFarCorner[rightCorner.ordinal()].depth + 0.5f),
                             EnumFacing.NORTH);           
                     quadInputsCorner.get(rightCorner.ordinal()).add(qiWork);
                 }
@@ -342,7 +342,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         }
 
         /** Used for Y coord of bottom face and as lower Y coord of side faces*/
-        double bottom = -2 - flowState.getYOffset();// - QuadFactory.EPSILON;
+        float bottom = -2 - flowState.getYOffset();// - QuadFactory.EPSILON;
 
         Vec3d normCenter = quadInputsCenterLeft[0].getFaceNormal().scale(quadInputsCenterLeft[0].getArea());
         normCenter = normCenter.add(quadInputsCenterLeft[1].getFaceNormal().scale(quadInputsCenterLeft[1].getArea()));
@@ -468,8 +468,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                 qSide.setupFaceQuad(
                         new FaceVertex(0, bottom, 0),
-                        new FaceVertex(0.5, bottom, 0),
-                        new FaceVertex(0.5, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
+                        new FaceVertex(0.5f, bottom, 0),
+                        new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
                 rawQuads.add(qSide);
@@ -478,10 +478,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 qSide.setupFaceQuad(
-                        new FaceVertex(0.5, bottom, 0),
+                        new FaceVertex(0.5f, bottom, 0),
                         new FaceVertex(1, bottom, 0),
                         new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
-                        new FaceVertex(0.5, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
+                        new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
                 rawQuads.add(qSide);
             }
@@ -601,7 +601,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
      */
     private FaceVertex midPoint(FaceVertex first, FaceVertex second)
     {
-        return new FaceVertex((first.x + second.x) / 2.0, (first.y + second.y) / 2.0, (first.depth + second.depth) / 2.0);
+        return new FaceVertex((first.x + second.x) / 2, (first.y + second.y) / 2, (first.depth + second.depth) / 2);
     }
     
     private Poly setupUVForSide(Poly quad, EnumFacing face)

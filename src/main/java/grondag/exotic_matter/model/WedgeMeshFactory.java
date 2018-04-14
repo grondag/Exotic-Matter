@@ -33,13 +33,13 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         Poly quad = template.clone();
         quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
         quad.setNominalFace(EnumFacing.NORTH);
-        quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0, EnumFacing.UP);
+        quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         builder.add(quad.transform(matrix));
       
         quad = template.clone();
         quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
         quad.setNominalFace(EnumFacing.EAST);
-        quad.setupFaceQuad(0.0, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
+        quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         builder.add(quad.transform(matrix));
         
         quad = template.clone();

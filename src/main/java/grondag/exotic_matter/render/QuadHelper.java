@@ -38,7 +38,7 @@ import java.util.List;
 
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Quat4f;
-import javax.vecmath.Vector4d;
+import javax.vecmath.Vector4f;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
@@ -51,8 +51,7 @@ import grondag.exotic_matter.world.Rotation;
 
 public class QuadHelper
 {
-    public static final double EPSILON = 0.0000001;
-
+    public static final float EPSILON = 0.0000001f;
 
     public static final List<BakedQuad> EMPTY_QUAD_LIST = new ImmutableList.Builder<BakedQuad>().build();
 
@@ -332,7 +331,7 @@ public class QuadHelper
         }
     }
 
-    public static EnumFacing computeFaceForNormal(Vector4d normal)
+    public static EnumFacing computeFaceForNormal(Vector4f normal)
     {
         return computeFaceForNormal(new Vec3d(normal.x, normal.y, normal.z));
     }
@@ -493,7 +492,7 @@ public class QuadHelper
         */
        public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<Poly> list)
        {
-           addTextureToAllFaces(rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1.0, texturRotation, list);
+           addTextureToAllFaces(rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
        }
        
        /**
@@ -512,7 +511,7 @@ public class QuadHelper
         * @param contractUVs    should be true for everything except fonts maybe
         * @param list           your mutable list of quads
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, double uvFraction, Rotation texturRotation, List<Poly> list)
+       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<Poly> list)
        {
            Poly template = new Poly();
            template.setTextureName("hard_science:blocks/" + rawTextureName);

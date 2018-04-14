@@ -3,94 +3,132 @@ package grondag.exotic_matter.render;
 
 import javax.annotation.Nonnull;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
+import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public class Vertex extends Vec3d
+public class Vertex
 {
-    public final double u;
-    public final double v;
+    public final float x;
+    public final float y;
+    public final float z;
+    public final float u;
+    public final float v;
     public final int color;
-    protected final Vec3d normal;
+    public final float normalX;
+    public final float normalY;
+    public final float normalZ;
     
-    public Vertex(Vec3d point, double u, double v, int color, Vec3d normal)
+    public Vertex(Vector3f point, float u, float v, int color, Vector3f normal)
     {
         this(point.x, point.y, point.z, u, v, color, normal);
     }
     
-    public Vertex(double x, double y, double z, double u, double v, int color)
+    @Deprecated
+    public Vertex(Vec3d point, double u, double v, int color, Vec3d normal)
     {
-        this(x, y, z, u, v, color, null);
+        this((float)point.x, (float)point.y, (float)point.z, (float)u, (float)v, color, (float)normal.x, (float)normal.y, (float)normal.z);
+    }
+    
+    public Vertex(float x, float y, float z, float u, float v, int color)
+    {
+        this(x, y, z, u, v, color, 0, 0, 0);
     }
 
-    public Vertex(double x, double y, double z, double u, double v, int color, Vec3d normal)
+    public Vertex(float x, float y, float z, float u, float v, int color, Vector3f normal)
     {
-        super(x, y, z);
+        this(x, y, z, u, v, color, normal.x, normal.y, normal.z);
+    }
+    
+    public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
         this.u = u;
         this.v = v;
         this.color = color;
-        this.normal = normal;
+        this.normalX = normalX;
+        this.normalY = normalY;
+        this.normalZ = normalZ;
     }
 
     /** returns copy of this vertex with given normal */
-    public Vertex withNormal(Vec3d normalIn)
+    public Vertex withNormal(float normalXIn, float normalYIn, float normalZIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normalIn);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normalXIn, normalYIn, normalZIn);
     }
 
     /** returns copy of this vertex with given color */
     public Vertex withColor(int colorIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normalX, this.normalY, this.normalZ);
     }
 
     /** returns copy of this vertex with given UV */
-    public Vertex withUV(double uNew, double vNew)
+    public Vertex withUV(float uNew, float vNew)
     {
-        return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normal);
+        return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normalX, this.normalY, this.normalZ);
     }
     
     /** returns copy of this vertex with given XYZ coords */
-    public Vertex withXYZ(double xNew, double yNew, double zNew)
+    public Vertex withXYZ(float xNew, float yNew, float zNew)
     {
-        return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normal);
+        return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normalX, this.normalY, this.normalZ);
     }
     
     public boolean hasNormal()
     {
-        return this.normal != null;
+        return !(this.normalX == 0 && this.normalY == 0 && this.normalZ == 0);
     }
 
-    public Vec3d getNormal()
-    {
-        return this.normal;
-    }
+ 
     /**
      * Returns a new, linearly interpolated vertex based on this vertex
      * and the other vertex provided.  Neither vertex is changed.
      * Factor 0 returns this vertex. Factor 1 return other vertex, 
      * with values in between returning a weighted average.
      */
-    public Vertex interpolate(Vertex otherVertex, double otherWeight)
+    public Vertex interpolate(Vertex otherVertex, float otherWeight)
     {
-        Vec3d newPos = this.add(otherVertex.subtract(this).scale(otherWeight));
-        Vec3d newNorm = null;
-
-        if(this.normal != null && otherVertex.normal != null)
+        // tx = 2
+        // ox = 1
+        // w = 0
+        // 2 +(1 - 2) * 0 = 2
+        // 2 +(1 - 2) * 1 = 1
+        
+        float newX = this.x + (otherVertex.x - this.x) * otherWeight;
+        float newY = this.y + (otherVertex.y - this.y) * otherWeight;
+        float newZ = this.z + (otherVertex.z - this.z) * otherWeight;
+        
+        float normX = 0;
+        float normY = 0;
+        float normZ = 0;
+        
+        if(this.hasNormal() && otherVertex.hasNormal())
         {
-            newNorm = this.normal.add(otherVertex.normal.subtract(this.normal).scale(otherWeight));
+            normX = this.normalX + (otherVertex.normalX - this.normalX) * otherWeight;
+            normY = this.normalY + (otherVertex.normalY - this.normalY) * otherWeight;
+            normZ = this.normalZ + (otherVertex.normalZ - this.normalZ) * otherWeight;
+            
+            float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
+            normX *= normScale;
+            normY *= normScale;
+            normZ *= normScale;
         }
-        double newU = this.u + (otherVertex.u - this.u) * otherWeight;
-        double newV = this.v + (otherVertex.v - this.v) * otherWeight;
+        
+        float newU = this.u + (otherVertex.u - this.u) * otherWeight;
+        float newV = this.v + (otherVertex.v - this.v) * otherWeight;
 
         int newColor = (int) ((this.color & 0xFF) + ((otherVertex.color & 0xFF) - (this.color & 0xFF)) * otherWeight);
         newColor |= (int) ((this.color & 0xFF00) + ((otherVertex.color & 0xFF00) - (this.color & 0xFF00)) * otherWeight);
         newColor |= (int) ((this.color & 0xFF0000) + ((otherVertex.color & 0xFF0000) - (this.color & 0xFF0000)) * otherWeight);
         newColor |= (int) ((this.color & 0xFF000000) + ((otherVertex.color & 0xFF000000) - (this.color & 0xFF000000)) * otherWeight);
 
-        return new Vertex(newPos.x, newPos.y, newPos.z, newU, newV, newColor, newNorm);
+        return new Vertex(newX, newY, newZ, newU, newV, newColor, normX, normY, normZ);
     }
 
     /**
@@ -107,7 +145,7 @@ public class Vertex extends Vec3d
      * Returns a signed distance to the plane of the given face.
      * Positive numbers mean in front of face, negative numbers in back.
      */
-    public double distanceToFacePlane(EnumFacing face)
+    public float distanceToFacePlane(EnumFacing face)
     {
         // could use dot product, but exploiting privileged case for less math
         switch(face)
@@ -136,7 +174,7 @@ public class Vertex extends Vec3d
         }
     }
     
-    public boolean isOnFacePlane(EnumFacing face, double tolerance)
+    public boolean isOnFacePlane(EnumFacing face, float tolerance)
     {
         return Math.abs(this.distanceToFacePlane(face)) < tolerance;
     }
@@ -144,13 +182,13 @@ public class Vertex extends Vec3d
     @Override
     public Vertex clone()
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normalX, this.normalY, this.normalZ);
     }
 
     public Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
     {
 
-        Vector4f tmp = new Vector4f((float) x, (float) y, (float) z, 1f);
+        Vector4f tmp = new Vector4f(this.x, this.y, this.z, 1f);
 
         matrix.transform(tmp);
         if (rescaleToUnitCube && Math.abs(tmp.w - 1f) > 1e-5)
@@ -160,11 +198,10 @@ public class Vertex extends Vec3d
 
         if(this.hasNormal())
         {
-            Vector4f tmpNormal = new Vector4f((float)this.normal.x, (float)this.normal.y, (float)this.normal.z, 1f);
-            matrix.transform(tmp);
-            Vec3d newNormal = new Vec3d(tmpNormal.x, tmpNormal.y, tmpNormal.z);
-            newNormal.normalize();
-            return new Vertex(tmp.x, tmp.y, tmp.z, u, v, color, newNormal);
+            Vector4f tmpNormal = new Vector4f(this.normalX, this.normalY, this.normalZ, 1f);
+            matrix.transform(tmpNormal);
+            float normScale= (float) (1/Math.sqrt(tmpNormal.x*tmpNormal.x + tmpNormal.y*tmpNormal.y + tmpNormal.z*tmpNormal.z));
+            return new Vertex(tmp.x, tmp.y, tmp.z, u, v, color, tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale);
         }
         else
         {
@@ -173,8 +210,7 @@ public class Vertex extends Vec3d
 
     }
     
-    @Override
-    public @Nonnull Vertex add(@Nonnull Vec3d vec)
+    public @Nonnull Vertex add(@Nonnull Vertex vec)
     {
         return this.addVector(vec.x, vec.y, vec.z);
     }
@@ -183,8 +219,7 @@ public class Vertex extends Vec3d
      * Adds the specified x,y,z vector components to this vertex and returns the resulting vector. Does not change this
      * vertex. UV values remain same as original. 
      */
-    @Override
-    public @Nonnull Vertex addVector(double x, double y, double z)
+    public @Nonnull Vertex addVector(float x, float y, float z)
     {
         return new Vertex(this.x + x, this.y + y, this.z + z, u, v, color);
     }
@@ -192,9 +227,9 @@ public class Vertex extends Vec3d
     public float[] xyzToFloatArray()
     {
         float[] retVal = new float[3];
-        retVal[0] = (float)this.x;
-        retVal[1] = (float)this.y;
-        retVal[2] = (float)this.z;
+        retVal[0] = this.x;
+        retVal[1] = this.y;
+        retVal[2] = this.z;
         return retVal;
     }
 
@@ -204,9 +239,9 @@ public class Vertex extends Vec3d
         if(this.hasNormal())
         {
             retVal = new float[3];
-            retVal[0] = (float) this.normal.x;
-            retVal[1] = (float) this.normal.y;
-            retVal[2] = (float) this.normal.z;
+            retVal[0] = this.normalX;
+            retVal[1] = this.normalY;
+            retVal[2] = this.normalZ;
         }
         return retVal;
     }
@@ -225,8 +260,22 @@ public class Vertex extends Vec3d
     /**
      * True if this point is on the line formed by the two given points.
      */
-    public boolean isOnLine(Vec3d pointA, Vec3d pointB)
+    public boolean isOnLine(float x0, float y0, float  z0, float x1, float y1,  float z1)
     {
-        return(Math.abs(pointA.distanceTo(pointB) - pointB.distanceTo(this) - pointA.distanceTo(this)) < QuadHelper.EPSILON);
+        float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
+        float bThis = Useful.distance(this.x, this.y, this.z, x1, y1, z1);
+        float aThis = Useful.distance(x0, y0, z0, this.x, this.y, this.z);
+        return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);
+    }
+    
+    public boolean isOnLine(Vertex v0, Vertex v1)
+    {
+        return this.isOnLine(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z);
+    }
+    
+    @Deprecated
+    public Vec3d toVec3d()
+    {
+        return new Vec3d(this.x, this.y, this.z);
     }
 }

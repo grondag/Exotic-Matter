@@ -1,4 +1,4 @@
-package varia;
+package grondag.exotic_matter;
 
 import static org.junit.Assert.*;
 

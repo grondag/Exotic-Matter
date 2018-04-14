@@ -70,7 +70,7 @@ public class CSGPlane
     public CSGPlane(Poly quad)
     {
         this.normal = quad.getFaceNormal();
-        this.dist = normal.dotProduct(quad.getVertex(0));    
+        this.dist = normal.dotProduct(quad.getVertex(0).toVec3d());    
     }
     
     @Override
@@ -118,7 +118,7 @@ public class CSGPlane
         int polygonType = 0;
         int types[] = new int[quad.vertexCount()];
         for (int i = 0; i < quad.vertexCount(); i++) {
-            double t = this.normal.dotProduct(quad.getVertex(i)) - this.dist;
+            double t = this.normal.dotProduct(quad.getVertex(i).toVec3d()) - this.dist;
             
             int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
             polygonType |= type;
@@ -171,7 +171,7 @@ public class CSGPlane
                     // If the next vertex will NOT be included in this side, we are starting the split line.
 
                     if ((iType | jType) == SPANNING) {
-                        double t = (this.dist - this.normal.dotProduct(iVertex)) / this.normal.dotProduct(jVertex.subtract(iVertex));
+                        float t = (float) ((this.dist - this.normal.dotProduct(iVertex.toVec3d())) / this.normal.dotProduct(jVertex.toVec3d().subtract(iVertex.toVec3d())));
                         Vertex v = iVertex.interpolate(jVertex, t);
                         
                         frontVertex.add(v);
