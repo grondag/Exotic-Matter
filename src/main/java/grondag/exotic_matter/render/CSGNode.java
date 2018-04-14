@@ -2,7 +2,6 @@ package grondag.exotic_matter.render;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -48,6 +47,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.AbstractIterator;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 
 public class CSGNode implements Iterable<Poly>
@@ -190,7 +193,7 @@ public class CSGNode implements Iterable<Poly>
     protected long getFirstDuplicateQuadID()
     {
 
-        HashSet<Long> ids = new HashSet<Long>();
+        IntSet ids = new IntOpenHashSet();
         for(Poly q : this)
         {
             if(ids.contains(q.quadID())) return q.quadID();
@@ -384,7 +387,7 @@ public class CSGNode implements Iterable<Poly>
         }
 
         final ArrayList<Vertex> joinedVertex = new ArrayList<Vertex>(8);
-        final ArrayList<Long> joinedLineID = new ArrayList<Long>(8);
+        final IntList joinedLineID = new IntArrayList(8);
         
         // don't try to eliminate co-linear vertices when joining two tris
         // no cases when this is really essential and the line tests fail
@@ -435,7 +438,7 @@ public class CSGNode implements Iterable<Poly>
         for(int i = 0; i < joinedVertex.size(); i++)
         {
             joinedQuad.addVertex(i, joinedVertex.get(i));
-            joinedQuad.setLineID(i, joinedLineID.get(i));
+            joinedQuad.setLineID(i, joinedLineID.getInt(i));
         }
 
         // must be convex
@@ -453,6 +456,9 @@ public class CSGNode implements Iterable<Poly>
         return joinedQuad;
         
     }
+    
+    
+    //TODO: switch to ints and reduce boxing
     
     private List<Poly> recombine(ArrayList<Poly> quadList)
     {
@@ -480,7 +486,7 @@ public class CSGNode implements Iterable<Poly>
                 {
                     edgeMap.put(lineID, new TreeMap<Long, Integer>());
                 }
-                edgeMap.get(lineID).put(q.quadID(), i);
+                edgeMap.get(lineID).put((long) q.quadID(), i);
             }
         }
         
@@ -517,11 +523,11 @@ public class CSGNode implements Iterable<Poly>
                             potentialMatchesRemain = true;
                             
                             // remove quads from main map
-                            quadMap.remove(iQuad.quadID());
-                            quadMap.remove(jQuad.quadID());
+                            quadMap.remove((long)iQuad.quadID());
+                            quadMap.remove((long)jQuad.quadID());
                             
                             // add quad to main map
-                            quadMap.put(joined.quadID(), joined);
+                            quadMap.put((long)joined.quadID(), joined);
 
                             //For debugging
 //                            {
@@ -542,8 +548,8 @@ public class CSGNode implements Iterable<Poly>
                                 // negative line ids represent outside edges - not part of map
                                 if(iQuad.getLineID(n) < 0) continue;
 
-                                TreeMap<Long, Integer> removeMap = edgeMap.get(iQuad.getLineID(n));
-                                removeMap.remove(iQuad.quadID());
+                                TreeMap<Long, Integer> removeMap = edgeMap.get((long)iQuad.getLineID(n));
+                                removeMap.remove((long)iQuad.quadID());
                             }
                             
                             for(int n = 0; n < jQuad.vertexCount(); n++)
@@ -551,8 +557,8 @@ public class CSGNode implements Iterable<Poly>
                                 // negative line ids represent outside edges - not part of map
                                 if(jQuad.getLineID(n) < 0) continue;
 
-                                TreeMap<Long, Integer> removeMap = edgeMap.get(jQuad.getLineID(n));
-                                removeMap.remove(jQuad.quadID());
+                                TreeMap<Long, Integer> removeMap = edgeMap.get((long)jQuad.getLineID(n));
+                                removeMap.remove((long)jQuad.quadID());
                             }                            
                             
                             // add quad to edge map
@@ -561,11 +567,11 @@ public class CSGNode implements Iterable<Poly>
                                 // negative line ids represent outside edges - not part of map
                                 if(joined.getLineID(n) < 0) continue;
 
-                                if(!edgeMap.containsKey(joined.getLineID(n)))
+                                if(!edgeMap.containsKey((long)joined.getLineID(n)))
                                 {
-                                    edgeMap.put(joined.getLineID(n), new TreeMap<Long, Integer>());
+                                    edgeMap.put((long) joined.getLineID(n), new TreeMap<Long, Integer>());
                                 }
-                                edgeMap.get(joined.getLineID(n)).put(joined.quadID(), n);
+                                edgeMap.get((long)joined.getLineID(n)).put((long) joined.quadID(), n);
                             }
                         }
                     }

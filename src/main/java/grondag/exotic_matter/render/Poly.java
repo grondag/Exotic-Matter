@@ -3,8 +3,7 @@ package grondag.exotic_matter.render;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
@@ -63,11 +62,11 @@ public class Poly implements IPolyProperties
     private float minV = 0;
     private float maxV = 16;
 
-    private static AtomicLong nextQuadID = new AtomicLong(1);
+    private static AtomicInteger nextQuadID = new AtomicInteger(1);
     private boolean isInverted = false;
-    private final long quadID = nextQuadID.incrementAndGet();
-    private long ancestorQuadID = IPolyProperties.NO_ID;
-    private long[] lineID;
+    private final int quadID = nextQuadID.incrementAndGet();
+    private int ancestorQuadID = IPolyProperties.NO_ID;
+    private int[] lineID;
 
     public Poly()
     {
@@ -84,7 +83,7 @@ public class Poly implements IPolyProperties
         assert vertexCount > 2 : "Bad polygon structure.";
         this.vertexCount = vertexCount;
         this.vertices = new Vertex[vertexCount];
-        this.lineID = new long[vertexCount];
+        this.lineID = new int[vertexCount];
     }
 
     public Poly(Poly template, int vertexCount)
@@ -189,7 +188,7 @@ public class Poly implements IPolyProperties
         else
         {
             ArrayList<Poly>  retVal= new ArrayList<Poly>(this.vertexCount()-2);
-            long splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
+            int splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
             int head = vertexCount - 1;
             int tail = 1;
 
@@ -261,7 +260,7 @@ public class Poly implements IPolyProperties
         // last edge is still always the last, and isn't sorted  (draw it to see)
         for (int i = 0, mid = (vertices.length - 1) / 2, j = vertices.length - 2; i < mid; i++, j--)
         {
-            long swapLineID = lineID[i];
+            int swapLineID = lineID[i];
             lineID[i] = lineID[j];
             lineID[j] = swapLineID;
         }
@@ -520,7 +519,7 @@ public class Poly implements IPolyProperties
         return this.vertices[index];
     }
 
-    public void setLineID(int index, long lineID)
+    public void setLineID(int index, int lineID)
     {
         if(index < this.vertexCount)
         {
@@ -529,7 +528,7 @@ public class Poly implements IPolyProperties
     }
 
     @Override
-    public long getLineID(int index)
+    public int getLineID(int index)
     {
         if(this.vertexCount() == 3 && index == 3) return this.lineID[2];
         return this.lineID[index];
@@ -558,12 +557,12 @@ public class Poly implements IPolyProperties
     }
 
     @Override
-    public long getAncestorQuadID()
+    public int getAncestorQuadID()
     {
         return this.ancestorQuadID;
     }
 
-    public long getAncestorQuadIDForDescendant()
+    public int getAncestorQuadIDForDescendant()
     {
         return this.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
     }
@@ -1186,12 +1185,12 @@ public class Poly implements IPolyProperties
     }
 
     @Override
-    public long quadID()
+    public int quadID()
     {
         return quadID;
     }
 
-    protected void setAncestorQuadID(long ancestorQuadID)
+    protected void setAncestorQuadID(int ancestorQuadID)
     {
         this.ancestorQuadID = ancestorQuadID;
     }

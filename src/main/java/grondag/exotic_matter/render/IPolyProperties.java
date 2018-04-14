@@ -10,10 +10,10 @@ public interface IPolyProperties
     SurfaceInstance NO_SURFACE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance;
 
     /** special edge ID signifying is an original edge, not a split */
-    long IS_AN_ANCESTOR = -1;
+    int IS_AN_ANCESTOR = -1;
     
     /** special edge ID signifying no ID has been set */
-    long NO_ID = 0;
+    int NO_ID = 0;
 
     public String getTextureName();
 
@@ -27,7 +27,7 @@ public interface IPolyProperties
 
     public boolean isLockUV();
 
-    public long getAncestorQuadID();
+    public int getAncestorQuadID();
 
     public boolean isInverted();
 
@@ -49,9 +49,9 @@ public interface IPolyProperties
 
     public int vertexCount();
     
-    public long quadID();
+    public int quadID();
     
-    public long getLineID(int index);
+    public int getLineID(int index);
     
     public Vertex getVertex(int index);
 }

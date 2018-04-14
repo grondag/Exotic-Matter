@@ -37,17 +37,16 @@ import java.awt.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import grondag.exotic_matter.varia.MicroTimer;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.util.math.Vec3d;
 
 public class CSGPlane
 {
-    protected static AtomicLong nextInsideLineID = new AtomicLong(1);
-    protected static AtomicLong nextOutsideLineID = new AtomicLong(-1);
+    protected static AtomicInteger nextInsideLineID = new AtomicInteger(1);
+    protected static AtomicInteger nextOutsideLineID = new AtomicInteger(-1);
     
     /**
      * Normal vector.
@@ -58,7 +57,7 @@ public class CSGPlane
      */
     public double dist;
     
-    protected long lineID = nextInsideLineID.getAndIncrement();
+    protected int lineID = nextInsideLineID.getAndIncrement();
 
     /**
      * Constructor. Creates a new plane defined by its normal vector and the
@@ -163,15 +162,15 @@ public class CSGPlane
                 
                 List<Vertex> frontVertex = new ArrayList<Vertex>(vcount+1);
                 List<Vertex> backVertex = new ArrayList<Vertex>(vcount+1);
-                LongList frontLineID = new LongArrayList(vcount+1);
-                LongList backLineID = new LongArrayList(vcount+1);
+                IntList frontLineID = new IntArrayList(vcount+1);
+                IntList backLineID = new IntArrayList(vcount+1);
                 for (int i = 0; i < vcount; i++) {
                     int j = (i + 1) % vcount;
                     int iType = types[i];
                     int jType = types[j];
                     Vertex iVertex = quad.getVertex(i);
                     Vertex jVertex = quad.getVertex(j);
-                    long iLineID = quad.getLineID(i);
+                    int iLineID = quad.getLineID(i);
                     
                     if (iType != BACK) {
                         frontVertex.add(iVertex);
@@ -213,7 +212,7 @@ public class CSGPlane
                     for(int i = 0; i < frontVertex.size(); i++)
                     {
                         frontQuad.addVertex(i, frontVertex.get(i));
-                        frontQuad.setLineID(i, frontLineID.getLong(i));
+                        frontQuad.setLineID(i, frontLineID.getInt(i));
                     }
 
                     front.add(frontQuad);
@@ -231,7 +230,7 @@ public class CSGPlane
                     for(int i = 0; i < backVertex.size(); i++)
                     {
                         backQuad.addVertex(i, backVertex.get(i));
-                        backQuad.setLineID(i, backLineID.getLong(i));
+                        backQuad.setLineID(i, backLineID.getInt(i));
                     }
                     
                     back.add(backQuad);               
