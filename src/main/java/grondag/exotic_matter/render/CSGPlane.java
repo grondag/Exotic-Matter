@@ -91,6 +91,11 @@ public class CSGPlane
         dist = -dist;
     }
 
+    private static final int COPLANAR = 0;
+    private static final int FRONT = 1;
+    private static final int BACK = 2;
+    private static final int SPANNING = 3;
+    
     private static MicroTimer splitTimer = new MicroTimer("splitQuad", 1000000);
 
     /**
@@ -126,16 +131,13 @@ public class CSGPlane
         List<Poly> front,
         List<Poly> back) 
     {
-        final int COPLANAR = 0;
-        final int FRONT = 1;
-        final int BACK = 2;
-        final int SPANNING = 3;
+        final int vcount = quad.vertexCount();
         
-        // Classify each point as well as the entire polygon into one of the above
-        // four classes.
-        int polygonType = 0;
-        int types[] = new int[quad.vertexCount()];
-        for (int i = 0; i < quad.vertexCount(); i++) {
+        // Classify each point as well as the entire polygon
+        int polygonType = COPLANAR;
+        int types[] = new int[vcount];
+        for (int i = 0; i < vcount; i++)
+        {
             double t = this.normal.dotProduct(quad.getVertex(i).toVec3d()) - this.dist;
             
             int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
@@ -159,12 +161,12 @@ public class CSGPlane
                 break;
             case SPANNING:
                 
-                List<Vertex> frontVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
-                List<Vertex> backVertex = new ArrayList<Vertex>(quad.vertexCount()+1);
-                LongList frontLineID = new LongArrayList(quad.vertexCount()+1);
-                LongList backLineID = new LongArrayList(quad.vertexCount()+1);
-                for (int i = 0; i < quad.vertexCount(); i++) {
-                    int j = (i + 1) % quad.vertexCount();
+                List<Vertex> frontVertex = new ArrayList<Vertex>(vcount+1);
+                List<Vertex> backVertex = new ArrayList<Vertex>(vcount+1);
+                LongList frontLineID = new LongArrayList(vcount+1);
+                LongList backLineID = new LongArrayList(vcount+1);
+                for (int i = 0; i < vcount; i++) {
+                    int j = (i + 1) % vcount;
                     int iType = types[i];
                     int jType = types[j];
                     Vertex iVertex = quad.getVertex(i);
