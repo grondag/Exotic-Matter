@@ -43,6 +43,7 @@ import javax.vecmath.Vector4f;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import com.google.common.collect.ImmutableList;
 
@@ -51,7 +52,7 @@ import grondag.exotic_matter.world.Rotation;
 
 public class QuadHelper
 {
-    public static final float EPSILON = 0.0000001f;
+    public static final float EPSILON = 1.0E-5F;
 
     public static final List<BakedQuad> EMPTY_QUAD_LIST = new ImmutableList.Builder<BakedQuad>().build();
 
