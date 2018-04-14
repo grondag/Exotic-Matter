@@ -340,21 +340,21 @@ public class CSGNode
         // quads must be same orientation to be joined
         if(aQuad.isInverted() != bQuad.isInverted()) return null;
 
-        int aStartIndex = aQuad.findLineIndex(lineID);
+        final int aStartIndex = aQuad.findLineIndex(lineID);
         // shouldn't happen, but won't work if does
         if(aStartIndex == Poly.LINE_NOT_FOUND) 
             return null;
-        int aEndIndex = aStartIndex + 1 == aQuad.vertexCount() ? 0 : aStartIndex + 1;
-        int aNextIndex = aEndIndex + 1 == aQuad.vertexCount() ? 0 : aEndIndex + 1;
-        int aPrevIndex = aStartIndex == 0 ? aQuad.vertexCount() - 1 : aStartIndex - 1;
+        final int aEndIndex = aStartIndex + 1 == aQuad.vertexCount() ? 0 : aStartIndex + 1;
+        final int aNextIndex = aEndIndex + 1 == aQuad.vertexCount() ? 0 : aEndIndex + 1;
+        final int aPrevIndex = aStartIndex == 0 ? aQuad.vertexCount() - 1 : aStartIndex - 1;
 
-        int bStartIndex = bQuad.findLineIndex(lineID);
+        final int bStartIndex = bQuad.findLineIndex(lineID);
         // shouldn't happen, but won't work if does
         if(bStartIndex == Poly.LINE_NOT_FOUND) 
             return null;
-        int bEndIndex = bStartIndex + 1 == bQuad.vertexCount() ? 0 : bStartIndex + 1;
-        int bNextIndex = bEndIndex + 1 == bQuad.vertexCount() ? 0 : bEndIndex + 1;
-        int bPrevIndex = bStartIndex == 0 ? bQuad.vertexCount() - 1 : bStartIndex - 1;
+        final int bEndIndex = bStartIndex + 1 == bQuad.vertexCount() ? 0 : bStartIndex + 1;
+        final int bNextIndex = bEndIndex + 1 == bQuad.vertexCount() ? 0 : bEndIndex + 1;
+        final int bPrevIndex = bStartIndex == 0 ? bQuad.vertexCount() - 1 : bStartIndex - 1;
         
         // confirm vertices on either end of vertex match
         if(!aQuad.getVertex(aStartIndex).isCsgEqual(bQuad.getVertex(bEndIndex)))
@@ -376,8 +376,8 @@ public class CSGNode
             return null;
         }
 
-        ArrayList<Vertex> joinedVertex = new ArrayList<Vertex>(8);
-        ArrayList<Long> joinedLineID = new ArrayList<Long>(8);
+        final ArrayList<Vertex> joinedVertex = new ArrayList<Vertex>(8);
+        final ArrayList<Long> joinedLineID = new ArrayList<Long>(8);
         
         for(int a = 0; a < aQuad.vertexCount(); a++)
         {
@@ -398,7 +398,6 @@ public class CSGNode
                     if(b >= bQuad.vertexCount()) b -= bQuad.vertexCount();
                     joinedVertex.add(bQuad.getVertex(b));
                     joinedLineID.add(bQuad.getLineID(b));
-                    
                 }
             }
             else if(a == aEndIndex)
@@ -418,12 +417,7 @@ public class CSGNode
            }
         }   
         
-        // max size is quad
-//        if(joinedVertex.size() > 4 || joinedVertex.size() < 3)
-//        {
-//            HardScience.log.info("Quad too many points");
-//            return null;
-//        }
+        assert joinedVertex.size() > 2 : "Bad join outcome";
         
         // actually build the new quad!
         Poly joinedQuad = new Poly(aQuad, joinedVertex.size());

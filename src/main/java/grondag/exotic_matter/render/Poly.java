@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4d;
@@ -22,11 +23,11 @@ import net.minecraft.util.math.Vec3i;
 public class Poly implements IPolyProperties
 {
     private Vertex[] vertices;
-    private Vec3d faceNormal = null;
+    private @Nullable Vec3d faceNormal;
     private final int vertexCount;
 
-    private EnumFacing nominalFace;
-    private String textureName;
+    private @Nullable EnumFacing nominalFace;
+    private @Nullable String textureName;
     
     /** 
      * Causes texture to appear rotated within the frame
@@ -80,8 +81,8 @@ public class Poly implements IPolyProperties
 
     public Poly(int vertexCount)
     {
-        super();
-        this.vertexCount = Math.max(3, vertexCount);
+        assert vertexCount > 2 : "Bad polygon structure.";
+        this.vertexCount = vertexCount;
         this.vertices = new Vertex[vertexCount];
         this.lineID = new long[vertexCount];
     }
@@ -102,9 +103,10 @@ public class Poly implements IPolyProperties
 
     protected void copyVertices(Poly template)
     {
-        for(int i = 0; i < this.vertexCount(); i++)
+        final int c = this.vertexCount();
+        for(int i = 0; i < c; i++)
         {
-            this.setVertex(i, template.getVertex(i) == null ? null : template.getVertex(i).clone());
+            this.setVertex(i, template.getVertex(i));
             this.lineID[i] = template.lineID[i];
         }
     }
