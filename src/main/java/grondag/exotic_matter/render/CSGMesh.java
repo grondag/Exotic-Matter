@@ -211,7 +211,7 @@ public class CSGMesh extends ArrayList<Poly>
         b.invert();
         b.clipTo(a);
         b.invert();
-        a.build(b.allRawQuads());
+        a.addAll(b.allRawQuads());
         a.invert();
 
         return new CSGMesh(a.recombinedRawQuads());
@@ -249,7 +249,7 @@ public class CSGMesh extends ArrayList<Poly>
         b.invert();
         a.clipTo(b);
         b.clipTo(a);
-        a.build(b.allRawQuads());
+        a.addAll(b.allRawQuads());
         a.invert();
         CSGMesh retVal = new CSGMesh(a.recombinedRawQuads());
         
@@ -325,7 +325,7 @@ public class CSGMesh extends ArrayList<Poly>
         b.invert();
         b.clipTo(a);
         b.invert();
-        a.build(b.allRawQuads());
+        a.addAll(b.allRawQuads());
 
         return new CSGMesh(a.recombinedRawQuads());
     }

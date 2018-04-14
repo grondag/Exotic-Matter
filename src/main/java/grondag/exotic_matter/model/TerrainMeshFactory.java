@@ -16,6 +16,7 @@ import grondag.exotic_matter.render.SurfaceTopology;
 import grondag.exotic_matter.render.SurfaceType;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.Color;
+import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
 import net.minecraft.block.Block;
@@ -86,8 +87,17 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
       return new Vec3d(temp.x, temp.y * temp.y, temp.z);
     }
 
+    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 1000);
+    
     @Override
     public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
+    {
+        shapeTimer.start();
+        List<Poly> result = innerShapeQuads(modelState);
+        shapeTimer.stop();
+        return result;
+    }
+    private @Nonnull List<Poly> innerShapeQuads(ISuperModelState modelState)
     {
         CSGMesh rawQuads = new CSGMesh();
         Poly template = new Poly();

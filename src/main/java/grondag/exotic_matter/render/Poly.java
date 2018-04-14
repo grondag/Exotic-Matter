@@ -9,6 +9,8 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4d;
 
+import com.google.common.collect.ImmutableList;
+
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.Rotation;
@@ -177,14 +179,14 @@ public class Poly implements IPolyProperties
      */
     public List<Poly> toTris()
     {
-        ArrayList<Poly>  retVal= new ArrayList<Poly>(this.vertexCount()-2);
 
         if(this.vertexCount() == 3)
         {
-            retVal.add(this.clone());
+            return ImmutableList.of(this.clone());
         }
         else
         {
+            ArrayList<Poly>  retVal= new ArrayList<Poly>(this.vertexCount()-2);
             long splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
             int head = vertexCount - 1;
             int tail = 1;
@@ -226,9 +228,9 @@ public class Poly implements IPolyProperties
                     retVal.add(work);
                 }
             }
+            return retVal;
         }
 
-        return retVal;
     }
 
     /**

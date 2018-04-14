@@ -1,5 +1,6 @@
 package grondag.exotic_matter.render;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -37,9 +38,12 @@ import java.util.HashSet;
 */
 
 import java.util.List;
+import java.util.Stack;
 import java.util.TreeMap;
 
 import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.ImmutableList;
 
@@ -69,33 +73,81 @@ public class CSGNode
     private @Nullable CSGNode back;
 
     /**
-     * Constructor.
-     *
-     * Creates a BSP node consisting of the specified polygons.
+     * Returns root node of BSP tree with given polygons.
      *
      * Polygons in the input are copied so that nothing is mutated.
      */
     public CSGNode(CSGMesh shapeIn)
     {
-        ImmutableList.Builder<Poly> builder = ImmutableList.builder();
-        
         for(Poly q : shapeIn)
         {
             if(q.isOnSinglePlane())
             {
-                builder.add(q.clone().setupCsgMetadata());
+                this.addToBSPTree(q.clone().setupCsgMetadata());
             }
             else
             {
                 for(Poly t : q.toTris())
                 {
-                    builder.add(t.setupCsgMetadata());
+                    this.addToBSPTree(t.setupCsgMetadata());
                 }
             }
          }
-        this.build(builder.build());
     }
 
+    public void addAll(Iterable<Poly> polys)
+    {
+        for(Poly p : polys)
+        {
+            this.addToBSPTree(p);
+        }
+    }
+    
+    /**
+     * Adds poly to this tree. Meant to be called on root node.
+     */
+    private void addToBSPTree(final Poly poly)
+    {
+        Poly p = poly;
+        @Nullable CSGNode node  = this;
+        
+        ArrayDeque<Pair<CSGNode, Poly>> stack = new ArrayDeque<>();
+        List<Poly> frontP = new ArrayList<Poly>();
+        List<Poly> backP = new ArrayList<Poly>();
+        
+        while(true)
+        {
+            if(node.quads.isEmpty())
+            {
+                node.add(p);
+            }
+            else
+            {
+                node.plane.splitQuad(p, node.quads, node.quads, frontP, backP);
+                
+                if(!frontP.isEmpty())  
+                {
+                    if(node.front == null) node.front = new CSGNode();
+                    for(Poly fp : frontP) stack.push(Pair.of(node.front, fp));
+                    frontP.clear();
+                }
+                
+                if(!backP.isEmpty())  
+                {
+                    if(node.back == null) node.back = new CSGNode();
+                    for(Poly bp : backP) stack.push(Pair.of(node.back, bp));
+                    backP.clear();
+                }
+            }
+            
+            if(stack.isEmpty())  break;
+            Pair<CSGNode, Poly> next = stack.pop();
+            node = next.getLeft();
+            p = next.getRight();
+        }
+    }
+
+    
     /**
      * Constructor. Creates a node without polygons.
      */
@@ -249,6 +301,8 @@ public class CSGNode
      */
     public List<Poly> recombinedRawQuads()
     {
+        
+        //TODO: can we limit comparisons to co-planar quads?  Probably much faster.
         TLongObjectHashMap<ArrayList<Poly>> ancestorBuckets = new TLongObjectHashMap<ArrayList<Poly>>();
         
         this.allRawQuads().forEach((quad) -> 
@@ -526,46 +580,59 @@ public class CSGNode
             
         
     }
-    
+
     /**
-     * Build a BSP tree out of {@code polygons}. When called on an existing
-     * tree, the new polygons are filtered down to the bottom of the tree and
-     * become new nodes there. Each set of polygons is partitioned using the
-     * start polygon (no heuristic is used to pick a good split).
-     *
-     * @param quadsIn polygons used to build the BSP
+     * Adds poly to this node, establishing the plane for this node
+     * if it was not already determined. <p>
+     * 
+     * ASSUMES the given poly is coplanar with the plane of this node
+     * if plane is already set.
      */
-    public final void build(List<Poly> quadsIn)
+    private void add(Poly poly)
     {
-        if (quadsIn.isEmpty()) 
-        {
-            return;
-        }
-
-        if (this.plane == null) {
-            this.plane = new CSGPlane(quadsIn.get(0));
-        }
-
-        List<Poly> frontP = new ArrayList<Poly>();
-        List<Poly> backP = new ArrayList<Poly>();
-
-        // parallel version does not work here
-        quadsIn.forEach((quad) -> {
-            this.plane.splitQuad(quad.clone(), this.quads, this.quads, frontP, backP);
-        });
-
-        if (!frontP.isEmpty()) {
-            if (this.front == null) {
-                this.front = new CSGNode();
-            }
-            this.front.build(frontP);
-        }
-        if (!backP.isEmpty()) {
-            if (this.back == null) {
-                this.back = new CSGNode();
-            }
-            this.back.build(backP);
-        }
+        if(this.plane == null) this.plane = new CSGPlane(poly);
+        this.quads.add(poly);
     }
+    
+//    /**
+//     * Build a BSP tree out of {@code polygons}. When called on an existing
+//     * tree, the new polygons are filtered down to the bottom of the tree and
+//     * become new nodes there. Each set of polygons is partitioned using the
+//     * start polygon (no heuristic is used to pick a good split).
+//     *
+//     * @param quadsIn polygons used to build the BSP
+//     */
+//    public final void build(List<Poly> quadsIn)
+//    {
+//        if (quadsIn.isEmpty()) 
+//        {
+//            return;
+//        }
+//
+//        if (this.plane == null) {
+//            this.plane = new CSGPlane(quadsIn.get(0));
+//        }
+//
+//        List<Poly> frontP = new ArrayList<Poly>();
+//        List<Poly> backP = new ArrayList<Poly>();
+//
+//        // parallel version does not work here
+//        quadsIn.forEach((quad) -> {
+//            this.plane.splitQuad(quad.clone(), this.quads, this.quads, frontP, backP);
+//        });
+//
+//        if (!frontP.isEmpty()) {
+//            if (this.front == null) {
+//                this.front = new CSGNode();
+//            }
+//            this.front.build(frontP);
+//        }
+//        if (!backP.isEmpty()) {
+//            if (this.back == null) {
+//                this.back = new CSGNode();
+//            }
+//            this.back.build(backP);
+//        }
+//    }
     
 }
