@@ -39,7 +39,7 @@ import java.util.Iterator;
 */
 
 import java.util.List;
-import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -48,13 +48,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 
-import gnu.trove.map.hash.TLongObjectHashMap;
+import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 
 public class CSGNode implements Iterable<Poly>
@@ -358,7 +362,7 @@ public class CSGNode implements Iterable<Poly>
      * 
      * Returns null if quads cannot be joined.
      */
-    private @Nullable Poly joinCsgQuads(Poly aQuad, Poly bQuad, long lineID)
+    private @Nullable Poly joinCsgPolys(Poly aQuad, Poly bQuad, long lineID)
     {
 
         // quads must be same orientation to be joined
@@ -461,11 +465,29 @@ public class CSGNode implements Iterable<Poly>
         
     }
     
-    
-    //TODO: switch to ints and reduce boxing
+  
     
     private Collection<Poly> recombine(Collection<Poly> quadsIn)
     {
+//        quadInCount.addAndGet(quadsIn.size());   
+//        recombineCounter.start();
+//        Collection<Poly> result = this.recombineInner(quadsIn);
+//        quadOutputCount.addAndGet(result.size());
+//        if(recombineCounter.stop())
+//        {
+//            int in = quadInCount.get();
+//            int out = quadOutputCount.get();
+//            
+//            ExoticMatter.INSTANCE.info("CSG Poly recombination efficiency = %d percent", ((in - out) * 100) / in );
+//        } 
+//        return result;
+//    }
+//    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 10000);
+//    private  static AtomicInteger quadInCount = new AtomicInteger();
+//    private  static AtomicInteger quadOutputCount = new AtomicInteger();
+//    
+//    private Collection<Poly> recombineInner(Collection<Poly> quadsIn)
+//    {
         Iterator<Poly> iterator = quadsIn.iterator();
         
         if(!iterator.hasNext()) return quadsIn;
@@ -474,29 +496,37 @@ public class CSGNode implements Iterable<Poly>
         
         if(q.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR) return quadsIn;
         
-        TLongObjectHashMap<Poly> quadMap = new TLongObjectHashMap<Poly>(quadsIn.size());
-        TreeMap<Long, TreeMap<Long, Integer>> edgeMap = new TreeMap<Long, TreeMap<Long, Integer>>();
+        /**
+         * Index of all polys by ID
+         */
+        Int2ObjectOpenHashMap<Poly> polyMap = new Int2ObjectOpenHashMap<Poly>(quadsIn.size());
+        
+        /**
+         * Map of line IDs with a map of quad : vertex index at each node
+         */
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> edgeMap = new Int2ObjectOpenHashMap<Int2IntOpenHashMap>();
         
 //        double totalArea = 0;
         
         do
         {
-            quadMap.put(q.quadID(), q);
-//            totalArea += q.getArea();
+            polyMap.put(q.quadID(), q);
             
             // build edge map for inside edges that may be rejoined
             for(int i = 0; i < q.vertexCount(); i++)
             {
-                long lineID = q.getLineID(i);
+                int lineID = q.getLineID(i);
                 // negative line ids represent outside edges - no need to rejoin them
                 // zero ids are uninitialized edges and should be ignored
                 if(lineID <= 0) continue;
                 
-                if(!edgeMap.containsKey(lineID))
+                Int2IntOpenHashMap quadToLineIndexMap = edgeMap.get(lineID);
+                if(quadToLineIndexMap == null)
                 {
-                    edgeMap.put(lineID, new TreeMap<Long, Integer>());
+                    quadToLineIndexMap = new Int2IntOpenHashMap();
+                    edgeMap.put(lineID, quadToLineIndexMap);
                 }
-                edgeMap.get(lineID).put((long) q.quadID(), i);
+                quadToLineIndexMap.put(q.quadID(), i);
             }
             
             if(iterator.hasNext()) 
@@ -506,88 +536,109 @@ public class CSGNode implements Iterable<Poly>
             
         } while(true);
         
+        /** 
+         * Cleared at top of each loop and set to true if any only if 
+         * new polys are created due to joins AND the line/quad/vertex map
+         * has at least one new value added to it. <p>
+         * 
+         * The second condition avoids making another pass when all the
+         * joined polys have edges that are outside edges (and thus can't
+         * be joined) or the edge is no longer being tracked because fewer
+         * than two polys reference it.
+         */
+        
         boolean potentialMatchesRemain = true;
         while(potentialMatchesRemain)
         {
             potentialMatchesRemain = false;
             
-            for(Long edgeKey : edgeMap.descendingKeySet())
+            ObjectIterator<Entry<Int2IntOpenHashMap>> it = edgeMap.int2ObjectEntrySet().fastIterator();
+            
+            while(it.hasNext())
             {
-                TreeMap<Long, Integer> edgeQuadMap = edgeMap.get(edgeKey);
+                Entry<Int2IntOpenHashMap> entry = it.next();
                 
-                if(edgeQuadMap.isEmpty()) continue;
+                Int2IntOpenHashMap poly2LineIndexMap = entry.getValue();
                 
-                Long[] edgeQuadIDs = edgeQuadMap.keySet().toArray(new Long[1]);
-                if(edgeQuadIDs.length < 2) continue;
+                final int lineCount = poly2LineIndexMap.size();
                 
-                for(int i = 0; i < edgeQuadIDs.length - 1; i++)
+                if(lineCount < 2)
                 {
-                    for(int j = i + 1; j < edgeQuadIDs.length; j++)
+                    // if one or zero polys reference this edge it cannot be joined
+                    // and thus no need to track it any longer. Subsequent operations
+                    // thus cannot assume all lineIDs will be present in the line/quad/vertex map
+                    it.remove();
+                    continue;
+                }
+                
+                int[] edgeQuadIDs = poly2LineIndexMap.keySet().toArray(new int[lineCount]);
+                
+                for(int i = 0; i < lineCount - 1; i++)
+                {
+                    for(int j = i + 1; j < lineCount; j++)
                     {
-                        // Examining two quads that share an edge
+                        // Examining two polys that share an edge
                         // to determine if they can be combined.
 
-                        Poly iQuad = quadMap.get(edgeQuadIDs[i]);
-                        Poly jQuad = quadMap.get(edgeQuadIDs[j]);
+                        Poly iPoly = polyMap.get(edgeQuadIDs[i]);
+                        Poly jPoly = polyMap.get(edgeQuadIDs[j]);
                         
-                        if(iQuad == null || jQuad == null) continue;
+                        if(iPoly == null || jPoly == null) continue;
                         
-                        Poly joined = joinCsgQuads(iQuad, jQuad, edgeKey);
+                        Poly joined = joinCsgPolys(iPoly, jPoly, entry.getIntKey());
                         
                         if(joined != null)
                         {    
-                            potentialMatchesRemain = true;
-                            
                             // remove quads from main map
-                            quadMap.remove((long)iQuad.quadID());
-                            quadMap.remove((long)jQuad.quadID());
+                            polyMap.remove(iPoly.quadID());
+                            polyMap.remove(jPoly.quadID());
                             
                             // add quad to main map
-                            quadMap.put((long)joined.quadID(), joined);
+                            polyMap.put(joined.quadID(), joined);
 
-                            //For debugging
-//                            {
-//                                double testArea = 0;
-//                                for(RawQuad quad : quadMap.valueCollection())
-//                                {
-//                                    testArea += quad.getArea();
-//                                }
-//                                if(Math.abs(testArea - totalArea) > QuadFactory.EPSILON)
-//                                {
-//                                    HardScience.log.info("area mismatch");
-//                                }
-//                            }
-                            
                             // remove quads from edge map
-                            for(int n = 0; n < iQuad.vertexCount(); n++)
+                            for(int n = 0; n < iPoly.vertexCount(); n++)
                             {                
+                                final int lineID = iPoly.getLineID(n);
                                 // negative line ids represent outside edges - not part of map
-                                if(iQuad.getLineID(n) < 0) continue;
+                                if(lineID < 0) continue;
 
-                                TreeMap<Long, Integer> removeMap = edgeMap.get((long)iQuad.getLineID(n));
-                                removeMap.remove((long)iQuad.quadID());
+                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
+                                // may get null entries if line only exists on one quad
+                                // and is no longer tracked - this is OK
+                                if(removeMap  != null) removeMap.remove(iPoly.quadID());
                             }
                             
-                            for(int n = 0; n < jQuad.vertexCount(); n++)
+                            for(int n = 0; n < jPoly.vertexCount(); n++)
                             {
+                                final int lineID = jPoly.getLineID(n);
+                                
                                 // negative line ids represent outside edges - not part of map
-                                if(jQuad.getLineID(n) < 0) continue;
+                                if(lineID < 0) continue;
 
-                                TreeMap<Long, Integer> removeMap = edgeMap.get((long)jQuad.getLineID(n));
-                                removeMap.remove((long)jQuad.quadID());
+                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
+                                // may get null entries if line only exists on one quad
+                                // and is no longer tracked - this is OK
+                                if(removeMap  != null) removeMap.remove(jPoly.quadID());
                             }                            
                             
                             // add quad to edge map
+                            // no new edges are created as part of this process
+                            // so we can safely assume the edge will be found
+                            // or it is no longer being tracked because only one poly uses it
                             for(int n = 0; n < joined.vertexCount(); n++)
                             {
+                                final int lineID = joined.getLineID(n);
+                                
                                 // negative line ids represent outside edges - not part of map
-                                if(joined.getLineID(n) < 0) continue;
+                                if(lineID < 0) continue;
 
-                                if(!edgeMap.containsKey((long)joined.getLineID(n)))
+                                Int2IntOpenHashMap addMap = edgeMap.get(lineID);
+                                if(addMap != null)
                                 {
-                                    edgeMap.put((long) joined.getLineID(n), new TreeMap<Long, Integer>());
+                                    potentialMatchesRemain = true;
+                                    addMap.put(joined.quadID(), n);
                                 }
-                                edgeMap.get((long)joined.getLineID(n)).put((long) joined.quadID(), n);
                             }
                         }
                     }
@@ -602,7 +653,7 @@ public class CSGNode implements Iterable<Poly>
 //        }
         
         ArrayList<Poly> retVal = new ArrayList<Poly>();
-        quadMap.valueCollection().forEach((p) -> retVal.addAll(p.toQuads()));
+        polyMap.values().forEach((p) -> retVal.addAll(p.toQuads()));
         return retVal;
             
         
