@@ -2,6 +2,7 @@ package grondag.exotic_matter.render;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -45,8 +46,11 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -323,24 +327,24 @@ public class CSGNode implements Iterable<Poly>
      */
     public List<Poly> recombinedRawQuads()
     {
-        TLongObjectHashMap<ArrayList<Poly>> ancestorBuckets = new TLongObjectHashMap<ArrayList<Poly>>();
+        Int2ObjectOpenHashMap<Collection<Poly>> ancestorBuckets = new Int2ObjectOpenHashMap<Collection<Poly>>();
         
         for(Poly quad : this) 
         {
-            if(!ancestorBuckets.contains(quad.getAncestorQuadID()))
+            if(!ancestorBuckets.containsKey(quad.getAncestorQuadID()))
             {
-                ancestorBuckets.put(quad.getAncestorQuadID(), new ArrayList<Poly>());
+                ancestorBuckets.put(quad.getAncestorQuadID(), new SimpleUnorderedArrayList<Poly>());
             }
             ancestorBuckets.get(quad.getAncestorQuadID()).add(quad);
         }
         
-        ArrayList<Poly> retVal = new ArrayList<Poly>();
-        ancestorBuckets.valueCollection().forEach((quadList) ->
+        ImmutableList.Builder<Poly> retVal = ImmutableList.builder();
+        ancestorBuckets.values().forEach((quadList) ->
         {
             retVal.addAll(recombine(quadList));
         });
         
-        return retVal;
+        return retVal.build();
     }
 
     
@@ -460,16 +464,22 @@ public class CSGNode implements Iterable<Poly>
     
     //TODO: switch to ints and reduce boxing
     
-    private List<Poly> recombine(ArrayList<Poly> quadList)
+    private Collection<Poly> recombine(Collection<Poly> quadsIn)
     {
-        if(quadList.get(0).getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR) return quadList;
+        Iterator<Poly> iterator = quadsIn.iterator();
         
-        TLongObjectHashMap<Poly> quadMap = new TLongObjectHashMap<Poly>(quadList.size());
+        if(!iterator.hasNext()) return quadsIn;
+        
+        Poly q = iterator.next();
+        
+        if(q.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR) return quadsIn;
+        
+        TLongObjectHashMap<Poly> quadMap = new TLongObjectHashMap<Poly>(quadsIn.size());
         TreeMap<Long, TreeMap<Long, Integer>> edgeMap = new TreeMap<Long, TreeMap<Long, Integer>>();
         
 //        double totalArea = 0;
         
-        for(Poly q : quadList) 
+        do
         {
             quadMap.put(q.quadID(), q);
 //            totalArea += q.getArea();
@@ -488,7 +498,13 @@ public class CSGNode implements Iterable<Poly>
                 }
                 edgeMap.get(lineID).put((long) q.quadID(), i);
             }
-        }
+            
+            if(iterator.hasNext()) 
+                q = iterator.next();
+            else 
+                break;
+            
+        } while(true);
         
         boolean potentialMatchesRemain = true;
         while(potentialMatchesRemain)
@@ -586,7 +602,7 @@ public class CSGNode implements Iterable<Poly>
 //        }
         
         ArrayList<Poly> retVal = new ArrayList<Poly>();
-        quadMap.valueCollection().forEach((q) -> retVal.addAll(q.toQuads()));
+        quadMap.valueCollection().forEach((p) -> retVal.addAll(p.toQuads()));
         return retVal;
             
         
