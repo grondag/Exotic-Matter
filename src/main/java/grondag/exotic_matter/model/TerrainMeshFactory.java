@@ -12,9 +12,9 @@ import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
+import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.render.SurfaceTopology;
 import grondag.exotic_matter.render.SurfaceType;
-import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.world.HorizontalCorner;
@@ -87,7 +87,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
       return new Vec3d(temp.x, temp.y * temp.y, temp.z);
     }
 
-    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
+//    private static LongOpenHashSet hitMap = new LongOpenHashSet();
+//    private static AtomicInteger tryCount = new AtomicInteger();
+//    private static AtomicInteger hitCount = new AtomicInteger();
     
     @Override
     public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
@@ -95,10 +97,17 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         shapeTimer.start();
         List<Poly> result = innerShapeQuads(modelState);
         shapeTimer.stop();
+//        if(shapeTimer.stop())
+//        {
+//            ExoticMatter.INSTANCE.info("Terrain geometry potential cache hit rate = %d percent", (hitCount.get() *  100) / tryCount.get());
+//            ExoticMatter.INSTANCE.info("Terrain geometry max cached states = %d", hitMap.size());
+//        }
         return result;
     }
+    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
     private @Nonnull List<Poly> innerShapeQuads(ISuperModelState modelState)
     {
+    
         CSGMesh rawQuads = new CSGMesh();
         Poly template = new Poly();
 
@@ -110,6 +119,15 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
 
         TerrainState flowState = modelState.getTerrainState();
+        
+//        tryCount.incrementAndGet();
+//        synchronized(hitMap)
+//        {
+//            if(!hitMap.add(flowState.getStateKey()))
+//            {
+//                hitCount.incrementAndGet();
+//            }
+//        }
 
         // center vertex setup
         FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());

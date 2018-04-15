@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model;
 
-import grondag.exotic_matter.render.IPolyProperties;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
@@ -25,7 +25,7 @@ public class CubeInputs{
     {
         //Minimum needed to prevent NPE
         this.textureRotation = Rotation.ROTATE_NONE;
-        this.surfaceInstance = IPolyProperties.NO_SURFACE;
+        this.surfaceInstance = IPolygon.NO_SURFACE;
     }
     public CubeInputs(int color, Rotation textureRotation, String textureName, boolean flipU, boolean flipV, boolean isOverlay, boolean isItem)
     {
@@ -39,7 +39,7 @@ public class CubeInputs{
         this.u1 = flipU ? 0 : 16;
         this.v1 = flipV ? 0 : 16;
         this.rotateBottom = true;
-        this.surfaceInstance = IPolyProperties.NO_SURFACE;
+        this.surfaceInstance = IPolygon.NO_SURFACE;
     }
 
     public Poly makeRawFace(EnumFacing side){

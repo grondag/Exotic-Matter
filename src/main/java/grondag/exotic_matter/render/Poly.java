@@ -19,7 +19,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class Poly implements IPolyProperties
+public class Poly implements IPolygon
 {
     private Vertex[] vertices;
     private @Nullable Vec3d faceNormal;
@@ -55,7 +55,7 @@ public class Poly implements IPolyProperties
     private boolean shouldContractUVs = true;
     
     private RenderPass renderPass = RenderPass.SOLID_SHADED;
-    private SurfaceInstance surfaceInstance = IPolyProperties.NO_SURFACE;
+    private SurfaceInstance surfaceInstance = IPolygon.NO_SURFACE;
 
     private float minU = 0;
     private float maxU = 16;
@@ -65,7 +65,7 @@ public class Poly implements IPolyProperties
     private static AtomicInteger nextQuadID = new AtomicInteger(1);
     private boolean isInverted = false;
     private final int quadID = nextQuadID.incrementAndGet();
-    private int ancestorQuadID = IPolyProperties.NO_ID;
+    private int ancestorQuadID = IPolygon.NO_ID;
     private int[] lineID;
 
     public Poly()
@@ -564,7 +564,7 @@ public class Poly implements IPolyProperties
 
     public int getAncestorQuadIDForDescendant()
     {
-        return this.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
+        return this.getAncestorQuadID() == IPolygon.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
     }
 
     /**
@@ -578,7 +578,7 @@ public class Poly implements IPolyProperties
      */
     public Poly setupCsgMetadata()
     {
-        this.setAncestorQuadID(IPolyProperties.IS_AN_ANCESTOR);
+        this.setAncestorQuadID(IPolygon.IS_AN_ANCESTOR);
         for(int i = 0; i < this.vertexCount(); i++)
         {
             this.lineID[i] = CSGPlane.nextOutsideLineID.getAndDecrement();

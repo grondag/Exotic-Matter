@@ -204,7 +204,7 @@ public class CSGNode implements Iterable<Poly>
             if(ids.contains(q.quadID())) return q.quadID();
             ids.add(q.quadID());
         }
-        return IPolyProperties.NO_ID;
+        return IPolygon.NO_ID;
     }
 
     /**
@@ -325,6 +325,13 @@ public class CSGNode implements Iterable<Poly>
      * Returns all quads in this tree recombined as much as possible.
      * Use for anything to be rendered.
      * Generally only useful on root node!
+     * 
+     * TODO: add a prediction mechanism in the CSG operations
+     * to determine if it is worth calling this each time
+     * The average poly reduction is between 10 and 20%, but that
+     * may  not be evenly spread across all the invocations.
+     * If could predict from the input meshes when it would be 
+     * useful would save the cost of setup.
      */
     public List<Poly> recombinedRawQuads()
     {
@@ -491,7 +498,7 @@ public class CSGNode implements Iterable<Poly>
         
         Poly q = iterator.next();
         
-        if(q.getAncestorQuadID() == IPolyProperties.IS_AN_ANCESTOR) return quadsIn;
+        if(q.getAncestorQuadID() == IPolygon.IS_AN_ANCESTOR) return quadsIn;
         
         /**
          * Index of all polys by ID

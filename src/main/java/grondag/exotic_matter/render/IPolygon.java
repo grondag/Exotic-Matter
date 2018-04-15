@@ -5,7 +5,7 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public interface IPolyProperties
+public interface IPolygon
 {
     SurfaceInstance NO_SURFACE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance;
 
