@@ -1,5 +1,12 @@
 package grondag.exotic_matter.render;
 
+import static net.minecraft.util.EnumFacing.DOWN;
+import static net.minecraft.util.EnumFacing.EAST;
+import static net.minecraft.util.EnumFacing.NORTH;
+import static net.minecraft.util.EnumFacing.SOUTH;
+import static net.minecraft.util.EnumFacing.UP;
+import static net.minecraft.util.EnumFacing.WEST;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +24,6 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.model.pipeline.IVertexConsumer;
 import net.minecraftforge.client.model.pipeline.LightUtil;
-
-import static net.minecraft.util.EnumFacing.*;
 
 public class QuadContainer
 {
@@ -38,14 +43,14 @@ public class QuadContainer
     
     private int[] occlusionHash;
 
-    public static QuadContainer fromRawQuads(List<Poly> rawQuads)
+    public static QuadContainer fromRawQuads(List<IPolygon> rawQuads)
     {
         if(rawQuads.isEmpty()) return EMPTY_CONTAINER;
 
         return new QuadContainer(rawQuads);
     }
 
-    private QuadContainer(List<Poly> rawQuads)
+    private QuadContainer(List<IPolygon> rawQuads)
     {
 
         @SuppressWarnings("unchecked")
@@ -56,7 +61,7 @@ public class QuadContainer
             buckets[i] = new ArrayList<BakedQuad>();
         }
 
-        for(Poly r : rawQuads)
+        for(IPolygon r : rawQuads)
         {
             EnumFacing facing = r.getActualFace();
             if(facing == null)

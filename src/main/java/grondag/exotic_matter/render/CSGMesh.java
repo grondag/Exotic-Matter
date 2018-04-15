@@ -46,11 +46,11 @@ import net.minecraft.util.math.AxisAlignedBB;
  * the mesh are "stateless" from a CSG perspective - CSG
  * metadata does not live beyond/outside each CSG operation.
  */
-public class CSGMesh extends ArrayList<Poly>
+public class CSGMesh extends ArrayList<IPolygon>
 {
     private static final long serialVersionUID = 796007237565914078L;
 
-    public CSGMesh(List<Poly> quads)
+    public <T extends IPolygon> CSGMesh(List<T> quads)
     {
         super(quads);
     }
@@ -64,7 +64,7 @@ public class CSGMesh extends ArrayList<Poly>
     @Override
     public CSGMesh clone()
     {
-        Stream<Poly> quadStream;
+        Stream<IPolygon> quadStream;
 
         if (this.size() > 200) {
             quadStream = this.parallelStream();
@@ -73,7 +73,7 @@ public class CSGMesh extends ArrayList<Poly>
         }
 
         return new CSGMesh(quadStream.
-                map((Poly p) -> p.clone()).collect(Collectors.toList()));
+                map((IPolygon p) -> p.clone()).collect(Collectors.toList()));
     }
     
     /**
@@ -81,7 +81,7 @@ public class CSGMesh extends ArrayList<Poly>
      */
     public void recolor()
     {
-        Stream<Poly> quadStream;
+        Stream<IPolygon> quadStream;
 
         if (this.size() > 200) {
             quadStream = this.parallelStream();
@@ -89,7 +89,7 @@ public class CSGMesh extends ArrayList<Poly>
             quadStream = this.stream();
         }
 
-        quadStream.forEach((Poly quad) -> quad.replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
     
     
@@ -101,7 +101,7 @@ public class CSGMesh extends ArrayList<Poly>
 
         AxisAlignedBB retVal = null;
 
-        for (Poly p : this)
+        for (IPolygon p : this)
         {
             if(retVal == null)
             {
@@ -178,8 +178,8 @@ public class CSGMesh extends ArrayList<Poly>
      * @return difference of this csg and the specified csg
      */
     public CSGMesh difference(CSGMesh other) {
-        List<Poly> inner = new ArrayList<Poly>();
-        List<Poly> outer = new ArrayList<Poly>();
+        List<IPolygon> inner = new ArrayList<>();
+        List<IPolygon> outer = new ArrayList<>();
 
         CSGBounds bounds = other.getBounds();
 
@@ -286,8 +286,8 @@ public class CSGMesh extends ArrayList<Poly>
     
         
         
-        List<Poly> inner = new ArrayList<Poly>();
-        List<Poly> outer = new ArrayList<Poly>();
+        List<IPolygon> inner = new ArrayList<>();
+        List<IPolygon> outer = new ArrayList<>();
 
         CSGBounds bounds = other.getBounds();
 

@@ -3,9 +3,10 @@ package grondag.exotic_matter.model;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.SurfaceType;
@@ -81,7 +82,7 @@ public abstract class ShapeMeshGenerator
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
     @Nonnull
-    public abstract List<Poly> getShapeQuads(ISuperModelState modelState);
+    public abstract List<IPolygon> getShapeQuads(ISuperModelState modelState);
 
     /** Returns true if geometry is a full 1x1x1 cube. */
     public abstract boolean isCube(ISuperModelState modelState);

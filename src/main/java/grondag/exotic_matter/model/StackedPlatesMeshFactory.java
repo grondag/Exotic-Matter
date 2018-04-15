@@ -9,6 +9,7 @@ import javax.vecmath.Matrix4d;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
@@ -34,7 +35,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
                 TOP_AND_BOTTOM, SIDES);
     }
  
-    private List<Poly> makeQuads(int meta, Matrix4d matrix)
+    private List<IPolygon> makeQuads(int meta, Matrix4d matrix)
     {
         float height = (meta + 1) / 16;
         
@@ -44,7 +45,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         template.setFullBrightness(false);
         template.setLockUV(true);
 
-        ImmutableList.Builder<Poly> builder = new ImmutableList.Builder<Poly>();
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         Poly quad = template.clone();
         quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
@@ -77,7 +78,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     }
 
     @Override
-    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         return this.makeQuads(modelState.getMetaData(), modelState.getMatrix4d());
     }

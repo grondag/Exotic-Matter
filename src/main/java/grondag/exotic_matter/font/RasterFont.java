@@ -22,6 +22,7 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.TextureHelper;
 import net.minecraft.client.Minecraft;
@@ -426,7 +427,7 @@ public class RasterFont extends TextureAtlasSprite
      * @param leftSide If false will be centered.
      * @param list
      */
-    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<Poly> list)
+    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
     {
         Poly template = new Poly();
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);

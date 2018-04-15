@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painter;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TextureRotationType;
-import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.math.MathHelper;
@@ -33,7 +33,7 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
     }
 
     @Override
-    public Poly paintQuad(Poly quad)
+    public IMutablePolygon paintQuad(IMutablePolygon quad)
     {
         assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         
@@ -63,7 +63,7 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
         // uv coordinates should now be in range 0 to sliceCount
         // so just need to scale so that max values are 16.0
         
-        double uvScale = 16.0 / this.texture.textureScale().sliceCount;
+        float uvScale = 16f / this.texture.textureScale().sliceCount;
         quad.scaleQuadUV(uvScale, uvScale);
        
        int hash = MathHelper.hash(uOrdinal | (vOrdinal << 8));

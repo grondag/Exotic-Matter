@@ -17,7 +17,7 @@ public class QuadBakery
      * Use this for item models.  Doing so will disable pre-baked lighting
      * and cause the quad to include normals.
      */
-    public static BakedQuad createBakedQuad(Poly raw, boolean forceItemFormat)
+    public static BakedQuad createBakedQuad(IPolygon raw, boolean forceItemFormat)
     {
         float spanU = raw.getMaxU() - raw.getMinU();
         float spanV = raw.getMaxV() - raw.getMinV();
@@ -125,7 +125,7 @@ public class QuadBakery
                 format));
     }
     
-    private static void applyTextureRotation(Poly raw, float[][] uvData)
+    private static void applyTextureRotation(IPolygon raw, float[][] uvData)
     {
        switch(raw.getRotation())
        {

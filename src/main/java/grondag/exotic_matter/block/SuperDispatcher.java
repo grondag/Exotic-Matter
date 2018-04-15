@@ -25,7 +25,8 @@ import grondag.exotic_matter.model.varia.CraftingItem;
 import grondag.exotic_matter.render.QuadBakery;
 import grondag.exotic_matter.render.QuadContainer;
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.SimpleItemBlockModel;
 import grondag.exotic_matter.render.SparseLayerMapBuilder;
 import grondag.exotic_matter.render.SparseLayerMapBuilder.SparseLayerMap;
@@ -73,16 +74,16 @@ public class SuperDispatcher
 		@Override
 		public SparseLayerMap load(ISuperModelState key) {
 			
-		    Collection<Poly> paintedQuads = getFormattedQuads(key, false);
+		    Collection<IPolygon> paintedQuads = getFormattedQuads(key, false);
 		    
 		    @SuppressWarnings("unchecked")
-            ArrayList<Poly>[] containers = new ArrayList[BlockRenderLayer.values().length];
+            ArrayList<IPolygon>[] containers = new ArrayList[BlockRenderLayer.values().length];
 		    for(int i = 0; i < containers.length; i++)
 		    {
-		        containers[i] = new ArrayList<Poly>();
+		        containers[i] = new ArrayList<IPolygon>();
 		    }
 		    
-			for(Poly quad : paintedQuads)
+			for(IPolygon quad : paintedQuads)
 			{
 			    containers[quad.getRenderPass().blockRenderLayer.ordinal()].add(quad);
 			}
@@ -110,7 +111,7 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	for(Poly quad : getFormattedQuads(key, true))
+	    	for(IPolygon quad : getFormattedQuads(key, true))
 	    	{
 	    	    switch(quad.getSurfaceInstance().surfaceType())
 	    	    {
@@ -137,26 +138,31 @@ public class SuperDispatcher
         @Override
         public QuadContainer load(ISuperModelState key) 
         {
-            List<Poly> quads = key.getShape().meshFactory().getShapeQuads(key);
+            List<IPolygon> quads = key.getShape().meshFactory().getShapeQuads(key);
             if(quads.isEmpty()) return QuadContainer.EMPTY_CONTAINER;
-            for(Poly q : quads)
+            ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+            for(IPolygon q : quads)
             {
+                IMutablePolygon mutable = q.mutableCopy();
+                
                 // arbitrary choice - just needs to be a simple non-null texture
-                q.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
+                mutable.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
              
                 // Need to scale UV on non-cubic surfaces to be within a 1 block boundary.
                 // This causes breaking textures to be scaled to normal size.
                 // If we didn't do this, bigtex block break textures would appear abnormal.
-                if(q.getSurfaceInstance().topology() == SurfaceTopology.TILED)
+                if(mutable.getSurfaceInstance().topology() == SurfaceTopology.TILED)
                 {
                     // This is simple for tiled surface because UV scale is always 1.0
-                    q.setMinU(0);
-                    q.setMaxU(16);
-                    q.setMinV(0);
-                    q.setMaxV(16);
+                    mutable.setMinU(0);
+                    mutable.setMaxU(16);
+                    mutable.setMinV(0);
+                    mutable.setMaxV(16);
                 }
+                
+                builder.add(mutable);
             }
-            return QuadContainer.fromRawQuads(quads);
+            return QuadContainer.fromRawQuads(builder.build());
         }       
     }
     
@@ -203,9 +209,9 @@ public class SuperDispatcher
         return container.getOcclusionHash(face);
     }
     
-    private Collection<Poly> getFormattedQuads(ISuperModelState modelState, boolean isItem)
+    private Collection<IPolygon> getFormattedQuads(ISuperModelState modelState, boolean isItem)
     {
-        ArrayList<Poly> result = new ArrayList<Poly>();
+        ArrayList<IPolygon> result = new ArrayList<>();
          
         ShapeMeshGenerator mesher = modelState.getShape().meshFactory();
                 
@@ -243,7 +249,7 @@ public class SuperDispatcher
             }
         }
         
-        for(Poly shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
+        for(IPolygon shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
         {
             Surface qSurface = shapeQuad.getSurfaceInstance().surface();
             for(QuadPainter p : painters)

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.render.CSGMesh;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.SideShape;
@@ -26,7 +27,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
     
     /** never changes so may as well save it */
-    private final List<Poly> cachedQuads;
+    private final List<IPolygon> cachedQuads;
     
     public CSGTestMeshFactory()
     {
@@ -35,12 +36,12 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         return cachedQuads;
     }
     
-    private List<Poly> getTestQuads()
+    private List<IPolygon> getTestQuads()
     {
         
         Poly template = new Poly();

@@ -4,6 +4,7 @@ package grondag.exotic_matter.render;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
@@ -15,11 +16,10 @@ import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class Poly implements IPolygon
+public class Poly implements ICSGPolygon, IMutablePolygon
 {
     private Vertex[] vertices;
     private @Nullable Vec3d faceNormal;
@@ -65,7 +65,7 @@ public class Poly implements IPolygon
     private static AtomicInteger nextQuadID = new AtomicInteger(1);
     private boolean isInverted = false;
     private final int quadID = nextQuadID.incrementAndGet();
-    private int ancestorQuadID = IPolygon.NO_ID;
+    private int ancestorQuadID = ICSGPolygon.NO_ID;
     private int[] lineID;
 
     public Poly()
@@ -73,7 +73,7 @@ public class Poly implements IPolygon
         this(4);
     }
 
-    public Poly(Poly template)
+    public Poly(IPolygon template)
     {
         this(template, template.vertexCount());
     }
@@ -86,7 +86,7 @@ public class Poly implements IPolygon
         this.lineID = new int[vertexCount];
     }
 
-    public Poly(Poly template, int vertexCount)
+    public Poly(IPolygon template, int vertexCount)
     {
         this(vertexCount);
         this.copyProperties(template);
@@ -116,7 +116,7 @@ public class Poly implements IPolygon
         return this.vertexCount;
     }
 
-    private void copyProperties(Poly fromObject)
+    private void copyProperties(IPolygon fromObject)
     {
         this.setNominalFace(fromObject.getNominalFace());
         this.setTextureName(fromObject.getTextureName());
@@ -124,9 +124,7 @@ public class Poly implements IPolygon
         this.setColor(fromObject.getColor());
         this.setFullBrightness(fromObject.isFullBrightness());
         this.setLockUV(fromObject.isLockUV());
-        this.setAncestorQuadID(fromObject.getAncestorQuadID());
-        this.setInverted(fromObject.isInverted());
-        this.faceNormal = fromObject.faceNormal;
+        if(fromObject.hasFaceNormal()) this.faceNormal = fromObject.getFaceNormal();
         this.setShouldContractUVs(fromObject.shouldContractUVs());
         this.setMinU(fromObject.getMinU());
         this.setMaxU(fromObject.getMaxU());
@@ -134,15 +132,36 @@ public class Poly implements IPolygon
         this.setMaxV(fromObject.getMaxV());
         this.setRenderPass(fromObject.getRenderPass());
         this.setSurfaceInstance(fromObject.getSurfaceInstance());
+        
+        //FIXME: egregious hack
+        if(fromObject.getClass() == Poly.class)
+        {
+            this.setAncestorQuadID(((Poly)fromObject).getAncestorQuadID());
+            this.setInverted(((Poly)fromObject).isInverted());
+        }
     }
 
-    public List<Poly> toQuads()
+    @Override
+    public List<IPolygon> toQuads()
     {
-        ArrayList<Poly> retVal = new ArrayList<Poly>();
+        return this.toQuadsInner();
+    }
+    
+    @Override
+    public List<ICSGPolygon> toQuadsCSG()
+    {
+        return this.toQuadsInner();
+    }
+
+    
+    @SuppressWarnings("unchecked")
+    private <T extends IPolygon> List<T> toQuadsInner()
+    {
+        ArrayList<T> retVal = new ArrayList<T>();
 
         if(this.vertexCount <= 4)
         {
-            retVal.add(this);
+            retVal.add((T) this);
         }
         else
         {
@@ -153,7 +172,7 @@ public class Poly implements IPolygon
             work.setVertex(1, this.getVertex(0));
             work.setVertex(2, this.getVertex(1));
             work.setVertex(3, this.getVertex(tail));
-            retVal.add(work);
+            retVal.add((T) work);
 
             while(head - tail > 1)
             {
@@ -165,12 +184,24 @@ public class Poly implements IPolygon
                 {
                     work.setVertex(3, this.getVertex(--head));
                 }
-                retVal.add(work);
+                retVal.add((T) work);
             }
         }
         return retVal;
     }
+    
+    @Override
+    public List<IPolygon> toTris()
+    {
+        return this.toTrisInner();
+    }
 
+    @Override
+    public List<ICSGPolygon> toTrisCSG()
+    {
+        return this.toTrisInner();
+    }
+    
     /** 
      * If this is a quad, returns two new tris.
      * If is already a tri, returns copy of self.<p>
@@ -178,16 +209,16 @@ public class Poly implements IPolygon
      * Does not mutate this object and does not 
      * retain any reference to polygons in this object.
      */
-    public List<Poly> toTris()
+    @SuppressWarnings("unchecked")
+    private <T extends IPolygon> List<T> toTrisInner()
     {
-
         if(this.vertexCount() == 3)
         {
-            return ImmutableList.of(this.clone());
+            return ImmutableList.of((T)this.clone());
         }
         else
         {
-            ArrayList<Poly>  retVal= new ArrayList<Poly>(this.vertexCount()-2);
+            ArrayList<T>  retVal= new ArrayList<>(this.vertexCount()-2);
             int splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
             int head = vertexCount - 1;
             int tail = 1;
@@ -200,7 +231,7 @@ public class Poly implements IPolygon
             work.setVertex(2, this.getVertex(tail));
             work.setLineID(2, splitLineID);
             work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-            retVal.add(work);
+            retVal.add((T) work);
 
             while(head - tail > 1)
             {
@@ -213,7 +244,7 @@ public class Poly implements IPolygon
                 work.setVertex(2, this.getVertex(++tail));
                 work.setLineID(2, head - tail == 1 ? this.getLineID(tail): splitLineID);
                 work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-                retVal.add(work);
+                retVal.add((T) work);
 
                 if(head - tail > 1)
                 {
@@ -226,7 +257,7 @@ public class Poly implements IPolygon
                     work.setVertex(2, this.getVertex(--head).clone());
                     work.setLineID(2, this.getLineID(head));
                     work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-                    retVal.add(work);
+                    retVal.add((T) work);
                 }
             }
             return retVal;
@@ -237,7 +268,8 @@ public class Poly implements IPolygon
     /**
      * Reverses winding order of this quad and returns itself
      */
-    public Poly invert()
+    @Override
+    public ICSGPolygon invert()
     {
 
         for(int i = 0; i < vertices.length; i++)
@@ -464,7 +496,8 @@ public class Poly implements IPolygon
     /**
      * Changes all vertices and quad color to new color and returns itself
      */
-    public Poly replaceColor(int color)
+    @Override
+    public IMutablePolygon replaceColor(int color)
     {
         this.setColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
@@ -474,11 +507,8 @@ public class Poly implements IPolygon
         return this;
     }
     
-
-    /**
-     * Multiplies all vertex color by given color and returns itself
-     */
-    public Poly multiplyColor(int color)
+    @Override
+    public void multiplyColor(int color)
     {
         this.setColor(QuadHelper.multiplyColor(this.getColor(), color));
         for(int i = 0; i < this.vertexCount(); i++)
@@ -490,7 +520,6 @@ public class Poly implements IPolygon
                 this.setVertex(i, v.withColor(vColor));
             }
         }
-        return this;
     }
 
     /** 
@@ -519,6 +548,7 @@ public class Poly implements IPolygon
         return this.vertices[index];
     }
 
+    @Override
     public void setLineID(int index, int lineID)
     {
         if(index < this.vertexCount)
@@ -539,22 +569,6 @@ public class Poly implements IPolygon
         return this.quadID();
     }
     
-    public static int LINE_NOT_FOUND = -1;
-    /**
-     * Returns the index of the edge with the given line ID.
-     * Returns LINE_NOT_FOUND if, uh, you know, it wasn't checked.
-     */
-    public int findLineIndex(long lineID)
-    {
-        for(int i = 0; i < this.vertexCount(); i++)
-        {
-            if(this.getLineID(i) == lineID)
-            {
-                return i;
-            }
-        }
-        return LINE_NOT_FOUND;
-    }
 
     @Override
     public int getAncestorQuadID()
@@ -562,9 +576,10 @@ public class Poly implements IPolygon
         return this.ancestorQuadID;
     }
 
+    @Override
     public int getAncestorQuadIDForDescendant()
     {
-        return this.getAncestorQuadID() == IPolygon.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
+        return this.getAncestorQuadID() == ICSGPolygon.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
     }
 
     /**
@@ -576,242 +591,24 @@ public class Poly implements IPolygon
      * 
      * Returns self as convenience.
      */
-    public Poly setupCsgMetadata()
+    private void setupCsgMetadata()
     {
-        this.setAncestorQuadID(IPolygon.IS_AN_ANCESTOR);
+        this.setAncestorQuadID(ICSGPolygon.IS_AN_ANCESTOR);
         for(int i = 0; i < this.vertexCount(); i++)
         {
             this.lineID[i] = CSGPlane.nextOutsideLineID.getAndDecrement();
         }
-        return this;
-    }
-
-    //        public List<RawQuad> clipToFace(EnumFacing face, RawQuad patchTemplate)
-    //        {
-    //            LinkedList<RawQuad> retVal = new LinkedList<RawQuad>();
-    //            for(RawTri tri : this.split())
-    //            {
-    //                retVal.addAll(tri.splitOnFace(face, patchTemplate));
-    //            }
-    //            return retVal;
-    //        }
-
-    /**
-     * Returns true if this polygon is convex.
-     * All Tris must be.  
-     * For quads, confirms that each turn around the quad 
-     * goes same way by comparing cross products of edges.
-     */
-    public boolean isConvex()
-    {
-        if(this.vertexCount() == 3) return true;
-
-        float testX = 0;
-        float testY = 0;
-        float testZ = 0;
-        boolean needTest = true;
-                
-        for(int thisIndex = 0; thisIndex < this.vertexCount(); thisIndex++)
-        {
-            int nextIndex = thisIndex + 1;
-            if(nextIndex == this.vertexCount()) nextIndex = 0;
-
-            int priorIndex = thisIndex - 1;
-            if(priorIndex == -1) priorIndex = this.vertexCount() - 1;
-
-            final Vertex thisVertex =  getVertex(thisIndex);
-            final Vertex nextVertex = getVertex(nextIndex);
-            final Vertex priorVertex = getVertex(priorIndex);
-            
-            final float ax = thisVertex.x - priorVertex.x;
-            final float ay = thisVertex.y - priorVertex.y;
-            final float az = thisVertex.z - priorVertex.z;
-            
-            final float bx = nextVertex.x - thisVertex.x;
-            final float by = nextVertex.y - thisVertex.y;
-            final float bz = nextVertex.z - thisVertex.z;
-
-//            Vec3d lineA = getVertex(thisIndex).subtract(getVertex(priorIndex));
-//            Vec3d lineB = getVertex(nextIndex).subtract(getVertex(thisIndex));
-            
-            final float crossX = ay * bz - az * by;
-            final float crossY = az * bx - ax * bz;
-            final float crossZ = ax * by - ay * bx;
-            
-            if(needTest)
-            {
-                needTest = false;
-                testX = crossX;
-                testY = crossY;
-                testZ = crossZ;
-            }
-            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected boolean isOrthogonalTo(EnumFacing face)
-    {
-        return Math.abs(this.getFaceNormal().dotProduct(new Vec3d(face.getDirectionVec()))) <= QuadHelper.EPSILON;
-    }
-
-    public boolean isOnSinglePlane()
-    {
-        if(this.vertexCount() == 3) return true;
-
-        Vec3d fn = this.getFaceNormal();
-        if(fn == null) return false;
-
-        float faceX = (float) fn.x;
-        float faceY = (float) fn.y;
-        float faceZ = (float) fn.z;
-
-        Vertex first = this.getVertex(0);
-        
-        for(int i = 3; i < this.vertexCount(); i++)
-        {
-            Vertex v = this.getVertex(i);
-            if(v == null) return false;
-            
-            float dx = v.x - first.x;
-            float dy = v.y - first.y;
-            float dz = v.z - first.z;
-
-            if(Math.abs(faceX * dx + faceY * dy + faceZ * dz) > QuadHelper.EPSILON) return false;
-        }
-
-        return true;
-    }
-
-    public boolean isOnFace(EnumFacing face, float tolerance)
-    {
-        if(face == null) return false;
-        boolean retVal = true;
-        for(int i = 0; i < this.vertexCount; i++)
-        {
-            retVal = retVal && getVertex(i).isOnFacePlane(face, tolerance);
-        }
-        return retVal;
-    }
-
-    /** 
-     * Returns intersection point of given ray with the plane of this quad.
-     * Return null if parallel or facing away.
-     */
-    public Vec3d intersectionOfRayWithPlane(Vec3d origin, Vec3d direction)
-    {
-        Vec3d normal = this.getFaceNormal();
-
-        double directionDotNormal = normal.dotProduct(direction);
-        if (Math.abs(directionDotNormal) < QuadHelper.EPSILON) 
-        { 
-            // parallel
-            return null;
-        }
-
-        Vec3d firstPoint = this.getVertex(0).toVec3d();
-        
-        double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
-        // facing away from plane
-        if(distanceToPlane < -QuadHelper.EPSILON) return null;
-
-        return origin.add(direction.scale(distanceToPlane));
     }
     
-    /**
-     * Keeping for convenience in case discover any problems with the fast version.
-     * Unit tests indicate identical results.
-     */
-    public boolean intersectsWithRaySlow(Vec3d origin, Vec3d direction)
+    @Override
+    public ICSGPolygon toCSG()
     {
-        Vec3d intersection = this.intersectionOfRayWithPlane(origin, direction);
-        
-        // now we just need to test if point is inside this polygon
-        return intersection == null ? false : containsPointSlow(intersection);
-        
+        Poly result = this.clone();
+        result.setupCsgMetadata();
+        return result;
     }
-
-    public boolean intersectsWithRay(Vec3d origin, Vec3d direction)
-    {
-        Vec3d intersection = this.intersectionOfRayWithPlane(origin, direction);
-
-        // now we just need to test if point is inside this polygon
-        return intersection == null ? false : containsPoint(intersection);
-    }
-
-    /**
-     * Assumes the given point is on the plane of the polygon.
-     * 
-     * For each side, find a vector in the plane of the 
-     * polygon orthogonal to the line formed by the two vertices of the edge.
-     * Then take the dot product with vector formed by the start vertex and the point.
-     * If the point is inside the polygon, the sign should be the same for all
-     * edges, or the dot product should be very small, meaning the point is on the edge.
-     */
-    public boolean containsPoint(Vec3d point)
-    {
-        return PointInPolygonTest.isPointInRawQuad(point, this);
-    }
-    
-
-    /**
-     * Keeping for convenience in case discover any problems with the fast version.
-     * Unit tests indicate identical results.
-     */
-    public boolean containsPointSlow(Vec3d point)
-    {
-        double lastSignum = 0;
-        Vec3d faceNormal = this.getFaceNormal();
-
-        for(int i = 0; i < this.vertexCount(); i++)
-        {
-            int nextVertex = i + 1;
-            if(nextVertex == this.vertexCount()) nextVertex = 0;
-
-            Vec3d currentVertex = getVertex(i).toVec3d();
-            
-            Vec3d line = getVertex(nextVertex).toVec3d().subtract(currentVertex);
-            Vec3d normalInPlane = faceNormal.crossProduct(line);
-
-            double sign = normalInPlane.dotProduct(point.subtract(currentVertex));
-
-            if(lastSignum == 0)
-            {
-                lastSignum = Math.signum(sign);
-            }
-            else if(Math.signum(sign) != lastSignum)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    public AxisAlignedBB getAABB()
-    {
-        double minX = Math.min(Math.min(getVertex(0).x, getVertex(1).x), Math.min(getVertex(2).x, getVertex(3).x));
-        double minY = Math.min(Math.min(getVertex(0).y, getVertex(1).y), Math.min(getVertex(2).y, getVertex(3).y));
-        double minZ = Math.min(Math.min(getVertex(0).z, getVertex(1).z), Math.min(getVertex(2).z, getVertex(3).z));
-
-        double maxX = Math.max(Math.max(getVertex(0).x, getVertex(1).x), Math.max(getVertex(2).x, getVertex(3).x));
-        double maxY = Math.max(Math.max(getVertex(0).y, getVertex(1).y), Math.max(getVertex(2).y, getVertex(3).y));
-        double maxZ = Math.max(Math.max(getVertex(0).z, getVertex(1).z), Math.max(getVertex(2).z, getVertex(3).z));
-
-        return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    /**
-     * Assigns UV coordinates to each vertex by projecting vertex
-     * onto plane of the quad's face. If the quad is not rotated,
-     * then semantics of vertex coordinates matches those of setupFaceQuad.
-     * For example, on NSEW faces, "up" (+y) corresponds to the top of the texture.
-     * 
-     * Assigned values are in the range 0-16, as is conventional for MC.
-     */
+   
+    @Override
     public void assignLockedUVCoordinates()
     {
         EnumFacing face = getNominalFace();
@@ -857,10 +654,9 @@ public class Poly implements IPolygon
         }
         
     }
-     /**
-      * Multiplies uvMin/Max by the given factors.
-      */
-    public void scaleQuadUV(double uScale, double vScale)
+
+    @Override
+    public void scaleQuadUV(float uScale, float vScale)
     {
         this.minU *= uScale;
         this.maxU *= uScale;
@@ -868,10 +664,8 @@ public class Poly implements IPolygon
         this.maxV *= vScale;
     }
     
-    /** 
-     * Unique scale transformation of all vertex coordinates 
-     * using block center (0.5, 0.5, 0.5) as origin.
-     */
+
+    @Override
     public void scaleFromBlockCenter(float scale)
     {
         float c = 0.5f * (1-scale);
@@ -884,58 +678,19 @@ public class Poly implements IPolygon
     }
 
     @Override
+    public boolean hasFaceNormal()
+    {
+        return  this.faceNormal != null;
+    }
+    
+    @Override
     public Vec3d getFaceNormal()
     {
         if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
         return this.faceNormal;
     }
     
-    private Vec3d computeFaceNormal()
-    {
-        try
-        {
-            return getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).normalize();
-        }
-        catch(Exception e)
-        {
-            assert false : "Bad polygon structure during face normal request.";
-            return Vec3d.ZERO;
-        }
-    }
-
-    public float[] getFaceNormalArray()
-    {
-        Vec3d normal = getFaceNormal();
-
-        float[] retval = new float[3];
-
-        retval[0] = (float)(normal.x);
-        retval[1] = (float)(normal.y);
-        retval[2] = (float)(normal.z);
-        return retval;
-    }
-
-    public double getArea()
-    {
-        if(this.vertexCount() == 3)
-        {
-            return Math.abs(getVertex(1).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d())).lengthVector()) / 2.0;
-
-        }
-        else if(this.vertexCount() == 4) //quad
-        {
-            return Math.abs(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).lengthVector()) / 2.0;
-        }
-        else
-        {
-            double area = 0;
-            for(Poly q : this.toQuads())
-            {
-                area += q.getArea();
-            }
-            return area;
-        }
-    }
+  
 
     @Override
     public String toString()
@@ -954,36 +709,9 @@ public class Poly implements IPolygon
      * Is a general facing but does NOT mean poly is actually on that face.
      */
     @Override
-    public EnumFacing getNominalFace()
+    public @Nullable EnumFacing getNominalFace()
     {
         return nominalFace;
-    }
-
-    /** 
-     * Face to use for shading testing.
-     * Based on which way face points. 
-     * Never null
-     */
-    public EnumFacing getNormalFace()
-    {
-        return QuadHelper.computeFaceForNormal(this.getFaceNormal());
-    }
-    
-    /** 
-     * Face to use for occlusion testing.
-     * Null if not fully on one of the faces.
-     * Fudges a bit because painted quads can be slightly offset from the plane.
-     */
-    public EnumFacing getActualFace()
-    {
-        // semantic face will be right most of the time
-        if(this.isOnFace(this.nominalFace, QuadHelper.EPSILON)) return nominalFace;
-
-        for(EnumFacing f : EnumFacing.values())
-        {
-            if(f != nominalFace && this.isOnFace(f, QuadHelper.EPSILON)) return f;
-        }
-        return null;
     }
 
     /**
@@ -1041,6 +769,7 @@ public class Poly implements IPolygon
         return result;
     }
 
+    @Override
     public void setVertexColor(int index, int vColor)
     {
         this.setVertex(index, this.getVertex(index).withColor(vColor));        
@@ -1052,6 +781,7 @@ public class Poly implements IPolygon
         return textureName;
     }
 
+    @Override
     public void setTextureName(String textureName)
     {
         this.textureName = textureName;
@@ -1063,6 +793,7 @@ public class Poly implements IPolygon
         return rotation;
     }
 
+    @Override
     public void setRotation(Rotation rotation)
     {
         this.rotation = rotation;
@@ -1085,6 +816,7 @@ public class Poly implements IPolygon
         return isFullBrightness;
     }
 
+    @Override
     public void setFullBrightness(boolean isFullBrightness)
     {
         this.isFullBrightness = isFullBrightness;
@@ -1118,6 +850,7 @@ public class Poly implements IPolygon
         return renderPass;
     }
 
+    @Override
     public void setRenderPass(RenderPass renderPass)
     {
         this.renderPass = renderPass;
@@ -1135,6 +868,7 @@ public class Poly implements IPolygon
         return minU;
     }
 
+    @Override
     public void setMinU(float minU)
     {
         this.minU = minU;
@@ -1146,6 +880,7 @@ public class Poly implements IPolygon
         return maxU;
     }
 
+    @Override
     public void setMaxU(float maxU)
     {
         this.maxU = maxU;
@@ -1157,6 +892,7 @@ public class Poly implements IPolygon
         return minV;
     }
 
+    @Override
     public void setMinV(float minV)
     {
         this.minV = minV;
@@ -1168,6 +904,7 @@ public class Poly implements IPolygon
         return maxV;
     }
 
+    @Override
     public void setMaxV(float maxV)
     {
         this.maxV = maxV;
@@ -1190,8 +927,21 @@ public class Poly implements IPolygon
         return quadID;
     }
 
-    protected void setAncestorQuadID(int ancestorQuadID)
+    @Override
+    public void setAncestorQuadID(int ancestorQuadID)
     {
         this.ancestorQuadID = ancestorQuadID;
+    }
+
+    @Override
+    public IMutablePolygon mutableReference()
+    {
+        return this;
+    }
+
+    @Override
+    public IMutablePolygon mutableCopy()
+    {
+        return this.clone();
     }
 }

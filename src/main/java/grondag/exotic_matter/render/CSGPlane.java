@@ -71,7 +71,7 @@ public class CSGPlane
         this.dist = dist;
     }
 
-    public CSGPlane(Poly quad)
+    public CSGPlane(ICSGPolygon quad)
     {
         this.normal = quad.getFaceNormal();
         this.dist = normal.dotProduct(quad.getVertex(0).toVec3d());    
@@ -113,22 +113,22 @@ public class CSGPlane
      */
     
     public void splitQuad(
-            Poly quad,
-            List<Poly> coplanarFront,
-            List<Poly> coplanarBack,
-            List<Poly> front,
-            List<Poly> back) 
+            ICSGPolygon quad,
+            List<ICSGPolygon> coplanarFront,
+            List<ICSGPolygon> coplanarBack,
+            List<ICSGPolygon> front,
+            List<ICSGPolygon> back) 
     {
         splitTimer.start();
         splitQuadInner(quad, coplanarFront, coplanarBack, front, back);
         splitTimer.stop();
     }
     private void splitQuadInner(
-        Poly quad,
-        List<Poly> coplanarFront,
-        List<Poly> coplanarBack,
-        List<Poly> front,
-        List<Poly> back) 
+        ICSGPolygon quad,
+        List<ICSGPolygon> coplanarFront,
+        List<ICSGPolygon> coplanarBack,
+        List<ICSGPolygon> front,
+        List<ICSGPolygon> back) 
     {
         final int vcount = quad.vertexCount();
         

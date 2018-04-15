@@ -40,15 +40,14 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector4f;
 
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 
 public class QuadHelper
 {
@@ -138,7 +137,7 @@ public class QuadHelper
     // Will probably need separate version for creating orthogonalAxis-aligned cylinders and cones.  
     // Also needs a parameter for minimum slices to reduce poly count on small model parts when appropriate.
     // Right now minimum is fixed at 12.
-    public static List<Poly> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, Poly template)
+    public static List<IPolygon> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, Poly template)
     {
         double circumference = Math.PI * Math.max(startRadius, endRadius) * 2;
         int textureSlices = (int) Math.max(1, Math.round(circumference));
@@ -157,7 +156,7 @@ public class QuadHelper
         Poly top = new Poly(template, polySlices);
         Poly bottom = new Poly(template, polySlices);
         
-        List<Poly> results = new ArrayList<Poly>(48);
+        List<IPolygon> results = new ArrayList<>(48);
 
         for (int i = 0; i < polySlices; i++) {
             double t0 = i / (double) polySlices, t1 = (i + 1) / (double) polySlices;
@@ -491,7 +490,7 @@ public class QuadHelper
         * Same as {@link #addTextureToAllFaces(String, float, float, float, double, int, boolean, float, Rotation, List)}
         * but with uvFraction = 1.
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<Poly> list)
+       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<IPolygon> list)
        {
            addTextureToAllFaces(rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
        }
@@ -512,7 +511,7 @@ public class QuadHelper
         * @param contractUVs    should be true for everything except fonts maybe
         * @param list           your mutable list of quads
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<Poly> list)
+       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPolygon> list)
        {
            Poly template = new Poly();
            template.setTextureName("hard_science:blocks/" + rawTextureName);

@@ -9,6 +9,8 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.CSGMesh;
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
 import grondag.exotic_matter.render.Surface;
@@ -92,10 +94,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //    private static AtomicInteger hitCount = new AtomicInteger();
     
     @Override
-    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         shapeTimer.start();
-        List<Poly> result = innerShapeQuads(modelState);
+        List<IPolygon> result = innerShapeQuads(modelState);
         shapeTimer.stop();
 //        if(shapeTimer.stop())
 //        {
@@ -105,7 +107,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         return result;
     }
     private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
-    private @Nonnull List<Poly> innerShapeQuads(ISuperModelState modelState)
+    private @Nonnull List<IPolygon> innerShapeQuads(ISuperModelState modelState)
     {
     
         CSGMesh rawQuads = new CSGMesh();
@@ -540,7 +542,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         // We want top face textures to always join irrespective of Y.
         // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(Poly quad : rawQuads)
+        for(IPolygon quad : rawQuads)
         {
             EnumFacing face = quad.getNominalFace();
             if(face == null)
@@ -549,60 +551,62 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 face = EnumFacing.UP;
             }
             
+            IMutablePolygon mutableQuad = quad.mutableReference();
+            
             switch(face)
             {
                 case NORTH:
                 {
                     int zHash = MathHelper.hash(modelState.getPosZ());
-                    quad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case SOUTH:
                 {
                     int zHash = MathHelper.hash(modelState.getPosZ());
-                    quad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case EAST:
                 {
                     int xHash = MathHelper.hash(modelState.getPosX());
-                    quad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case WEST:
                 {
                     int xHash = MathHelper.hash(modelState.getPosX());
-                    quad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 } 
                 case DOWN:
                 {
                     int yHash = MathHelper.hash(modelState.getPosY());
-                    quad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
                 case UP:
                 default:
                 {
-                    quad.setMinU(modelState.getPosX());
-                    quad.setMaxU(quad.getMinU() +  1);
-                    quad.setMinV(modelState.getPosZ());
-                    quad.setMaxV(quad.getMinV() + 1);
+                    mutableQuad.setMinU(modelState.getPosX());
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(modelState.getPosZ());
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
                     break;
                 }
             }

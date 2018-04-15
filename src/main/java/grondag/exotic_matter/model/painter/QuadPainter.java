@@ -8,8 +8,9 @@ import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
+import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.Vertex;
@@ -53,7 +54,7 @@ public abstract class QuadPainter
      * RenderLayer, lighting mode and color will already be set.
      * @return 
      */
-    protected abstract Poly paintQuad(Poly quad);
+    protected abstract IMutablePolygon paintQuad(IMutablePolygon quad);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -98,7 +99,7 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in tiem rendering.
      */
-    public void addPaintedQuadToList(Poly inputQuad, List<Poly> outputList, boolean isItem)
+    public void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
     {
         if(inputQuad.getSurfaceInstance().surface() != this.surface) return;
         
@@ -123,7 +124,7 @@ public abstract class QuadPainter
         
         }
     
-        Poly result = inputQuad.clone();
+        IMutablePolygon result = inputQuad.mutableCopy();
         result.setRenderPass(this.renderPass);
         result.setFullBrightness(this.isFullBrightnessIntended);
 
@@ -163,7 +164,7 @@ public abstract class QuadPainter
     }
     
     
-    private void recolorQuad(Poly result)
+    private void recolorQuad(IMutablePolygon result)
     {
         int color = this.myColorMap.getColor(this.isFullBrightnessIntended ? EnumColorMap.LAMP : EnumColorMap.BASE);
         
@@ -225,13 +226,14 @@ public abstract class QuadPainter
         };
         
         @Override
-        public void addPaintedQuadToList(Poly inputQuad, List<Poly> outputList, boolean isItem)
+        public void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
         {
             // NOOP
         }
 
+
         @Override
-        protected Poly paintQuad(Poly quad)
+        protected IMutablePolygon paintQuad(IMutablePolygon quad)
         {
             return null;
         }

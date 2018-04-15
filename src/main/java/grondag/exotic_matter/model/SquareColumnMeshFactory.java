@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
@@ -83,11 +84,11 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public @Nonnull List<Poly> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         FaceSpec spec = new FaceSpec(getCutCount(modelState), areCutsOnEdge(modelState));
         
-        ImmutableList.Builder<Poly> general = new ImmutableList.Builder<Poly>();
+        ImmutableList.Builder<IPolygon> general = ImmutableList.builder();
         for(EnumFacing face : EnumFacing.VALUES)
         {
             general.addAll(this.makeFaceQuads(modelState, face, spec));

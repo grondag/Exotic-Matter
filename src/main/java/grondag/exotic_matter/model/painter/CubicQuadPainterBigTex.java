@@ -4,7 +4,7 @@ import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TextureRotationType;
 import grondag.exotic_matter.model.TextureScale;
-import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
@@ -23,7 +23,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public Poly paintQuad(Poly quad)
+    public IMutablePolygon paintQuad(IMutablePolygon quad)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.

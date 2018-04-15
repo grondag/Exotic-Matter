@@ -11,10 +11,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class RenderUtil
 {
     private static final Vec3d VOXEL_TEST_RAY = new Vec3d(5525, 13123, 7435);
-    public static boolean isPointEnclosed(Vec3d point, List<Poly> quads)
+    public static boolean isPointEnclosed(Vec3d point, List<IPolygon> quads)
     {
         int intersectionCount = 0;
-        for(Poly quad : quads)
+        for(IPolygon quad : quads)
         {                  
             if(quad.intersectsWithRay(point, VOXEL_TEST_RAY)) intersectionCount++;
         }          

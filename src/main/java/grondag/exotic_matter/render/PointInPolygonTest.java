@@ -106,7 +106,7 @@ public class PointInPolygonTest
         return wn != 0;
     }
 
-    public static boolean isPointInRawQuad(Vec3d point, Poly quad)
+    public static boolean isPointInPolygon(Vec3d point, IPolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
         // that is most orthogonal to our plane
