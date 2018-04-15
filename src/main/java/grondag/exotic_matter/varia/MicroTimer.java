@@ -35,7 +35,11 @@ public class MicroTimer
         started.set(System.nanoTime());
     }
     
-    public void stop()
+    /**
+     * Returns true if timer output stats this sample.
+     * For use if want to output supplementary information at same time.
+     */
+    public boolean stop()
     {
         long end = System.nanoTime();
         long e = this.elapsed.addAndGet(end - this.started.get().get());
@@ -45,6 +49,8 @@ public class MicroTimer
             this.hits.set(0);
             this.elapsed.set(0);
             ExoticMatter.INSTANCE.info("Avg %s duration = %d ns", label, e / h);
-        }
+            return true;
+        } 
+        else return false;
     }
 }
