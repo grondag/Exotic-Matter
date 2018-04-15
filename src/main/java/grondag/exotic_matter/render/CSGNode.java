@@ -39,7 +39,6 @@ import java.util.Iterator;
 */
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -48,8 +47,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
@@ -482,7 +479,7 @@ public class CSGNode implements Iterable<Poly>
 //        } 
 //        return result;
 //    }
-//    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 10000);
+//    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 100000);
 //    private  static AtomicInteger quadInCount = new AtomicInteger();
 //    private  static AtomicInteger quadOutputCount = new AtomicInteger();
 //    
