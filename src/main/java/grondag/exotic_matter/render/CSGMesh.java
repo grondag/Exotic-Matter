@@ -73,7 +73,7 @@ public class CSGMesh extends ArrayList<IPolygon>
         }
 
         return new CSGMesh(quadStream.
-                map((IPolygon p) -> p.clone()).collect(Collectors.toList()));
+                map((IPolygon p) -> Poly.mutableCopyOf(p)).collect(Collectors.toList()));
     }
     
     /**

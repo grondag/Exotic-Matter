@@ -1,14 +1,17 @@
 package grondag.exotic_matter.model;
 
-import static grondag.exotic_matter.model.ModelStateData.*;
+import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_HAS_AXIS;
+import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_HAS_AXIS_ORIENTATION;
+import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_NEEDS_SPECIES;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.vecmath.Matrix4d;
+import javax.vecmath.Matrix4f;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SideShape;
@@ -35,11 +38,11 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
                 TOP_AND_BOTTOM, SIDES);
     }
  
-    private List<IPolygon> makeQuads(int meta, Matrix4d matrix)
+    private List<IPolygon> makeQuads(int meta, Matrix4f matrix)
     {
         float height = (meta + 1) / 16;
         
-        Poly template = new Poly();
+        IMutablePolygon template = Poly.mutable(4);
         template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
         template.setFullBrightness(false);
@@ -47,26 +50,29 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
 
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
-        Poly quad = template.clone();
+        IMutablePolygon quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
-        builder.add(quad.transform(matrix));
+        quad.transform(matrix);
+        builder.add(quad);
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
-            quad = template.clone();
+            quad = Poly.mutable(template);
             quad.setSurfaceInstance(SIDES.unitInstance);
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
-            builder.add(quad.transform(matrix));
+            quad.transform(matrix);
+            builder.add(quad);
         }
         
-        quad = template.clone();
+        quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
-        builder.add(quad.transform(matrix));
+        quad.transform(matrix);
+        builder.add(quad);
         
         return builder.build();
     }
@@ -80,7 +86,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     @Override
     public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
-        return this.makeQuads(modelState.getMetaData(), modelState.getMatrix4d());
+        return this.makeQuads(modelState.getMetaData(), modelState.getMatrix4f());
     }
 
     @Override

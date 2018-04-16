@@ -10,6 +10,7 @@ import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Surface;
@@ -124,7 +125,7 @@ public abstract class QuadPainter
         
         }
     
-        IMutablePolygon result = inputQuad.mutableCopy();
+        IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
         result.setRenderPass(this.renderPass);
         result.setFullBrightness(this.isFullBrightnessIntended);
 

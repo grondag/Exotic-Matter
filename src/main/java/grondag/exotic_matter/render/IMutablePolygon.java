@@ -1,9 +1,21 @@
 package grondag.exotic_matter.render;
 
+import javax.annotation.Nullable;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Matrix4f;
+
+import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3d;
 
 public interface IMutablePolygon extends IPolygon
 {
+    @Override
+    public default IMutablePolygon mutableReference()
+    {
+        return this;
+    }
 
     /**
      * Changes all vertices and quad color to new color and returns itself
@@ -24,7 +36,7 @@ public interface IMutablePolygon extends IPolygon
     
     ///// used in painters
     
-    public void setTextureName(String textureName);
+    public void setTextureName(@Nullable String textureName);
 
     public void setRenderPass(RenderPass renderPass);
 
@@ -60,4 +72,104 @@ public interface IMutablePolygon extends IPolygon
      * Multiplies uvMin/Max by the given factors.
      */
     public void scaleQuadUV(float uScale, float vScale);
+
+    /**
+     * Same as {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
+     * except also sets nominal face to the given face in the start parameter. 
+     * Returns self for convenience.
+     */
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, EnumFacing topFace);
+
+    /** 
+     * Sets up a quad with human-friendly semantics. <br><br>
+     * 
+     * topFace establishes a reference for "up" in these semantics. If null, will use default.
+     * Depth represents how far recessed into the surface of the face the quad should be. <br><br>
+     * 
+     * Vertices should be given counter-clockwise.
+     * Ordering of vertices is maintained for future references.
+     * (First vertex passed in will be vertex 0, for example.) <br><br>
+     * 
+     * UV coordinates will be based on where rotated vertices project onto the nominal 
+     * face for this quad (effectively lockedUV) unless face vertexes have UV coordinates.
+     */
+    IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace);
+    
+    /** 
+     * Sets up a quad with standard semantics.  
+     * x0,y0 are at lower left and x1, y1 are top right.
+     * topFace establishes a reference for "up" in these semantics.
+     * Depth represents how far recessed into the surface of the face the quad should be.<br><br>
+     * 
+     * Returns self for convenience.<br><br>
+     * 
+     * @see #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)
+     */
+    IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, EnumFacing topFace);
+
+    /**
+     * Same as {@link #setupFaceQuad(double, double, double, double, double, EnumFacing)}
+     * but also sets nominal face with given face in start parameter.  
+     * Returns self as convenience.
+     */
+    IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, EnumFacing topFace);
+
+    //TODO use float version
+    @Deprecated
+    public default IMutablePolygon setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    {
+        return this.setupFaceQuad(face, (float)x0, (float)y0, (float)x1, (float)y1, (float)depth, topFace);
+    }
+
+    /**
+     * Triangular version of {@link #setupFaceQuad(EnumFacing, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
+     */
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace);
+
+    /**
+     * Triangular version of {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
+     */
+    IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace);
+
+    /** sets surface value and returns self for convenience */
+    IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance);
+    
+    /**
+     * Enforces immutability of vertex geometry once a vertex is added
+     * by rejecting any attempt to set a vertex that already exists.
+     * Rejection is via an assertion, so no overhead in normal use.
+     */
+    public void addVertex(int index, Vertex vertexIn);
+
+    void setColor(int color);
+
+    void setLockUV(boolean isLockUV);
+
+    void setShouldContractUVs(boolean shouldContractUVs);
+
+    /**
+     * Sets the face to be used for setupFace semantics
+     */
+    EnumFacing setNominalFace(EnumFacing face);
+
+    /** 
+     * applies the given transformation to this polygon
+     * TODO - switch to float version
+     */
+    @Deprecated
+    public default void transform(Matrix4d m)
+    {
+        this.transform(new Matrix4f(m));
+    }
+    
+    
+    /** applies the given transformation to this polygon*/
+    void transform(Matrix4f matrix);
+
+    /** Using this instead of method on vertex 
+     * ensures normals are set correctly for tris.
+     */
+    void setVertexNormal(int index, float x, float y, float z);
+
+    void setVertexNormal(int index, Vec3d normal);
 }

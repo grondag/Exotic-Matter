@@ -15,6 +15,18 @@ public interface ICSGPolygon extends IPolygon
 
     public static final int LINE_NOT_FOUND = -1;
     
+    @Override
+    public default boolean isCSG()
+    {
+        return true;
+    }
+    
+    @Override
+    public default ICSGPolygon csgReference()
+    {
+        return this;
+    }
+    
     public int quadID();
     
     public void setLineID(int index, int lineID);

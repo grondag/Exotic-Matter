@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
 import net.minecraft.util.EnumFacing;
@@ -18,7 +19,7 @@ public class PolyTest
     {
         Vec3d direction;
         Vec3d point;
-        Poly quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        IMutablePolygon quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         
         // point on plane
@@ -48,11 +49,11 @@ public class PolyTest
         
         
         //convexity & area tests
-        quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON);
         
-        quad = new Poly(3).setupFaceQuad(EnumFacing.UP,
+        quad = Poly.mutable(3).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -60,7 +61,7 @@ public class PolyTest
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON);
         
-        quad = new Poly().setupFaceQuad(EnumFacing.UP,
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -70,19 +71,19 @@ public class PolyTest
         
         
         // normal facing calculation
-        quad = new Poly().setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.UP);
         
-        quad = new Poly().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = new Poly().setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
         assertTrue(quad.getNormalFace() == EnumFacing.EAST);
         
-        quad = new Poly().setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = new Poly().setupFaceQuad(EnumFacing.SOUTH,
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 0.1f), 
                 new FaceVertex(1, 0, 0.1f), 
                 new FaceVertex(1, 1, 0), 

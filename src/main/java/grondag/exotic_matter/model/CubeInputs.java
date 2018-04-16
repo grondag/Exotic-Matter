@@ -1,5 +1,8 @@
 package grondag.exotic_matter.model;
 
+import javax.annotation.Nullable;
+
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.Vertex;
@@ -12,7 +15,7 @@ public class CubeInputs{
     public float v0;
     public float u1;
     public float v1;
-    public String textureName;
+    public @Nullable String textureName;
     public int color = 0xFFFFFFFF;
     public Rotation textureRotation = Rotation.ROTATE_NONE;
     public boolean rotateBottom = false;
@@ -27,6 +30,7 @@ public class CubeInputs{
         this.textureRotation = Rotation.ROTATE_NONE;
         this.surfaceInstance = IPolygon.NO_SURFACE;
     }
+    
     public CubeInputs(int color, Rotation textureRotation, String textureName, boolean flipU, boolean flipV, boolean isOverlay, boolean isItem)
     {
         this.color = color;
@@ -42,9 +46,9 @@ public class CubeInputs{
         this.surfaceInstance = IPolygon.NO_SURFACE;
     }
 
-    public Poly makeRawFace(EnumFacing side){
+    public IPolygon makeRawFace(EnumFacing side){
 
-        Poly qi = new Poly();
+        IMutablePolygon qi = Poly.mutable(4);
         qi.setColor(this.color);
         
         qi.setLockUV(true);

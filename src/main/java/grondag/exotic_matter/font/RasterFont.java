@@ -22,6 +22,7 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.FaceVertex;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.TextureHelper;
@@ -429,7 +430,7 @@ public class RasterFont extends TextureAtlasSprite
      */
     public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
     {
-        Poly template = new Poly();
+        IMutablePolygon template = Poly.mutable(4);
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setColor(color);
         template.setLockUV(false);
@@ -464,7 +465,7 @@ public class RasterFont extends TextureAtlasSprite
                 
                 for(EnumFacing face : EnumFacing.VALUES)
                 {
-                    Poly quad = template.clone();
+                    IMutablePolygon quad = Poly.mutableCopyOf(template);
                     quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                     quad.scaleFromBlockCenter(bumpFactor);
                     list.add(quad);

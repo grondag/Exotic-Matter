@@ -91,43 +91,38 @@ public class QuadHelper
         return alpha << 24 | red << 16 | green << 8 | blue;
     }
 
-    public static List<Poly> makeBox(AxisAlignedBB box, Poly template)
+    public static List<IPolygon> makeBox(AxisAlignedBB box, IPolygon template)
     {
-        List<Poly> retVal = new ArrayList<Poly>(6);
+        List<IPolygon> retVal = new ArrayList<>(6);
         
-        Poly quad = new Poly(template);
+        IMutablePolygon quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
-        
-//        quad.tag = "UP";
-        
         retVal.add(quad);
 
-        quad = new Poly(template);
+        quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
         retVal.add(quad);
 
         //-X
-        quad = new Poly(template);
+        quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
         retVal.add(quad);
         
         //+X
-        quad = new Poly(template);
+        quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
         retVal.add(quad);
         
         //-Z
-        quad = new Poly(template);
+        quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
         retVal.add(quad);
         
         //+Z
-        quad = new Poly(template);
+        quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
         retVal.add(quad);
         
-        
-
         return retVal;
     }
     
@@ -137,7 +132,7 @@ public class QuadHelper
     // Will probably need separate version for creating orthogonalAxis-aligned cylinders and cones.  
     // Also needs a parameter for minimum slices to reduce poly count on small model parts when appropriate.
     // Right now minimum is fixed at 12.
-    public static List<IPolygon> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, Poly template)
+    public static List<IPolygon> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, IPolygon template)
     {
         double circumference = Math.PI * Math.max(startRadius, endRadius) * 2;
         int textureSlices = (int) Math.max(1, Math.round(circumference));
@@ -153,8 +148,8 @@ public class QuadHelper
         final Vec3d axisX = new Vec3d(isY ? 1 : 0, !isY ? 1 : 0, 0)
                 .crossProduct(axisZ).normalize();
         final Vec3d axisY = axisX.crossProduct(axisZ).normalize();
-        Poly top = new Poly(template, polySlices);
-        Poly bottom = new Poly(template, polySlices);
+        IMutablePolygon top = Poly.mutable(template, polySlices);
+        IMutablePolygon bottom = Poly.mutable(template, polySlices);
         
         List<IPolygon> results = new ArrayList<>(48);
 
@@ -180,7 +175,7 @@ public class QuadHelper
                 Vec3d n1= cylNormal(axisX, axisY, t0);
  
                 
-                Poly newQuad = new Poly(template);
+                IMutablePolygon newQuad = Poly.mutable(template);
                 
                 newQuad.addVertex(0, new Vertex(centerStart.add(n0.scale(quadStartRadius)), u0, v0, template.getColor(), n0));
                 newQuad.addVertex(1, new Vertex(centerStart.add(n1.scale(quadStartRadius)), u1, v0, template.getColor(), n1));
@@ -222,7 +217,7 @@ public class QuadHelper
      * Makes a regular icosahedron, which is a very close approximation to a sphere for most purposes.
      * Loosely based on http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
      */
-    public static List<Poly> makeIcosahedron(Vec3d center, double radius, Poly template) 
+    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IPolygon template) 
     {
         /** vertex scale */
         double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
@@ -255,7 +250,7 @@ public class QuadHelper
         }
         
         // create 20 triangles of the icosahedron
-        List<Poly> results = new ArrayList<Poly>(20);
+        List<IPolygon> results = new ArrayList<>(20);
 
 
         // 5 faces around point 0
@@ -289,9 +284,9 @@ public class QuadHelper
         return results;
     }
     
-    private static Poly makeIcosahedronFace(int p1, int p2, int p3, Vec3d[] points, Vec3d[] normals, Poly template)
+    private static IPolygon makeIcosahedronFace(int p1, int p2, int p3, Vec3d[] points, Vec3d[] normals, IPolygon template)
     {
-        Poly newQuad = new Poly(template, 3);
+        IMutablePolygon newQuad = Poly.mutable(template, 3);
         
         newQuad.addVertex(0, new Vertex(points[p1], 0, 0, template.getColor(), normals[p1]));
         newQuad.addVertex(1, new Vertex(points[p2], 1, 0, template.getColor(), normals[p2]));
@@ -513,7 +508,7 @@ public class QuadHelper
         */
        public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPolygon> list)
        {
-           Poly template = new Poly();
+           IMutablePolygon template = Poly.mutable(4);
            template.setTextureName("hard_science:blocks/" + rawTextureName);
            template.setColor(color);
            template.setLockUV(false);
@@ -559,7 +554,7 @@ public class QuadHelper
            
            for(EnumFacing face : EnumFacing.VALUES)
            {
-               Poly quad = template.clone();
+               IMutablePolygon quad = Poly.mutable(template);
                quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                quad.scaleFromBlockCenter(scaleFactor);
                list.add(quad);

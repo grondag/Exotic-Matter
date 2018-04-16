@@ -14,33 +14,63 @@ public interface IPolygon
 {
     SurfaceInstance NO_SURFACE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance;
 
-    public String getTextureName();
+    public @Nullable String getTextureName();
 
+    /**
+     * Gets the face to be used for setupFace semantics.  
+     * Is a general facing but does NOT mean poly is actually on that face.
+     */
     public @Nullable EnumFacing getNominalFace();
 
+    /** 
+     * Causes texture to appear rotated within the frame
+     * of this texture. Relies on UV coordinates
+     * being in the range 0-16. <br><br>
+     * 
+     * Rotation happens during quad bake.
+     * If lockUV is true, rotation happens after UV
+     * coordinates are derived.
+     */
     public Rotation getRotation();
 
     public int getColor();
 
     public boolean isFullBrightness();
 
+    /** 
+     * If true then quad painters will ignore UV coordinates and instead set
+     * based on projection of vertices onto the given nominal face.
+     * Note that FaceVertex does this by default even if lockUV is not specified.
+     * To get unlockedUV coordiates, specificy a face using FaceVertex.UV or FaceVertex.UVColored.
+     */
     public boolean isLockUV();
-
-    //FIXME: why is this necessary in an immutable interface?
-    public IPolygon clone();
     
+    /**
+     * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.
+     */
+    public default boolean isCSG()
+    {
+        return false;
+    }
+    
+    /**
+     * If this polygon has CSG metadata and supports the CSG interface, 
+     * returns mutable reference to self as such.
+     * Thows an exception otherwise.
+     */
+    public default ICSGPolygon csgReference()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * If this polygon is mutable, returns mutable reference to self.
-     * Otherwise returns a mutable copy.
+     * Thows an exception if not mutable.
      */
-    public IMutablePolygon mutableReference();
-    
-    /**
-     * If this polygon is mutable, returns reference to self.
-     * Otherwise returns a mutable copy.
-     */
-    public IMutablePolygon mutableCopy();
-    
+    public default IMutablePolygon mutableReference()
+    {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * True if face normal has been established, either implicitly via access
@@ -86,16 +116,20 @@ public interface IPolygon
     
     /**
      * Returns polys that have been tagged with CSG metadata
+     * TODO: semantics of this are inconsistent with factory methods for new CSG 
      */
     public List<ICSGPolygon> toQuadsCSG();
     
     /**
      * Returns polys that have been tagged with CSG metadata
+     * TODO: semantics of this are inconsistent with factory methods for new CSG 
      */
     public List<ICSGPolygon> toTrisCSG();
     
     /**
      * Returns copy of self tagged with CSG metadata
+     * 
+     * TODO: semantics of this are inconsistent with factory methods for new CSG 
      */
     public ICSGPolygon toCSG();
     

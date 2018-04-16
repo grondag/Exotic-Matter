@@ -446,7 +446,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
         }   
         
         // actually build the new quad!
-        Poly joinedQuad = new Poly(aQuad, joinedVertex.size());
+        IMutableCSGPolygon joinedQuad = Poly.mutableCSG(aQuad, joinedVertex.size());
         for(int i = 0; i < joinedVertex.size(); i++)
         {
             joinedQuad.addVertex(i, joinedVertex.get(i));

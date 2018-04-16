@@ -206,7 +206,7 @@ public class CSGPlane
                     // this allows it to be copied to the split quad and 
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
-                    Poly frontQuad = new Poly(quad, frontVertex.size());
+                    IMutableCSGPolygon frontQuad = Poly.mutableCSG(quad, frontVertex.size());
                     frontQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
                     
                     for(int i = 0; i < frontVertex.size(); i++)
@@ -224,7 +224,7 @@ public class CSGPlane
                     // this allows it to be copied to the split quad and 
                     // and avoids having incomputable face normals due to very small polys.
                     quad.getFaceNormal();
-                    Poly backQuad = new Poly(quad, backVertex.size());
+                    IMutableCSGPolygon backQuad = Poly.mutableCSG(quad, backVertex.size());
                     backQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
 
                     for(int i = 0; i < backVertex.size(); i++)

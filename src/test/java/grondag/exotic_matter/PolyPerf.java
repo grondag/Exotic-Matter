@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Poly;
 import jline.internal.Log;
 import net.minecraft.util.EnumFacing;
@@ -17,7 +18,7 @@ public class PolyPerf
     {
         Vec3d point;
         Vec3d direction;
-        Poly quad;
+        IMutablePolygon quad;
         
         Random r = new Random(9);
         
@@ -32,7 +33,7 @@ public class PolyPerf
             EnumFacing face = EnumFacing.HORIZONTALS[r.nextInt(4)];
             float x = r.nextFloat();
             float y = r.nextFloat();
-            quad = new Poly().setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
+            quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
             point = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
             direction = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
             results[i] = quad.intersectsWithRaySlow(point, direction); 
@@ -49,7 +50,7 @@ public class PolyPerf
             EnumFacing face = EnumFacing.HORIZONTALS[r.nextInt(4)];
             float x = r.nextFloat();
             float y = r.nextFloat();
-            quad = new Poly().setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
+            quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
             point = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
             direction = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
             if(results[i] != quad.intersectsWithRay(point, direction))

@@ -27,6 +27,7 @@ import grondag.exotic_matter.render.QuadContainer;
 import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
+import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.SimpleItemBlockModel;
 import grondag.exotic_matter.render.SparseLayerMapBuilder;
 import grondag.exotic_matter.render.SparseLayerMapBuilder.SparseLayerMap;
@@ -143,7 +144,7 @@ public class SuperDispatcher
             ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
             for(IPolygon q : quads)
             {
-                IMutablePolygon mutable = q.mutableCopy();
+                IMutablePolygon mutable = Poly.mutableCopyOf(q);
                 
                 // arbitrary choice - just needs to be a simple non-null texture
                 mutable.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());

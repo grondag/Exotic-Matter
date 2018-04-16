@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.render.CSGMesh;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
@@ -43,8 +44,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     private List<IPolygon> getTestQuads()
     {
-        
-        Poly template = new Poly();
+        IMutablePolygon template = Poly.mutable(4);
         template.setLockUV(true);
         template.setSurfaceInstance(SURFACE_MAIN.unitInstance);
   
