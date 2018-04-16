@@ -2,6 +2,8 @@ package grondag.exotic_matter;
 
 import java.util.Random;
 
+import javax.vecmath.Vector3f;
+
 import org.junit.Test;
 
 import grondag.exotic_matter.render.IMutablePolygon;
@@ -22,7 +24,7 @@ public class PolyPerf
         
         Random r = new Random(9);
         
-        final int RUNS = 10000;
+        final int RUNS = 100000;
         
         boolean results[] = new boolean[RUNS];
         
@@ -34,9 +36,12 @@ public class PolyPerf
             float x = r.nextFloat();
             float y = r.nextFloat();
             quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
-            point = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
-            direction = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
-            results[i] = quad.intersectsWithRaySlow(point, direction); 
+            float px = r.nextFloat();
+            float py = r.nextFloat();
+            float pz = r.nextFloat();
+            Vector3f ray = new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
+            ray.normalize();
+            results[i] = quad.intersectsWithRaySlow(px, py, pz, ray.x, ray.y, ray.z); 
         }
         
         Log.info("Slow way ns each: " + (System.nanoTime() - start) / RUNS);
@@ -51,23 +56,26 @@ public class PolyPerf
             float x = r.nextFloat();
             float y = r.nextFloat();
             quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
-            point = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
-            direction = new Vec3d(r.nextDouble(), r.nextDouble(), r.nextDouble());
-            if(results[i] != quad.intersectsWithRay(point, direction))
+            float px = r.nextFloat();
+            float py = r.nextFloat();
+            float pz = r.nextFloat();
+            Vector3f ray = new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
+            ray.normalize();
+            if(results[i] != quad.intersectsWithRay(px, py, pz, ray.x, ray.y, ray.z))
             {
                 diffCount++;
                 Log.info("===========================================================");
                 Log.info("Quad " + quad.toString());
-                Log.info("point " + point.toString());
-                Log.info("intersection " + quad.intersectionOfRayWithPlane(point, direction).toString());
-                Log.info("direction " + direction.toString());
-                Log.info("slow " + quad.intersectsWithRay(point, direction));
-                Log.info("fast " + quad.intersectsWithRaySlow(point, direction));
+                Log.info("point %f, %f, %f", px, py, pz);
+                Log.info("intersection " + quad.intersectionOfRayWithPlane(px, py, pz, ray.x, ray.y, ray.z).toString());
+                Log.info("direction %f, %f, %f", ray.x, ray.y, ray.z);
+                Log.info("slow " + quad.intersectsWithRay(px, py, pz, ray.x, ray.y, ray.z));
+                Log.info("fast " + quad.intersectsWithRaySlow(px, py, pz, ray.x, ray.y, ray.z));
             }
 //            assert(results[i] == quad.intersectsWithRayFast(point, direction)); 
         }
         
-        Log.info("Result Diff % " + diffCount * 100 / RUNS);
+        Log.info("Result Diff % " + diffCount * 100f / RUNS);
         Log.info("Fast way ns each: " + (System.nanoTime() - start) / RUNS);
     }
 

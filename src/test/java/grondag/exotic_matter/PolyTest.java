@@ -33,9 +33,7 @@ public class PolyTest
         assertFalse(quad.containsPoint(point));
         
         // point with ray intersecting poly
-        point = new Vec3d(0.5, 0.1, 0.5);
-        direction = new Vec3d(0, 123, 0);
-        assertTrue(quad.intersectsWithRay(point, direction));        
+        assertTrue(quad.intersectsWithRay(0.5f, 0.1f, 0.5f, 0, 1, 0));        
         
         // point with ray intersecting plane outside poly
         point = new Vec3d(-32, 0.2, 27);
@@ -43,9 +41,7 @@ public class PolyTest
         assertFalse(quad.containsPoint(point));
              
         // point with ray facing away from poly
-        point = new Vec3d(0.5, 0.1, 0.5);
-        direction = new Vec3d(0, -124535, 0);
-        assertFalse(quad.intersectsWithRay(point, direction));
+        assertFalse(quad.intersectsWithRay(0.5f, 0.1f, 0.5f, 0, -1, 0));
         
         
         //convexity & area tests

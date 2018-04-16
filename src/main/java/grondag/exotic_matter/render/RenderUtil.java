@@ -2,6 +2,8 @@ package grondag.exotic_matter.render;
 
 import java.util.List;
 
+import javax.vecmath.Vector3f;
+
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
@@ -10,13 +12,25 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RenderUtil
 {
-    private static final Vec3d VOXEL_TEST_RAY = new Vec3d(5525, 13123, 7435);
-    public static boolean isPointEnclosed(Vec3d point, List<IPolygon> quads)
+    private static final float VOXEL_TEST_RAY_X;
+    private static final float VOXEL_TEST_RAY_Y;
+    private static final float VOXEL_TEST_RAY_Z;
+    
+    static
+    {
+        Vector3f ray = new Vector3f(5525, 13123, 7435);
+        ray.normalize();
+        VOXEL_TEST_RAY_X = ray.x;
+        VOXEL_TEST_RAY_Y = ray.y;
+        VOXEL_TEST_RAY_Z = ray.z;
+    }
+    
+    public static boolean isPointEnclosed(float x, float y, float z, List<IPolygon> quads)
     {
         int intersectionCount = 0;
         for(IPolygon quad : quads)
         {                  
-            if(quad.intersectsWithRay(point, VOXEL_TEST_RAY)) intersectionCount++;
+            if(quad.intersectsWithRay(x, y, z, VOXEL_TEST_RAY_X, VOXEL_TEST_RAY_Y, VOXEL_TEST_RAY_Z)) intersectionCount++;
         }          
         return (intersectionCount & 0x1) == 1;
     }

@@ -135,45 +135,66 @@ public interface IPolygon
     
     /** 
      * Returns intersection point of given ray with the plane of this quad.
-     * Return null if parallel or facing away.
+     * Return null if parallel or facing away.<p/>
+     * 
+     * Direction provided MUST BE NORMALIZED.
+     * 
+     * 
+     * TODO: use floats
      */
-    public default Vec3d intersectionOfRayWithPlane(Vec3d origin, Vec3d direction)
+    public default Vec3d intersectionOfRayWithPlane(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
         Vec3d normal = this.getFaceNormal();
+        
+        // TODO: remove when normal switched to float
+        float normX = (float) normal.x;
+        float normY = (float) normal.y;
+        float normZ = (float) normal.z;
 
-        double directionDotNormal = normal.dotProduct(direction);
+        float directionDotNormal = directionX * normX + directionY * normY + directionZ * normZ;
         if (Math.abs(directionDotNormal) < QuadHelper.EPSILON) 
         { 
             // parallel
             return null;
         }
 
-        Vec3d firstPoint = this.getVertex(0).toVec3d();
+        Vertex firstPoint = this.getVertex(0);
         
-        double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
+        float dx = originX - firstPoint.x;
+        float dy = originY - firstPoint.y;
+        float dz = originZ - firstPoint.z;
+        
+        float distanceToPlane = -(dx * normX + dy * normY + dz * normZ) / directionDotNormal;
+        //double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
         // facing away from plane
         if(distanceToPlane < -QuadHelper.EPSILON) return null;
 
-        return origin.add(direction.scale(distanceToPlane));
+        return new Vec3d(originX + directionZ * distanceToPlane, originY + directionY * distanceToPlane, originZ + directionZ * distanceToPlane);
+//        return origin.add(direction.scale(distanceToPlane));
     }
     
     
     /**
      * Keeping for convenience in case discover any problems with the fast version.
-     * Unit tests indicate identical results.
+     * Unit tests indicate identical results.<p>
+     * 
+     * Provided direction MUST BE NORMALIZED for correct results
      */
-    public default boolean intersectsWithRaySlow(Vec3d origin, Vec3d direction)
+    public default boolean intersectsWithRaySlow(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
-        Vec3d intersection = this.intersectionOfRayWithPlane(origin, direction);
+        Vec3d intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
         
         // now we just need to test if point is inside this polygon
         return intersection == null ? false : containsPointSlow(intersection);
         
     }
 
-    public default boolean intersectsWithRay(Vec3d origin, Vec3d direction)
+    /**
+     * Provided direction MUST BE NORMALIZED for correct results.
+     */
+    public default boolean intersectsWithRay(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
-        Vec3d intersection = this.intersectionOfRayWithPlane(origin, direction);
+        Vec3d intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
 
         // now we just need to test if point is inside this polygon
         return intersection == null ? false : containsPoint(intersection);

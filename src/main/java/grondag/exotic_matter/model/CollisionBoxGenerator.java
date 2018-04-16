@@ -131,10 +131,9 @@ public class CollisionBoxGenerator
         return retVal.build();
     }
     
-    private static boolean isVoxelPresent(double x, double y, double z, List<IPolygon> quads)
+    private static boolean isVoxelPresent(float x, float y, float z, List<IPolygon> quads)
     {
-        Vec3d point = new Vec3d((x+0.5)/8.0, (y+0.5)/8.0, (z+0.5)/8.0);
-        return RenderUtil.isPointEnclosed(point, quads);
+        return RenderUtil.isPointEnclosed((x+0.5f)/8f, (y+0.5f)/8f, (z+0.5f)/8f, quads);
     }
     
     
