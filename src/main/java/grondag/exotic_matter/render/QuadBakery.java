@@ -28,8 +28,8 @@ public class QuadBakery
         float[][] uvData = new float[4][2];
         for(int v = 0; v < 4; v++)
         {
-            uvData[v][0] = (float) raw.getVertex(v).u;
-            uvData[v][1] = (float) raw.getVertex(v).v;
+            uvData[v][0] = (float) raw.getVertex(v).u();
+            uvData[v][1] = (float) raw.getVertex(v).v();
         }
         
         // apply texture rotation
@@ -80,10 +80,10 @@ public class QuadBakery
 
                 case COLOR:
                     float[] colorRGBA = new float[4];
-                    colorRGBA[0] = ((float) (raw.getVertex(v).color >> 16 & 0xFF)) / 255f;
-                    colorRGBA[1] = ((float) (raw.getVertex(v).color >> 8 & 0xFF)) / 255f;
-                    colorRGBA[2] = ((float) (raw.getVertex(v).color  & 0xFF)) / 255f;
-                    colorRGBA[3] = ((float) (raw.getVertex(v).color >> 24 & 0xFF)) / 255f;
+                    colorRGBA[0] = ((float) (raw.getVertex(v).color() >> 16 & 0xFF)) / 255f;
+                    colorRGBA[1] = ((float) (raw.getVertex(v).color() >> 8 & 0xFF)) / 255f;
+                    colorRGBA[2] = ((float) (raw.getVertex(v).color()  & 0xFF)) / 255f;
+                    colorRGBA[3] = ((float) (raw.getVertex(v).color() >> 24 & 0xFF)) / 255f;
                     LightUtil.pack(colorRGBA, vertexData, format, v, e);
                     break;
 

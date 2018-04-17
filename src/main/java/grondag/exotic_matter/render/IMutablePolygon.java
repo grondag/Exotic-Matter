@@ -3,6 +3,7 @@ package grondag.exotic_matter.render;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector3f;
 
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
@@ -57,9 +58,6 @@ public interface IMutablePolygon extends IPolygon
      * using block center (0.5, 0.5, 0.5) as origin.
      */
     public void scaleFromBlockCenter(float scale);
-
-    
-    public void setVertexColor(int index, int vColor);
 
     /**
      * Multiplies this quads color and all vertex color by given value
@@ -139,8 +137,29 @@ public interface IMutablePolygon extends IPolygon
      * by rejecting any attempt to set a vertex that already exists.
      * Rejection is via an assertion, so no overhead in normal use.
      */
-    public void addVertex(int index, Vertex vertexIn);
+    public void addVertex(int index, IPolygonVertex vertexIn);
 
+    public default void addVertex(int index, Vec3d point, double u, double v, int color, Vec3d normal)
+    {
+        this.addVertex(index, (float)point.x, (float)point.y, (float)point.z, (float)u, (float)v, color, (float)normal.x, (float)normal.y, (float)normal.z);
+    }
+    
+    public default void addVertex(int index, Vec3d point, double u, double v, int color)
+    {
+        this.addVertex(index, (float)point.x, (float)point.y, (float)point.z, (float)u, (float)v, color);
+    }
+    
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color);
+
+    public default void addVertex(int index, float x, float y, float z, float u, float v, int color, Vec3d normal)
+    {
+        this.addVertex(index, index, y, z, u, v, color, (float)normal.x, (float)normal.y, (float)normal.z);
+    }
+    
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vector3f normal);
+    
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ);
+    
     void setColor(int color);
 
     void setLockUV(boolean isLockUV);
@@ -166,10 +185,4 @@ public interface IMutablePolygon extends IPolygon
     /** applies the given transformation to this polygon*/
     void transform(Matrix4f matrix);
 
-    /** Using this instead of method on vertex 
-     * ensures normals are set correctly for tris.
-     */
-    void setVertexNormal(int index, float x, float y, float z);
-
-    void setVertexNormal(int index, Vec3d normal);
 }

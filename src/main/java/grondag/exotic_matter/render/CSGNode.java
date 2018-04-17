@@ -398,7 +398,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
             return null;
         }
 
-        final ArrayList<Vertex> joinedVertex = new ArrayList<Vertex>(8);
+        final ArrayList<IPolygonVertex> joinedVertex = new ArrayList<>(8);
         final IntList joinedLineID = new IntArrayList(8);
         
         // don't try to eliminate co-linear vertices when joining two tris

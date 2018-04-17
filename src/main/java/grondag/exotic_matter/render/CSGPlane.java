@@ -160,16 +160,16 @@ public class CSGPlane
                 break;
             case SPANNING:
                 
-                List<Vertex> frontVertex = new ArrayList<Vertex>(vcount+1);
-                List<Vertex> backVertex = new ArrayList<Vertex>(vcount+1);
+                List<IPolygonVertex> frontVertex = new ArrayList<>(vcount+1);
+                List<IPolygonVertex> backVertex = new ArrayList<>(vcount+1);
                 IntList frontLineID = new IntArrayList(vcount+1);
                 IntList backLineID = new IntArrayList(vcount+1);
                 for (int i = 0; i < vcount; i++) {
                     int j = (i + 1) % vcount;
                     int iType = types[i];
                     int jType = types[j];
-                    Vertex iVertex = quad.getVertex(i);
-                    Vertex jVertex = quad.getVertex(j);
+                    IPolygonVertex iVertex = quad.getVertex(i);
+                    IPolygonVertex jVertex = quad.getVertex(j);
                     int iLineID = quad.getLineID(i);
                     
                     if (iType != BACK) {
@@ -179,7 +179,7 @@ public class CSGPlane
                         frontLineID.add(iType == COPLANAR && jType == BACK ? this.lineID : iLineID);
                     }
                     if (iType != FRONT) {
-                        backVertex.add(iType != BACK ? iVertex.clone() : iVertex);
+                        backVertex.add(iVertex);
                         // if we are splitting at an existing vertex need to use split line
                         // if the next vertex is not going into this list
                         backLineID.add(iType == COPLANAR && jType == FRONT ? this.lineID : iLineID);
@@ -191,12 +191,12 @@ public class CSGPlane
 
                     if ((iType | jType) == SPANNING) {
                         float t = (float) ((this.dist - this.normal.dotProduct(iVertex.toVec3d())) / this.normal.dotProduct(jVertex.toVec3d().subtract(iVertex.toVec3d())));
-                        Vertex v = iVertex.interpolate(jVertex, t);
+                        IPolygonVertex v = iVertex.interpolate(jVertex, t);
                         
                         frontVertex.add(v);
                         frontLineID.add(jType != FRONT ? this.lineID : iLineID);
                         
-                        backVertex.add(v.clone());
+                        backVertex.add(v);
                         backLineID.add(jType != BACK ? this.lineID : iLineID);
                     }
                 }

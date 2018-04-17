@@ -1,12 +1,12 @@
 package grondag.exotic_matter.render;
 
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
@@ -19,7 +19,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
 @Deprecated
-class PolyImpl implements IMutableCSGPolygon
+class PolyImpl implements IMutableCSGPolygon, IFancyMutablePolygon
 {
     private Vertex[] vertices;
     private @Nullable Vec3d faceNormal;
@@ -255,7 +255,7 @@ class PolyImpl implements IMutableCSGPolygon
                     splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
                     work.setVertex(1, this.getVertex(tail));
                     work.setLineID(1, head - tail == 1 ? this.getLineID(tail): splitLineID);
-                    work.setVertex(2, this.getVertex(--head).clone());
+                    work.setVertex(2, this.getVertex(--head));
                     work.setLineID(2, this.getLineID(head));
                     work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
                     retVal.add((T) work);
@@ -275,10 +275,10 @@ class PolyImpl implements IMutableCSGPolygon
 
         for(int i = 0; i < vertices.length; i++)
         {
-            Vertex v = getVertex(i);
+            Vertex v = (Vertex)getVertex(i);
             if(v != null)
             {
-                this.setVertex(i, v.withNormal(-v.normalX, -v.normalY, -v.normalZ));
+                this.setVertex(i, v.withNormal(-v.normalX(), -v.normalY(), -v.normalZ()));
             }
         }            
 
@@ -447,7 +447,7 @@ class PolyImpl implements IMutableCSGPolygon
     {
         if(index < this.vertexCount)
         {
-            this.setVertex(index, this.getVertex(index).withNormal(x, y, z));
+            this.setVertex(index, ((Vertex)this.getVertex(index)).withNormal(x, y, z));
         }
     }
     
@@ -466,7 +466,7 @@ class PolyImpl implements IMutableCSGPolygon
         this.setColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            if(getVertex(i) != null) setVertex(i, getVertex(i).withColor(color));
+            if(getVertex(i) != null) setVertex(i, ((Vertex)getVertex(i)).withColor(color));
         }
         return this;
     }
@@ -477,10 +477,10 @@ class PolyImpl implements IMutableCSGPolygon
         this.setColor(QuadHelper.multiplyColor(this.getColor(), color));
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            Vertex v = this.getVertex(i);
+            Vertex v = (Vertex)this.getVertex(i);
             if(v != null)
             {
-                int vColor = QuadHelper.multiplyColor(color, v.color);
+                int vColor = QuadHelper.multiplyColor(color, v.color());
                 this.setVertex(i, v.withColor(vColor));
             }
         }
@@ -489,9 +489,9 @@ class PolyImpl implements IMutableCSGPolygon
     /** 
      * Using this instead of referencing vertex array directly.
      */
-    private void setVertex(int index, Vertex vertexIn)
+    private void setVertex(int index, IPolygonVertex vertexIn)
     {
-        this.vertices[index] = vertexIn;
+        this.vertices[index] =  (Vertex)vertexIn;
     }
 
     /**
@@ -500,14 +500,32 @@ class PolyImpl implements IMutableCSGPolygon
      * Rejection is via an assertion, so no overhead in normal use.
      */
     @Override
-    public void addVertex(int index, Vertex vertexIn)
+    public void addVertex(int index, IPolygonVertex vertexIn)
     {
         assert this.vertices[index] == null : "attempt to change existing vertex";
-        this.vertices[index] = vertexIn;
+        this.vertices[index] = (Vertex)vertexIn;
     }
     
     @Override
-    public Vertex getVertex(int index)
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color)
+    {
+        this.addVertex(index, new Vertex(x, y, z, u, v, color));
+    }
+    
+    @Override
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vector3f normal)
+    {
+        this.addVertex(index, new Vertex(x, y, z, u, v, color, normal));
+    }
+    
+    @Override
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
+    {
+        this.addVertex(index, new Vertex(x, y, z, u, v, color, normalX, normalY, normalZ));
+    }
+    
+    @Override
+    public IFancyVertex getVertex(int index)
     {
         if(this.vertexCount() == 3 && index == 3) return this.vertices[2];
         return this.vertices[index];
@@ -579,34 +597,34 @@ class PolyImpl implements IMutableCSGPolygon
 
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            Vertex v = getVertex(i);
+            Vertex v = (Vertex)getVertex(i);
             
             switch(face)
             {
             case EAST:
-                this.setVertex(i, v.withUV((1 - v.z) * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.z()) * 16, (1 - v.y()) * 16));
                 break;
                 
             case WEST:
-                this.setVertex(i, v.withUV(v.z * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.z() * 16, (1 - v.y()) * 16));
                 break;
                 
             case NORTH:
-                this.setVertex(i, v.withUV((1 - v.x) * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.x()) * 16, (1 - v.y()) * 16));
                 break;
                 
             case SOUTH:
-                this.setVertex(i, v.withUV(v.x * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.x() * 16, (1 - v.y()) * 16));
                 break;
                 
             case DOWN:
-                this.setVertex(i, v.withUV(v.x * 16, (1 - v.z) * 16));
+                this.setVertex(i, v.withUV(v.x() * 16, (1 - v.z()) * 16));
                 break;
                 
             case UP:
                 // our default semantic for UP is different than MC
                 // "top" is north instead of south
-                this.setVertex(i, v.withUV(v.x * 16, v.z * 16));
+                this.setVertex(i, v.withUV(v.x() * 16, v.z() * 16));
                 break;
             
             }
@@ -631,8 +649,8 @@ class PolyImpl implements IMutableCSGPolygon
         
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            Vertex v = getVertex(i);
-            this.setVertex(i, v.withXYZ(v.x * scale + c, v.y * scale + c, v.z * scale + c));
+            Vertex v = (Vertex)getVertex(i);
+            this.setVertex(i, v.withXYZ(v.x() * scale + c, v.y() * scale + c, v.z() * scale + c));
         }
     }
 
@@ -690,8 +708,8 @@ class PolyImpl implements IMutableCSGPolygon
         // transform vertices
         for(int i = 0; i < this.vertexCount; i++)
         {
-            Vertex vertex = this.getVertex(i);
-            Vector4f temp = new Vector4f(vertex.x, vertex.y, vertex.z, 1);
+            Vertex vertex = (Vertex)this.getVertex(i);
+            Vector4f temp = new Vector4f(vertex.x(), vertex.y(), vertex.z(), 1);
             matrix.transform(temp);
             this.setVertex(i, vertex.withXYZ((float)temp.x, (float)temp.y, (float)temp.z));
         }
@@ -715,7 +733,7 @@ class PolyImpl implements IMutableCSGPolygon
     @Override
     public void setVertexColor(int index, int vColor)
     {
-        this.setVertex(index, this.getVertex(index).withColor(vColor));        
+        this.setVertex(index, ((Vertex)this.getVertex(index)).withColor(vColor));        
     }
 
     @Override
