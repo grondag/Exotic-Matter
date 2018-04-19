@@ -5,11 +5,16 @@ import java.util.Map;
 import grondag.exotic_matter.block.SuperModelBlock;
 import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
+import grondag.exotic_matter.model.BlockColorMapProvider;
 import grondag.exotic_matter.model.BlockSubstance;
+import grondag.exotic_matter.model.Chroma;
+import grondag.exotic_matter.model.Hue;
 import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.Luminance;
 import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.PaintLayer;
+import grondag.exotic_matter.model.SquareColumnMeshFactory;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
 import grondag.exotic_matter.simulator.WorldTaskManager;
@@ -74,6 +79,18 @@ public class CommonEventHandler
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
 //        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(4));
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+        
+        
+        workingModel = new ModelState();
+        workingModel.setShape(ModShapes.COLUMN_SQUARE);
+        SquareColumnMeshFactory.setCutCount(4, workingModel);
+        SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_TEST_SINGLE);
+        workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
+        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
+        workingModel.setFullBrightness(PaintLayer.LAMP, true);
+        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT));
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
 
     }
     
