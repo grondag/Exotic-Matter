@@ -36,10 +36,10 @@ import net.minecraft.world.WorldServer;
 
 public interface ISuperBlock extends IBlockItemRegistrator
 {
-    public static ISuperModelState computeModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos)
+    public static ISuperModelState computeModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
         ISuperModelState result = block.getDefaultModelState();
-        result.refreshFromWorld(blockState, world, pos);
+        if(refreshFromWorld) result.refreshFromWorld(blockState, world, pos);
         return result;
     }
     

@@ -11,9 +11,9 @@ import net.minecraft.world.IBlockAccess;
 public class FakeWorldStateCache extends AbstractWorldStateCache
 {
     @Override
-    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos)
+    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
-        return ISuperBlock.computeModelState(block, world, blockState, pos);
+        return ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
     }
 
     @Override

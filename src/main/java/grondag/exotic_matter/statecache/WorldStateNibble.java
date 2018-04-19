@@ -26,7 +26,7 @@ public class WorldStateNibble implements IWorldStateCache
 //    private static AtomicInteger modelHits = new AtomicInteger(0);
     
     @Override
-    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos)
+    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
         ISuperModelState result;
         final int index =  computeIndex(pos);
@@ -34,7 +34,7 @@ public class WorldStateNibble implements IWorldStateCache
         if(modelStates == null)
         {
             modelStates = new ISuperModelState[4096];
-            result = ISuperBlock.computeModelState(block, world, blockState, pos);
+            result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
             modelStates[index] = result;
         }
         else
@@ -42,7 +42,7 @@ public class WorldStateNibble implements IWorldStateCache
             result = modelStates[index];
             if(result == null)
             {
-                result = ISuperBlock.computeModelState(block, world, blockState, pos);
+                result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
                 modelStates[index] = result;
             }
 //            else modelHits.incrementAndGet();

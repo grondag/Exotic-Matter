@@ -88,52 +88,7 @@ public class Vertex implements IFancyVertex
         return new Vertex(xNew, yNew, zNew, this.u(), this.v(), this.color(), this.normalX(), this.normalY(), this.normalZ());
     }
     
-    @Override
-    public boolean hasNormal()
-    {
-        return !(this.normalX() == 0 && this.normalY() == 0 && this.normalZ() == 0);
-    }
-
  
-    @Override
-    public IPolygonVertex interpolate(IPolygonVertex otherVertex, float otherWeight)
-    {
-        // tx = 2
-        // ox = 1
-        // w = 0
-        // 2 +(1 - 2) * 0 = 2
-        // 2 +(1 - 2) * 1 = 1
-        
-        float newX = this.x() + (otherVertex.x() - this.x()) * otherWeight;
-        float newY = this.y() + (otherVertex.y() - this.y()) * otherWeight;
-        float newZ = this.z() + (otherVertex.z() - this.z()) * otherWeight;
-        
-        float normX = 0;
-        float normY = 0;
-        float normZ = 0;
-        
-        if(this.hasNormal() && otherVertex.hasNormal())
-        {
-            normX = this.normalX() + (otherVertex.normalX() - this.normalX()) * otherWeight;
-            normY = this.normalY() + (otherVertex.normalY() - this.normalY()) * otherWeight;
-            normZ = this.normalZ() + (otherVertex.normalZ() - this.normalZ()) * otherWeight;
-            
-            float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
-            normX *= normScale;
-            normY *= normScale;
-            normZ *= normScale;
-        }
-        
-        float newU = this.u() + (otherVertex.u() - this.u()) * otherWeight;
-        float newV = this.v() + (otherVertex.v() - this.v()) * otherWeight;
-
-        int newColor = (int) ((this.color() & 0xFF) + ((otherVertex.color() & 0xFF) - (this.color() & 0xFF)) * otherWeight);
-        newColor |= (int) ((this.color() & 0xFF00) + ((otherVertex.color() & 0xFF00) - (this.color() & 0xFF00)) * otherWeight);
-        newColor |= (int) ((this.color() & 0xFF0000) + ((otherVertex.color() & 0xFF0000) - (this.color() & 0xFF0000)) * otherWeight);
-        newColor |= (int) ((this.color() & 0xFF000000) + ((otherVertex.color() & 0xFF000000) - (this.color() & 0xFF000000)) * otherWeight);
-
-        return new Vertex(newX, newY, newZ, newU, newV, newColor, normX, normY, normZ);
-    }
     
     public IPolygonVertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
     {

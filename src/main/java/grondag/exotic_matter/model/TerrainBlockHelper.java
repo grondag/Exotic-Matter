@@ -34,7 +34,7 @@ public class TerrainBlockHelper
         // cubic blocks don't have terrain state in model state, and so can't rely on model state cache
         return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER || block instanceof TerrainCubicBlock
                 ? new TerrainState(TerrainState.getBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos))
-                : ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos).getTerrainState();
+                : ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos, true).getTerrainState();
     }
     
     /**

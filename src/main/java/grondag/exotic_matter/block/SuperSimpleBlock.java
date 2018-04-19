@@ -70,6 +70,6 @@ public class SuperSimpleBlock extends SuperBlock
         // exploit client-side state cache
         return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
                 ? super.getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded)
-                : ExoticMatter.proxy.clientWorldStateCache().getModelState(this, world, state, pos);
+                : ExoticMatter.proxy.clientWorldStateCache().getModelState(this, world, state, pos, refreshFromWorldIfNeeded);
     }
 }

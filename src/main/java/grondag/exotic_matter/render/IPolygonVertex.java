@@ -7,17 +7,6 @@ import net.minecraft.util.math.Vec3d;
 public interface IPolygonVertex
 {
 
-    //TODO: should simply return face normal if not fancy
-    @Deprecated
-    boolean hasNormal();
-
-    /**
-     * Returns a new, linearly interpolated vertex based on this vertex
-     * and the other vertex provided.  Neither vertex is changed.
-     * Factor 0 returns this vertex. Factor 1 return other vertex, 
-     * with values in between returning a weighted average.
-     */
-    IPolygonVertex interpolate(IPolygonVertex otherVertex, float otherWeight);
 
     /**
      * Returns a signed distance to the plane of the given face.
@@ -128,5 +117,56 @@ public interface IPolygonVertex
     float normalY();
 
     float normalZ();
+    
+    //TODO: should simply return face normal if not fancy
+    @Deprecated
+    public default boolean hasNormal()
+    {
+        return !(this.normalX() == 0 && this.normalY() == 0 && this.normalZ() == 0);
+    }
 
+    /**
+     * Returns a new, linearly interpolated vertex based on this vertex
+     * and the other vertex provided.  Neither vertex is changed.
+     * Factor 0 returns this vertex. Factor 1 return other vertex, 
+     * with values in between returning a weighted average.
+     */
+    public default IPolygonVertex interpolate(IPolygonVertex otherVertex, float otherWeight)
+    {
+        // tx = 2
+        // ox = 1
+        // w = 0
+        // 2 +(1 - 2) * 0 = 2
+        // 2 +(1 - 2) * 1 = 1
+        
+        float newX = this.x() + (otherVertex.x() - this.x()) * otherWeight;
+        float newY = this.y() + (otherVertex.y() - this.y()) * otherWeight;
+        float newZ = this.z() + (otherVertex.z() - this.z()) * otherWeight;
+        
+        float normX = 0;
+        float normY = 0;
+        float normZ = 0;
+        
+        if(this.hasNormal() && otherVertex.hasNormal())
+        {
+            normX = this.normalX() + (otherVertex.normalX() - this.normalX()) * otherWeight;
+            normY = this.normalY() + (otherVertex.normalY() - this.normalY()) * otherWeight;
+            normZ = this.normalZ() + (otherVertex.normalZ() - this.normalZ()) * otherWeight;
+            
+            float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
+            normX *= normScale;
+            normY *= normScale;
+            normZ *= normScale;
+        }
+        
+        float newU = this.u() + (otherVertex.u() - this.u()) * otherWeight;
+        float newV = this.v() + (otherVertex.v() - this.v()) * otherWeight;
+
+        int newColor = (int) ((this.color() & 0xFF) + ((otherVertex.color() & 0xFF) - (this.color() & 0xFF)) * otherWeight);
+        newColor |= (int) ((this.color() & 0xFF00) + ((otherVertex.color() & 0xFF00) - (this.color() & 0xFF00)) * otherWeight);
+        newColor |= (int) ((this.color() & 0xFF0000) + ((otherVertex.color() & 0xFF0000) - (this.color() & 0xFF0000)) * otherWeight);
+        newColor |= (int) ((this.color() & 0xFF000000) + ((otherVertex.color() & 0xFF000000) - (this.color() & 0xFF000000)) * otherWeight);
+
+        return new Vertex(newX, newY, newZ, newU, newV, newColor, normX, normY, normZ);
+    }
 }

@@ -35,9 +35,9 @@ public class WorldStateCache extends AbstractWorldStateCache
     }
     
     @Override
-    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos)
+    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
-        return this.getNibble(pos).getModelState(block, world, blockState, pos);
+        return this.getNibble(pos).getModelState(block, world, blockState, pos, refreshFromWorld);
     }
 
     @Override

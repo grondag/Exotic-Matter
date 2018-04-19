@@ -22,7 +22,7 @@ import net.minecraft.world.IBlockAccess;
  */
 public interface IWorldStateCache
 {
-    ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos);
+    ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld);
     
     int getFlowHeight(IBlockAccess world, MutableBlockPos pos);
 }
