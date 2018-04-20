@@ -18,6 +18,7 @@ import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.render.SurfaceTopology;
 import grondag.exotic_matter.render.SurfaceType;
+import grondag.exotic_matter.render.Vec3f;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.world.HorizontalCorner;
@@ -84,10 +85,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
      * Not hacking the lighter, but can scale down the vertical component of vertex normals
      * to make the shadows a little deeper.
      */
-    private Vec3d shadowEnhance(Vec3d vec)
+    private Vec3f shadowEnhance(Vec3f vec)
     {
-      Vec3d temp = vec.normalize();
-      return new Vec3d(temp.x, temp.y * temp.y, temp.z);
+      Vec3f temp = vec.normalize();
+      return new Vec3f(temp.x, temp.y * temp.y, temp.z);
     }
 
 //    private static LongOpenHashSet hitMap = new LongOpenHashSet();
@@ -364,7 +365,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         /** Used for Y coord of bottom face and as lower Y coord of side faces*/
         float bottom = -2 - flowState.getYOffset();// - QuadFactory.EPSILON;
 
-        Vec3d normCenter = quadInputsCenterLeft[0].getFaceNormal().scale(quadInputsCenterLeft[0].getArea());
+        Vec3f normCenter = quadInputsCenterLeft[0].getFaceNormal().scale(quadInputsCenterLeft[0].getArea());
         normCenter = normCenter.add(quadInputsCenterLeft[1].getFaceNormal().scale(quadInputsCenterLeft[1].getArea()));
         normCenter = normCenter.add(quadInputsCenterLeft[2].getFaceNormal().scale(quadInputsCenterLeft[2].getArea()));
         normCenter = normCenter.add(quadInputsCenterLeft[3].getFaceNormal().scale(quadInputsCenterLeft[3].getArea()));
@@ -374,10 +375,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         normCenter = normCenter.add(quadInputsCenterRight[3].getFaceNormal().scale(quadInputsCenterRight[3].getArea()));
         normCenter = shadowEnhance(normCenter).normalize();
 
-        Vec3d normSide[] = new Vec3d[4];
+        Vec3f normSide[] = new Vec3f[4];
         for(HorizontalFace side : HorizontalFace.values())
         {
-            Vec3d normTemp = null;
+            Vec3f normTemp = null;
             for(IMutablePolygon qi : quadInputsSide.get(side.ordinal()))
             {
                 if(normTemp == null) 
@@ -392,10 +393,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             normSide[side.ordinal()] = shadowEnhance(normTemp).normalize();
         }
 
-        Vec3d normCorner[] = new Vec3d[4];
+        Vec3f normCorner[] = new Vec3f[4];
         for(HorizontalCorner corner : HorizontalCorner.values())
         {
-            Vec3d normTemp = null;
+            Vec3f normTemp = null;
             for(IMutablePolygon qi : quadInputsCorner.get(corner.ordinal()))
             {
                 if(normTemp == null) 

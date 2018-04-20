@@ -22,7 +22,7 @@ import net.minecraft.util.math.Vec3i;
 class PolyImpl implements IMutableCSGPolygon, IFancyMutablePolygon
 {
     private Vertex[] vertices;
-    private @Nullable Vec3d faceNormal;
+    private @Nullable Vec3f faceNormal;
     private final int vertexCount;
 
     private @Nullable EnumFacing nominalFace;
@@ -452,9 +452,9 @@ class PolyImpl implements IMutableCSGPolygon, IFancyMutablePolygon
     }
     
     @Override
-    public void setVertexNormal(int index, Vec3d normal)
+    public void setVertexNormal(int index, Vec3f normal)
     {
-        this.setVertexNormal(index, (float)normal.x, (float)normal.y, (float)normal.z);
+        this.setVertexNormal(index, normal.x, normal.y, normal.z);
     }
 
     /**
@@ -661,7 +661,7 @@ class PolyImpl implements IMutableCSGPolygon, IFancyMutablePolygon
     }
     
     @Override
-    public Vec3d getFaceNormal()
+    public Vec3f getFaceNormal()
     {
         if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
         return this.faceNormal;

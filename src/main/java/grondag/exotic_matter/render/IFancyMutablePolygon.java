@@ -1,6 +1,5 @@
 package grondag.exotic_matter.render;
 
-import net.minecraft.util.math.Vec3d;
 
 public interface IFancyMutablePolygon extends IFancyPolygon, IMutablePolygon
 {
@@ -10,7 +9,7 @@ public interface IFancyMutablePolygon extends IFancyPolygon, IMutablePolygon
      */
     void setVertexNormal(int index, float x, float y, float z);
 
-    void setVertexNormal(int index, Vec3d normal);
+    void setVertexNormal(int index, Vec3f normal);
     
     public void setVertexColor(int index, int vColor);
 }

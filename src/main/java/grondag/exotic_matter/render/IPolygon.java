@@ -8,7 +8,6 @@ import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
 
 public interface IPolygon
 {
@@ -78,17 +77,17 @@ public interface IPolygon
      */
     public boolean hasFaceNormal();
     
-    public Vec3d getFaceNormal();
+    public Vec3f getFaceNormal();
     
     public default  float[] getFaceNormalArray()
     {
-        Vec3d normal = getFaceNormal();
+        Vec3f normal = getFaceNormal();
 
         float[] retval = new float[3];
 
-        retval[0] = (float)(normal.x);
-        retval[1] = (float)(normal.y);
-        retval[2] = (float)(normal.z);
+        retval[0] = normal.x;
+        retval[1] = normal.y;
+        retval[2] = normal.z;
         return retval;
     }
 
@@ -139,12 +138,10 @@ public interface IPolygon
      * 
      * Direction provided MUST BE NORMALIZED.
      * 
-     * 
-     * TODO: use floats
      */
-    public default Vec3d intersectionOfRayWithPlane(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
+    public default Vec3f intersectionOfRayWithPlane(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
-        Vec3d normal = this.getFaceNormal();
+        Vec3f normal = this.getFaceNormal();
         
         // TODO: remove when normal switched to float
         float normX = (float) normal.x;
@@ -169,7 +166,7 @@ public interface IPolygon
         // facing away from plane
         if(distanceToPlane < -QuadHelper.EPSILON) return null;
 
-        return new Vec3d(originX + directionZ * distanceToPlane, originY + directionY * distanceToPlane, originZ + directionZ * distanceToPlane);
+        return new Vec3f(originX + directionZ * distanceToPlane, originY + directionY * distanceToPlane, originZ + directionZ * distanceToPlane);
 //        return origin.add(direction.scale(distanceToPlane));
     }
     
@@ -182,7 +179,7 @@ public interface IPolygon
      */
     public default boolean intersectsWithRaySlow(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
-        Vec3d intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
+        Vec3f intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
         
         // now we just need to test if point is inside this polygon
         return intersection == null ? false : containsPointSlow(intersection);
@@ -194,7 +191,7 @@ public interface IPolygon
      */
     public default boolean intersectsWithRay(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
-        Vec3d intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
+        Vec3f intersection = this.intersectionOfRayWithPlane(originX, originY, originZ, directionX, directionY, directionZ);
 
         // now we just need to test if point is inside this polygon
         return intersection == null ? false : containsPoint(intersection);
@@ -209,7 +206,7 @@ public interface IPolygon
      * If the point is inside the polygon, the sign should be the same for all
      * edges, or the dot product should be very small, meaning the point is on the edge.
      */
-    public default boolean containsPoint(Vec3d point)
+    public default boolean containsPoint(Vec3f point)
     {
         return PointInPolygonTest.isPointInPolygon(point, this);
     }
@@ -219,22 +216,22 @@ public interface IPolygon
      * Keeping for convenience in case discover any problems with the fast version.
      * Unit tests indicate identical results.
      */
-    public default boolean containsPointSlow(Vec3d point)
+    public default boolean containsPointSlow(Vec3f point)
     {
-        double lastSignum = 0;
-        Vec3d faceNormal = this.getFaceNormal();
+        float lastSignum = 0;
+        Vec3f faceNormal = this.getFaceNormal();
 
         for(int i = 0; i < this.vertexCount(); i++)
         {
             int nextVertex = i + 1;
             if(nextVertex == this.vertexCount()) nextVertex = 0;
 
-            Vec3d currentVertex = getVertex(i).toVec3d();
+            Vec3f currentVertex = getVertex(i).toVec3f();
             
-            Vec3d line = getVertex(nextVertex).toVec3d().subtract(currentVertex);
-            Vec3d normalInPlane = faceNormal.crossProduct(line);
+            Vec3f line = getVertex(nextVertex).toVec3f().subtract(currentVertex);
+            Vec3f normalInPlane = faceNormal.crossProduct(line);
 
-            double sign = normalInPlane.dotProduct(point.subtract(currentVertex));
+            float sign = normalInPlane.dotProduct(point.subtract(currentVertex));
 
             if(lastSignum == 0)
             {
@@ -321,19 +318,19 @@ public interface IPolygon
 
     public default boolean isOrthogonalTo(EnumFacing face)
     {
-        return Math.abs(this.getFaceNormal().dotProduct(new Vec3d(face.getDirectionVec()))) <= QuadHelper.EPSILON;
+        return Math.abs(this.getFaceNormal().dotProduct(new Vec3f(face.getDirectionVec()))) <= QuadHelper.EPSILON;
     }
 
     public default boolean isOnSinglePlane()
     {
         if(this.vertexCount() == 3) return true;
 
-        Vec3d fn = this.getFaceNormal();
+        Vec3f fn = this.getFaceNormal();
         if(fn == null) return false;
 
-        float faceX = (float) fn.x;
-        float faceY = (float) fn.y;
-        float faceZ = (float) fn.z;
+        float faceX = fn.x;
+        float faceY = fn.y;
+        float faceZ = fn.z;
 
         IPolygonVertex first = this.getVertex(0);
         
@@ -363,33 +360,33 @@ public interface IPolygon
         return retVal;
     }
     
-    public default Vec3d computeFaceNormal()
+    public default Vec3f computeFaceNormal()
     {
         try
         {
-            return getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).normalize();
+            return getVertex(2).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(3).toVec3f().subtract(getVertex(1).toVec3f())).normalize();
         }
         catch(Exception e)
         {
             assert false : "Bad polygon structure during face normal request.";
-            return Vec3d.ZERO;
+            return Vec3f.ZERO;
         }
     }
 
-    public default double getArea()
+    public default float getArea()
     {
         if(this.vertexCount() == 3)
         {
-            return Math.abs(getVertex(1).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d())).lengthVector()) / 2.0;
+            return Math.abs(getVertex(1).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(2).toVec3f().subtract(getVertex(0).toVec3f())).lengthVector()) / 2.0f;
 
         }
         else if(this.vertexCount() == 4) //quad
         {
-            return Math.abs(getVertex(2).toVec3d().subtract(getVertex(0).toVec3d()).crossProduct(getVertex(3).toVec3d().subtract(getVertex(1).toVec3d())).lengthVector()) / 2.0;
+            return Math.abs(getVertex(2).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(3).toVec3f().subtract(getVertex(1).toVec3f())).lengthVector()) / 2.0f;
         }
         else
         {
-            double area = 0;
+            float area = 0;
             for(IPolygon q : this.toQuads())
             {
                 area += q.getArea();

@@ -46,11 +46,21 @@ public class MicroTimer
         long h = this.hits.incrementAndGet();
         if(h == this.sampleSize)
         {
-            this.hits.set(0);
-            this.elapsed.set(0);
-            ExoticMatter.INSTANCE.info("Avg %s duration = %d ns", label, e / h);
+            doReportAndClear(e, h);
             return true;
         } 
         else return false;
+    }
+    
+    private void doReportAndClear(long e, long h)
+    {
+        this.hits.set(0);
+        this.elapsed.set(0);
+        ExoticMatter.INSTANCE.info("Avg %s duration = %d ns, total duration = %d, total runs = %d", label, e / h, e / 1000000, h);
+    }
+    
+    public void reportAndClear()
+    {
+        this.doReportAndClear(this.elapsed.get(), this.hits.get());
     }
 }

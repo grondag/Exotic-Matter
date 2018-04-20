@@ -5,17 +5,16 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.IPolygonVertex;
+import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.RenderUtil;
-import grondag.exotic_matter.render.Vertex;
+import grondag.exotic_matter.render.Vec3f;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.varia.VoxelBitField;
 import grondag.exotic_matter.varia.VoxelBitField.VoxelBox;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
 
 public class CollisionBoxGenerator
 {
@@ -84,7 +83,7 @@ public class CollisionBoxGenerator
                 {
                     for(int z = 0; z < 8; z++)
                     {
-                        if(quad.containsPoint(new Vec3d((x+0.5)/8.0, 0.0, (z+0.5)/8.0)))
+                        if(quad.containsPoint(new Vec3f((x+0.5f)/8.0f, 0.0f, (z+0.5f)/8.0f)))
                         {
                             voxels.setFilled(x, 0, z, true);
                         }

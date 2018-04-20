@@ -8,11 +8,8 @@ import javax.vecmath.Vector4f;
 
 import net.minecraft.util.math.Vec3d;
 
-public class Vertex implements IFancyVertex
+public class Vertex extends Vec3f implements IFancyVertex
 {
-    private final float x;
-    private final float y;
-    private final float z;
     private final float u;
     private final float v;
     private final int color;
@@ -44,9 +41,7 @@ public class Vertex implements IFancyVertex
     
     public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        super(x, y, z);
         this.u = u;
         this.v = v;
         this.color = color;
@@ -119,12 +114,21 @@ public class Vertex implements IFancyVertex
     {
         return this.addVector(vec.x(), vec.y(), vec.z());
     }
+    
+    
+    @Deprecated
+    @Override
+    public Vec3f toVec3f()
+    {
+        return this;
+    }
 
     /**
      * Adds the specified x,y,z vector components to this vertex and returns the resulting vector. Does not change this
      * vertex. UV values remain same as original. 
      */
-    public @Nonnull IPolygonVertex addVector(float x, float y, float z)
+    @Override
+    public @Nonnull Vertex addVector(float x, float y, float z)
     {
         return new Vertex(this.x() + x, this.y() + y, this.z() + z, u(), v(), color());
     }

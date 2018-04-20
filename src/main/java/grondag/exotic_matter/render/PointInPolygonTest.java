@@ -1,6 +1,6 @@
 package grondag.exotic_matter.render;
 
-import net.minecraft.util.math.Vec3d;
+import javax.vecmath.Point2f;
 
 /**
  * Adapted from code that bears the notice reproduced below and
@@ -39,7 +39,7 @@ public class PointInPolygonTest
      *          =0 for point  on the line <br>
      *          <0 for point  right of the line
      */
-    private static double isLeft( Point2d lineStart, Point2d lineEnd, Point2d point )
+    private static double isLeft( Point2f lineStart, Point2f lineEnd, Point2f point )
     {
         return  (lineEnd.x - lineStart.x) * (point.y - lineStart.y)
                 - (point.x -  lineStart.x) * (lineEnd.y - lineStart.y);
@@ -80,7 +80,7 @@ public class PointInPolygonTest
      * @param vertices vertex points of a closed polygon V[n+1] with V[n]=V[0]
      * @return         true if inside
      */
-    public static boolean isPointInPolyWindingNumber( Point2d point, Point2d[] vertices)
+    public static boolean isPointInPolyWindingNumber( Point2f point, Point2f[] vertices)
     {
         int    wn = 0;    // the  winding number counter
 
@@ -106,20 +106,20 @@ public class PointInPolygonTest
         return wn != 0;
     }
 
-    public static boolean isPointInPolygon(Vec3d point, IPolygon quad)
+    public static boolean isPointInPolygon(Vec3f point, IPolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
         // that is most orthogonal to our plane
         DiscardAxis discardAxis = DiscardAxis.get(quad.getFaceNormal());
 
-        Point2d testPoint = discardAxis.get2dPoint(point);
+        Point2f testPoint = discardAxis.get2dPoint(point);
 
         int size = quad.vertexCount();
-        Point2d vertices[] = new Point2d[size + 1];
+        Point2f vertices[] = new Point2f[size + 1];
         {
             for(int i = 0; i < size; i++)
             {
-                vertices[i] = discardAxis.get2dPoint(quad.getVertex(i).toVec3d());
+                vertices[i] = discardAxis.get2dPoint(quad.getVertex(i).toVec3f());
             }
             // make array wrap to simplify usage
             vertices[size] = vertices[0];
@@ -138,12 +138,12 @@ public class PointInPolygonTest
          * Returns the orthogonalAxis that is most orthogonal to the plane
          * identified by the given normal and thus should be ignored for PnP testing.
          */
-        private static DiscardAxis get(Vec3d normal)
+        private static DiscardAxis get(Vec3f normal)
         {
             DiscardAxis result = X;
-            double maxAbsoluteComponent = Math.abs(normal.x);
+            float maxAbsoluteComponent = Math.abs(normal.x);
 
-            double absY = Math.abs(normal.y);
+            float absY = Math.abs(normal.y);
             if(absY > maxAbsoluteComponent)
             {
                 result = Y;
@@ -161,18 +161,18 @@ public class PointInPolygonTest
         /**
          * Returns a 2d point with this orthogonalAxis discarded.
          */
-        private Point2d get2dPoint(Vec3d pointIn)
+        private Point2f get2dPoint(Vec3f pointIn)
         {
             switch(this)
             {
             case X:
-                return new Point2d(pointIn.y, pointIn.z);
+                return new Point2f(pointIn.y, pointIn.z);
 
             case Y:
-                return new Point2d(pointIn.x, pointIn.z);
+                return new Point2f(pointIn.x, pointIn.z);
 
             case Z:
-                return new Point2d(pointIn.x, pointIn.y);
+                return new Point2f(pointIn.x, pointIn.y);
 
             default:
                 // nonsense

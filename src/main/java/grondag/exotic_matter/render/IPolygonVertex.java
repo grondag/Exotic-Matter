@@ -99,7 +99,13 @@ public interface IPolygonVertex
     {
         return new Vec3d(this.x(), this.y(), this.z());
     }
-
+    
+    @Deprecated
+    public default Vec3f toVec3f()
+    {
+        return new Vec3f(this.x(), this.y(), this.z());
+    }
+    
     float x();
 
     float y();

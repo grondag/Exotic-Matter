@@ -18,8 +18,6 @@ public class PolyPerf
     @Test
     public void test()
     {
-        Vec3d point;
-        Vec3d direction;
         IMutablePolygon quad;
         
         Random r = new Random(9);
