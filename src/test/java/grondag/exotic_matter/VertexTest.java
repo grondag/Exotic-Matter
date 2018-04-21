@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.render.IPolygonVertex;
 import grondag.exotic_matter.render.Vertex;
 
 class VertexTest
@@ -14,7 +13,7 @@ class VertexTest
     @Test
     void test()
     {
-        IPolygonVertex testPoint = new Vertex(.5f, .5f, .5f, .5f, .5f, 0);
+        Vertex testPoint = new Vertex(.5f, .5f, .5f, .5f, .5f, 0);
         
         assertTrue(testPoint.isOnLine(0, 0, 0, 1, 1, 1));
         assertTrue(testPoint.isOnLine(.5f, 0, .5f, .5f, 1, .5f));

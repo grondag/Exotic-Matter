@@ -79,7 +79,7 @@ public class CSGPlane
         this.normalX = normal.x;
         this.normalY = normal.y;
         this.normalZ = normal.z;
-        this.dist = normal.dotProduct(quad.getVertex(0).toVec3f());    
+        this.dist = normal.dotProduct(quad.getVertex(0));    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -156,7 +156,7 @@ public class CSGPlane
         int types[] = new int[vcount];
         for (int i = 0; i < vcount; i++)
         {
-            final Vec3f vert = quad.getVertex(i).toVec3f();
+            final Vec3f vert = quad.getVertex(i);
             float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
             
             int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
@@ -196,16 +196,16 @@ public class CSGPlane
     private void splitSpanningInner(ICSGPolygon quad, int vcount, int types[], List<ICSGPolygon> front,
             List<ICSGPolygon> back)
     {
-        List<IPolygonVertex> frontVertex = new ArrayList<>(vcount+1);
-        List<IPolygonVertex> backVertex = new ArrayList<>(vcount+1);
+        List<Vertex> frontVertex = new ArrayList<>(vcount+1);
+        List<Vertex> backVertex = new ArrayList<>(vcount+1);
         IntList frontLineID = new IntArrayList(vcount+1);
         IntList backLineID = new IntArrayList(vcount+1);
         for (int i = 0; i < vcount; i++) {
             int j = (i + 1) % vcount;
             int iType = types[i];
             int jType = types[j];
-            IPolygonVertex iVertex = quad.getVertex(i);
-            IPolygonVertex jVertex = quad.getVertex(j);
+            final Vertex iVertex = quad.getVertex(i);
+            final Vertex jVertex = quad.getVertex(j);
             int iLineID = quad.getLineID(i);
             
             if (iType != BACK) {
@@ -227,12 +227,11 @@ public class CSGPlane
 
             if ((iType | jType) == SPANNING)
             {
-                final Vec3f iVec = iVertex.toVec3f();
-                final Vec3f tVec = jVertex.toVec3f().subtract(iVec);
-                final float iDot = iVec.x * this.normalX + iVec.y * this.normalY + iVec.z * this.normalZ;
+                final Vec3f tVec = jVertex.subtract(iVertex);
+                final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
                 final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
                 float t = (this.dist - iDot) / tDot;
-                IPolygonVertex v = iVertex.interpolate(jVertex, t);
+                Vertex v = iVertex.interpolate(jVertex, t);
                 
                 frontVertex.add(v);
                 frontLineID.add(jType != FRONT ? this.lineID : iLineID);

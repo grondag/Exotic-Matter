@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.painter;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
-import grondag.exotic_matter.render.IFancyMutablePolygon;
+import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -16,7 +16,7 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     }
 
     @Override
-    public IFancyMutablePolygon paintQuad(IFancyMutablePolygon quad)
+    public IMutablePolygon paintQuad(IMutablePolygon quad)
     {
         assert quad.isLockUV() : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
         

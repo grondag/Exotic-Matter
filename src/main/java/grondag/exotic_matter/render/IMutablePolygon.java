@@ -34,6 +34,14 @@ public interface IMutablePolygon extends IPolygon
 
     public void setMaxV(float maxV);
 
+    /** Using this instead of method on vertex 
+     * ensures normals are set correctly for tris.
+     */
+    void setVertexNormal(int index, float x, float y, float z);
+
+    void setVertexNormal(int index, Vec3f normal);
+    
+    public void setVertexColor(int index, int vColor);
     
     ///// used in painters
     
@@ -137,7 +145,7 @@ public interface IMutablePolygon extends IPolygon
      * by rejecting any attempt to set a vertex that already exists.
      * Rejection is via an assertion, so no overhead in normal use.
      */
-    public void addVertex(int index, IPolygonVertex vertexIn);
+    public void addVertex(int index, Vertex vertexIn);
 
     public default void addVertex(int index, Vec3d point, double u, double v, int color, Vec3d normal)
     {
@@ -156,7 +164,7 @@ public interface IMutablePolygon extends IPolygon
         this.addVertex(index, index, y, z, u, v, color, (float)normal.x, (float)normal.y, (float)normal.z);
     }
     
-    public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vector3f normal);
+    public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vec3f normal);
     
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ);
     

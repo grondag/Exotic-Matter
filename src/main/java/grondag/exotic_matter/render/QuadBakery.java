@@ -28,8 +28,8 @@ public class QuadBakery
         float[][] uvData = new float[4][2];
         for(int v = 0; v < 4; v++)
         {
-            uvData[v][0] = (float) raw.getVertex(v).u();
-            uvData[v][1] = (float) raw.getVertex(v).v();
+            uvData[v][0] = (float) raw.getVertex(v).u;
+            uvData[v][1] = (float) raw.getVertex(v).v;
         }
         
         // apply texture rotation
@@ -71,22 +71,26 @@ public class QuadBakery
                 switch(format.getElement(e).getUsage())
                 {
                 case POSITION:
-                    LightUtil.pack(raw.getVertex(v).xyzToFloatArray(), vertexData, format, v, e);
+                    LightUtil.pack(raw.getVertex(v).toArray(), vertexData, format, v, e);
                     break;
 
                 case NORMAL: 
-                    LightUtil.pack(raw.getVertex(v).hasNormal() ? raw.getVertex(v).normalToFloatArray() : faceNormal, vertexData, format, v, e);
+                {
+                    final Vertex vert = raw.getVertex(v);
+                    LightUtil.pack(vert.normal == null ? faceNormal : vert.normal.toArray(), vertexData, format, v, e);
                     break;
-
+                }
                 case COLOR:
+                {
+                    final int color = raw.getVertex(v).color;
                     float[] colorRGBA = new float[4];
-                    colorRGBA[0] = ((float) (raw.getVertex(v).color() >> 16 & 0xFF)) / 255f;
-                    colorRGBA[1] = ((float) (raw.getVertex(v).color() >> 8 & 0xFF)) / 255f;
-                    colorRGBA[2] = ((float) (raw.getVertex(v).color()  & 0xFF)) / 255f;
-                    colorRGBA[3] = ((float) (raw.getVertex(v).color() >> 24 & 0xFF)) / 255f;
+                    colorRGBA[0] = ((float) (color >> 16 & 0xFF)) / 255f;
+                    colorRGBA[1] = ((float) (color >> 8 & 0xFF)) / 255f;
+                    colorRGBA[2] = ((float) (color  & 0xFF)) / 255f;
+                    colorRGBA[3] = ((float) (color >> 24 & 0xFF)) / 255f;
                     LightUtil.pack(colorRGBA, vertexData, format, v, e);
                     break;
-
+                }
                 case UV: 
                     if(format.getElement(e).getIndex() == 1)
                     {

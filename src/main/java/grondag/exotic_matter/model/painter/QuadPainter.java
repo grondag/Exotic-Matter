@@ -8,8 +8,6 @@ import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
-import grondag.exotic_matter.render.IFancyMutablePolygon;
-import grondag.exotic_matter.render.IFancyVertex;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
@@ -57,7 +55,7 @@ public abstract class QuadPainter
      * RenderLayer, lighting mode and color will already be set.
      * @return 
      */
-    protected abstract IFancyMutablePolygon paintQuad(IFancyMutablePolygon quad);
+    protected abstract IMutablePolygon paintQuad(IMutablePolygon quad);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -127,7 +125,7 @@ public abstract class QuadPainter
         
         }
     
-        IFancyMutablePolygon result = Poly.fancyMutableCopyOf(inputQuad);
+        IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
         result.setRenderPass(this.renderPass);
         result.setFullBrightness(this.isFullBrightnessIntended);
 
@@ -167,7 +165,7 @@ public abstract class QuadPainter
     }
     
     
-    private void recolorQuad(IFancyMutablePolygon result)
+    private void recolorQuad(IMutablePolygon result)
     {
         int color = this.myColorMap.getColor(this.isFullBrightnessIntended ? EnumColorMap.LAMP : EnumColorMap.BASE);
         
@@ -192,10 +190,10 @@ public abstract class QuadPainter
             int lampColor = this.lampColorMap.getColor(EnumColorMap.LAMP);
             for(int i = 0; i < result.vertexCount(); i++)
             {
-                IFancyVertex v = result.getVertex(i);
+                Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    int vColor = v.color() == Color.WHITE ? lampColor : shadedColor;
+                    int vColor = v.color == Color.WHITE ? lampColor : shadedColor;
                     result.setVertexColor(i, vColor);
                 }
             }
@@ -236,7 +234,7 @@ public abstract class QuadPainter
 
 
         @Override
-        protected IFancyMutablePolygon paintQuad(IFancyMutablePolygon quad)
+        protected IMutablePolygon paintQuad(IMutablePolygon quad)
         {
             return null;
         }

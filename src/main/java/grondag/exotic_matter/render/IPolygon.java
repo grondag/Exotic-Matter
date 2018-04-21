@@ -107,7 +107,7 @@ public interface IPolygon
 
     public int vertexCount();
     
-    public IPolygonVertex getVertex(int index);
+    public Vertex getVertex(int index);
     
     public List<IPolygon> toQuads();
     
@@ -155,11 +155,11 @@ public interface IPolygon
             return null;
         }
 
-        IPolygonVertex firstPoint = this.getVertex(0);
+        Vertex firstPoint = this.getVertex(0);
         
-        float dx = originX - firstPoint.x();
-        float dy = originY - firstPoint.y();
-        float dz = originZ - firstPoint.z();
+        float dx = originX - firstPoint.x;
+        float dy = originY - firstPoint.y;
+        float dz = originZ - firstPoint.z;
         
         float distanceToPlane = -(dx * normX + dy * normY + dz * normZ) / directionDotNormal;
         //double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
@@ -226,9 +226,9 @@ public interface IPolygon
             int nextVertex = i + 1;
             if(nextVertex == this.vertexCount()) nextVertex = 0;
 
-            Vec3f currentVertex = getVertex(i).toVec3f();
+            Vec3f currentVertex = getVertex(i);
             
-            Vec3f line = getVertex(nextVertex).toVec3f().subtract(currentVertex);
+            Vec3f line = getVertex(nextVertex).subtract(currentVertex);
             Vec3f normalInPlane = faceNormal.crossProduct(line);
 
             float sign = normalInPlane.dotProduct(point.subtract(currentVertex));
@@ -248,13 +248,13 @@ public interface IPolygon
 
     public default AxisAlignedBB getAABB()
     {
-        double minX = Math.min(Math.min(getVertex(0).x(), getVertex(1).x()), Math.min(getVertex(2).x(), getVertex(3).x()));
-        double minY = Math.min(Math.min(getVertex(0).y(), getVertex(1).y()), Math.min(getVertex(2).y(), getVertex(3).y()));
-        double minZ = Math.min(Math.min(getVertex(0).z(), getVertex(1).z()), Math.min(getVertex(2).z(), getVertex(3).z()));
+        double minX = Math.min(Math.min(getVertex(0).x, getVertex(1).x), Math.min(getVertex(2).x, getVertex(3).x));
+        double minY = Math.min(Math.min(getVertex(0).y, getVertex(1).y), Math.min(getVertex(2).y, getVertex(3).y));
+        double minZ = Math.min(Math.min(getVertex(0).z, getVertex(1).z), Math.min(getVertex(2).z, getVertex(3).z));
 
-        double maxX = Math.max(Math.max(getVertex(0).x(), getVertex(1).x()), Math.max(getVertex(2).x(), getVertex(3).x()));
-        double maxY = Math.max(Math.max(getVertex(0).y(), getVertex(1).y()), Math.max(getVertex(2).y(), getVertex(3).y()));
-        double maxZ = Math.max(Math.max(getVertex(0).z(), getVertex(1).z()), Math.max(getVertex(2).z(), getVertex(3).z()));
+        double maxX = Math.max(Math.max(getVertex(0).x, getVertex(1).x), Math.max(getVertex(2).x, getVertex(3).x));
+        double maxY = Math.max(Math.max(getVertex(0).y, getVertex(1).y), Math.max(getVertex(2).y, getVertex(3).y));
+        double maxZ = Math.max(Math.max(getVertex(0).z, getVertex(1).z), Math.max(getVertex(2).z, getVertex(3).z));
 
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
@@ -282,17 +282,17 @@ public interface IPolygon
             int priorIndex = thisIndex - 1;
             if(priorIndex == -1) priorIndex = this.vertexCount() - 1;
 
-            final IPolygonVertex thisVertex =  getVertex(thisIndex);
-            final IPolygonVertex nextVertex = getVertex(nextIndex);
-            final IPolygonVertex priorVertex = getVertex(priorIndex);
+            final Vertex thisVertex =  getVertex(thisIndex);
+            final Vertex nextVertex = getVertex(nextIndex);
+            final Vertex priorVertex = getVertex(priorIndex);
             
-            final float ax = thisVertex.x() - priorVertex.x();
-            final float ay = thisVertex.y() - priorVertex.y();
-            final float az = thisVertex.z() - priorVertex.z();
+            final float ax = thisVertex.x - priorVertex.x;
+            final float ay = thisVertex.y - priorVertex.y;
+            final float az = thisVertex.z - priorVertex.z;
             
-            final float bx = nextVertex.x() - thisVertex.x();
-            final float by = nextVertex.y() - thisVertex.y();
-            final float bz = nextVertex.z() - thisVertex.z();
+            final float bx = nextVertex.x - thisVertex.x;
+            final float by = nextVertex.y - thisVertex.y;
+            final float bz = nextVertex.z - thisVertex.z;
 
 //            Vec3d lineA = getVertex(thisIndex).subtract(getVertex(priorIndex));
 //            Vec3d lineB = getVertex(nextIndex).subtract(getVertex(thisIndex));
@@ -332,16 +332,16 @@ public interface IPolygon
         float faceY = fn.y;
         float faceZ = fn.z;
 
-        IPolygonVertex first = this.getVertex(0);
+        Vertex first = this.getVertex(0);
         
         for(int i = 3; i < this.vertexCount(); i++)
         {
-            IPolygonVertex v = this.getVertex(i);
+            Vertex v = this.getVertex(i);
             if(v == null) return false;
             
-            float dx = v.x() - first.x();
-            float dy = v.y() - first.y();
-            float dz = v.z() - first.z();
+            float dx = v.x - first.x;
+            float dy = v.y - first.y;
+            float dz = v.z - first.z;
 
             if(Math.abs(faceX * dx + faceY * dy + faceZ * dz) > QuadHelper.EPSILON) return false;
         }
@@ -364,7 +364,7 @@ public interface IPolygon
     {
         try
         {
-            return getVertex(2).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(3).toVec3f().subtract(getVertex(1).toVec3f())).normalize();
+            return getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).normalize();
         }
         catch(Exception e)
         {
@@ -377,12 +377,12 @@ public interface IPolygon
     {
         if(this.vertexCount() == 3)
         {
-            return Math.abs(getVertex(1).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(2).toVec3f().subtract(getVertex(0).toVec3f())).lengthVector()) / 2.0f;
+            return Math.abs(getVertex(1).subtract(getVertex(0)).crossProduct(getVertex(2).subtract(getVertex(0))).lengthVector()) / 2.0f;
 
         }
         else if(this.vertexCount() == 4) //quad
         {
-            return Math.abs(getVertex(2).toVec3f().subtract(getVertex(0).toVec3f()).crossProduct(getVertex(3).toVec3f().subtract(getVertex(1).toVec3f())).lengthVector()) / 2.0f;
+            return Math.abs(getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).lengthVector()) / 2.0f;
         }
         else
         {

@@ -6,10 +6,10 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.render.IPolygon;
-import grondag.exotic_matter.render.IPolygonVertex;
 import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.RenderUtil;
 import grondag.exotic_matter.render.Vec3f;
+import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.varia.VoxelBitField;
 import grondag.exotic_matter.varia.VoxelBitField.VoxelBox;
@@ -145,13 +145,13 @@ public class CollisionBoxGenerator
         {
             for(int i = 0; i < quad.vertexCount(); i++)
             {
-                IPolygonVertex v = quad.getVertex(i);
-                if(v.x() > maxX) maxX = v.x();
-                if(v.y() > maxY) maxY = v.y();
-                if(v.z() > maxZ) maxZ = v.z();
-                if(v.x() < minX) minX = v.x();
-                if(v.y() < minY) minY = v.y();
-                if(v.z() < minZ) minZ = v.z();
+                Vertex v = quad.getVertex(i);
+                if(v.x > maxX) maxX = v.x;
+                if(v.y > maxY) maxY = v.y;
+                if(v.z > maxZ) maxZ = v.z;
+                if(v.x < minX) minX = v.x;
+                if(v.y < minY) minY = v.y;
+                if(v.z < minZ) minZ = v.z;
             }
         }
 
