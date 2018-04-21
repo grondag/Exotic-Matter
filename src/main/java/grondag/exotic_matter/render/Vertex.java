@@ -55,6 +55,17 @@ public final class Vertex extends Vec3f
         throw new CloneNotSupportedException();
     }
     
+    /**
+     * Returns copy of self. If normal is present it is inverted in the copy.
+     * @return
+     */
+    public final Vertex flipped()
+    {
+        return this.normal == null
+                ? new Vertex(this.x, this.y, this.z, this.u, this.v, this.color)
+                : new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal.inverse());
+    }
+    
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(float normalXIn, float normalYIn, float normalZIn)
     {

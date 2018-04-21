@@ -39,6 +39,8 @@ import java.util.Iterator;
 */
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -47,6 +49,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
@@ -229,8 +233,9 @@ public class CSGNode implements Iterable<ICSGPolygon>
     {
         if (this.plane == null && quads.isEmpty()) return;
 
-        quads.forEach((quad) -> quad.invert());
-
+        ArrayList<ICSGPolygon> newQuads = new ArrayList<>(quads.size());
+        this.quads.forEach(q -> newQuads.add(q.invert()));
+        this.quads = newQuads;
         this.plane.flip();
 
         CSGNode temp = this.front;
@@ -475,7 +480,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
     {
 //        quadInCount.addAndGet(quadsIn.size());   
 //        recombineCounter.start();
-//        Collection<Poly> result = this.recombineInner(quadsIn);
+//        Collection<ICSGPolygon> result = this.recombineInner(quadsIn);
 //        quadOutputCount.addAndGet(result.size());
 //        if(recombineCounter.stop())
 //        {
@@ -490,7 +495,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
 //    private  static AtomicInteger quadInCount = new AtomicInteger();
 //    private  static AtomicInteger quadOutputCount = new AtomicInteger();
 //    
-//    private Collection<Poly> recombineInner(Collection<Poly> quadsIn)
+//    private Collection<ICSGPolygon> recombineInner(Collection<ICSGPolygon> quadsIn)
 //    {
         Iterator<ICSGPolygon> iterator = quadsIn.iterator();
         

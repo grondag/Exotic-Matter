@@ -19,9 +19,13 @@ import net.minecraft.util.math.Vec3i;
 @Deprecated
 class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
 {
+    private static AtomicInteger nextQuadID = new AtomicInteger(1);
+
     private Vertex[] vertices;
-    private @Nullable Vec3f faceNormal;
+    private int[] lineID;
     private final int vertexCount;
+
+    private @Nullable Vec3f faceNormal;
 
     private @Nullable EnumFacing nominalFace;
     private Rotation rotation = Rotation.ROTATE_NONE;
@@ -42,12 +46,10 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
     private float minV = 0;
     private float maxV = 16;
 
-    private static AtomicInteger nextQuadID = new AtomicInteger(1);
     private boolean isInverted = false;
     
     private final int quadID = nextQuadID.incrementAndGet();
     private int ancestorQuadID = ICSGPolygon.NO_ID;
-    private int[] lineID;
 
     PolyImpl()
     {
@@ -267,42 +269,50 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
     /**
      * Reverses winding order of this quad and returns itself
      * 
-     * TODO: bet this is killer for LOR depending on where/how used
+     * TODO: could be much cleaner
      */
     @Override
     public ICSGPolygon invert()
     {
-
-        for(int i = 0; i < vertices.length; i++)
+        PolyImpl result = new PolyImpl(this.vertexCount);
+        
+        result.nominalFace = this.nominalFace;
+        result.textureName = this.textureName;
+        result.rotation = this.rotation;
+        result.color = this.color;
+        result.isFullBrightness = this.isFullBrightness;
+        result.isLockUV = this.isLockUV;
+        result.faceNormal = this.faceNormal == null ? null : this.faceNormal.inverse();
+        result.shouldContractUVs = this.shouldContractUVs;
+        result.minU = this.minU;
+        result.maxU = this.maxU;
+        result.minV = this.minV;
+        result.maxV = this.maxV;
+        result.renderPass = this.renderPass;
+        result.surfaceInstance = this.surfaceInstance;
+        result.ancestorQuadID = this.ancestorQuadID;
+        result.isInverted = !this.isInverted;
+        
+        
+        //reverse vertex winding order
+        for(int i = 0, j = this.vertexCount - 1; i < this.vertexCount; i++, j--)
         {
-            Vertex v = (Vertex)getVertex(i);
-            if(v != null && v.hasNormal())
-            {
-                this.setVertex(i, v.withNormal(v.normal.scale(-1f)));
-            }
-        }            
-
-        //reverse order of vertices
-        for (int i = 0, mid = vertices.length / 2, j = vertices.length - 1; i < mid; i++, j--)
-        {
-            Vertex swapVertex = vertices[i];
-            vertices[i] = vertices[j];
-            vertices[j] = swapVertex;
+            result.vertices[i] = this.vertices[j].flipped();
         }
-
+        
+        // reverse line order
         // last edge is still always the last, and isn't sorted  (draw it to see)
-        for (int i = 0, mid = (vertices.length - 1) / 2, j = vertices.length - 2; i < mid; i++, j--)
+        // some examples...
+        // quad: 0, 1, 2, 3 -> 2 1 0 3
+        // tri: 0, 1, 2  -> 1, 0, 2
+        // quint: 0, 1, 2, 3, 4 -> 3, 2, 1, 0, 4
+        for(int i = 0, j = this.vertexCount - 2; j >= 0; i++, j--)
         {
-            int swapLineID = lineID[i];
-            lineID[i] = lineID[j];
-            lineID[j] = swapLineID;
+            result.lineID[i] = this.lineID[j];
         }
-
-        if(this.faceNormal != null) this.faceNormal = faceNormal.scale(-1);
-
-        this.setInverted(!this.isInverted());
-
-        return this;
+        result.lineID[this.vertexCount - 1] = this.lineID[this.vertexCount -1];
+        
+        return result;
     }
 
     @Override

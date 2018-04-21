@@ -42,7 +42,8 @@ public interface ICSGPolygon extends IPolygon
     public boolean isInverted();
 
     /**
-     * Reverses winding order of this quad and returns itself
+     * Returns a copy of this polygon with a revered winding order and inverted face normal. 
+     * Vertex normals are also flipped if present. 
      */
     public ICSGPolygon invert();
     

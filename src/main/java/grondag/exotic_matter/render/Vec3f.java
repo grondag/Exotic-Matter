@@ -67,6 +67,11 @@ public class Vec3f
         return new Vec3f(this.x * factor, this.y * factor, this.z * factor);
     }
     
+    public final Vec3f inverse()
+    {
+        return new Vec3f(-this.x, -this.y, -this.z);
+    }
+    
     public final float lengthVector()
     {
         return MathHelper.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
