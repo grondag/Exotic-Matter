@@ -85,22 +85,6 @@ public final class Vertex extends Vec3f
         return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normal);
     }
     
-    //FIXME: is this used? 
-    public final Vertex withOffset(Vec3f vec)
-    {
-        return this.withOffset(vec.x, vec.y, vec.z);
-    }
-  
-    //FIXME: is this used? 
-    /**
-     * Adds the specified x,y,z vector components to this vertex and returns the resulting vector. Does not change this
-     * vertex. UV values remain same as original. 
-     */
-    public final Vertex withOffset(float x, float y, float z)
-    {
-        return new Vertex(this.x + x, this.y + y, this.z + z, this.u, this.v, this.color, this.normal);
-    }
-    
     public final Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
     {
 
@@ -112,7 +96,7 @@ public final class Vertex extends Vec3f
             tmp.scale(1f / tmp.w);
         }
 
-        if(this.hasNormal())
+        if(this.normal != null)
         {
             Vector4f tmpNormal = new Vector4f(this.normal.x, this.normal.y, this.normal.z, 1f);
             matrix.transform(tmpNormal);
@@ -221,26 +205,22 @@ public final class Vertex extends Vec3f
         newColor |= (int) ((this.color & 0xFF0000) + ((otherVertex.color & 0xFF0000) - (this.color & 0xFF0000)) * otherWeight);
         newColor |= (int) ((this.color & 0xFF000000) + ((otherVertex.color & 0xFF000000) - (this.color & 0xFF000000)) * otherWeight);
         
-
+        final Vec3f thisNormal = this.normal;
+        final Vec3f otherNormal = otherVertex.normal;
         
-        if(this.hasNormal() && otherVertex.hasNormal())
+        if(thisNormal == null || otherNormal == null)
         {
-            
-            final float normX = this.normal.x + (otherVertex.normal.x - this.normal.x) * otherWeight;
-            final float normY = this.normal.y + (otherVertex.normal.y - this.normal.y) * otherWeight;
-            final float normZ = this.normal.z + (otherVertex.normal.z - this.normal.z) * otherWeight;
+            return new Vertex(newX, newY, newZ, newU, newV, newColor);
+        }
+        else
+        {
+            final float normX = thisNormal.x + (otherNormal.x - thisNormal.x) * otherWeight;
+            final float normY = thisNormal.y + (otherNormal.y - thisNormal.y) * otherWeight;
+            final float normZ = thisNormal.z + (otherNormal.z - thisNormal.z) * otherWeight;
             final float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
             
             return new Vertex(newX, newY, newZ, newU, newV, newColor, normX * normScale, normY * normScale, normZ * normScale);
         }
-        else
-        {
-            return new Vertex(newX, newY, newZ, newU, newV, newColor);
-        }
-        
-
-
-        
     }
   
 }
