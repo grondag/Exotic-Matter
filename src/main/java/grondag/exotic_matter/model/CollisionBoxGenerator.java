@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class CollisionBoxGenerator
     private final static int STOP_NORTH = 1 << EnumFacing.NORTH.ordinal();
     private final static int STOP_SOUTH = 1 << EnumFacing.SOUTH.ordinal();
 
-    public static List<AxisAlignedBB> makeCollisionBoxList(List<IPolygon> quads)
+    public static List<AxisAlignedBB> makeCollisionBoxList(Collection<IPolygon> quads)
     {
         if(quads.isEmpty())
         {
@@ -47,7 +48,7 @@ public class CollisionBoxGenerator
         return retVal;
     }
 
-    private static List<AxisAlignedBB> makeBoxVoxelMethod(List<IPolygon> quads)
+    private static List<AxisAlignedBB> makeBoxVoxelMethod(Collection<IPolygon> quads)
     {
 
         if(quads.isEmpty()) return Collections.emptyList();
@@ -131,13 +132,13 @@ public class CollisionBoxGenerator
         return retVal.build();
     }
     
-    private static boolean isVoxelPresent(float x, float y, float z, List<IPolygon> quads)
+    private static boolean isVoxelPresent(float x, float y, float z, Collection<IPolygon> quads)
     {
         return RenderUtil.isPointEnclosed((x+0.5f)/8f, (y+0.5f)/8f, (z+0.5f)/8f, quads);
     }
     
     
-    public static AxisAlignedBB makeBoxSimpleMethod(List<IPolygon> quads)
+    public static AxisAlignedBB makeBoxSimpleMethod(Collection<IPolygon> quads)
     {
         double minX = 1.0, minY = 1.0, minZ = 1.0, maxX = 0, maxY = 0, maxZ = 0;
 

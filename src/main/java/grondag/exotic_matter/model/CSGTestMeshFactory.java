@@ -2,6 +2,7 @@ package grondag.exotic_matter.model;
 
 import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_NONE;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
     
     /** never changes so may as well save it */
-    private final List<IPolygon> cachedQuads;
+    private final Collection<IPolygon> cachedQuads;
     
     public CSGTestMeshFactory()
     {
@@ -37,12 +38,12 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         return cachedQuads;
     }
     
-    private List<IPolygon> getTestQuads()
+    private Collection<IPolygon> getTestQuads()
     {
         IMutablePolygon template = Poly.mutable(4);
         template.setLockUV(true);
@@ -68,9 +69,9 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 //    result = new CSGShape(QuadFactory.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template));
 
       
-      CSGMesh quadsA = new CSGMesh(QuadHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template));
+      Collection<IPolygon> quadsA = QuadHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
       template.setSurfaceInstance(SURFACE_LAMP.unitInstance);
-      CSGMesh quadsB = new CSGMesh(QuadHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template));
+      Collection<IPolygon> quadsB = QuadHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));
 //      template.color = borderColor.getColorMap(EnumColorMap.BORDER);
@@ -78,7 +79,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 
 //      CSGMesh result = quadsA.intersect(quadsB);
 //      CSGMesh result = quadsA.union(quadsB);
-    CSGMesh result = quadsA.difference(quadsB);
+      Collection<IPolygon> result = CSGMesh.difference(quadsA, quadsB);
 
 
     

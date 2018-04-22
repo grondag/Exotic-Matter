@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -94,10 +95,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //    private static AtomicInteger hitCount = new AtomicInteger();
     
     @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         shapeTimer.start();
-        List<IPolygon> result = innerShapeQuads(modelState);
+        Collection<IPolygon> result = innerShapeQuads(modelState);
         shapeTimer.stop();
 //        if(shapeTimer.stop())
 //        {
@@ -107,9 +108,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         return result;
     }
     private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
-    private @Nonnull List<IPolygon> innerShapeQuads(ISuperModelState modelState)
+    private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
     {
-        CSGMesh rawQuads = new CSGMesh();
+        ArrayList<IPolygon> rawQuads = new ArrayList<>();
         IMutablePolygon template = Poly.mutable(4);
 
         template.setColor(Color.WHITE);
@@ -516,7 +517,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
         rawQuads.add(qBottom);
 
-        CSGMesh cubeQuads = new CSGMesh();
+        ArrayList<IPolygon> cubeQuads = new ArrayList<>();
         cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         IMutablePolygon faceQuad = Poly.mutableCopyOf(template);
         
@@ -532,14 +533,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(faceQuad), EnumFacing.EAST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
         cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(faceQuad), EnumFacing.WEST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
 
-        rawQuads = rawQuads.intersect(cubeQuads);
+        Collection<IPolygon> result = CSGMesh.intersect(rawQuads, cubeQuads);
 
         // scale all quads UVs according to position to match what surface painter expects
         // Any quads with a null face are assumed to be part of the top face
         
         // We want top face textures to always join irrespective of Y.
         // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(IPolygon quad : rawQuads)
+        for(IPolygon quad : result)
         {
             EnumFacing face = quad.getNominalFace();
             if(face == null)
@@ -609,9 +610,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
         }
         
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) rawQuads.recolor();
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) CSGMesh.recolor(result);
         
-        return rawQuads;
+        return result;
     }
 
     /**

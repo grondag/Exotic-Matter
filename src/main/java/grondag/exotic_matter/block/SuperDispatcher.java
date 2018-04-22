@@ -139,7 +139,7 @@ public class SuperDispatcher
         @Override
         public QuadContainer load(ISuperModelState key) 
         {
-            List<IPolygon> quads = key.getShape().meshFactory().getShapeQuads(key);
+            Collection<IPolygon> quads = key.getShape().meshFactory().getShapeQuads(key);
             if(quads.isEmpty()) return QuadContainer.EMPTY_CONTAINER;
             ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
             for(IPolygon q : quads)

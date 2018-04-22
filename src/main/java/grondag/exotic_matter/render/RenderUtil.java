@@ -1,6 +1,6 @@
 package grondag.exotic_matter.render;
 
-import java.util.List;
+import java.util.Collection;
 
 import javax.vecmath.Vector3f;
 
@@ -25,7 +25,7 @@ public class RenderUtil
         VOXEL_TEST_RAY_Z = ray.z;
     }
     
-    public static boolean isPointEnclosed(float x, float y, float z, List<IPolygon> quads)
+    public static boolean isPointEnclosed(float x, float y, float z, Collection<IPolygon> quads)
     {
         int intersectionCount = 0;
         for(IPolygon quad : quads)

@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -82,7 +83,7 @@ public abstract class ShapeMeshGenerator
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
     @Nonnull
-    public abstract List<IPolygon> getShapeQuads(ISuperModelState modelState);
+    public abstract Collection<IPolygon> getShapeQuads(ISuperModelState modelState);
 
     /** Returns true if geometry is a full 1x1x1 cube. */
     public abstract boolean isCube(ISuperModelState modelState);

@@ -33,75 +33,46 @@ package grondag.exotic_matter.render;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
- * Collection of polygons with convenient semantics
- * for CSG and other group operations.  Polygons in 
- * the mesh are "stateless" from a CSG perspective - CSG
- * metadata does not live beyond/outside each CSG operation.
+ * Access point for CSG operations.  
  */
-public class CSGMesh extends ArrayList<IPolygon>
+public abstract class CSGMesh
 {
-    private static final long serialVersionUID = 796007237565914078L;
-
-    public <T extends IPolygon> CSGMesh(List<T> quads)
-    {
-        super(quads);
-    }
-    
-
-    public CSGMesh()
-    {
-        super();
-    }
-    
-    @Override
-    public CSGMesh clone()
-    {
-        Stream<IPolygon> quadStream;
-
-        if (this.size() > 200) {
-            quadStream = this.parallelStream();
-        } else {
-            quadStream = this.stream();
-        }
-
-        return new CSGMesh(quadStream.
-                map((IPolygon p) -> Poly.mutableCopyOf(p)).collect(Collectors.toList()));
-    }
     
     /**
-     * Randomly recolors all the quads as an aid to debugging.
+     * Randomly recolors all the polygons as an aid to debugging.
+     * Polygons must be mutable and are mutated by this operation.
      */
-    public void recolor()
+    public static void recolor(Collection<IPolygon> target)
     {
         Stream<IPolygon> quadStream;
 
-        if (this.size() > 200) {
-            quadStream = this.parallelStream();
+        if (target.size() > 200) {
+            quadStream = target.parallelStream();
         } else {
-            quadStream = this.stream();
+            quadStream = target.stream();
         }
 
         quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
     
     
-    public CSGBounds getBounds()
+    public static CSGBounds getBounds(Collection<IPolygon> forPolygons)
     {
-        if (this.isEmpty()) {
+        if (forPolygons.isEmpty()) {
             return new CSGBounds(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
 
         AxisAlignedBB retVal = null;
 
-        for (IPolygon p : this)
+        for (IPolygon p : forPolygons)
         {
             if(retVal == null)
             {
@@ -137,10 +108,6 @@ public class CSGMesh extends ArrayList<IPolygon>
      *         +-------+            +-------+
      * </pre></blockquote>
      *
-     *
-     * @param csg other csg
-     *
-     * @return union of this csg and the specified csg
      */
 //    public CSG union(CSG csg) {
 //
@@ -156,10 +123,7 @@ public class CSGMesh extends ArrayList<IPolygon>
 //    }
     
     /**
-     * Return a new CSG solid representing the difference of this csg and the
-     * specified csg.
-     *
-     * <b>Note:</b> Neither this csg nor the specified csg are weighted.
+     * Return a new mesh solid representing the difference of the two input meshes.
      *
      * <blockquote><pre>
      * A.difference(B)
@@ -173,37 +137,34 @@ public class CSGMesh extends ArrayList<IPolygon>
      *      |       |
      *      +-------+
      * </pre></blockquote>
-     *
-     * @param other other csg
-     * @return difference of this csg and the specified csg
      */
-    public CSGMesh difference(CSGMesh other) {
+    public static Collection<IPolygon> difference(Collection<IPolygon> a, Collection<IPolygon> b)
+    {
         List<IPolygon> inner = new ArrayList<>();
         List<IPolygon> outer = new ArrayList<>();
 
-        CSGBounds bounds = other.getBounds();
+        CSGBounds bounds = getBounds(b);
 
-        this.stream().forEach((p) -> {
-            if (bounds.intersectsWith(p.getAABB())) {
+        a.stream().forEach((p) ->
+        {
+            if (bounds.intersectsWith(p.getAABB()))
+            {
                 inner.add(p);
-            } else {
+            } else
+            {
                 outer.add(p);
             }
         });
 
-        CSGMesh innerCSG = new CSGMesh(inner);
-
-        CSGMesh result = new CSGMesh();
-        result.addAll(outer);
-        result.addAll(innerCSG.differenceClip(other));
-
-        return result;
+        outer.addAll(differenceClip(inner, b));
+        return outer;
     }
     
-    private CSGMesh differenceClip(CSGMesh other) {
+    private static Collection<IPolygon> differenceClip(Collection<IPolygon> aPolys, Collection<IPolygon> bPolys)
+    {
 
-        CSGNode a = new CSGNode(this);
-        CSGNode b = new CSGNode(other);
+        CSGNode a = new CSGNode(aPolys);
+        CSGNode b = new CSGNode(bPolys);
 
         a.invert();
         a.clipTo(b);
@@ -214,14 +175,11 @@ public class CSGMesh extends ArrayList<IPolygon>
         a.addAll(b);
         a.invert();
 
-        return new CSGMesh(a.recombinedRenderableQuads());
+        return a.recombinedRenderableQuads();
     }
     
     /**
-     * Return a new CSG solid representing the intersection of this csg and the
-     * specified csg.
-     *
-     * <b>Note:</b> Neither this csg nor the specified csg are weighted.
+     * Return a new mesh representing the intersection of two input meshes.
      *
      * <blockquote><pre>
      *     A.intersect(B)
@@ -234,16 +192,12 @@ public class CSGMesh extends ArrayList<IPolygon>
      *          |   B   |
      *          |       |
      *          +-------+
-     * }
-     * </pre></blockquote>
-     *
-     * @param csg other csg
-     * @return intersection of this csg and the specified csg
+     * </pre></blockquote>     
      */
-    public CSGMesh intersect(CSGMesh other)
+    public static Collection<IPolygon> intersect(Collection<IPolygon> aMesh, Collection<IPolygon> bMesh)
     {
-        CSGNode a = new CSGNode(this);
-        CSGNode b = new CSGNode(other);
+        CSGNode a = new CSGNode(aMesh);
+        CSGNode b = new CSGNode(bMesh);
         a.invert();
         b.clipTo(a);
         b.invert();
@@ -251,18 +205,11 @@ public class CSGMesh extends ArrayList<IPolygon>
         b.clipTo(a);
         a.addAll(b);
         a.invert();
-        CSGMesh retVal = new CSGMesh(a.recombinedRenderableQuads());
-        
-//        HardScience.log.info("raw count " + a.allRawQuads().size() + "   combined count " + retVal.size());
-
-        return retVal;
+        return a.recombinedRenderableQuads();
     }
 
     /**
-     * Return a new CSG solid representing the union of this csg and the
-     * specified csg.
-     *
-     * <b>Note:</b> Neither this csg nor the specified csg are weighted.
+     * Return a new mesh representing the union of the input meshes.
      *
      * <blockquote><pre>
      *    A.union(B)
@@ -277,48 +224,53 @@ public class CSGMesh extends ArrayList<IPolygon>
      *         +-------+            +-------+
      * </pre></blockquote>
      *
-     *
-     * @param csg other csg
-     *
-     * @return union of this csg and the specified csg
      */
-    public CSGMesh union(CSGMesh other) {
+    public static Collection<IPolygon> union(Collection<IPolygon> aMesh, Collection<IPolygon> bMesh)
+    {
     
-        
-        
         List<IPolygon> inner = new ArrayList<>();
         List<IPolygon> outer = new ArrayList<>();
 
-        CSGBounds bounds = other.getBounds();
+        CSGBounds bounds = getBounds(bMesh);
 
-        this.stream().forEach((p) -> {
-            if (bounds.intersectsWith(p.getAABB())) {
+        aMesh.stream().forEach((p) ->
+        {
+            if (bounds.intersectsWith(p.getAABB())) 
+            {
                 inner.add(p);
-            } else {
+            } else
+            {
                 outer.add(p);
             }
         });
         
-        CSGMesh result = new CSGMesh();
+        List<IPolygon> result = new ArrayList<>();
         
-        if (!inner.isEmpty()) {
-            CSGMesh innerCSG = new CSGMesh(inner);
-
+        if (!inner.isEmpty())
+        {
+            // some potential overlap
+            
+            // add all of A that is outside B
             result.addAll(outer);
-            result.addAll(innerCSG.unionClip(other));
-        } else {
-            result.addAll(this);
-            result.addAll(other);
+            
+            // add union of the overlapping bits, 
+            // which will include any parts of B that need to be included
+            result.addAll(unionClip(inner, bMesh));
+        } else
+        {
+            // no overlap, just combine both meshes
+            result.addAll(aMesh);
+            result.addAll(bMesh);
         }
 
         return result;
     }
 
 
-    private CSGMesh unionClip(CSGMesh other)
+    private static Collection<IPolygon> unionClip(Collection<IPolygon> aMesh, Collection<IPolygon> bMesh)
     {
-        CSGNode a = new CSGNode(this);
-        CSGNode b = new CSGNode(other);
+        CSGNode a = new CSGNode(aMesh);
+        CSGNode b = new CSGNode(bMesh);
         
         a.clipTo(b);
         b.clipTo(a);
@@ -326,7 +278,7 @@ public class CSGMesh extends ArrayList<IPolygon>
         b.clipTo(a);
         b.invert();
         a.addAll(b);
-
-        return new CSGMesh(a.recombinedRenderableQuads());
+        
+        return a.recombinedRenderableQuads();
     }
 }

@@ -88,7 +88,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
      *
      * Polygons in the input are copied so that nothing is mutated.
      */
-    public CSGNode(CSGMesh shapeIn)
+    public CSGNode(Collection<IPolygon> shapeIn)
     {
         for(IPolygon q : shapeIn)
         {
