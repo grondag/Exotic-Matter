@@ -120,43 +120,33 @@ public class CSGPlane
      * orientation with respect to this plane. Polygons in front or back of this
      * plane go into either {@code front} or {@code back}.
      *
-     * @param quad polygon to split
+     * @param poly polygon to split
      * @param coplanarFront "coplanar front" polygons
      * @param coplanarBack "coplanar back" polygons
      * @param front front polygons
      * @param back back polgons
      */
     
-    public void splitQuad(
-            ICSGPolygon quad,
-            List<ICSGPolygon> coplanarFront,
-            List<ICSGPolygon> coplanarBack,
-            List<ICSGPolygon> front,
-            List<ICSGPolygon> back) 
+    public void splitQuad(ICSGPolygon poly, ICSGSplitAcceptor target)  
     {
         splitTimer.start();
-        splitQuadInner(quad, coplanarFront, coplanarBack, front, back);
+        splitQuadInner(poly, target);
         if(splitTimer.stop())
         {
             splitSpanningTimer.reportAndClear();
         }
     }
     private static MicroTimer splitTimer = new MicroTimer("splitQuad", 1000000);
-    private void splitQuadInner(
-        ICSGPolygon quad,
-        List<ICSGPolygon> coplanarFront,
-        List<ICSGPolygon> coplanarBack,
-        List<ICSGPolygon> front,
-        List<ICSGPolygon> back) 
+    private void splitQuadInner(ICSGPolygon poly, ICSGSplitAcceptor target) 
     {
-        final int vcount = quad.vertexCount();
+        final int vcount = poly.vertexCount();
         
         // Classify each point as well as the entire polygon
         int polygonType = COPLANAR;
         int types[] = new int[vcount];
         for (int i = 0; i < vcount; i++)
         {
-            final Vec3f vert = quad.getVertex(i);
+            final Vec3f vert = poly.getVertex(i);
             float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
             
             int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
@@ -168,33 +158,34 @@ public class CSGPlane
         switch (polygonType)
         {
             case COPLANAR:
-                final Vec3f faceNorm = quad.getFaceNormal();
+                final Vec3f faceNorm = poly.getFaceNormal();
                 float t = faceNorm.x * this.normalX + faceNorm.y * this.normalY + faceNorm.z * this.normalZ;
-                (t > 0 ? coplanarFront : coplanarBack).add(quad);
+                if(t > 0) 
+                    target.acceptCoplanarFront(poly);
+                else 
+                    target.acceptCoplanarBack(poly);
                 break;
                 
             case FRONT:
-                front.add(quad);
+                target.acceptFront(poly);
                 break;
             case BACK:
-                back.add(quad);
+                target.acceptBack(poly);
                 break;
             default:
-                splitSpanning(quad, vcount, types, front, back);
+                splitSpanning(poly, vcount, types, target);
                 break;
         }
     }
     
-    private void splitSpanning(ICSGPolygon quad, int vcount, int types[], List<ICSGPolygon> front,
-            List<ICSGPolygon> back)
+    private void splitSpanning(ICSGPolygon poly, int vcount, int types[], ICSGSplitAcceptor target)
     {
         splitSpanningTimer.start();
-        splitSpanningInner(quad, vcount, types, front, back);
+        splitSpanningInner(poly, vcount, types, target);
         splitSpanningTimer.stop();
     }
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 1000000);
-    private void splitSpanningInner(ICSGPolygon quad, int vcount, int types[], List<ICSGPolygon> front,
-            List<ICSGPolygon> back)
+    private void splitSpanningInner(ICSGPolygon poly, int vcount, int types[], ICSGSplitAcceptor target)
     {
         List<Vertex> frontVertex = new ArrayList<>(vcount+1);
         List<Vertex> backVertex = new ArrayList<>(vcount+1);
@@ -204,9 +195,9 @@ public class CSGPlane
             int j = (i + 1) % vcount;
             int iType = types[i];
             int jType = types[j];
-            final Vertex iVertex = quad.getVertex(i);
-            final Vertex jVertex = quad.getVertex(j);
-            int iLineID = quad.getLineID(i);
+            final Vertex iVertex = poly.getVertex(i);
+            final Vertex jVertex = poly.getVertex(j);
+            int iLineID = poly.getLineID(i);
             
             if (iType != BACK) {
                 frontVertex.add(iVertex);
@@ -246,9 +237,9 @@ public class CSGPlane
             // forces face normal to be computed if it has not been already
             // this allows it to be copied to the split quad and 
             // and avoids having incomputable face normals due to very small polys.
-            quad.getFaceNormal();
-            IMutableCSGPolygon frontQuad = Poly.mutableCSG(quad, frontVertex.size());
-            frontQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
+            poly.getFaceNormal();
+            IMutableCSGPolygon frontQuad = Poly.mutableCSG(poly, frontVertex.size());
+            frontQuad.setAncestorQuadID(poly.getAncestorQuadIDForDescendant());
             
             for(int i = 0; i < frontVertex.size(); i++)
             {
@@ -256,7 +247,7 @@ public class CSGPlane
                 frontQuad.setLineID(i, frontLineID.getInt(i));
             }
 
-            front.add(frontQuad);
+            target.acceptFront(frontQuad);
         }
 
         if (backVertex.size() >= 3) 
@@ -264,9 +255,9 @@ public class CSGPlane
             // forces face normal to be computed if it has not been already
             // this allows it to be copied to the split quad and 
             // and avoids having incomputable face normals due to very small polys.
-            quad.getFaceNormal();
-            IMutableCSGPolygon backQuad = Poly.mutableCSG(quad, backVertex.size());
-            backQuad.setAncestorQuadID(quad.getAncestorQuadIDForDescendant());
+            poly.getFaceNormal();
+            IMutableCSGPolygon backQuad = Poly.mutableCSG(poly, backVertex.size());
+            backQuad.setAncestorQuadID(poly.getAncestorQuadIDForDescendant());
 
             for(int i = 0; i < backVertex.size(); i++)
             {
@@ -274,7 +265,7 @@ public class CSGPlane
                 backQuad.setLineID(i, backLineID.getInt(i));
             }
             
-            back.add(backQuad);               
+            target.acceptBack(backQuad);               
         }
     }
 }

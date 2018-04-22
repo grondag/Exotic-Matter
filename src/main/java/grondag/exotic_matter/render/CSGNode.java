@@ -39,8 +39,6 @@ import java.util.Iterator;
 */
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -49,8 +47,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
@@ -149,8 +145,8 @@ public class CSGNode implements Iterable<ICSGPolygon>
         @Nullable CSGNode node  = this;
         
         ArrayDeque<Pair<CSGNode, ICSGPolygon>> stack = new ArrayDeque<>();
-        List<ICSGPolygon> frontP = new ArrayList<>();
-        List<ICSGPolygon> backP = new ArrayList<>();
+        
+        ICSGSplitAcceptor.CoFrontBack target = new ICSGSplitAcceptor.CoFrontBack();
         
         while(true)
         {
@@ -160,21 +156,25 @@ public class CSGNode implements Iterable<ICSGPolygon>
             }
             else
             {
-                node.plane.splitQuad(p, node.quads, node.quads, frontP, backP);
+                target.setCoplanarNode(node);
                 
-                if(!frontP.isEmpty())  
+                node.plane.splitQuad(p, target);
+                
+                if(target.hasFront())  
                 {
                     if(node.front == null) node.front = new CSGNode();
-                    for(ICSGPolygon fp : frontP) stack.push(Pair.of(node.front, fp));
-                    frontP.clear();
+                    Iterator<ICSGPolygon> it = target.allFront();
+                    while(it.hasNext()) stack.push(Pair.of(node.front, it.next()));
                 }
                 
-                if(!backP.isEmpty())  
+                if(target.hasBack())  
                 {
                     if(node.back == null) node.back = new CSGNode();
-                    for(ICSGPolygon bp : backP) stack.push(Pair.of(node.back, bp));
-                    backP.clear();
+                    Iterator<ICSGPolygon> it = target.allBack();
+                    while(it.hasNext()) stack.push(Pair.of(node.back, it.next()));
                 }
+                
+                target.clear();
             }
             
             if(stack.isEmpty())  break;
@@ -275,32 +275,32 @@ public class CSGNode implements Iterable<ICSGPolygon>
         @Nullable CSGNode node  = this;
         
         ArrayDeque<Pair<CSGNode, ICSGPolygon>> stack = new ArrayDeque<>();
-        List<ICSGPolygon> frontP = new ArrayList<>();
-        List<ICSGPolygon> backP = new ArrayList<>();
+        
+        ICSGSplitAcceptor.FrontBack target = new ICSGSplitAcceptor.FrontBack();
         
         while(true)
         {
-            node.plane.splitQuad(p, frontP, backP, frontP, backP);
+            node.plane.splitQuad(p, target);
             
-            if(!frontP.isEmpty())  
+            if(target.hasFront())  
             {
+                Iterator<ICSGPolygon> it = target.allFront();
+                
                 if(node.front == null)
-                    output.addAll(frontP);
+                    while(it.hasNext()) output.add(it.next());
                 else
-                    for(ICSGPolygon fp : frontP) stack.push(Pair.of(node.front, fp));
-
-                frontP.clear();
+                    while(it.hasNext()) stack.push(Pair.of(node.front, it.next()));
             }
             
-            if(!backP.isEmpty())  
+            if(target.hasBack() && node.back != null)  
             {
                 // not adding back plane polys to the output when
                 // we get to leaf nodes is what does the clipping 
-                if(node.back != null)
-                    for(ICSGPolygon bp : backP) stack.push(Pair.of(node.back, bp));
-                
-                backP.clear();
+                Iterator<ICSGPolygon> it = target.allBack();
+                while(it.hasNext()) stack.push(Pair.of(node.back, it.next()));
             }
+            
+            target.clear();
             
             if(stack.isEmpty())  break;
             Pair<CSGNode, ICSGPolygon> next = stack.pop();
@@ -675,7 +675,7 @@ public class CSGNode implements Iterable<ICSGPolygon>
      * ASSUMES the given poly is coplanar with the plane of this node
      * if plane is already set.
      */
-    private void add(ICSGPolygon poly)
+    void add(ICSGPolygon poly)
     {
         if(this.plane == null) this.plane = new CSGPlane(poly);
         this.quads.add(poly);
