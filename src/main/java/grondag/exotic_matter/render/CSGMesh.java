@@ -214,7 +214,7 @@ public class CSGMesh extends ArrayList<IPolygon>
         a.addAll(b);
         a.invert();
 
-        return new CSGMesh(a.recombinedRawQuads());
+        return new CSGMesh(a.recombinedRenderableQuads());
     }
     
     /**
@@ -251,7 +251,7 @@ public class CSGMesh extends ArrayList<IPolygon>
         b.clipTo(a);
         a.addAll(b);
         a.invert();
-        CSGMesh retVal = new CSGMesh(a.recombinedRawQuads());
+        CSGMesh retVal = new CSGMesh(a.recombinedRenderableQuads());
         
 //        HardScience.log.info("raw count " + a.allRawQuads().size() + "   combined count " + retVal.size());
 
@@ -327,6 +327,6 @@ public class CSGMesh extends ArrayList<IPolygon>
         b.invert();
         a.addAll(b);
 
-        return new CSGMesh(a.recombinedRawQuads());
+        return new CSGMesh(a.recombinedRenderableQuads());
     }
 }

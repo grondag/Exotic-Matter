@@ -109,21 +109,17 @@ public interface IPolygon
     
     public Vertex getVertex(int index);
     
+    /**
+     * Splits into quads if higher vertex count than four, otherwise returns self.
+     */
     public List<IPolygon> toQuads();
     
+    /** 
+     * If this is a quad or higher order polygon, returns new tris.
+     * If is already a tri returns self.<p>
+     */
     public List<IPolygon> toTris();
     
-    /**
-     * Returns polys that have been tagged with CSG metadata
-     * TODO: semantics of this are inconsistent with factory methods for new CSG 
-     */
-    public List<ICSGPolygon> toQuadsCSG();
-    
-    /**
-     * Returns polys that have been tagged with CSG metadata
-     * TODO: semantics of this are inconsistent with factory methods for new CSG 
-     */
-    public List<ICSGPolygon> toTrisCSG();
     
     /**
      * Returns copy of self tagged with CSG metadata

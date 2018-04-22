@@ -147,9 +147,9 @@ public class CSGPlane
         for (int i = 0; i < vcount; i++)
         {
             final Vec3f vert = poly.getVertex(i);
-            float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
+            final float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
             
-            int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
+            final int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
             polygonType |= type;
             types[i] = type;
         }
@@ -158,7 +158,7 @@ public class CSGPlane
         switch (polygonType)
         {
             case COPLANAR:
-                final Vec3f faceNorm = poly.getFaceNormal();
+                final Vec3f faceNorm = poly.isInverted() ? poly.getFaceNormal().inverse() : poly.getFaceNormal();
                 float t = faceNorm.x * this.normalX + faceNorm.y * this.normalY + faceNorm.z * this.normalZ;
                 if(t > 0) 
                     target.acceptCoplanarFront(poly);

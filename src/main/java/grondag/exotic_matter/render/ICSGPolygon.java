@@ -41,11 +41,22 @@ public interface ICSGPolygon extends IPolygon
     
     public boolean isInverted();
 
+    public void flip();
+    
     /**
-     * Returns a copy of this polygon with a revered winding order and inverted face normal. 
-     * Vertex normals are also flipped if present. 
+     * If this polygon is inverted, returns a copy of with a reversed winding order 
+     * and inverted face normal. Vertex normals are also flipped if present. The copy
+     * is not marked as inverted.<p>
+     * 
+     * If this polygon is not inverted, returns self.<p>
+     * 
+     * Intended for use at end of CSG operations, to make polygons renderable.  CSG 
+     * operations can simply use inverted indicator but rendering requires 
+     * correct winding order and normals.<p>
+     * 
+     * Should be called <em>after</em> rejoining coplanar splits because wipes out edge metadata.
      */
-    public ICSGPolygon invert();
+    public IPolygon applyInverted();
     
     
     /**

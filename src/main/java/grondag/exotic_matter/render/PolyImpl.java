@@ -138,89 +138,52 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
         {
             ICSGPolygon fromCSG = fromObject.csgReference();
             this.setAncestorQuadID(fromCSG.getAncestorQuadID());
-            this.setInverted(fromCSG.isInverted());
+            this.isInverted = fromCSG.isInverted();
         }
     }
 
     @Override
     public List<IPolygon> toQuads()
     {
-        return this.toQuadsInner();
-    }
-    
-    @Override
-    public List<ICSGPolygon> toQuadsCSG()
-    {
-        return this.toQuadsInner();
-    }
+        if(this.vertexCount <= 4) return ImmutableList.of(this);
+        
+        ArrayList<IPolygon> retVal = new ArrayList<>();
 
-    
-    @SuppressWarnings("unchecked")
-    private <T extends IPolygon> List<T> toQuadsInner()
-    {
-        ArrayList<T> retVal = new ArrayList<T>();
+        int head = vertexCount - 1;
+        int tail = 2;
+        PolyImpl work = new PolyImpl(this, 4);
+        work.setVertex(0, this.getVertex(head));
+        work.setVertex(1, this.getVertex(0));
+        work.setVertex(2, this.getVertex(1));
+        work.setVertex(3, this.getVertex(tail));
+        retVal.add(work);
 
-        if(this.vertexCount <= 4)
+        while(head - tail > 1)
         {
-            retVal.add((T) this);
-        }
-        else
-        {
-            int head = vertexCount - 1;
-            int tail = 2;
-            PolyImpl work = new PolyImpl(this, 4);
+            work = new PolyImpl(this, head - tail == 2 ? 3 : 4);
             work.setVertex(0, this.getVertex(head));
-            work.setVertex(1, this.getVertex(0));
-            work.setVertex(2, this.getVertex(1));
-            work.setVertex(3, this.getVertex(tail));
-            retVal.add((T) work);
-
-            while(head - tail > 1)
+            work.setVertex(1, this.getVertex(tail));
+            work.setVertex(2, this.getVertex(++tail));
+            if(head - tail > 1)
             {
-                work = new PolyImpl(this, head - tail == 2 ? 3 : 4);
-                work.setVertex(0, this.getVertex(head));
-                work.setVertex(1, this.getVertex(tail));
-                work.setVertex(2, this.getVertex(++tail));
-                if(head - tail > 1)
-                {
-                    work.setVertex(3, this.getVertex(--head));
-                }
-                retVal.add((T) work);
+                work.setVertex(3, this.getVertex(--head));
             }
+            retVal.add(work);
         }
+        
         return retVal;
     }
     
     @Override
     public List<IPolygon> toTris()
     {
-        return this.toTrisInner();
-    }
-
-    @Override
-    public List<ICSGPolygon> toTrisCSG()
-    {
-        return this.toTrisInner();
-    }
-    
-    /** 
-     * If this is a quad, returns two new tris.
-     * If is already a tri, returns copy of self.<p>
-     * 
-     * Does not mutate this object and does not 
-     * retain any reference to polygons in this object.
-     */
-    @SuppressWarnings("unchecked")
-    private <T extends IPolygon> List<T> toTrisInner()
-    {
         if(this.vertexCount() == 3)
         {
-            return ImmutableList.of((T)this.mutableCopy());
+            return ImmutableList.of(this);
         }
         else
         {
-            ArrayList<T>  retVal= new ArrayList<>(this.vertexCount()-2);
-            int splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
+            ArrayList<IPolygon>  retVal= new ArrayList<>(this.vertexCount()-2);
             int head = vertexCount - 1;
             int tail = 1;
 
@@ -230,35 +193,25 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
             work.setVertex(1, this.getVertex(0));
             work.setLineID(1, this.getLineID(0));
             work.setVertex(2, this.getVertex(tail));
-            work.setLineID(2, splitLineID);
-            work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-            retVal.add((T) work);
+            retVal.add(work);
 
             while(head - tail > 1)
             {
                 work = new PolyImpl(this, 3);
                 work.setVertex(0, this.getVertex(head));
-                work.setLineID(0, splitLineID);
                 work.setVertex(1, this.getVertex(tail));
                 work.setLineID(1, this.getLineID(tail));
-                splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
                 work.setVertex(2, this.getVertex(++tail));
-                work.setLineID(2, head - tail == 1 ? this.getLineID(tail): splitLineID);
-                work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-                retVal.add((T) work);
+                retVal.add(work);
 
                 if(head - tail > 1)
                 {
                     work = new PolyImpl(this, 3);
                     work.setVertex(0, this.getVertex(head));
-                    work.setLineID(0, splitLineID);
-                    splitLineID = CSGPlane.nextInsideLineID.getAndIncrement();
                     work.setVertex(1, this.getVertex(tail));
-                    work.setLineID(1, head - tail == 1 ? this.getLineID(tail): splitLineID);
                     work.setVertex(2, this.getVertex(--head));
                     work.setLineID(2, this.getLineID(head));
-                    work.setAncestorQuadID(this.getAncestorQuadIDForDescendant());
-                    retVal.add((T) work);
+                    retVal.add(work);
                 }
             }
             return retVal;
@@ -266,14 +219,13 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
 
     }
 
-    /**
-     * Reverses winding order of this quad and returns itself
-     * 
-     * TODO: could be much cleaner
-     */
+    
     @Override
-    public ICSGPolygon invert()
+    public IPolygon applyInverted()
     {
+        if(!this.isInverted) return this;
+        
+        //TODO: could be cleaner
         PolyImpl result = new PolyImpl(this.vertexCount);
         
         result.nominalFace = this.nominalFace;
@@ -291,26 +243,27 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
         result.renderPass = this.renderPass;
         result.surfaceInstance = this.surfaceInstance;
         result.ancestorQuadID = this.ancestorQuadID;
-        result.isInverted = !this.isInverted;
+        result.isInverted = false;
         
         
-        //reverse vertex winding order
+        //reverse vertex winding order and flip vertex normals
         for(int i = 0, j = this.vertexCount - 1; i < this.vertexCount; i++, j--)
         {
             result.vertices[i] = this.vertices[j].flipped();
         }
         
+        // Line IDs not needed because output not intended for CSG operations
         // reverse line order
         // last edge is still always the last, and isn't sorted  (draw it to see)
         // some examples...
         // quad: 0, 1, 2, 3 -> 2 1 0 3
         // tri: 0, 1, 2  -> 1, 0, 2
         // quint: 0, 1, 2, 3, 4 -> 3, 2, 1, 0, 4
-        for(int i = 0, j = this.vertexCount - 2; j >= 0; i++, j--)
-        {
-            result.lineID[i] = this.lineID[j];
-        }
-        result.lineID[this.vertexCount - 1] = this.lineID[this.vertexCount -1];
+//        for(int i = 0, j = this.vertexCount - 2; j >= 0; i++, j--)
+//        {
+//            result.lineID[i] = this.lineID[j];
+//        }
+//        result.lineID[this.vertexCount - 1] = this.lineID[this.vertexCount -1];
         
         return result;
     }
@@ -890,9 +843,10 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
         return isInverted;
     }
 
-    protected void setInverted(boolean isInverted)
+    @Override
+    public void flip()
     {
-        this.isInverted = isInverted;
+        this.isInverted = !this.isInverted;
     }
 
     @Override
