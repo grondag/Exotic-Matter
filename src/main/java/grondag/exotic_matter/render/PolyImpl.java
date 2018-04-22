@@ -4,47 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.render.Surface.SurfaceInstance;
-import grondag.exotic_matter.varia.Color;
-import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
 @Deprecated
-class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
+class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePolygon
 {
     private static AtomicInteger nextQuadID = new AtomicInteger(1);
 
     private Vertex[] vertices;
     private int[] lineID;
     private final int vertexCount;
-
-    private @Nullable Vec3f faceNormal;
-
-    private @Nullable EnumFacing nominalFace;
-    private Rotation rotation = Rotation.ROTATE_NONE;
-    private boolean isFullBrightness = false;
-    private boolean isLockUV = false;
-    private boolean shouldContractUVs = true;
-    private RenderPass renderPass = RenderPass.SOLID_SHADED;
-    
-
-    private @Nullable String textureName;
-    
-    
-    private int color = Color.WHITE;
-    private SurfaceInstance surfaceInstance = IPolygon.NO_SURFACE;
-
-    private float minU = 0;
-    private float maxU = 16;
-    private float minV = 0;
-    private float maxV = 16;
 
     private boolean isInverted = false;
     
@@ -117,23 +92,10 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
         return this.vertexCount;
     }
 
-    private void copyProperties(IPolygon fromObject)
+    @Override
+    protected void copyProperties(IPolygon fromObject)
     {
-        this.setNominalFace(fromObject.getNominalFace());
-        this.setTextureName(fromObject.getTextureName());
-        this.setRotation(fromObject.getRotation());
-        this.setColor(fromObject.getColor());
-        this.setFullBrightness(fromObject.isFullBrightness());
-        this.setLockUV(fromObject.isLockUV());
-        if(fromObject.hasFaceNormal()) this.faceNormal = fromObject.getFaceNormal();
-        this.setShouldContractUVs(fromObject.shouldContractUVs());
-        this.setMinU(fromObject.getMinU());
-        this.setMaxU(fromObject.getMaxU());
-        this.setMinV(fromObject.getMinV());
-        this.setMaxV(fromObject.getMaxV());
-        this.setRenderPass(fromObject.getRenderPass());
-        this.setSurfaceInstance(fromObject.getSurfaceInstance());
-        
+        super.copyProperties(fromObject);
         if(fromObject.isCSG())
         {
             ICSGPolygon fromCSG = fromObject.csgReference();
@@ -437,7 +399,7 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
     @Override
     public void multiplyColor(int color)
     {
-        this.setColor(QuadHelper.multiplyColor(this.getColor(), color));
+        super.multiplyColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)this.getVertex(i);
@@ -596,16 +558,6 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
     }
 
     @Override
-    public void scaleQuadUV(float uScale, float vScale)
-    {
-        this.minU *= uScale;
-        this.maxU *= uScale;
-        this.minV *= vScale;
-        this.maxV *= vScale;
-    }
-    
-
-    @Override
     public void scaleFromBlockCenter(float scale)
     {
         float c = 0.5f * (1-scale);
@@ -616,20 +568,6 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
             this.setVertex(i, v.withXYZ(v.x * scale + c, v.y * scale + c, v.z * scale + c));
         }
     }
-
-    @Override
-    public boolean hasFaceNormal()
-    {
-        return  this.faceNormal != null;
-    }
-    
-    @Override
-    public Vec3f getFaceNormal()
-    {
-        if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
-        return this.faceNormal;
-    }
-    
 
 
     @Override
@@ -644,27 +582,6 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
         return result;
     }
 
-
-    @Override
-    public @Nullable EnumFacing getNominalFace()
-    {
-        return nominalFace;
-    }
-
-    @Override
-    public EnumFacing setNominalFace(EnumFacing face)
-    {
-        this.nominalFace = face;
-        return face;
-    }
-    
-    @Override
-    public IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance)
-    {
-        this.surfaceInstance = surfaceInstance;
-        return this;
-    }
-    
     @Override
     public void transform(Matrix4f matrix)
     {
@@ -697,144 +614,6 @@ class PolyImpl implements IMutableCSGPolygon, IMutablePolygon
     public void setVertexColor(int index, int vColor)
     {
         this.setVertex(index, ((Vertex)this.getVertex(index)).withColor(vColor));        
-    }
-
-    @Override
-    public @Nullable String getTextureName()
-    {
-        return textureName;
-    }
-
-    @Override
-    public void setTextureName(@Nullable String textureName)
-    {
-        this.textureName = textureName;
-    }
-
-    @Override
-    public Rotation getRotation()
-    {
-        return rotation;
-    }
-
-    @Override
-    public void setRotation(Rotation rotation)
-    {
-        this.rotation = rotation;
-    }
-
-    @Override
-    public int getColor()
-    {
-        return color;
-    }
-
-    @Override
-    public void setColor(int color)
-    {
-        this.color = color;
-    }
-
-    @Override
-    public boolean isFullBrightness()
-    {
-        return isFullBrightness;
-    }
-
-    @Override
-    public void setFullBrightness(boolean isFullBrightness)
-    {
-        this.isFullBrightness = isFullBrightness;
-    }
-
-    @Override
-    public boolean isLockUV()
-    {
-        return isLockUV;
-    }
-
-    @Override
-    public void setLockUV(boolean isLockUV)
-    {
-        this.isLockUV = isLockUV;
-    }
-
-    @Override
-    public boolean shouldContractUVs()
-    {
-        return shouldContractUVs;
-    }
-
-    @Override
-    public void setShouldContractUVs(boolean shouldContractUVs)
-    {
-        this.shouldContractUVs = shouldContractUVs;
-    }
-
-    @Override
-    public RenderPass getRenderPass()
-    {
-        return renderPass;
-    }
-
-    @Override
-    public void setRenderPass(RenderPass renderPass)
-    {
-        this.renderPass = renderPass;
-    }
-
-    @Override
-    public SurfaceInstance getSurfaceInstance()
-    {
-        return surfaceInstance;
-    }
-
-    @Override
-    public float getMinU()
-    {
-        return minU;
-    }
-
-    @Override
-    public void setMinU(float minU)
-    {
-        this.minU = minU;
-    }
-
-    @Override
-    public float getMaxU()
-    {
-        return maxU;
-    }
-
-    @Override
-    public void setMaxU(float maxU)
-    {
-        this.maxU = maxU;
-    }
-
-    @Override
-    public float getMinV()
-    {
-        return minV;
-    }
-
-    @Override
-    public void setMinV(float minV)
-    {
-        this.minV = minV;
-    }
-
-    @Override
-    public float getMaxV()
-    {
-        return maxV;
-    }
-
-    @Override
-    public void setMaxV(float maxV)
-    {
-        this.maxV = maxV;
     }
 
     @Override
