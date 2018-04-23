@@ -3,21 +3,52 @@ package grondag.exotic_matter.render;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
+import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
+import grondag.exotic_matter.varia.BitPacker.BitElement.EnumElement;
+import grondag.exotic_matter.varia.BitPacker.BitElement.LongElement;
+import grondag.exotic_matter.varia.BitPacker.BitElement.NullableEnumElement;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractPolygon implements IMutablePolygon
 {
-
-    protected @Nullable EnumFacing nominalFace;
-    protected Rotation rotation = Rotation.ROTATE_NONE;
-    protected boolean isFullBrightness = false;
-    protected boolean isLockUV = false;
-    protected boolean shouldContractUVs = true;
-    protected RenderPass renderPass = RenderPass.SOLID_SHADED;
+    protected static final BitPacker BITPACKER = new BitPacker();
+    /**
+     * Claim the lower half of our state bits for color.  Actual access can be via direct bitwise math.
+     */
+    protected static final LongElement COLOR_BITS = BITPACKER.createLongElement(0xFFFFFFFFL);
     
-    protected int color = Color.WHITE;
+    protected static final NullableEnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createNullableEnumElement(EnumFacing.class);
+    protected static final EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
+    protected static final EnumElement<RenderPass> RENDERPASS_BITS = BITPACKER.createEnumElement(RenderPass.class);
+    protected static final BooleanElement FULLBRIGHT_BITS = BITPACKER.createBooleanElement();
+    protected static final BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
+    protected static final BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
+
+    protected static final long DEFAULT_BITS;
+    static
+    {
+        long defaultBits = 0xFFFFFFFFL; // white
+        defaultBits = NOMINAL_FACE_BITS.setValue(null, defaultBits);
+        defaultBits = ROTATION_BITS.setValue(Rotation.ROTATE_NONE, defaultBits);
+        defaultBits = RENDERPASS_BITS.setValue(RenderPass.SOLID_SHADED, defaultBits);
+        defaultBits = FULLBRIGHT_BITS.setValue(false, defaultBits);
+        defaultBits = LOCKUV_BITS.setValue(false, defaultBits);
+        defaultBits = CONTRACTUV_BITS.setValue(true, defaultBits);
+        DEFAULT_BITS = defaultBits;
+    }
+    
+//    protected @Nullable EnumFacing nominalFace;
+//    protected Rotation rotation = Rotation.ROTATE_NONE;
+//    protected RenderPass renderPass = RenderPass.SOLID_SHADED;
+//    protected boolean isFullBrightness = false;
+//    protected boolean isLockUV = false;
+//    protected boolean shouldContractUVs = true;
+//    protected int color = Color.WHITE;
+    protected long stateBits = DEFAULT_BITS;
+    
     protected float minU = 0;
     protected float maxU = 16;
     protected float minV = 0;
@@ -31,19 +62,20 @@ public abstract class AbstractPolygon implements IMutablePolygon
     {
         final AbstractPolygon fastOther = (AbstractPolygon)fromObject;
         
-        this.nominalFace = fastOther.nominalFace;
+        this.stateBits = fastOther.stateBits;
+//        this.nominalFace = fastOther.nominalFace;
+//        this.rotation = fastOther.rotation;
+//        this.color = fastOther.color;
+//        this.isFullBrightness = fastOther.isFullBrightness;
+//        this.isLockUV = fastOther.isLockUV;
+//        this.shouldContractUVs = fastOther.shouldContractUVs;
+//        this.renderPass = fastOther.renderPass;
         this.textureName = fastOther.textureName;
-        this.rotation = fastOther.rotation;
-        this.color = fastOther.color;
-        this.isFullBrightness = fastOther.isFullBrightness;
-        this.isLockUV = fastOther.isLockUV;
         this.faceNormal = fastOther.faceNormal;
-        this.shouldContractUVs = fastOther.shouldContractUVs;
         this.minU = fastOther.minU;
         this.maxU = fastOther.maxU;
         this.minV = fastOther.minV;
         this.maxV = fastOther.maxV;
-        this.renderPass = fastOther.renderPass;
         this.surfaceInstance = fastOther.surfaceInstance;
     }
     
@@ -62,75 +94,89 @@ public abstract class AbstractPolygon implements IMutablePolygon
     @Override
     public Rotation getRotation()
     {
-        return rotation;
+        return ROTATION_BITS.getValue(this.stateBits);
     }
 
     @Override
     public void setRotation(Rotation rotation)
     {
-        this.rotation = rotation;
+        this.stateBits = ROTATION_BITS.setValue(rotation, this.stateBits);
     }
 
     @Override
     public int getColor()
     {
-        return color;
+        return (int)(this.stateBits & 0xFFFFFFFFL);
     }
 
     @Override
     public void setColor(int color)
     {
-        this.color = color;
+        this.stateBits = (color & 0xFFFFFFFFL) | (this.stateBits & 0xFFFFFFFF00000000L);
     }
 
     @Override
     public boolean isFullBrightness()
     {
-        return isFullBrightness;
+        return FULLBRIGHT_BITS.getValue(this.stateBits);
     }
 
     @Override
     public void setFullBrightness(boolean isFullBrightness)
     {
-        this.isFullBrightness = isFullBrightness;
+        this.stateBits = FULLBRIGHT_BITS.setValue(isFullBrightness, this.stateBits);
     }
 
     @Override
     public boolean isLockUV()
     {
-        return isLockUV;
+        return LOCKUV_BITS.getValue(this.stateBits);
     }
 
     @Override
     public void setLockUV(boolean isLockUV)
     {
-        this.isLockUV = isLockUV;
+        this.stateBits = LOCKUV_BITS.setValue(isLockUV, this.stateBits);
     }
 
     @Override
     public boolean shouldContractUVs()
     {
-        return shouldContractUVs;
+        return CONTRACTUV_BITS.getValue(this.stateBits);
     }
 
     @Override
     public void setShouldContractUVs(boolean shouldContractUVs)
     {
-        this.shouldContractUVs = shouldContractUVs;
+        this.stateBits = CONTRACTUV_BITS.setValue(shouldContractUVs, this.stateBits);
     }
 
     @Override
     public RenderPass getRenderPass()
     {
-        return renderPass;
+        return RENDERPASS_BITS.getValue(this.stateBits);
     }
 
     @Override
     public void setRenderPass(RenderPass renderPass)
     {
-        this.renderPass = renderPass;
+        this.stateBits = RENDERPASS_BITS.setValue(renderPass, this.stateBits);
     }
 
+    
+    @Override
+    public @Nullable EnumFacing getNominalFace()
+    {
+        return NOMINAL_FACE_BITS.getValue(this.stateBits);
+    }
+
+    @Override
+    public EnumFacing setNominalFace(EnumFacing face)
+    {
+        this.stateBits = NOMINAL_FACE_BITS.setValue(face, this.stateBits);
+        return face;
+    }
+    
     @Override
     public SurfaceInstance getSurfaceInstance()
     {
@@ -205,19 +251,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     {
         if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
         return this.faceNormal;
-    }
-    
-    @Override
-    public @Nullable EnumFacing getNominalFace()
-    {
-        return nominalFace;
-    }
-
-    @Override
-    public EnumFacing setNominalFace(EnumFacing face)
-    {
-        this.nominalFace = face;
-        return face;
     }
     
     @Override

@@ -1,5 +1,9 @@
 package grondag.exotic_matter.varia;
 
+import java.util.Arrays;
+
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.ExoticMatter;
 
 public class BitPacker
@@ -24,6 +28,13 @@ public class BitPacker
     public <T extends Enum<?>> BitElement.EnumElement<T> createEnumElement(Class<T> e)
     {
         BitElement.EnumElement<T> result = new BitElement.EnumElement<T>(e);
+        this.addElement(result);
+        return result;
+    }
+    
+    public <T extends Enum<?>> BitElement.NullableEnumElement<T> createNullableEnumElement(Class<T> e)
+    {
+        BitElement.NullableEnumElement<T> result = new BitElement.NullableEnumElement<T>(e);
         this.addElement(result);
         return result;
     }
@@ -109,6 +120,38 @@ public class BitPacker
             }
             
             public T getValue(long bits)
+            { 
+                return values[(int) ((bits >> shift) & mask)]; 
+            }
+        }
+        
+        public static class NullableEnumElement<T extends Enum<?>> extends BitElement
+        {
+            private T[] values;
+            
+            final int nullOrdinal;
+            
+            @SuppressWarnings("null")
+            private NullableEnumElement(Class<T> e)
+            {
+                super(e.getEnumConstants().length + 1);
+                final T[] constants = e.getEnumConstants();
+                this.values = Arrays.copyOf(constants, constants.length + 1);
+                this.nullOrdinal = constants.length;
+            }
+            
+            public long getBits(@Nullable T e)
+            {
+                final int ordinal = e == null ? this.nullOrdinal : e.ordinal();
+                return (ordinal & mask) << shift; 
+            }
+            
+            public long setValue(@Nullable T e, long bitsIn)
+            { 
+                return (bitsIn & this.shiftedInverseMask) | getBits(e);
+            }
+            
+            public @Nullable T getValue(long bits)
             { 
                 return values[(int) ((bits >> shift) & mask)]; 
             }

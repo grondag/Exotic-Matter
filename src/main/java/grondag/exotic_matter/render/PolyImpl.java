@@ -17,7 +17,7 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
 {
     private static AtomicInteger nextQuadID = new AtomicInteger(1);
 
-    private Vertex[] vertices;
+    private final Vertex[] vertices;
     private int[] lineID;
     private final int vertexCount;
 
@@ -190,19 +190,21 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
         //TODO: could be cleaner
         PolyImpl result = new PolyImpl(this.vertexCount);
         
-        result.nominalFace = this.nominalFace;
+        result.stateBits = this.stateBits;
+//        result.nominalFace = this.nominalFace;
+//        result.rotation = this.rotation;
+//        result.color = this.color;
+//        result.isFullBrightness = this.isFullBrightness;
+//        result.isLockUV = this.isLockUV;
+//        result.shouldContractUVs = this.shouldContractUVs;
+//        result.renderPass = this.renderPass;
+
         result.textureName = this.textureName;
-        result.rotation = this.rotation;
-        result.color = this.color;
-        result.isFullBrightness = this.isFullBrightness;
-        result.isLockUV = this.isLockUV;
         result.faceNormal = this.faceNormal == null ? null : this.faceNormal.inverse();
-        result.shouldContractUVs = this.shouldContractUVs;
         result.minU = this.minU;
         result.maxU = this.maxU;
         result.minV = this.minV;
         result.maxV = this.maxV;
-        result.renderPass = this.renderPass;
         result.surfaceInstance = this.surfaceInstance;
         result.ancestorQuadID = this.ancestorQuadID;
         result.isInverted = false;
@@ -598,9 +600,10 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
         // our matrix transform has block center as its origin,
         // so need to translate face vectors to/from block center 
         // origin before/applying matrix.
-        if(this.nominalFace != null)
+        final EnumFacing nomFace = this.getNominalFace();
+        if(nomFace != null)
         {
-            Vec3i curNorm = this.nominalFace.getDirectionVec();
+            Vec3i curNorm = nomFace.getDirectionVec();
             Vector4f newFaceVec = new Vector4f(curNorm.getX() + 0.5f, curNorm.getY() + 0.5f, curNorm.getZ() + 0.5f, 1);
             matrix.transform(newFaceVec);
             newFaceVec.x -= 0.5;
@@ -638,5 +641,11 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     public void setAncestorQuadID(int ancestorQuadID)
     {
         this.ancestorQuadID = ancestorQuadID;
+    }
+
+    @Override
+    public Vertex[] vertexArray()
+    {
+        return this.vertices;
     }
 }

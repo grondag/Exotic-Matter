@@ -144,9 +144,11 @@ public class CSGPlane
         // Classify each point as well as the entire polygon
         int polygonType = COPLANAR;
         int types[] = new int[vcount];
+        Vertex[] verts = poly.vertexArray();
+        
         for (int i = 0; i < vcount; i++)
         {
-            final Vec3f vert = poly.getVertex(i);
+            final Vec3f vert = verts[i];
             final float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
             
             final int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
@@ -173,19 +175,19 @@ public class CSGPlane
                 target.acceptBack(poly);
                 break;
             default:
-                splitSpanning(poly, vcount, types, target);
+                splitSpanning(poly, vcount, verts, types, target);
                 break;
         }
     }
     
-    private void splitSpanning(ICSGPolygon poly, int vcount, int types[], ICSGSplitAcceptor target)
+    private void splitSpanning(ICSGPolygon poly, int vcount, Vertex[] verts, int types[], ICSGSplitAcceptor target)
     {
         splitSpanningTimer.start();
-        splitSpanningInner(poly, vcount, types, target);
+        splitSpanningInner(poly, vcount, verts, types, target);
         splitSpanningTimer.stop();
     }
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 1000000);
-    private void splitSpanningInner(ICSGPolygon poly, int vcount, int types[], ICSGSplitAcceptor target)
+    private void splitSpanningInner(ICSGPolygon poly, int vcount, Vertex[] verts, int types[], ICSGSplitAcceptor target)
     {
         List<Vertex> frontVertex = new ArrayList<>(vcount+1);
         List<Vertex> backVertex = new ArrayList<>(vcount+1);
@@ -195,8 +197,8 @@ public class CSGPlane
             int j = (i + 1) % vcount;
             int iType = types[i];
             int jType = types[j];
-            final Vertex iVertex = poly.getVertex(i);
-            final Vertex jVertex = poly.getVertex(j);
+            final Vertex iVertex = verts[i];
+            final Vertex jVertex = verts[j];
             int iLineID = poly.getLineID(i);
             
             if (iType != BACK) {
@@ -205,6 +207,7 @@ public class CSGPlane
                 // if the next vertex is not going into this list
                 frontLineID.add(iType == COPLANAR && jType == BACK ? this.lineID : iLineID);
             }
+            
             if (iType != FRONT) {
                 backVertex.add(iVertex);
                 // if we are splitting at an existing vertex need to use split line

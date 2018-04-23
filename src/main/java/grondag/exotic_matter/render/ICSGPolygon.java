@@ -15,6 +15,13 @@ public interface ICSGPolygon extends IPolygon
 
     public static final int LINE_NOT_FOUND = -1;
     
+    /**
+     * Provide direct access to vertex array for CSG only.
+     * Performance optimization.
+     */
+    public Vertex[] vertexArray();
+    
+    
     @Override
     public default boolean isCSG()
     {

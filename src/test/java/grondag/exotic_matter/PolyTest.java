@@ -9,7 +9,9 @@ import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Poly;
 import grondag.exotic_matter.render.QuadHelper;
+import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Vec3f;
+import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
 public class PolyTest
@@ -22,6 +24,32 @@ public class PolyTest
         Vec3f point;
         IMutablePolygon quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
+        // basic properties
+        assert quad.getColor() == 0xFFFFFFFF;
+        assert !quad.isFullBrightness();
+        assert !quad.isLockUV();
+        assert quad.shouldContractUVs();
+        assert quad.getNominalFace() == EnumFacing.UP;
+        assert quad.getRotation() == Rotation.ROTATE_NONE;
+        assert quad.getRenderPass() == RenderPass.SOLID_SHADED;
+        
+        quad.setFullBrightness(true);
+        quad.setLockUV(true);
+        quad.setShouldContractUVs(false);
+        quad.setNominalFace(null);
+        quad.setRotation(Rotation.ROTATE_270);
+        quad.setRenderPass(RenderPass.TRANSLUCENT_FLAT);
+        quad.setColor(0xFA123456);
+        
+        assert quad.isFullBrightness();
+        assert quad.isLockUV();
+        assert !quad.shouldContractUVs();
+        assert quad.getNominalFace() == null;
+        assert quad.getRotation() == Rotation.ROTATE_270;
+        assert quad.getRenderPass() == RenderPass.TRANSLUCENT_FLAT;
+        assert quad.getColor() == 0xFA123456;
+        
+        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         // point on plane
         point = new Vec3f(0.5f, 0.5f, 0.5f);
