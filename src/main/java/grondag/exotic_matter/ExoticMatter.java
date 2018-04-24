@@ -78,7 +78,7 @@ public class ExoticMatter implements IGrondagMod
 
     static
     {
-        FluidRegistry.enableUniversalBucket();
+        //FluidRegistry.enableUniversalBucket();
         
         // Packets handled on Server side, sent from Client
         PacketHandler.registerMessage(PacketUpdateModifierKeys.class, PacketUpdateModifierKeys.class, Side.SERVER);

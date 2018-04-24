@@ -56,9 +56,6 @@ public class CSGPlane
      * Distance to origin.
      */
     public float dist;
-    private float backDist;
-    private float frontDist;
-    
     protected int lineID = nextInsideLineID.getAndIncrement();
 
     /**
@@ -73,8 +70,6 @@ public class CSGPlane
         this.normalY = normal.y;
         this.normalZ = normal.z;
         this.dist = dist;
-        this.backDist = dist - QuadHelper.EPSILON;
-        this.frontDist = dist + QuadHelper.EPSILON;
     }
 
     public CSGPlane(ICSGPolygon quad)
@@ -84,9 +79,6 @@ public class CSGPlane
         this.normalY = normal.y;
         this.normalZ = normal.z;
         this.dist = normal.dotProduct(quad.getVertex(0));    
-        this.backDist = this.dist - QuadHelper.EPSILON;
-        this.frontDist = this.dist + QuadHelper.EPSILON;
-
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -94,8 +86,6 @@ public class CSGPlane
         this.normalY = y;
         this.normalZ = z;
         this.dist = dist;
-        this.backDist = dist - QuadHelper.EPSILON;
-        this.frontDist = dist + QuadHelper.EPSILON;
     }
     
     @Override
@@ -113,8 +103,6 @@ public class CSGPlane
         this.normalY = -this.normalY;
         this.normalZ = -this.normalZ;
         this.dist = -this.dist;
-        this.backDist = this.dist - QuadHelper.EPSILON;
-        this.frontDist = this.dist + QuadHelper.EPSILON;
     }
 
     private static final int COPLANAR = 0;
@@ -128,28 +116,49 @@ public class CSGPlane
     private static final int BACK_INCREMENT = 1 << BACK_SHIFT;
     private static final int BACK_MASK = FRONT_MASK << BACK_SHIFT;
     
-    private final int vertexIncrement(Vertex v)
+    public final int vertexIncrement(Vertex v)
     {
-        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ;
+        incrementTimer.start();
+        final int result = vertexIncrementInner(v);
+        incrementTimer.stop();
+        return result;
+    }
+    private static MicroTimer incrementTimer = new MicroTimer("incrementTestTimer", 20000000);
+    private final int vertexIncrementInner(Vertex v)
+    {
         
-        if(t < this.backDist)
-            return BACK_INCREMENT;
-        else if(t > this.frontDist)
-            return FRONT_INCREMENT;
+        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
+        
+        if(t >= -QuadHelper.EPSILON)
+        {
+            if(t <= QuadHelper.EPSILON)
+                return COPLANAR;
+            else
+                return FRONT_INCREMENT;
+        }
         else
-            return COPLANAR;
+        {
+            // t < -QuadHelper.EPSILON
+            return BACK_INCREMENT;
+        }
     }
     
     private final int vertexType(Vertex v)
     {
-        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ;
+        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
         
-        if(t < this.backDist)
-            return BACK;
-        else if(t > this.frontDist)
-            return FRONT;
+        if(t >= -QuadHelper.EPSILON)
+        {
+            if(t <= QuadHelper.EPSILON)
+                return COPLANAR;
+            else
+                return FRONT;
+        }
         else
-            return COPLANAR;
+        {
+            // t < -QuadHelper.EPSILON
+            return BACK;
+        }
     }
     
     /**
@@ -176,7 +185,7 @@ public class CSGPlane
             splitSpanningTimer.reportAndClear();
         }
     }
-    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 5000000);
+    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 10000000);
     private void splitQuadInner(ICSGPolygon poly, ICSGSplitAcceptor target) 
     {
         int combinedCount = 0;
@@ -219,7 +228,7 @@ public class CSGPlane
         splitSpanningInner(poly, combinedCount, target);
         splitSpanningTimer.stop();
     }
-    private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 5000000);
+    private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
     private void splitSpanningInner(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
         final int vcount = poly.vertexCount();
