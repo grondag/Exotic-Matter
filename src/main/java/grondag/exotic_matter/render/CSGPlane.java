@@ -122,10 +122,11 @@ public class CSGPlane
     private static final int BACK = 2;
     private static final int SPANNING = 3;
     
+    private static final int BACK_SHIFT = 8;
     private static final int FRONT_INCREMENT = 1;
-    private static final int BACK_INCREMENT = 1 << 8;
-    private static final int FRONT_MASK = 0xFF;
-    private static final int BACK_MASK = 0xFF << 8;
+    private static final int FRONT_MASK = (1 << BACK_SHIFT) - 1;
+    private static final int BACK_INCREMENT = 1 << BACK_SHIFT;
+    private static final int BACK_MASK = FRONT_MASK << BACK_SHIFT;
     
     private final int vertexIncrement(Vertex v)
     {
@@ -135,6 +136,18 @@ public class CSGPlane
             return BACK_INCREMENT;
         else if(t > this.frontDist)
             return FRONT_INCREMENT;
+        else
+            return COPLANAR;
+    }
+    
+    private final int vertexType(Vertex v)
+    {
+        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ;
+        
+        if(t < this.backDist)
+            return BACK;
+        else if(t > this.frontDist)
+            return FRONT;
         else
             return COPLANAR;
     }
@@ -195,114 +208,164 @@ public class CSGPlane
                 target.acceptFront(poly);
             else
             {
-                splitSpanning(poly, target);
+                splitSpanning(poly, combinedCount, target);
             }
         }
     }
     
-    private void splitSpanning(ICSGPolygon poly, ICSGSplitAcceptor target)
+    private void splitSpanning(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
         splitSpanningTimer.start();
-        splitSpanningInner(poly, target);
+        splitSpanningInner(poly, combinedCount, target);
         splitSpanningTimer.stop();
     }
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 1000000);
-    private void splitSpanningInner(ICSGPolygon poly, ICSGSplitAcceptor target)
+    private void splitSpanningInner(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
         final int vcount = poly.vertexCount();
+        
         final Vertex[] verts = poly.vertexArray();
         
-        List<Vertex> frontVertex = new ArrayList<>(vcount+1);
-        List<Vertex> backVertex = new ArrayList<>(vcount+1);
-        IntList frontLineID = new IntArrayList(vcount+1);
-        IntList backLineID = new IntArrayList(vcount+1);
-        int jType;
-        {
-            final Vertex vert  = verts[0];
-            final float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
-            jType = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
-        }
+        // forces face normal to be computed if it has not been already
+        // this allows it to be copied to the split quad and 
+        // and avoids having incomputable face normals due to very small polys.
+        poly.getFaceNormal();
+        
+        final int ancestorID = poly.getAncestorQuadIDForDescendant();
+        
+        IMutableCSGPolygon frontQuad = Poly.mutableCSG(poly, (combinedCount & FRONT_MASK) + 2);
+        int iFront = 0;
+        frontQuad.setAncestorQuadID(ancestorID);
+
+        IMutableCSGPolygon backQuad = Poly.mutableCSG(poly, ((combinedCount & BACK_MASK) >> BACK_SHIFT) + 2);
+        int iBack = 0;
+        backQuad.setAncestorQuadID(ancestorID);
+
+        int jType = this.vertexType(verts[0]);
+        
         for (int i = 0; i < vcount; i++)
         {
-            int iType = jType;
-            int j = (i + 1) % vcount;
+            final int iType = jType;
+            final int j = (i + 1) % vcount;
             final Vertex iVertex = verts[i];
             final Vertex jVertex = verts[j];
+            jType = this.vertexType(jVertex);
+            
+            final int iLineID = poly.getLineID(i);
+            
+            switch(iType * 3 + jType)
             {
-                final float t = (jVertex.x * this.normalX + jVertex.y * this.normalY + jVertex.z * this.normalZ) - this.dist;
-                jType = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
-            }
-            
-            int iLineID = poly.getLineID(i);
-            
-            if (iType != BACK) {
-                frontVertex.add(iVertex);
-                // if we are splitting at an existing vertex need to use split line
-                // if the next vertex is not going into this list
-                frontLineID.add(iType == COPLANAR && jType == BACK ? this.lineID : iLineID);
-            }
-            
-            if (iType != FRONT) {
-                backVertex.add(iVertex);
-                // if we are splitting at an existing vertex need to use split line
-                // if the next vertex is not going into this list
-                backLineID.add(iType == COPLANAR && jType == FRONT ? this.lineID : iLineID);
-            }
-            // Line for interpolated vertex depends on what the next vertex is for this side (front/back).
-            // If the next vertex will be included in this side, we are starting the line connecting
-            // next vertex with previous vertex and should use line from prev. vertex
-            // If the next vertex will NOT be included in this side, we are starting the split line.
+                case 0:
+                    // I COPLANAR - J COPLANAR
+                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.setLineID(iFront++, iLineID);
+                    
+                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.setLineID(iBack++, iLineID);
+                    break;
+                    
+                case 1:
+                    // I COPLANAR - J FRONT
+                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.setLineID(iFront++, iLineID);
 
-            if ((iType | jType) == SPANNING)
-            {
-                final Vec3f tVec = jVertex.subtract(iVertex);
-                final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
-                final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
-                float t = (this.dist - iDot) / tDot;
-                Vertex v = iVertex.interpolate(jVertex, t);
+                    backQuad.addVertex(iBack, iVertex);
+                    // if we are splitting at an existing vertex need to use split line
+                    // if the next vertex is not going into this list
+                    backQuad.setLineID(iBack++, this.lineID);
+                    break;
+                    
+                case 2:
+                    // I COPLANAR - J BACK
+                    frontQuad.addVertex(iFront, iVertex);
+                    // if we are splitting at an existing vertex need to use split line
+                    // if the next vertex is not going into this list
+                    frontQuad.setLineID(iFront++, this.lineID);
+                    
+                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.setLineID(iBack++, iLineID);
+                    break;
+                    
+                    
+                case 3:
+                    // I FRONT - J COPLANAR
+                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.setLineID(iFront++, iLineID);
+                    
+                    break;
+                    
+                case 4:
+                    // I FRONT - J FRONT
+                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.setLineID(iFront++, iLineID);
+                    break;
+                    
+                case 5:
+                {
+                    // I FRONT - J BACK
+                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.setLineID(iFront++, iLineID);
+
+                    // Line for interpolated vertex depends on what the next vertex is for this side (front/back).
+                    // If the next vertex will be included in this side, we are starting the line connecting
+                    // next vertex with previous vertex and should use line from prev. vertex
+                    // If the next vertex will NOT be included in this side, we are starting the split line.
+                    
+                    final Vec3f tVec = jVertex.subtract(iVertex);
+                    final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
+                    final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
+                    float t = (this.dist - iDot) / tDot;
+                    Vertex v = iVertex.interpolate(jVertex, t);
+                    
+                    frontQuad.addVertex(iFront, v);
+                    frontQuad.setLineID(iFront++, this.lineID);
+                    
+                    backQuad.addVertex(iBack, v);
+                    backQuad.setLineID(iBack++, iLineID);
+                    
+                    break;
+                }  
+                    
+                case 6:
+                    // I BACK- J COPLANAR
+                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.setLineID(iBack++, iLineID);
+                    break;
+                    
+                case 7:
+                {
+                    // I BACK - J FRONT
+                    
+                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.setLineID(iBack++, iLineID);
+                    
+                    // see notes for 5
+                    
+                    final Vec3f tVec = jVertex.subtract(iVertex);
+                    final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
+                    final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
+                    float t = (this.dist - iDot) / tDot;
+                    Vertex v = iVertex.interpolate(jVertex, t);
+                    
+                    frontQuad.addVertex(iFront, v);
+                    frontQuad.setLineID(iFront++, iLineID);
+                    
+                    backQuad.addVertex(iBack, v);
+                    backQuad.setLineID(iBack++, this.lineID);
+                    
+                    break;
+                }
                 
-                frontVertex.add(v);
-                frontLineID.add(jType != FRONT ? this.lineID : iLineID);
-                
-                backVertex.add(v);
-                backLineID.add(jType != BACK ? this.lineID : iLineID);
+                case 8:
+                    // I BACK - J BACK
+                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.setLineID(iBack++, iLineID);
+                    break;
+           
             }
         }
         
-        if (frontVertex.size() >= 3) 
-        {
-            // forces face normal to be computed if it has not been already
-            // this allows it to be copied to the split quad and 
-            // and avoids having incomputable face normals due to very small polys.
-            poly.getFaceNormal();
-            IMutableCSGPolygon frontQuad = Poly.mutableCSG(poly, frontVertex.size());
-            frontQuad.setAncestorQuadID(poly.getAncestorQuadIDForDescendant());
-            
-            for(int i = 0; i < frontVertex.size(); i++)
-            {
-                frontQuad.addVertex(i, frontVertex.get(i));
-                frontQuad.setLineID(i, frontLineID.getInt(i));
-            }
-
-            target.acceptFront(frontQuad);
-        }
-
-        if (backVertex.size() >= 3) 
-        {
-            // forces face normal to be computed if it has not been already
-            // this allows it to be copied to the split quad and 
-            // and avoids having incomputable face normals due to very small polys.
-            poly.getFaceNormal();
-            IMutableCSGPolygon backQuad = Poly.mutableCSG(poly, backVertex.size());
-            backQuad.setAncestorQuadID(poly.getAncestorQuadIDForDescendant());
-
-            for(int i = 0; i < backVertex.size(); i++)
-            {
-                backQuad.addVertex(i, backVertex.get(i));
-                backQuad.setLineID(i, backLineID.getInt(i));
-            }
-            
-            target.acceptBack(backQuad);               
-        }
+        target.acceptFront(frontQuad);
+        target.acceptBack(backQuad);               
     }
 }
