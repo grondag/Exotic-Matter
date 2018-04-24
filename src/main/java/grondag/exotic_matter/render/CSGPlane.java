@@ -56,6 +56,8 @@ public class CSGPlane
      * Distance to origin.
      */
     public float dist;
+    private float backDist;
+    private float frontDist;
     
     protected int lineID = nextInsideLineID.getAndIncrement();
 
@@ -71,6 +73,8 @@ public class CSGPlane
         this.normalY = normal.y;
         this.normalZ = normal.z;
         this.dist = dist;
+        this.backDist = dist - QuadHelper.EPSILON;
+        this.frontDist = dist + QuadHelper.EPSILON;
     }
 
     public CSGPlane(ICSGPolygon quad)
@@ -80,6 +84,9 @@ public class CSGPlane
         this.normalY = normal.y;
         this.normalZ = normal.z;
         this.dist = normal.dotProduct(quad.getVertex(0));    
+        this.backDist = this.dist - QuadHelper.EPSILON;
+        this.frontDist = this.dist + QuadHelper.EPSILON;
+
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -87,6 +94,8 @@ public class CSGPlane
         this.normalY = y;
         this.normalZ = z;
         this.dist = dist;
+        this.backDist = dist - QuadHelper.EPSILON;
+        this.frontDist = dist + QuadHelper.EPSILON;
     }
     
     @Override
@@ -104,6 +113,8 @@ public class CSGPlane
         this.normalY = -this.normalY;
         this.normalZ = -this.normalZ;
         this.dist = -this.dist;
+        this.backDist = this.dist - QuadHelper.EPSILON;
+        this.frontDist = this.dist + QuadHelper.EPSILON;
     }
 
     private static final int COPLANAR = 0;
@@ -111,7 +122,23 @@ public class CSGPlane
     private static final int BACK = 2;
     private static final int SPANNING = 3;
     
-
+    private static final int FRONT_INCREMENT = 1;
+    private static final int BACK_INCREMENT = 1 << 8;
+    private static final int FRONT_MASK = 0xFF;
+    private static final int BACK_MASK = 0xFF << 8;
+    
+    private final int vertexIncrement(Vertex v)
+    {
+        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ;
+        
+        if(t < this.backDist)
+            return BACK_INCREMENT;
+        else if(t > this.frontDist)
+            return FRONT_INCREMENT;
+        else
+            return COPLANAR;
+    }
+    
     /**
      * Splits a {@link Polygon} by this plane if needed. After that it puts the
      * polygons or the polygon fragments in the appropriate lists
@@ -139,66 +166,73 @@ public class CSGPlane
     private static MicroTimer splitTimer = new MicroTimer("splitQuad", 1000000);
     private void splitQuadInner(ICSGPolygon poly, ICSGSplitAcceptor target) 
     {
-        final int vcount = poly.vertexCount();
+        int combinedCount = 0;
         
-        // Classify each point as well as the entire polygon
-        int polygonType = COPLANAR;
-        int types[] = new int[vcount];
-        Vertex[] verts = poly.vertexArray();
-        
-        for (int i = 0; i < vcount; i++)
+        for (Vertex v : poly.vertexArray())
         {
-            final Vec3f vert = verts[i];
-            final float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
-            
-            final int type = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
-            polygonType |= type;
-            types[i] = type;
+            combinedCount += this.vertexIncrement(v);
         }
         
         // Put the polygon in the correct list, splitting it when necessary.
-        switch (polygonType)
+        if((combinedCount & FRONT_MASK) == 0)
         {
-            case COPLANAR:
+            if(combinedCount == 0)
+            {
+                // coplanar
                 final Vec3f faceNorm = poly.isInverted() ? poly.getFaceNormal().inverse() : poly.getFaceNormal();
                 float t = faceNorm.x * this.normalX + faceNorm.y * this.normalY + faceNorm.z * this.normalZ;
                 if(t > 0) 
                     target.acceptCoplanarFront(poly);
                 else 
                     target.acceptCoplanarBack(poly);
-                break;
-                
-            case FRONT:
+            }
+            else target.acceptBack(poly);
+        }
+        else
+        {
+            // frontcount > 0
+            if((combinedCount & BACK_MASK) == 0)
                 target.acceptFront(poly);
-                break;
-            case BACK:
-                target.acceptBack(poly);
-                break;
-            default:
-                splitSpanning(poly, vcount, verts, types, target);
-                break;
+            else
+            {
+                splitSpanning(poly, target);
+            }
         }
     }
     
-    private void splitSpanning(ICSGPolygon poly, int vcount, Vertex[] verts, int types[], ICSGSplitAcceptor target)
+    private void splitSpanning(ICSGPolygon poly, ICSGSplitAcceptor target)
     {
         splitSpanningTimer.start();
-        splitSpanningInner(poly, vcount, verts, types, target);
+        splitSpanningInner(poly, target);
         splitSpanningTimer.stop();
     }
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 1000000);
-    private void splitSpanningInner(ICSGPolygon poly, int vcount, Vertex[] verts, int types[], ICSGSplitAcceptor target)
+    private void splitSpanningInner(ICSGPolygon poly, ICSGSplitAcceptor target)
     {
+        final int vcount = poly.vertexCount();
+        final Vertex[] verts = poly.vertexArray();
+        
         List<Vertex> frontVertex = new ArrayList<>(vcount+1);
         List<Vertex> backVertex = new ArrayList<>(vcount+1);
         IntList frontLineID = new IntArrayList(vcount+1);
         IntList backLineID = new IntArrayList(vcount+1);
-        for (int i = 0; i < vcount; i++) {
+        int jType;
+        {
+            final Vertex vert  = verts[0];
+            final float t = (vert.x * this.normalX + vert.y * this.normalY + vert.z * this.normalZ) - this.dist;
+            jType = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
+        }
+        for (int i = 0; i < vcount; i++)
+        {
+            int iType = jType;
             int j = (i + 1) % vcount;
-            int iType = types[i];
-            int jType = types[j];
             final Vertex iVertex = verts[i];
             final Vertex jVertex = verts[j];
+            {
+                final float t = (jVertex.x * this.normalX + jVertex.y * this.normalY + jVertex.z * this.normalZ) - this.dist;
+                jType = (t < -QuadHelper.EPSILON) ? BACK : (t > QuadHelper.EPSILON) ? FRONT : COPLANAR;
+            }
+            
             int iLineID = poly.getLineID(i);
             
             if (iType != BACK) {
