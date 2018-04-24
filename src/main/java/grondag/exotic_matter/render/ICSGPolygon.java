@@ -21,6 +21,11 @@ public interface ICSGPolygon extends IPolygon
      */
     public Vertex[] vertexArray();
     
+    /**
+     * Provide direct access to edge array for CSG only.
+     * Performance optimization.
+     */
+    public int[] edgeArray();
     
     @Override
     public default boolean isCSG()

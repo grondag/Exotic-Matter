@@ -176,7 +176,7 @@ public class CSGPlane
             splitSpanningTimer.reportAndClear();
         }
     }
-    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 1000000);
+    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 5000000);
     private void splitQuadInner(ICSGPolygon poly, ICSGSplitAcceptor target) 
     {
         int combinedCount = 0;
@@ -219,12 +219,13 @@ public class CSGPlane
         splitSpanningInner(poly, combinedCount, target);
         splitSpanningTimer.stop();
     }
-    private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 1000000);
+    private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 5000000);
     private void splitSpanningInner(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
         final int vcount = poly.vertexCount();
         
         final Vertex[] verts = poly.vertexArray();
+        final int[] edges = poly.edgeArray();
         
         // forces face normal to be computed if it has not been already
         // this allows it to be copied to the split quad and 
@@ -241,17 +242,15 @@ public class CSGPlane
         int iBack = 0;
         backQuad.setAncestorQuadID(ancestorID);
 
-        int jType = this.vertexType(verts[0]);
+
+        Vertex iVertex = verts[vcount - 1];
+        int iType = this.vertexType(iVertex);
+        int iLineID = edges[vcount - 1];
         
-        for (int i = 0; i < vcount; i++)
+        for (int j = 0; j < vcount; j++)
         {
-            final int iType = jType;
-            final int j = (i + 1) % vcount;
-            final Vertex iVertex = verts[i];
             final Vertex jVertex = verts[j];
-            jType = this.vertexType(jVertex);
-            
-            final int iLineID = poly.getLineID(i);
+            final int jType = this.vertexType(jVertex);
             
             switch(iType * 3 + jType)
             {
@@ -363,6 +362,10 @@ public class CSGPlane
                     break;
            
             }
+            
+            iVertex = jVertex;
+            iType = jType;
+            iLineID = edges[j];
         }
         
         target.acceptFront(frontQuad);

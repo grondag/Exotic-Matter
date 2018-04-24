@@ -648,4 +648,10 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     {
         return this.vertices;
     }
+    
+    @Override
+    public int[] edgeArray()
+    {
+        return this.lineID;
+    }
 }
