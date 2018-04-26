@@ -33,8 +33,6 @@ public class TerrainPerf
             mesher.getShapeQuads(modelState);
         }
         
-        ExoticMatter.INSTANCE.info(" ");
-        ExoticMatter.INSTANCE.info("Multi-thread runs...");
     }
 
 }

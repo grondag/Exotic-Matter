@@ -226,7 +226,7 @@ public class CSGPlane
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
     private void splitSpanningInner(CSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
-        final int vcount = poly.vertexCount;
+        final int vcount = poly.vertex.length;
         
         final Vertex[] verts = poly.vertex;
         final int[] edges = poly.lineID;

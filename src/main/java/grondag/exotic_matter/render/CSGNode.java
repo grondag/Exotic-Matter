@@ -390,17 +390,19 @@ public class CSGNode implements Iterable<CSGPolygon>
         // shouldn't happen, but won't work if does
         if(aStartIndex == CSGPolygon.LINE_NOT_FOUND) 
             return null;
-        final int aEndIndex = aStartIndex + 1 == aQuad.vertexCount ? 0 : aStartIndex + 1;
-        final int aNextIndex = aEndIndex + 1 == aQuad.vertexCount ? 0 : aEndIndex + 1;
-        final int aPrevIndex = aStartIndex == 0 ? aQuad.vertexCount - 1 : aStartIndex - 1;
+        final int aSize = aQuad.vertex.length;
+        final int aEndIndex = aStartIndex + 1 == aSize ? 0 : aStartIndex + 1;
+        final int aNextIndex = aEndIndex + 1 == aSize ? 0 : aEndIndex + 1;
+        final int aPrevIndex = aStartIndex == 0 ? aSize - 1 : aStartIndex - 1;
 
         final int bStartIndex = bQuad.findLineIndex(lineID);
         // shouldn't happen, but won't work if does
         if(bStartIndex == CSGPolygon.LINE_NOT_FOUND) 
             return null;
-        final int bEndIndex = bStartIndex + 1 == bQuad.vertexCount ? 0 : bStartIndex + 1;
-        final int bNextIndex = bEndIndex + 1 == bQuad.vertexCount ? 0 : bEndIndex + 1;
-        final int bPrevIndex = bStartIndex == 0 ? bQuad.vertexCount - 1 : bStartIndex - 1;
+        final int bSize = bQuad.vertex.length;
+        final int bEndIndex = bStartIndex + 1 == bSize ? 0 : bStartIndex + 1;
+        final int bNextIndex = bEndIndex + 1 == bSize ? 0 : bEndIndex + 1;
+        final int bPrevIndex = bStartIndex == 0 ? bSize - 1 : bStartIndex - 1;
         
         // confirm vertices on either end of vertex match
         if(!aQuad.vertex[aStartIndex].isCsgEqual(bQuad.vertex[bEndIndex]))
@@ -418,9 +420,9 @@ public class CSGNode implements Iterable<CSGPolygon>
         // don't try to eliminate co-linear vertices when joining two tris
         // no cases when this is really essential and the line tests fail
         // when joining two very small tris
-        final boolean skipLineTest = aQuad.vertexCount == 3 && bQuad.vertexCount == 3;
+        final boolean skipLineTest = aSize == 3 && bSize == 3;
         
-        for(int a = 0; a < aQuad.vertexCount; a++)
+        for(int a = 0; a < aSize; a++)
         {
             if(a == aStartIndex)
             {
@@ -432,10 +434,10 @@ public class CSGNode implements Iterable<CSGPolygon>
                 }
 
                 // add b vertexes except two bQuad vertexes in common with A
-                for(int bOffset = 1; bOffset < bQuad.vertexCount - 1; bOffset++)
+                for(int bOffset = 1; bOffset < bSize - 1; bOffset++)
                 {
                     int b = bEndIndex + bOffset;
-                    if(b >= bQuad.vertexCount) b -= bQuad.vertexCount;
+                    if(b >= bSize) b -= bSize;
                     joinedVertex.add(bQuad.vertex[b]);
                     joinedLineID.add(bQuad.lineID[b]);
                 }
@@ -531,7 +533,7 @@ public class CSGNode implements Iterable<CSGPolygon>
             polyMap.put(q.quadID, q);
             
             // build edge map for inside edges that may be rejoined
-            for(int i = 0; i < q.vertexCount; i++)
+            for(int i = 0; i < q.vertex.length; i++)
             {
                 int lineID = q.lineID[i];
                 // negative line ids represent outside edges - no need to rejoin them
@@ -615,7 +617,7 @@ public class CSGNode implements Iterable<CSGPolygon>
                             polyMap.put(joined.quadID, joined);
 
                             // remove quads from edge map
-                            for(int n = 0; n < iPoly.vertexCount; n++)
+                            for(int n = 0; n < iPoly.vertex.length; n++)
                             {                
                                 final int lineID = iPoly.lineID[n];
                                 // negative line ids represent outside edges - not part of map
@@ -627,7 +629,7 @@ public class CSGNode implements Iterable<CSGPolygon>
                                 if(removeMap  != null) removeMap.remove(iPoly.quadID);
                             }
                             
-                            for(int n = 0; n < jPoly.vertexCount; n++)
+                            for(int n = 0; n < jPoly.vertex.length; n++)
                             {
                                 final int lineID = jPoly.lineID[n];
                                 
@@ -644,7 +646,7 @@ public class CSGNode implements Iterable<CSGPolygon>
                             // no new edges are created as part of this process
                             // so we can safely assume the edge will be found
                             // or it is no longer being tracked because only one poly uses it
-                            for(int n = 0; n < joined.vertexCount; n++)
+                            for(int n = 0; n < joined.vertex.length; n++)
                             {
                                 final int lineID = joined.lineID[n];
                                 
