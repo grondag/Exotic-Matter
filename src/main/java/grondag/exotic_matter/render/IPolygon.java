@@ -164,12 +164,6 @@ public interface IPolygon
       */
      public Vertex[] vertexArray();
     
-    /**
-     * Returns copy of self tagged with CSG metadata
-     * 
-     * TODO: semantics of this are inconsistent with factory methods for new CSG 
-     */
-//    public ICSGPolygon toCSG();
     
     /** 
      * Returns intersection point of given ray with the plane of this quad.
@@ -412,7 +406,7 @@ public interface IPolygon
         }
     }
 
-    // adapted from http://geomalgorithms.com/a01-_area.html
+     // adapted from http://geomalgorithms.com/a01-_area.html
      // Copyright 2000 softSurfer, 2012 Dan Sunday
      // This code may be freely used and modified for any purpose
      // providing that this copyright notice is included with it.
