@@ -202,8 +202,8 @@ public class QuadHelper
         
         }
 
-        results.addAll(top.toQuads());
-        results.addAll(bottom.toQuads());
+        top.addQuadsToList(results, true);
+        bottom.addQuadsToList(results, true);
         return results;
     }
 

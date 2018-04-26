@@ -24,7 +24,6 @@ public class CSGPlanPerf
     @Test
     public void test()
     {
-        IMutablePolygon quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         Random r = new Random(45);
         
         CSGPlane plane = new CSGPlane(new Vec3f(r.nextFloat(), r.nextFloat(), r.nextFloat()).normalize(), r.nextFloat());

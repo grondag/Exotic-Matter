@@ -1,13 +1,21 @@
 package grondag.exotic_matter.render;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 
 public interface IPolygon
 {
@@ -47,20 +55,20 @@ public interface IPolygon
     /**
      * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.
      */
-    public default boolean isCSG()
-    {
-        return false;
-    }
+//    public default boolean isCSG()
+//    {
+//        return false;
+//    }
     
     /**
      * If this polygon has CSG metadata and supports the CSG interface, 
      * returns mutable reference to self as such.
      * Thows an exception otherwise.
      */
-    public default ICSGPolygon csgReference()
-    {
-        throw new UnsupportedOperationException();
-    }
+//    public default ICSGPolygon csgReference()
+//    {
+//        throw new UnsupportedOperationException();
+//    }
 
     /**
      * If this polygon is mutable, returns mutable reference to self.
@@ -111,22 +119,57 @@ public interface IPolygon
     
     /**
      * Splits into quads if higher vertex count than four, otherwise returns self.
+     * If ensureConvex is true, will also split quads that are concave into tris.
      */
-    public List<IPolygon> toQuads();
+    public default List<IPolygon> toQuads(boolean ensureConvex)
+    {
+        final int vertexCount = this.vertexCount();
+        
+        if(vertexCount == 3)  
+            return ImmutableList.of(this);
+        
+        if(vertexCount == 4 && (!ensureConvex || this.isConvex())) 
+            return ImmutableList.of(this);
+        
+        ArrayList<IPolygon> result = new ArrayList<>();
+        this.addQuadsToList(result, ensureConvex);
+        return result;
+    }
+    
+    /**
+     * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
+     */
+    public void addQuadsToList(List<IPolygon> list, boolean ensureConvex);
     
     /** 
      * If this is a quad or higher order polygon, returns new tris.
      * If is already a tri returns self.<p>
      */
-    public List<IPolygon> toTris();
+    public default List<IPolygon> toTris()
+    {
+        if(this.vertexCount() == 3) return ImmutableList.of(this);
+        ArrayList<IPolygon> result = new ArrayList<>();
+        this.addTrisToList(result);
+        return result;
+    }
     
+    /**
+     * Like {@link #toTris()} but doesn't instantiate a new list.
+     */
+    public void addTrisToList(List<IPolygon> list);
+    
+      /**
+      * Provide direct access to vertex array for CSG only.
+      * Performance optimization.
+      */
+     public Vertex[] vertexArray();
     
     /**
      * Returns copy of self tagged with CSG metadata
      * 
      * TODO: semantics of this are inconsistent with factory methods for new CSG 
      */
-    public ICSGPolygon toCSG();
+//    public ICSGPolygon toCSG();
     
     /** 
      * Returns intersection point of given ray with the plane of this quad.
@@ -369,26 +412,82 @@ public interface IPolygon
         }
     }
 
+    // adapted from http://geomalgorithms.com/a01-_area.html
+     // Copyright 2000 softSurfer, 2012 Dan Sunday
+     // This code may be freely used and modified for any purpose
+     // providing that this copyright notice is included with it.
+     // iSurfer.org makes no warranty for this code, and cannot be held
+     // liable for any real or imagined damage resulting from its use.
+     // Users of this code must verify correctness for their application.
     public default float getArea()
     {
-        if(this.vertexCount() == 3)
-        {
-            return Math.abs(getVertex(1).subtract(getVertex(0)).crossProduct(getVertex(2).subtract(getVertex(0))).lengthVector()) / 2.0f;
+        float area = 0;
+        float an, ax, ay, az; // abs value of normal and its coords
+        int  coord;           // coord to ignore: 1=x, 2=y, 3=z
+        int  i, j, k;         // loop indices
+        final int n = this.vertexCount();
+        Vec3f N = this.getFaceNormal();
+        Vertex[] V = Arrays.copyOf(this.vertexArray(), n + 1);
+        V[n] = V[0];
+        
+        if (n < 3) return 0;  // a degenerate polygon
 
-        }
-        else if(this.vertexCount() == 4) //quad
+        // select largest abs coordinate to ignore for projection
+        ax = (N.x>0 ? N.x : -N.x);    // abs x-coord
+        ay = (N.y>0 ? N.y : -N.y);    // abs y-coord
+        az = (N.z>0 ? N.z : -N.z);    // abs z-coord
+
+        coord = 3;                    // ignore z-coord
+        if (ax > ay) 
         {
-            return Math.abs(getVertex(2).subtract(getVertex(0)).crossProduct(getVertex(3).subtract(getVertex(1))).lengthVector()) / 2.0f;
+            if (ax > az) coord = 1;   // ignore x-coord
         }
-        else
+        else if (ay > az) coord = 2;  // ignore y-coord
+
+        // compute area of the 2D projection
+        switch (coord)
         {
-            float area = 0;
-            for(IPolygon q : this.toQuads())
-            {
-                area += q.getArea();
-            }
-            return area;
+          case 1:
+            for (i=1, j=2, k=0; i<n; i++, j++, k++)
+                area += (V[i].y * (V[j].z - V[k].z));
+            break;
+          case 2:
+            for (i=1, j=2, k=0; i<n; i++, j++, k++)
+                area += (V[i].z * (V[j].x - V[k].x));
+            break;
+          case 3:
+            for (i=1, j=2, k=0; i<n; i++, j++, k++)
+                area += (V[i].x * (V[j].y - V[k].y));
+            break;
         }
+        
+        switch (coord)
+        {    // wrap-around term
+          case 1:
+            area += (V[n].y * (V[1].z - V[n-1].z));
+            break;
+          case 2:
+            area += (V[n].z * (V[1].x - V[n-1].x));
+            break;
+          case 3:
+            area += (V[n].x * (V[1].y - V[n-1].y));
+            break;
+        }
+
+        // scale to get area before projection
+        an = MathHelper.sqrt( ax*ax + ay*ay + az*az); // length of normal vector
+        switch (coord)
+        {
+          case 1:
+            area *= (an / (2 * N.x));
+            break;
+          case 2:
+            area *= (an / (2 * N.y));
+            break;
+          case 3:
+            area *= (an / (2 * N.z));
+        }
+        return area;
     }
     
     /** 
@@ -418,5 +517,22 @@ public interface IPolygon
             if(f != nominalFace && this.isOnFace(f, QuadHelper.EPSILON)) return f;
         }
         return null;
+    }
+
+    /**
+     * Randomly recolors all the polygons as an aid to debugging.
+     * Polygons must be mutable and are mutated by this operation.
+     */
+    static void recolor(Collection<IPolygon> target)
+    {
+        Stream<IPolygon> quadStream;
+    
+        if (target.size() > 200) {
+            quadStream = target.parallelStream();
+        } else {
+            quadStream = target.stream();
+        }
+    
+        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
 }

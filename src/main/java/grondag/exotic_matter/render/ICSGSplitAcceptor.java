@@ -10,20 +10,20 @@ import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
 public interface ICSGSplitAcceptor
 {
-    public void acceptFront(ICSGPolygon poly);
-    public void acceptBack(ICSGPolygon poly);
-    public void acceptCoplanarFront(ICSGPolygon poly);
-    public void acceptCoplanarBack(ICSGPolygon poly);
+    public void acceptFront(CSGPolygon poly);
+    public void acceptBack(CSGPolygon poly);
+    public void acceptCoplanarFront(CSGPolygon poly);
+    public void acceptCoplanarBack(CSGPolygon poly);
     public boolean hasBack();
-    public Iterator<ICSGPolygon> allBack();
+    public Iterator<CSGPolygon> allBack();
     public boolean hasFront();
-    public Iterator<ICSGPolygon> allFront();
+    public Iterator<CSGPolygon> allFront();
     
     public static class FrontBack implements ICSGSplitAcceptor
     {
 
-        protected final SimpleUnorderedArrayList<ICSGPolygon> front = new SimpleUnorderedArrayList<>();
-        protected final SimpleUnorderedArrayList<ICSGPolygon> back = new SimpleUnorderedArrayList<>();
+        protected final SimpleUnorderedArrayList<CSGPolygon> front = new SimpleUnorderedArrayList<>();
+        protected final SimpleUnorderedArrayList<CSGPolygon> back = new SimpleUnorderedArrayList<>();
         
         public void clear()
         {
@@ -32,25 +32,25 @@ public interface ICSGSplitAcceptor
         }
         
         @Override
-        public void acceptFront(ICSGPolygon poly)
+        public void acceptFront(CSGPolygon poly)
         {
             this.front.add(poly);
         }
 
         @Override
-        public void acceptBack(ICSGPolygon poly)
+        public void acceptBack(CSGPolygon poly)
         {
             this.back.add(poly);
         }
 
         @Override
-        public void acceptCoplanarFront(ICSGPolygon poly)
+        public void acceptCoplanarFront(CSGPolygon poly)
         {
             this.acceptFront(poly);
         }
 
         @Override
-        public void acceptCoplanarBack(ICSGPolygon poly)
+        public void acceptCoplanarBack(CSGPolygon poly)
         {
             this.acceptBack(poly);
         }
@@ -62,7 +62,7 @@ public interface ICSGSplitAcceptor
         }
 
         @Override
-        public Iterator<ICSGPolygon> allBack()
+        public Iterator<CSGPolygon> allBack()
         {
             return this.back.iterator();
         }
@@ -74,7 +74,7 @@ public interface ICSGSplitAcceptor
         }
 
         @Override
-        public Iterator<ICSGPolygon> allFront()
+        public Iterator<CSGPolygon> allFront()
         {
             return this.front.iterator();
         }
@@ -103,13 +103,13 @@ public interface ICSGSplitAcceptor
         }
         
         @Override
-        public void acceptCoplanarFront(ICSGPolygon poly)
+        public void acceptCoplanarFront(CSGPolygon poly)
         {
             this.coplanarNode.add(poly);
         }
 
         @Override
-        public void acceptCoplanarBack(ICSGPolygon poly)
+        public void acceptCoplanarBack(CSGPolygon poly)
         {
             this.coplanarNode.add(poly);
         }

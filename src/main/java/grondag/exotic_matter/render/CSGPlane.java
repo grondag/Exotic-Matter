@@ -1,7 +1,5 @@
 package grondag.exotic_matter.render;
 
-import java.awt.Polygon;
-
 /**
 * Portions reproduced or adapted from JCSG.
 * Copyright 2014-2014 Michael Hoffer <info@michaelhoffer.de>. All rights
@@ -35,13 +33,11 @@ import java.awt.Polygon;
 * <info@michaelhoffer.de>.
 */
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.awt.Polygon;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import grondag.exotic_matter.varia.MicroTimer;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 
 public class CSGPlane
 {
@@ -72,13 +68,13 @@ public class CSGPlane
         this.dist = dist;
     }
 
-    public CSGPlane(ICSGPolygon quad)
+    public CSGPlane(CSGPolygon quad)
     {
-        final Vec3f normal = quad.getFaceNormal();
+        final Vec3f normal = quad.faceNormal;
         this.normalX = normal.x;
         this.normalY = normal.y;
         this.normalZ = normal.z;
-        this.dist = normal.dotProduct(quad.getVertex(0));    
+        this.dist = normal.dotProduct(quad.vertex[0]);    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -108,7 +104,6 @@ public class CSGPlane
     private static final int COPLANAR = 0;
     private static final int FRONT = 1;
     private static final int BACK = 2;
-    private static final int SPANNING = 3;
     
     private static final int BACK_SHIFT = 8;
     private static final int FRONT_INCREMENT = 1;
@@ -118,14 +113,14 @@ public class CSGPlane
     
     public final int vertexIncrement(Vertex v)
     {
-        incrementTimer.start();
-        final int result = vertexIncrementInner(v);
-        incrementTimer.stop();
-        return result;
-    }
-    private static MicroTimer incrementTimer = new MicroTimer("incrementTestTimer", 20000000);
-    private final int vertexIncrementInner(Vertex v)
-    {
+//        incrementTimer.start();
+//        final int result = vertexIncrementInner(v);
+//        incrementTimer.stop();
+//        return result;
+//    }
+//    private static MicroTimer incrementTimer = new MicroTimer("incrementTestTimer", 20000000);
+//    private final int vertexIncrementInner(Vertex v)
+//    {
         
         final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
         
@@ -176,7 +171,7 @@ public class CSGPlane
      * @param back back polgons
      */
     
-    public void splitQuad(ICSGPolygon poly, ICSGSplitAcceptor target)  
+    public void splitQuad(CSGPolygon poly, ICSGSplitAcceptor target)  
     {
         splitTimer.start();
         splitQuadInner(poly, target);
@@ -186,11 +181,11 @@ public class CSGPlane
         }
     }
     private static MicroTimer splitTimer = new MicroTimer("splitQuad", 10000000);
-    private void splitQuadInner(ICSGPolygon poly, ICSGSplitAcceptor target) 
+    private void splitQuadInner(CSGPolygon poly, ICSGSplitAcceptor target) 
     {
         int combinedCount = 0;
         
-        for (Vertex v : poly.vertexArray())
+        for (Vertex v : poly.vertex)
         {
             combinedCount += this.vertexIncrement(v);
         }
@@ -201,7 +196,7 @@ public class CSGPlane
             if(combinedCount == 0)
             {
                 // coplanar
-                final Vec3f faceNorm = poly.isInverted() ? poly.getFaceNormal().inverse() : poly.getFaceNormal();
+                final Vec3f faceNorm = poly.isInverted ? poly.faceNormal.inverse() : poly.faceNormal;
                 float t = faceNorm.x * this.normalX + faceNorm.y * this.normalY + faceNorm.z * this.normalZ;
                 if(t > 0) 
                     target.acceptCoplanarFront(poly);
@@ -222,34 +217,30 @@ public class CSGPlane
         }
     }
     
-    private void splitSpanning(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
+    private void splitSpanning(CSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
         splitSpanningTimer.start();
         splitSpanningInner(poly, combinedCount, target);
         splitSpanningTimer.stop();
     }
     private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
-    private void splitSpanningInner(ICSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
+    private void splitSpanningInner(CSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
     {
-        final int vcount = poly.vertexCount();
+        final int vcount = poly.vertexCount;
         
-        final Vertex[] verts = poly.vertexArray();
-        final int[] edges = poly.edgeArray();
+        final Vertex[] verts = poly.vertex;
+        final int[] edges = poly.lineID;
         
         // forces face normal to be computed if it has not been already
         // this allows it to be copied to the split quad and 
         // and avoids having incomputable face normals due to very small polys.
-        poly.getFaceNormal();
+        //poly.getFaceNormal();
         
-        final int ancestorID = poly.getAncestorQuadIDForDescendant();
-        
-        IMutableCSGPolygon frontQuad = Poly.mutableCSG(poly, (combinedCount & FRONT_MASK) + 2);
+        CSGPolygon frontQuad = new CSGPolygon(poly, (combinedCount & FRONT_MASK) + 2);
         int iFront = 0;
-        frontQuad.setAncestorQuadID(ancestorID);
 
-        IMutableCSGPolygon backQuad = Poly.mutableCSG(poly, ((combinedCount & BACK_MASK) >> BACK_SHIFT) + 2);
+        CSGPolygon backQuad = new CSGPolygon(poly, ((combinedCount & BACK_MASK) >> BACK_SHIFT) + 2);
         int iBack = 0;
-        backQuad.setAncestorQuadID(ancestorID);
 
 
         Vertex iVertex = verts[vcount - 1];
@@ -265,54 +256,55 @@ public class CSGPlane
             {
                 case 0:
                     // I COPLANAR - J COPLANAR
-                    frontQuad.addVertex(iFront, iVertex);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = iVertex;
+                    frontQuad.lineID[iFront++] = iLineID;
                     
-                    backQuad.addVertex(iBack, iVertex);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = iVertex;
+                    backQuad.lineID[iBack++] = iLineID;
                     break;
                     
                 case 1:
                     // I COPLANAR - J FRONT
-                    frontQuad.addVertex(iFront, iVertex);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = iVertex;
+                    frontQuad.lineID[iFront++] = iLineID;
 
-                    backQuad.addVertex(iBack, iVertex);
+                    backQuad.vertex[iBack] = iVertex;
                     // if we are splitting at an existing vertex need to use split line
                     // if the next vertex is not going into this list
-                    backQuad.setLineID(iBack++, this.lineID);
+                    backQuad.lineID[iBack++] = this.lineID;
+
                     break;
                     
                 case 2:
                     // I COPLANAR - J BACK
-                    frontQuad.addVertex(iFront, iVertex);
+                    frontQuad.vertex[iFront] = iVertex;
                     // if we are splitting at an existing vertex need to use split line
                     // if the next vertex is not going into this list
-                    frontQuad.setLineID(iFront++, this.lineID);
+                    frontQuad.lineID[iFront++] = this.lineID;
                     
-                    backQuad.addVertex(iBack, iVertex);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = iVertex;
+                    backQuad.lineID[iBack++] = iLineID;
                     break;
                     
                     
                 case 3:
                     // I FRONT - J COPLANAR
-                    frontQuad.addVertex(iFront, iVertex);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = iVertex;
+                    frontQuad.lineID[iFront++] = iLineID;
                     
                     break;
                     
                 case 4:
                     // I FRONT - J FRONT
-                    frontQuad.addVertex(iFront, iVertex);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = iVertex;
+                    frontQuad.lineID[iFront++] = iLineID;
                     break;
                     
                 case 5:
                 {
                     // I FRONT - J BACK
-                    frontQuad.addVertex(iFront, iVertex);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = iVertex;
+                    frontQuad.lineID[iFront++] = iLineID;
 
                     // Line for interpolated vertex depends on what the next vertex is for this side (front/back).
                     // If the next vertex will be included in this side, we are starting the line connecting
@@ -325,27 +317,26 @@ public class CSGPlane
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);
                     
-                    frontQuad.addVertex(iFront, v);
-                    frontQuad.setLineID(iFront++, this.lineID);
+                    frontQuad.vertex[iFront] = v;
+                    frontQuad.lineID[iFront++] = this.lineID;
                     
-                    backQuad.addVertex(iBack, v);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = v;
+                    backQuad.lineID[iBack++] = iLineID;
                     
                     break;
                 }  
                     
                 case 6:
                     // I BACK- J COPLANAR
-                    backQuad.addVertex(iBack, iVertex);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = iVertex;
+                    backQuad.lineID[iBack++] = iLineID;
                     break;
                     
                 case 7:
                 {
                     // I BACK - J FRONT
-                    
-                    backQuad.addVertex(iBack, iVertex);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = iVertex;
+                    backQuad.lineID[iBack++] = iLineID;
                     
                     // see notes for 5
                     
@@ -355,19 +346,19 @@ public class CSGPlane
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);
                     
-                    frontQuad.addVertex(iFront, v);
-                    frontQuad.setLineID(iFront++, iLineID);
+                    frontQuad.vertex[iFront] = v;
+                    frontQuad.lineID[iFront++] = iLineID;
                     
-                    backQuad.addVertex(iBack, v);
-                    backQuad.setLineID(iBack++, this.lineID);
+                    backQuad.vertex[iBack] = v;
+                    backQuad.lineID[iBack++] = this.lineID;
                     
                     break;
                 }
                 
                 case 8:
                     // I BACK - J BACK
-                    backQuad.addVertex(iBack, iVertex);
-                    backQuad.setLineID(iBack++, iLineID);
+                    backQuad.vertex[iBack] = iVertex;
+                    backQuad.lineID[iBack++] = iLineID;
                     break;
            
             }

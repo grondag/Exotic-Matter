@@ -610,7 +610,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
         }
         
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) CSGMesh.recolor(result);
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
         
         return result;
     }

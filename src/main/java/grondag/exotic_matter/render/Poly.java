@@ -24,20 +24,20 @@ public abstract class Poly
         return result;
     }
     
-    public static IMutableCSGPolygon mutableCSG(IPolygon template)
-    {
-        return new PolyImpl(template);
-    }
-    
-    public static IMutableCSGPolygon mutableCSG(IPolygon template, int vertexCount)
-    {
-        return new PolyImpl(template, vertexCount);
-    }
-    
-    public static IMutableCSGPolygon mutableCSG(int vertexCount)
-    {
-        return new PolyImpl(vertexCount);
-    }
+//    public static IMutableCSGPolygon mutableCSG(IPolygon template)
+//    {
+//        return new PolyImpl(template);
+//    }
+//    
+//    public static IMutableCSGPolygon mutableCSG(IPolygon template, int vertexCount)
+//    {
+//        return new PolyImpl(template, vertexCount);
+//    }
+//    
+//    public static IMutableCSGPolygon mutableCSG(int vertexCount)
+//    {
+//        return new PolyImpl(vertexCount);
+//    }
 
     
 }

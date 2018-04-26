@@ -1,30 +1,19 @@
 package grondag.exotic_matter.render;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
-
-import com.google.common.collect.ImmutableList;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
 @Deprecated
-class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePolygon
+class PolyImpl extends AbstractPolygon implements IMutablePolygon
 {
-    private static AtomicInteger nextQuadID = new AtomicInteger(1);
-
     private final Vertex[] vertices;
     private int[] lineID;
     private final int vertexCount;
-
-    private boolean isInverted = false;
-    
-    private final int quadID = nextQuadID.incrementAndGet();
-    private int ancestorQuadID = ICSGPolygon.NO_ID;
 
     PolyImpl()
     {
@@ -68,21 +57,9 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     {
         final int c = this.vertexCount();
         
-        if(template.isCSG())
+        for(int i = 0; i < c; i++)
         {
-            ICSGPolygon fromCSG = template.csgReference();
-            for(int i = 0; i < c; i++)
-            {
-                this.setVertex(i, fromCSG.getVertex(i));
-                this.lineID[i] = fromCSG.getLineID(i);
-            }
-        }
-        else
-        {
-            for(int i = 0; i < c; i++)
-            {
-                this.setVertex(i, template.getVertex(i));
-            }
+            this.setVertex(i, template.getVertex(i));
         }
     }
 
@@ -96,20 +73,17 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     protected void copyProperties(IPolygon fromObject)
     {
         super.copyProperties(fromObject);
-        if(fromObject.isCSG())
-        {
-            ICSGPolygon fromCSG = fromObject.csgReference();
-            this.setAncestorQuadID(fromCSG.getAncestorQuadID());
-            this.isInverted = fromCSG.isInverted();
-        }
     }
 
     @Override
-    public List<IPolygon> toQuads()
+    public void addQuadsToList(List<IPolygon> list, boolean ensureConvex)
     {
-        if(this.vertexCount <= 4) return ImmutableList.of(this);
+        if(this.vertexCount <= 4 && (!ensureConvex || this.isConvex()))
+        {
+            list.add(this);
+            return;
+        }
         
-        ArrayList<IPolygon> retVal = new ArrayList<>();
 
         int head = vertexCount - 1;
         int tail = 2;
@@ -118,7 +92,7 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
         work.setVertex(1, this.getVertex(0));
         work.setVertex(2, this.getVertex(1));
         work.setVertex(3, this.getVertex(tail));
-        retVal.add(work);
+        list.add(work);
 
         while(head - tail > 1)
         {
@@ -130,41 +104,39 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
             {
                 work.setVertex(3, this.getVertex(--head));
             }
-            retVal.add(work);
+            if(ensureConvex && !work.isConvex())
+            {
+                work.addTrisToList(list);
+            }
+            else list.add(work);
         }
-        
-        return retVal;
     }
     
     @Override
-    public List<IPolygon> toTris()
+    public void addTrisToList(List<IPolygon> list)
     {
-        if(this.vertexCount() == 3)
+        if(this.vertexCount == 3)
         {
-            return ImmutableList.of(this);
+            list.add(this);
         }
         else
         {
-            ArrayList<IPolygon>  retVal= new ArrayList<>(this.vertexCount()-2);
-            int head = vertexCount - 1;
+            int head = this.vertexCount - 1;
             int tail = 1;
 
             PolyImpl work = new PolyImpl(this, 3);
             work.setVertex(0, this.getVertex(head));
-            work.setLineID(0, this.getLineID(head));
             work.setVertex(1, this.getVertex(0));
-            work.setLineID(1, this.getLineID(0));
             work.setVertex(2, this.getVertex(tail));
-            retVal.add(work);
+            list.add(work);
 
             while(head - tail > 1)
             {
                 work = new PolyImpl(this, 3);
                 work.setVertex(0, this.getVertex(head));
                 work.setVertex(1, this.getVertex(tail));
-                work.setLineID(1, this.getLineID(tail));
                 work.setVertex(2, this.getVertex(++tail));
-                retVal.add(work);
+                list.add(work);
 
                 if(head - tail > 1)
                 {
@@ -172,65 +144,12 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
                     work.setVertex(0, this.getVertex(head));
                     work.setVertex(1, this.getVertex(tail));
                     work.setVertex(2, this.getVertex(--head));
-                    work.setLineID(2, this.getLineID(head));
-                    retVal.add(work);
+                    list.add(work);
                 }
             }
-            return retVal;
         }
-
     }
 
-    
-    @Override
-    public IPolygon applyInverted()
-    {
-        if(!this.isInverted) return this;
-        
-        //TODO: could be cleaner
-        PolyImpl result = new PolyImpl(this.vertexCount);
-        
-        result.stateBits = this.stateBits;
-//        result.nominalFace = this.nominalFace;
-//        result.rotation = this.rotation;
-//        result.color = this.color;
-//        result.isFullBrightness = this.isFullBrightness;
-//        result.isLockUV = this.isLockUV;
-//        result.shouldContractUVs = this.shouldContractUVs;
-//        result.renderPass = this.renderPass;
-
-        result.textureName = this.textureName;
-        result.faceNormal = this.faceNormal == null ? null : this.faceNormal.inverse();
-        result.minU = this.minU;
-        result.maxU = this.maxU;
-        result.minV = this.minV;
-        result.maxV = this.maxV;
-        result.surfaceInstance = this.surfaceInstance;
-        result.ancestorQuadID = this.ancestorQuadID;
-        result.isInverted = false;
-        
-        
-        //reverse vertex winding order and flip vertex normals
-        for(int i = 0, j = this.vertexCount - 1; i < this.vertexCount; i++, j--)
-        {
-            result.vertices[i] = this.vertices[j].flipped();
-        }
-        
-        // Line IDs not needed because output not intended for CSG operations
-        // reverse line order
-        // last edge is still always the last, and isn't sorted  (draw it to see)
-        // some examples...
-        // quad: 0, 1, 2, 3 -> 2 1 0 3
-        // tri: 0, 1, 2  -> 1, 0, 2
-        // quint: 0, 1, 2, 3, 4 -> 3, 2, 1, 0, 4
-//        for(int i = 0, j = this.vertexCount - 2; j >= 0; i++, j--)
-//        {
-//            result.lineID[i] = this.lineID[j];
-//        }
-//        result.lineID[this.vertexCount - 1] = this.lineID[this.vertexCount -1];
-        
-        return result;
-    }
 
     @Override
     public IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace)
@@ -459,60 +378,6 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     }
 
     @Override
-    public void setLineID(int index, int lineID)
-    {
-        if(index < this.vertexCount)
-        {
-            this.lineID[index] = lineID;
-        }
-    }
-
-    @Override
-    public int getLineID(int index)
-    {
-        if(this.vertexCount() == 3 && index == 3) return this.lineID[2];
-        return this.lineID[index];
-    }
-
-    @Override
-    public int getAncestorQuadID()
-    {
-        return this.ancestorQuadID;
-    }
-
-    @Override
-    public int getAncestorQuadIDForDescendant()
-    {
-        return this.getAncestorQuadID() == ICSGPolygon.IS_AN_ANCESTOR ? this.quadID() : this.getAncestorQuadID();
-    }
-
-    /**
-     * Initializes metadata values that can be used for CSG operations.
-     * Has no effect on polygon geometry or appearance.<p>
-     * 
-     * So while it technically does mutate this object, generally
-     * not necessary to clone this object before using it.<p>
-     * 
-     * Returns self as convenience.
-     */
-    private void setupCsgMetadata()
-    {
-        this.setAncestorQuadID(ICSGPolygon.IS_AN_ANCESTOR);
-        for(int i = 0; i < this.vertexCount(); i++)
-        {
-            this.lineID[i] = CSGPlane.nextOutsideLineID.getAndDecrement();
-        }
-    }
-    
-    @Override
-    public ICSGPolygon toCSG()
-    {
-        PolyImpl result = this.mutableCopy();
-        result.setupCsgMetadata();
-        return result;
-    }
-
-    @Override
     public void assignLockedUVCoordinates()
     {
         EnumFacing face = getNominalFace();
@@ -575,11 +440,10 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     @Override
     public String toString()
     {
-        String result = "id: " + this.quadID() + " face: " + this.getNominalFace();
+        String result = "face: " + this.getNominalFace();
         for(int i = 0; i < vertexCount(); i++)
         {
             result += " v" + i + ": " + this.getVertex(i).toString();
-            result += " l" + i + ": " + this.getLineID(i);
         }
         return result;
     }
@@ -620,38 +484,8 @@ class PolyImpl extends AbstractPolygon implements IMutableCSGPolygon, IMutablePo
     }
 
     @Override
-    public boolean isInverted()
-    {
-        return isInverted;
-    }
-
-    @Override
-    public void flip()
-    {
-        this.isInverted = !this.isInverted;
-    }
-
-    @Override
-    public int quadID()
-    {
-        return quadID;
-    }
-
-    @Override
-    public void setAncestorQuadID(int ancestorQuadID)
-    {
-        this.ancestorQuadID = ancestorQuadID;
-    }
-
-    @Override
     public Vertex[] vertexArray()
     {
         return this.vertices;
-    }
-    
-    @Override
-    public int[] edgeArray()
-    {
-        return this.lineID;
     }
 }

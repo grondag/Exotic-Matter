@@ -8,7 +8,6 @@ import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.EnumElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.LongElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.NullableEnumElement;
-import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
@@ -40,13 +39,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
         DEFAULT_BITS = defaultBits;
     }
     
-//    protected @Nullable EnumFacing nominalFace;
-//    protected Rotation rotation = Rotation.ROTATE_NONE;
-//    protected RenderPass renderPass = RenderPass.SOLID_SHADED;
-//    protected boolean isFullBrightness = false;
-//    protected boolean isLockUV = false;
-//    protected boolean shouldContractUVs = true;
-//    protected int color = Color.WHITE;
     protected long stateBits = DEFAULT_BITS;
     
     protected float minU = 0;
@@ -63,13 +55,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
         final AbstractPolygon fastOther = (AbstractPolygon)fromObject;
         
         this.stateBits = fastOther.stateBits;
-//        this.nominalFace = fastOther.nominalFace;
-//        this.rotation = fastOther.rotation;
-//        this.color = fastOther.color;
-//        this.isFullBrightness = fastOther.isFullBrightness;
-//        this.isLockUV = fastOther.isLockUV;
-//        this.shouldContractUVs = fastOther.shouldContractUVs;
-//        this.renderPass = fastOther.renderPass;
         this.textureName = fastOther.textureName;
         this.faceNormal = fastOther.faceNormal;
         this.minU = fastOther.minU;

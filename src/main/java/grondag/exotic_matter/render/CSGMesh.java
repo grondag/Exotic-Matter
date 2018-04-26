@@ -35,8 +35,6 @@ package grondag.exotic_matter.render;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
@@ -45,24 +43,6 @@ import net.minecraft.util.math.AxisAlignedBB;
  */
 public abstract class CSGMesh
 {
-    
-    /**
-     * Randomly recolors all the polygons as an aid to debugging.
-     * Polygons must be mutable and are mutated by this operation.
-     */
-    public static void recolor(Collection<IPolygon> target)
-    {
-        Stream<IPolygon> quadStream;
-
-        if (target.size() > 200) {
-            quadStream = target.parallelStream();
-        } else {
-            quadStream = target.stream();
-        }
-
-        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
-    }
-    
     
     public static CSGBounds getBounds(Collection<IPolygon> forPolygons)
     {
