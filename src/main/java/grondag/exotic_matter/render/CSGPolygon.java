@@ -23,7 +23,6 @@ public class CSGPolygon
     public final int quadID = nextQuadID.incrementAndGet();
 
     public boolean isInverted;
-    private int ancestorQuadID = CSGPolygon.NO_ID;
 
     public CSGPolygon(IPolygon original)
     {
@@ -46,12 +45,10 @@ public class CSGPolygon
         this.original = poly.original;
         this.faceNormal = poly.faceNormal;
         this.isInverted = poly.isInverted;
-        this.setAncestorQuadID(poly.getAncestorQuadIDForDescendant());
     }
 
     private void setupCsgMetadata()
     {
-        this.setAncestorQuadID(CSGPolygon.IS_AN_ANCESTOR);
         for(int i = 0; i < this.vertex.length; i++)
         {
             this.lineID[i] = CSGPlane.nextOutsideLineID.getAndDecrement();
@@ -84,21 +81,6 @@ public class CSGPolygon
     public void addRenderableQuads(List<IPolygon> list)
     {
         this.applyInverted().addQuadsToList(list, true);
-    }
-
-    public void setAncestorQuadID(int ancestorQuadID)
-    {
-        this.ancestorQuadID = ancestorQuadID;
-    }
-    
-    public int getAncestorQuadID()
-    {
-        return this.ancestorQuadID;
-    }
-
-    public int getAncestorQuadIDForDescendant()
-    {
-        return this.ancestorQuadID == CSGPolygon.IS_AN_ANCESTOR ? this.quadID : this.ancestorQuadID;
     }
 
     public IPolygon applyInverted()

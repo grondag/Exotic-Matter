@@ -36,6 +36,7 @@ package grondag.exotic_matter.render;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 
 import java.util.List;
@@ -340,15 +341,17 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     public List<IPolygon> recombinedRenderableQuads()
     {
-        Int2ObjectOpenHashMap<Collection<CSGPolygon>> ancestorBuckets = new Int2ObjectOpenHashMap<Collection<CSGPolygon>>();
+        IdentityHashMap<IPolygon, Collection<CSGPolygon>> ancestorBuckets = new IdentityHashMap<>();
         
         for(CSGPolygon quad : this) 
         {
-            if(!ancestorBuckets.containsKey(quad.getAncestorQuadID()))
+            Collection<CSGPolygon> list =  ancestorBuckets.get(quad.original);
+            if(list == null)
             {
-                ancestorBuckets.put(quad.getAncestorQuadID(), new SimpleUnorderedArrayList<CSGPolygon>());
+                list = new SimpleUnorderedArrayList<CSGPolygon>();
+                ancestorBuckets.put(quad.original, list);
             }
-            ancestorBuckets.get(quad.getAncestorQuadID()).add(quad);
+            list.add(quad);
         }
         
         ArrayList<IPolygon> retVal = new ArrayList<>();
@@ -484,7 +487,6 @@ public class CSGNode implements Iterable<CSGPolygon>
         return joinedQuad;
         
     }
-    
   
     
     private Collection<CSGPolygon> recombine(Collection<CSGPolygon> quadsIn)
@@ -508,13 +510,11 @@ public class CSGNode implements Iterable<CSGPolygon>
     
     private Collection<CSGPolygon> recombineInner(Collection<CSGPolygon> quadsIn)
     {
+        if(quadsIn.size() <= 1) return quadsIn;
+        
         Iterator<CSGPolygon> iterator = quadsIn.iterator();
         
-        if(!iterator.hasNext()) return quadsIn;
-        
         CSGPolygon q = iterator.next();
-        
-        if(q.getAncestorQuadID() == CSGPolygon.IS_AN_ANCESTOR) return quadsIn;
         
         /**
          * Index of all polys by ID
