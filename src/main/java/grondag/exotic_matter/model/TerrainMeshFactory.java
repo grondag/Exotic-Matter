@@ -107,7 +107,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         return result;
     }
-    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 10000);
+    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 100000);
     private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
     {
         ArrayList<IPolygon> rawQuads = new ArrayList<>();

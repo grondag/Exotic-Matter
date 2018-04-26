@@ -500,7 +500,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         } 
         return result;
     }
-    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 100000);
+    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 1000000);
     private  static AtomicInteger quadInCount = new AtomicInteger();
     private  static AtomicInteger quadOutputCount = new AtomicInteger();
     
