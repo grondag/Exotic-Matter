@@ -36,29 +36,22 @@ package grondag.exotic_matter.render;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 
-import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 
 public class CSGNode implements Iterable<CSGPolygon>
@@ -111,21 +104,36 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     private Iterator<CSGNode> allNodes()
     {
-        return new AbstractIterator<CSGNode>()
+        return new Iterator<CSGNode>()
         {
+           private @Nullable CSGNode next;
            ArrayDeque<CSGNode> stack = new ArrayDeque<>();
            
            {
                stack.push(CSGNode.this);
+               next = computeNext();
            }
            
-            @Override
             protected CSGNode computeNext()
             {
-                if(stack.isEmpty()) return this.endOfData();
+                if(stack.isEmpty()) return null;
                 CSGNode result = stack.pop();
                 if(result.front != null) stack.push(result.front);
                 if(result.back != null) stack.push(result.back);
+                return result;
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                return next != null;
+            }
+
+            @Override
+            public CSGNode next()
+            {
+                CSGNode result = next;
+                this.next = computeNext();
                 return result;
             }
         };
@@ -199,21 +207,6 @@ public class CSGNode implements Iterable<CSGPolygon>
         throw new UnsupportedOperationException();
     }
     
-    /**
-     * For testing purposes.  Shouldn't happen.
-     */
-    protected long getFirstDuplicateQuadID()
-    {
-
-        IntSet ids = new IntOpenHashSet();
-        for(CSGPolygon q : this)
-        {
-            if(ids.contains(q.quadID)) return q.quadID;
-            ids.add(q.quadID);
-        }
-        return CSGPolygon.NO_ID;
-    }
-
     /**
      * Converts solid space to empty space and vice versa
      * for all nodes in this BSP tree
@@ -383,181 +376,155 @@ public class CSGNode implements Iterable<CSGPolygon>
      * 
      * Returns null if quads cannot be joined.
      */
-    private @Nullable CSGPolygon joinCsgPolys(CSGPolygon aQuad, CSGPolygon bQuad, long lineID)
-    {
-
-        // quads must be same orientation to be joined
-        if(aQuad.isInverted != bQuad.isInverted) return null;
-
-        final int aStartIndex = aQuad.findLineIndex(lineID);
-        // shouldn't happen, but won't work if does
-        if(aStartIndex == CSGPolygon.LINE_NOT_FOUND) 
-            return null;
-        final int aSize = aQuad.vertex.length;
-        final int aEndIndex = aStartIndex + 1 == aSize ? 0 : aStartIndex + 1;
-        final int aNextIndex = aEndIndex + 1 == aSize ? 0 : aEndIndex + 1;
-        final int aPrevIndex = aStartIndex == 0 ? aSize - 1 : aStartIndex - 1;
-
-        final int bStartIndex = bQuad.findLineIndex(lineID);
-        // shouldn't happen, but won't work if does
-        if(bStartIndex == CSGPolygon.LINE_NOT_FOUND) 
-            return null;
-        final int bSize = bQuad.vertex.length;
-        final int bEndIndex = bStartIndex + 1 == bSize ? 0 : bStartIndex + 1;
-        final int bNextIndex = bEndIndex + 1 == bSize ? 0 : bEndIndex + 1;
-        final int bPrevIndex = bStartIndex == 0 ? bSize - 1 : bStartIndex - 1;
-        
-        // confirm vertices on either end of vertex match
-        if(!aQuad.vertex[aStartIndex].isCsgEqual(bQuad.vertex[bEndIndex]))
-        {
-            return null;
-        }
-        if(!aQuad.vertex[aEndIndex].isCsgEqual(bQuad.vertex[bStartIndex]))
-        {
-            return null;
-        }
-
-        final ArrayList<Vertex> joinedVertex = new ArrayList<>(8);
-        final IntList joinedLineID = new IntArrayList(8);
-        
-        // don't try to eliminate co-linear vertices when joining two tris
-        // no cases when this is really essential and the line tests fail
-        // when joining two very small tris
-        final boolean skipLineTest = aSize == 3 && bSize == 3;
-        
-        for(int a = 0; a < aSize; a++)
-        {
-            if(a == aStartIndex)
-            {
-                //if vertex is on the same line as prev and next vertex, leave it out.
-                if(skipLineTest || !aQuad.vertex[aStartIndex].isOnLine(aQuad.vertex[aPrevIndex], bQuad.vertex[bNextIndex]))
-                {
-                    joinedVertex.add(aQuad.vertex[aStartIndex]);
-                    joinedLineID.add(bQuad.lineID[bEndIndex]);
-                }
-
-                // add b vertexes except two bQuad vertexes in common with A
-                for(int bOffset = 1; bOffset < bSize - 1; bOffset++)
-                {
-                    int b = bEndIndex + bOffset;
-                    if(b >= bSize) b -= bSize;
-                    joinedVertex.add(bQuad.vertex[b]);
-                    joinedLineID.add(bQuad.lineID[b]);
-                }
-            }
-            else if(a == aEndIndex)
-            {
-                //if vertex is on the same line as prev and next vertex, leave it out
-                //unless we are joining two tris - when we are joining very small tris
-                //the line test will fail, and not a problem to end up with a quad for
-                //when joining larg
-                if(skipLineTest || !aQuad.vertex[aEndIndex].isOnLine(aQuad.vertex[aNextIndex], bQuad.vertex[bPrevIndex]))
-                {
-                    joinedVertex.add(aQuad.vertex[aEndIndex]);
-                    joinedLineID.add(aQuad.lineID[aEndIndex]);
-                }
-            }
-            else
-            {
-                joinedVertex.add(aQuad.vertex[a]);
-                joinedLineID.add(aQuad.lineID[a]);
-           }
-        }   
-        
-        // actually build the new quad!
-        CSGPolygon joinedQuad = new CSGPolygon(aQuad.original, joinedVertex.size());
-        for(int i = 0; i < joinedVertex.size(); i++)
-        {
-            joinedQuad.vertex[i] = joinedVertex.get(i);
-            joinedQuad.lineID[i] = joinedLineID.getInt(i);
-        }
-
-        // must be convex
-//        if(!joinedQuad.isConvex())
+//    private @Nullable CSGPolygon joinCsgPolys(CSGPolygon aQuad, CSGPolygon bQuad, long lineID)
+//    {
+//
+//        // quads must be same orientation to be joined
+//        if(aQuad.isInverted != bQuad.isInverted) return null;
+//
+//        final int aStartIndex = aQuad.findLineIndex(lineID);
+//        // shouldn't happen, but won't work if does
+//        if(aStartIndex == CSGPolygon.LINE_NOT_FOUND) 
+//            return null;
+//        final int aSize = aQuad.vertex.length;
+//        final int aEndIndex = aStartIndex + 1 == aSize ? 0 : aStartIndex + 1;
+//        final int aNextIndex = aEndIndex + 1 == aSize ? 0 : aEndIndex + 1;
+//        final int aPrevIndex = aStartIndex == 0 ? aSize - 1 : aStartIndex - 1;
+//
+//        final int bStartIndex = bQuad.findLineIndex(lineID);
+//        // shouldn't happen, but won't work if does
+//        if(bStartIndex == CSGPolygon.LINE_NOT_FOUND) 
+//            return null;
+//        final int bSize = bQuad.vertex.length;
+//        final int bEndIndex = bStartIndex + 1 == bSize ? 0 : bStartIndex + 1;
+//        final int bNextIndex = bEndIndex + 1 == bSize ? 0 : bEndIndex + 1;
+//        final int bPrevIndex = bStartIndex == 0 ? bSize - 1 : bStartIndex - 1;
+//        
+//        // confirm vertices on either end of vertex match
+//        if(!aQuad.vertex[aStartIndex].isCsgEqual(bQuad.vertex[bEndIndex]))
 //        {
-////            HardScience.log.info("Quad not convex");
 //            return null;
 //        }
-        
-//        if(Math.abs(aQuad.getArea() + bQuad.getArea() - joinedQuad.getArea()) > QuadFactory.EPSILON)
+//        if(!aQuad.vertex[aEndIndex].isCsgEqual(bQuad.vertex[bStartIndex]))
 //        {
-//            HardScience.log.info("area mismatch");
+//            return null;
 //        }
-        
-        return joinedQuad;
-        
-    }
+//
+//        final ArrayList<Vertex> joinedVertex = new ArrayList<>(8);
+//        final IntList joinedLineID = new IntArrayList(8);
+//        
+//        // don't try to eliminate co-linear vertices when joining two tris
+//        // no cases when this is really essential and the line tests fail
+//        // when joining two very small tris
+//        final boolean skipLineTest = aSize == 3 && bSize == 3;
+//        
+//        for(int a = 0; a < aSize; a++)
+//        {
+//            if(a == aStartIndex)
+//            {
+//                //if vertex is on the same line as prev and next vertex, leave it out.
+//                if(skipLineTest || !aQuad.vertex[aStartIndex].isOnLine(aQuad.vertex[aPrevIndex], bQuad.vertex[bNextIndex]))
+//                {
+//                    joinedVertex.add(aQuad.vertex[aStartIndex]);
+//                    joinedLineID.add(bQuad.lineID[bEndIndex]);
+//                }
+//
+//                // add b vertexes except two bQuad vertexes in common with A
+//                for(int bOffset = 1; bOffset < bSize - 1; bOffset++)
+//                {
+//                    int b = bEndIndex + bOffset;
+//                    if(b >= bSize) b -= bSize;
+//                    joinedVertex.add(bQuad.vertex[b]);
+//                    joinedLineID.add(bQuad.lineID[b]);
+//                }
+//            }
+//            else if(a == aEndIndex)
+//            {
+//                //if vertex is on the same line as prev and next vertex, leave it out
+//                //unless we are joining two tris - when we are joining very small tris
+//                //the line test will fail, and not a problem to end up with a quad for
+//                //when joining larg
+//                if(skipLineTest || !aQuad.vertex[aEndIndex].isOnLine(aQuad.vertex[aNextIndex], bQuad.vertex[bPrevIndex]))
+//                {
+//                    joinedVertex.add(aQuad.vertex[aEndIndex]);
+//                    joinedLineID.add(aQuad.lineID[aEndIndex]);
+//                }
+//            }
+//            else
+//            {
+//                joinedVertex.add(aQuad.vertex[a]);
+//                joinedLineID.add(aQuad.lineID[a]);
+//           }
+//        }   
+//        
+//        // actually build the new quad!
+//        CSGPolygon joinedQuad = new CSGPolygon(aQuad.original, joinedVertex.size());
+//        for(int i = 0; i < joinedVertex.size(); i++)
+//        {
+//            joinedQuad.vertex[i] = joinedVertex.get(i);
+//            joinedQuad.lineID[i] = joinedLineID.getInt(i);
+//        }
+//
+//        // must be convex
+////        if(!joinedQuad.isConvex())
+////        {
+//////            HardScience.log.info("Quad not convex");
+////            return null;
+////        }
+//        
+////        if(Math.abs(aQuad.getArea() + bQuad.getArea() - joinedQuad.getArea()) > QuadFactory.EPSILON)
+////        {
+////            HardScience.log.info("area mismatch");
+////        }
+//        
+//        return joinedQuad;
+//        
+//    }
   
     
     private Collection<CSGPolygon> recombine(Collection<CSGPolygon> quadsIn)
     {
-        quadInCount.addAndGet(quadsIn.size());   
-        recombineCounter.start();
-        Collection<CSGPolygon> result = this.recombineInner(quadsIn);
-        quadOutputCount.addAndGet(result.size());
-        if(recombineCounter.stop())
-        {
-            int in = quadInCount.get();
-            int out = quadOutputCount.get();
-            
-            ExoticMatter.INSTANCE.info("CSG Poly recombination efficiency = %d percent", ((in - out) * 100) / in );
-        } 
-        return result;
-    }
-    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 1000000);
-    private  static AtomicInteger quadInCount = new AtomicInteger();
-    private  static AtomicInteger quadOutputCount = new AtomicInteger();
-    
-    private Collection<CSGPolygon> recombineInner(Collection<CSGPolygon> quadsIn)
-    {
+//        quadInCount.addAndGet(quadsIn.size());   
+//        recombineCounter.start();
+//        Collection<CSGPolygon> result = this.recombineInner(quadsIn);
+//        quadOutputCount.addAndGet(result.size());
+//        if(recombineCounter.stop())
+//        {
+//            int in = quadInCount.get();
+//            int out = quadOutputCount.get();
+//            
+//            ExoticMatter.INSTANCE.info("CSG Poly recombination efficiency = %d percent", ((in - out) * 100) / in );
+//        } 
+//        return result;
+//    }
+//    private static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 1000000);
+//    private  static AtomicInteger quadInCount = new AtomicInteger();
+//    private  static AtomicInteger quadOutputCount = new AtomicInteger();
+//    
+//    private Collection<CSGPolygon> recombineInner(Collection<CSGPolygon> quadsIn)
+//    {
         if(quadsIn.size() <= 1) return quadsIn;
         
-        Iterator<CSGPolygon> iterator = quadsIn.iterator();
-        
-        CSGPolygon q = iterator.next();
-        
         /**
-         * Index of all polys by ID
+         * Index of all polys by vertex
          */
-        Int2ObjectOpenHashMap<CSGPolygon> polyMap = new Int2ObjectOpenHashMap<CSGPolygon>(quadsIn.size());
+        SetMultimap<Vertex, CSGPolygon> vertexMap = Multimaps.newSetMultimap(Maps.newIdentityHashMap(), Sets::newIdentityHashSet);
         
-        /**
-         * Map of line IDs with a map of quad : vertex index at each node
-         */
-        Int2ObjectOpenHashMap<Int2IntOpenHashMap> edgeMap = new Int2ObjectOpenHashMap<Int2IntOpenHashMap>();
+        quadsIn.forEach(q -> 
+        {
+            for(Vertex v : q.vertex)
+            {
+                vertexMap.put(v, q);
+            }
+        });
+        
         
 //        double totalArea = 0;
         
-        do
-        {
-            polyMap.put(q.quadID, q);
-            
-            // build edge map for inside edges that may be rejoined
-            for(int i = 0; i < q.vertex.length; i++)
-            {
-                int lineID = q.lineID[i];
-                // negative line ids represent outside edges - no need to rejoin them
-                // zero ids are uninitialized edges and should be ignored
-                if(lineID <= 0) continue;
-                
-                Int2IntOpenHashMap quadToLineIndexMap = edgeMap.get(lineID);
-                if(quadToLineIndexMap == null)
-                {
-                    quadToLineIndexMap = new Int2IntOpenHashMap();
-                    edgeMap.put(lineID, quadToLineIndexMap);
-                }
-                quadToLineIndexMap.put(q.quadID, i);
-            }
-            
-            if(iterator.hasNext()) 
-                q = iterator.next();
-            else 
-                break;
-            
-        } while(true);
+    
         
         /** 
-         * Cleared at top of each loop and set to true if any only if 
+         * Cleared at top of each loop and set to true if and only if 
          * new polys are created due to joins AND the line/quad/vertex map
          * has at least one new value added to it. <p>
          * 
@@ -572,98 +539,118 @@ public class CSGNode implements Iterable<CSGPolygon>
         {
             potentialMatchesRemain = false;
             
-            ObjectIterator<Entry<Int2IntOpenHashMap>> it = edgeMap.int2ObjectEntrySet().fastIterator();
-            
-            while(it.hasNext())
+            for( java.util.Map.Entry<Vertex, Collection<CSGPolygon>> entry : vertexMap.asMap().entrySet())
             {
-                Entry<Int2IntOpenHashMap> entry = it.next();
-                
-                Int2IntOpenHashMap poly2LineIndexMap = entry.getValue();
-                
-                final int lineCount = poly2LineIndexMap.size();
-                
-                if(lineCount < 2)
+                // looking specifically for T junctions
+                if(entry.getValue().size() == 2)
                 {
-                    // if one or zero polys reference this edge it cannot be joined
-                    // and thus no need to track it any longer. Subsequent operations
-                    // thus cannot assume all lineIDs will be present in the line/quad/vertex map
-                    it.remove();
-                    continue;
-                }
-                
-                int[] edgeQuadIDs = poly2LineIndexMap.keySet().toArray(new int[lineCount]);
-                
-                for(int i = 0; i < lineCount - 1; i++)
-                {
-                    for(int j = i + 1; j < lineCount; j++)
+                    Vertex v = entry.getKey();
+                    Iterator<CSGPolygon> it = entry.getValue().iterator();
+                    CSGPolygon first = it.next();
+                    CSGPolygon second = it.next();
+                    @Nullable CSGPolygon newPoly = joinAtVertex(v, first, second);
+                    if(newPoly != null)
                     {
-                        // Examining two polys that share an edge
-                        // to determine if they can be combined.
-
-                        CSGPolygon iPoly = polyMap.get(edgeQuadIDs[i]);
-                        CSGPolygon jPoly = polyMap.get(edgeQuadIDs[j]);
-                        
-                        if(iPoly == null || jPoly == null) continue;
-                        
-                        CSGPolygon joined = joinCsgPolys(iPoly, jPoly, entry.getIntKey());
-                        
-                        if(joined != null)
-                        {    
-                            // remove quads from main map
-                            polyMap.remove(iPoly.quadID);
-                            polyMap.remove(jPoly.quadID);
-                            
-                            // add quad to main map
-                            polyMap.put(joined.quadID, joined);
-
-                            // remove quads from edge map
-                            for(int n = 0; n < iPoly.vertex.length; n++)
-                            {                
-                                final int lineID = iPoly.lineID[n];
-                                // negative line ids represent outside edges - not part of map
-                                if(lineID < 0) continue;
-
-                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
-                                // may get null entries if line only exists on one quad
-                                // and is no longer tracked - this is OK
-                                if(removeMap  != null) removeMap.remove(iPoly.quadID);
-                            }
-                            
-                            for(int n = 0; n < jPoly.vertex.length; n++)
-                            {
-                                final int lineID = jPoly.lineID[n];
-                                
-                                // negative line ids represent outside edges - not part of map
-                                if(lineID < 0) continue;
-
-                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
-                                // may get null entries if line only exists on one quad
-                                // and is no longer tracked - this is OK
-                                if(removeMap  != null) removeMap.remove(jPoly.quadID);
-                            }                            
-                            
-                            // add quad to edge map
-                            // no new edges are created as part of this process
-                            // so we can safely assume the edge will be found
-                            // or it is no longer being tracked because only one poly uses it
-                            for(int n = 0; n < joined.vertex.length; n++)
-                            {
-                                final int lineID = joined.lineID[n];
-                                
-                                // negative line ids represent outside edges - not part of map
-                                if(lineID < 0) continue;
-
-                                Int2IntOpenHashMap addMap = edgeMap.get(lineID);
-                                if(addMap != null)
-                                {
-                                    potentialMatchesRemain = true;
-                                    addMap.put(joined.quadID, n);
-                                }
-                            }
-                        }
+                        potentialMatchesRemain = true;
+                        vertexMap.remove(v, first);
+                        vertexMap.remove(v, second);
+                        vertexMap.put(v, newPoly);
+                        break;
                     }
                 }
             }
+//            ObjectIterator<Entry<Int2IntOpenHashMap>> it = edgeMap.int2ObjectEntrySet().fastIterator();
+//            
+//            while(it.hasNext())
+//            {
+//                Entry<Int2IntOpenHashMap> entry = it.next();
+//                
+//                Int2IntOpenHashMap poly2LineIndexMap = entry.getValue();
+//                
+//                final int lineCount = poly2LineIndexMap.size();
+//                
+//                if(lineCount < 2)
+//                {
+//                    // if one or zero polys reference this edge it cannot be joined
+//                    // and thus no need to track it any longer. Subsequent operations
+//                    // thus cannot assume all lineIDs will be present in the line/quad/vertex map
+//                    it.remove();
+//                    continue;
+//                }
+//                
+//                int[] edgeQuadIDs = poly2LineIndexMap.keySet().toArray(new int[lineCount]);
+//                
+//                for(int i = 0; i < lineCount - 1; i++)
+//                {
+//                    for(int j = i + 1; j < lineCount; j++)
+//                    {
+//                        // Examining two polys that share an edge
+//                        // to determine if they can be combined.
+//
+//                        CSGPolygon iPoly = polyMap.get(edgeQuadIDs[i]);
+//                        CSGPolygon jPoly = polyMap.get(edgeQuadIDs[j]);
+//                        
+//                        if(iPoly == null || jPoly == null) continue;
+//                        
+//                        CSGPolygon joined = joinCsgPolys(iPoly, jPoly, entry.getIntKey());
+//                        
+//                        if(joined != null)
+//                        {    
+//                            // remove quads from main map
+//                            polyMap.remove(iPoly.quadID);
+//                            polyMap.remove(jPoly.quadID);
+//                            
+//                            // add quad to main map
+//                            polyMap.put(joined.quadID, joined);
+//
+//                            // remove quads from edge map
+//                            for(int n = 0; n < iPoly.vertex.length; n++)
+//                            {                
+//                                final int lineID = iPoly.lineID[n];
+//                                // negative line ids represent outside edges - not part of map
+//                                if(lineID < 0) continue;
+//
+//                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
+//                                // may get null entries if line only exists on one quad
+//                                // and is no longer tracked - this is OK
+//                                if(removeMap  != null) removeMap.remove(iPoly.quadID);
+//                            }
+//                            
+//                            for(int n = 0; n < jPoly.vertex.length; n++)
+//                            {
+//                                final int lineID = jPoly.lineID[n];
+//                                
+//                                // negative line ids represent outside edges - not part of map
+//                                if(lineID < 0) continue;
+//
+//                                Int2IntOpenHashMap removeMap = edgeMap.get(lineID);
+//                                // may get null entries if line only exists on one quad
+//                                // and is no longer tracked - this is OK
+//                                if(removeMap  != null) removeMap.remove(jPoly.quadID);
+//                            }                            
+//                            
+//                            // add quad to edge map
+//                            // no new edges are created as part of this process
+//                            // so we can safely assume the edge will be found
+//                            // or it is no longer being tracked because only one poly uses it
+//                            for(int n = 0; n < joined.vertex.length; n++)
+//                            {
+//                                final int lineID = joined.lineID[n];
+//                                
+//                                // negative line ids represent outside edges - not part of map
+//                                if(lineID < 0) continue;
+//
+//                                Int2IntOpenHashMap addMap = edgeMap.get(lineID);
+//                                if(addMap != null)
+//                                {
+//                                    potentialMatchesRemain = true;
+//                                    addMap.put(joined.quadID, n);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
             
         }
         
@@ -675,9 +662,15 @@ public class CSGNode implements Iterable<CSGPolygon>
 //        ArrayList<ICSGPolygon> retVal = new ArrayList<>();
 //        polyMap.values().forEach((p) -> retVal.addAll(p.toQuadsCSG()));
 //        return retVal;
-        return polyMap.values();
-            
-        
+        Set<CSGPolygon> polys = Collections.newSetFromMap( new IdentityHashMap<>());
+        polys.addAll(vertexMap.values());
+        return polys;
+    }
+
+    private @Nullable CSGPolygon joinAtVertex(Vertex key, CSGPolygon first, CSGPolygon second)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
@@ -696,14 +689,14 @@ public class CSGNode implements Iterable<CSGPolygon>
     @Override
     public Iterator<CSGPolygon> iterator()
     {
-        return new AbstractIterator<CSGPolygon>()
+        return new Iterator<CSGPolygon>()
         {
            Iterator<CSGNode> nodes = CSGNode.this.allNodes();
            CSGNode node = nodes.next();
            Iterator<CSGPolygon> polys = node.quads.iterator();
+           @Nullable CSGPolygon next = computeNext();
            
-            @Override
-            protected CSGPolygon computeNext()
+            private CSGPolygon computeNext()
             {
                 if(polys.hasNext()) return polys.next();
                 
@@ -714,7 +707,21 @@ public class CSGNode implements Iterable<CSGPolygon>
                     if(polys.hasNext()) return polys.next();
                 }
                 
-                return this.endOfData();
+                return null;
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                return this.next != null;
+            }
+
+            @Override
+            public CSGPolygon next()
+            {
+                CSGPolygon result = this.next;
+                this.next = this.computeNext();
+                return result;
             }
         };
     }
