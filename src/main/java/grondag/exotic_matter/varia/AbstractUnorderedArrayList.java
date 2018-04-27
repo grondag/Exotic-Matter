@@ -129,14 +129,19 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
     @Override
     public Iterator<T> iterator()
     {
-        return new AbstractIterator<T>()
+        return new Iterator<T>()
         {
             private int i = 0;
-            
+
             @Override
-            protected T computeNext()
+            public boolean hasNext()
             {
-                if(i >= size) return this.endOfData();
+                return i < size;
+            }
+
+            @Override
+            public T next()
+            {
                 return get(i++);
             }};
     }
