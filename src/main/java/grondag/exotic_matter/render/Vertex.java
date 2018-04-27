@@ -196,7 +196,7 @@ public final class Vertex extends Vec3f
      * Factor 0 returns this vertex. Factor 1 return other vertex, 
      * with values in between returning a weighted average.
      */
-    public final Vertex interpolate(Vertex otherVertex, float otherWeight)
+    public final Vertex interpolate(Vertex otherVertex, final float otherWeight)
     {
         // tx = 2
         // ox = 1
@@ -210,11 +210,16 @@ public final class Vertex extends Vec3f
         
         final float newU = this.u + (otherVertex.u - this.u) * otherWeight;
         final float newV = this.v + (otherVertex.v - this.v) * otherWeight;
+        
+        final int thisRed = this.color & 0xFF;
+        final int thisGreen = this.color & 0xFF00;
+        final int thisBlue = this.color & 0xFF0000;
+        final int thisAlpha = this.color & 0xFF000000;
 
-        int newColor = (int) ((this.color & 0xFF) + ((otherVertex.color & 0xFF) - (this.color & 0xFF)) * otherWeight);
-        newColor |= (int) ((this.color & 0xFF00) + ((otherVertex.color & 0xFF00) - (this.color & 0xFF00)) * otherWeight);
-        newColor |= (int) ((this.color & 0xFF0000) + ((otherVertex.color & 0xFF0000) - (this.color & 0xFF0000)) * otherWeight);
-        newColor |= (int) ((this.color & 0xFF000000) + ((otherVertex.color & 0xFF000000) - (this.color & 0xFF000000)) * otherWeight);
+        int newColor = (int) (thisRed + ((otherVertex.color & 0xFF) - thisRed) * otherWeight);
+        newColor |= (int) (thisGreen + ((otherVertex.color & 0xFF00) - thisGreen) * otherWeight);
+        newColor |= (int) (thisBlue + ((otherVertex.color & 0xFF0000) - thisBlue) * otherWeight);
+        newColor |= (int) (thisAlpha + ((otherVertex.color & 0xFF000000) - thisAlpha) * otherWeight);
         
         final Vec3f thisNormal = this.normal;
         final Vec3f otherNormal = otherVertex.normal;
