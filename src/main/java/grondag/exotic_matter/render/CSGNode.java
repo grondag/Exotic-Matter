@@ -69,12 +69,12 @@ public class CSGNode implements Iterable<CSGPolygon>
     /**
      * RawQuads in front of the plane.
      */
-    private @Nullable CSGNode front;
+    @Nullable CSGNode front;
     
     /**
      * RawQuads in back of the plane.
      */
-    private @Nullable CSGNode back;
+    @Nullable CSGNode back;
 
     /**
      * Returns root node of BSP tree with given polygons.
@@ -265,42 +265,15 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     private void clipQuad(final CSGPolygon poly, List<CSGPolygon> output)
     {
-        CSGPolygon p = poly;
-        @Nullable CSGNode node  = this;
         
-        ArrayDeque<Pair<CSGNode, CSGPolygon>> stack = new ArrayDeque<>();
+        ICSGSplitAcceptor.ClipAcceptor target = new ICSGSplitAcceptor.ClipAcceptor(poly, this, output);
         
-        ICSGSplitAcceptor.FrontBack target = new ICSGSplitAcceptor.FrontBack();
-        
-        while(true)
+        do
         {
-            node.plane.splitQuad(p, target);
-            
-            if(target.hasFront())  
-            {
-                Iterator<CSGPolygon> it = target.allFront();
-                
-                if(node.front == null)
-                    while(it.hasNext()) output.add(it.next());
-                else
-                    while(it.hasNext()) stack.push(Pair.of(node.front, it.next()));
-            }
-            
-            if(target.hasBack() && node.back != null)  
-            {
-                // not adding back plane polys to the output when
-                // we get to leaf nodes is what does the clipping 
-                Iterator<CSGPolygon> it = target.allBack();
-                while(it.hasNext()) stack.push(Pair.of(node.back, it.next()));
-            }
-            
-            target.clear();
-            
-            if(stack.isEmpty())  break;
-            Pair<CSGNode, CSGPolygon> next = stack.pop();
-            node = next.getLeft();
-            p = next.getRight();
-        }
+            target.currentNode().plane.splitQuad(target.currentPoly(), target);
+        } 
+        while(target.advance());
+        
     }
 
     /**
