@@ -20,7 +20,7 @@ public class TerrainPerf
         final int range = TerrainState.MAX_HEIGHT - TerrainState.MIN_HEIGHT + 1;
          
         ExoticMatter.INSTANCE.info("Warm up / single thread runs...");
-        for(int i = 0; i < 400000; i++)
+        for(int i = 0; i < 40000000; i++)
         {
             boolean  isFiller = r.nextBoolean();
             int level = r.nextInt(TerrainState.BLOCK_LEVELS_INT);
