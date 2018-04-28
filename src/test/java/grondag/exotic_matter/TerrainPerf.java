@@ -1,21 +1,14 @@
 package grondag.exotic_matter;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.util.Random;
 
 import org.junit.Test;
 
 import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.TerrainMeshFactory;
-import grondag.exotic_matter.model.TerrainState;
 import grondag.exotic_matter.render.CSGNode;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 public class TerrainPerf
 {
@@ -24,7 +17,7 @@ public class TerrainPerf
     public void test()
     {
         ModelState[] modelStates = new ModelState[120000];
-        ConfigXM.BLOCKS.simplifyTerrainBlockGeometry = true;
+        ConfigXM.BLOCKS.simplifyTerrainBlockGeometry = false;
         
         try
           {

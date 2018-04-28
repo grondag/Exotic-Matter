@@ -339,7 +339,7 @@ public class TerrainState
             double avg = midCornerHeight[HorizontalCorner.find(side, side.getLeft()).ordinal()];
             avg += midCornerHeight[HorizontalCorner.find(side, side.getRight()).ordinal()];
             avg /= 2;
-            boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < 2.0 / BLOCK_LEVELS_FLOAT;
+            boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < QuadHelper.EPSILON;
             setSimpleFlag(side.ordinal(), sideIsSimple);
             topIsSimple = topIsSimple && sideIsSimple;
         }
