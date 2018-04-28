@@ -10,7 +10,8 @@ public abstract class ICSGSplitAcceptor
 {
     protected int size;
     protected int index;
-    protected Object[] items = new Object[24];
+    protected CSGPolygon[] polys = new CSGPolygon[12];
+    protected CSGNode[] nodes = new CSGNode[12];
 
     public abstract void acceptFront(CSGPolygon poly);
     public abstract void acceptBack(CSGPolygon poly);
@@ -19,8 +20,8 @@ public abstract class ICSGSplitAcceptor
     
     public final void splitPolyStartingWith(CSGPolygon toClip, CSGNode firstNode)
     {
-        this.items[0] = toClip;
-        this.items[1] = firstNode;
+        this.polys[0] = toClip;
+        this.nodes[0] = firstNode;
         this.size = 1;
         this.index = 0;
         
@@ -33,19 +34,20 @@ public abstract class ICSGSplitAcceptor
     
     protected final CSGPolygon currentPoly()
     {
-        return (CSGPolygon) this.items[index * 2];
+        return this.polys[index];
     }
     
     protected final CSGNode currentNode()
     {
-        return (CSGNode) this.items[index * 2 + 1];
+        return this.nodes[index];
     }
     
     protected final void expandIfNecessary()
     {
-        if(size * 2 == this.items.length)
+        if(size  == this.nodes.length)
         {
-            this.items = Arrays.copyOf(this.items, this.size * 4);
+            this.polys = Arrays.copyOf(this.polys, this.size * 2);
+            this.nodes = Arrays.copyOf(this.nodes, this.size * 2);
         }
     }
     
@@ -70,9 +72,8 @@ public abstract class ICSGSplitAcceptor
             else
             {
                 this.expandIfNecessary();
-                final int i = (size++) * 2;
-                this.items[i] = poly;
-                this.items[i + 1] = n.front;
+                this.polys[size] = poly;
+                this.nodes[size++] = n.front;
             }
         }
 
@@ -85,9 +86,8 @@ public abstract class ICSGSplitAcceptor
             if(n.back != null)
             {
                 this.expandIfNecessary();
-                final int i = (size++) * 2;
-                this.items[i] = poly;
-                this.items[i + 1] = n.back;
+                this.polys[size] = poly;
+                this.nodes[size++] = n.back;
             }
         }
 
@@ -123,9 +123,8 @@ public abstract class ICSGSplitAcceptor
             else
             {
                 this.expandIfNecessary();
-                final int i = (size++) * 2;
-                this.items[i] = poly;
-                this.items[i + 1] = n.front;
+                this.polys[size] = poly;
+                this.nodes[size++] = n.front;
             }
         }
 
@@ -140,9 +139,8 @@ public abstract class ICSGSplitAcceptor
             else
             {
                 this.expandIfNecessary();
-                final int i = (size++) * 2;
-                this.items[i] = poly;
-                this.items[i + 1] = n.back;
+                this.polys[size] = poly;
+                this.nodes[size++] = n.back;
             }
         }
         
