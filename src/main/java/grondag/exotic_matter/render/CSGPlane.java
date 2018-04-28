@@ -118,17 +118,17 @@ public class CSGPlane
         
         final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
         
-        if(t >= -QuadHelper.EPSILON)
+        if(t <= QuadHelper.EPSILON)
         {
-            if(t <= QuadHelper.EPSILON)
+            if(t >= -QuadHelper.EPSILON)
                 return COPLANAR;
             else
-                return FRONT_INCREMENT;
+                return BACK_INCREMENT;
         }
         else
         {
-            // t < -QuadHelper.EPSILON
-            return BACK_INCREMENT;
+            // t > QuadHelper.EPSILON
+            return FRONT_INCREMENT;
         }
     }
     
