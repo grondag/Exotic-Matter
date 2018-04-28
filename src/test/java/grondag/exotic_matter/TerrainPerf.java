@@ -14,6 +14,7 @@ import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.TerrainMeshFactory;
 import grondag.exotic_matter.model.TerrainState;
+import grondag.exotic_matter.render.CSGNode;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 public class TerrainPerf
@@ -76,6 +77,7 @@ public class TerrainPerf
             System.out.println("getShapeQuads mean time = " + elapsed / modelStates.length  + "ns");
             System.out.println("getShapeQuads min time  = " + min  + "ns");
             System.out.println("getShapeQuads max time  = " + max  + "ns");
+            CSGNode.recombinedRenderableQuadsCounter.reportAndClear();
             System.out.println("Error count = " + errorCount);
             System.out.println(" ");
         }

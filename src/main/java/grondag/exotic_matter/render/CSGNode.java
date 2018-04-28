@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -51,6 +52,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
+import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
 
@@ -247,6 +249,14 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     public List<IPolygon> recombinedRenderableQuads()
     {
+        recombinedRenderableQuadsCounter.start();
+        List<IPolygon> result = recombinedRenderableQuadsInner();
+        recombinedRenderableQuadsCounter.stop();
+        return result;
+    }
+    public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
+    private List<IPolygon> recombinedRenderableQuadsInner()
+    {
         IdentityHashMap<IPolygon, Collection<CSGPolygon>> ancestorBuckets = new IdentityHashMap<>();
         
         for(CSGPolygon quad : this) 
@@ -421,20 +431,15 @@ public class CSGNode implements Iterable<CSGPolygon>
         /**
          * Index of all polys by vertex
          */
-        SetMultimap<Vertex, CSGPolygon> vertexMap = Multimaps.newSetMultimap(Maps.newIdentityHashMap(), Sets::newIdentityHashSet);
+        IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap = new IdentityHashMap<>();
+//        SetMultimap<Vertex, CSGPolygon> vertexMap = Multimaps.newSetMultimap(Maps.newIdentityHashMap(), Sets::newIdentityHashSet);
         
-        quadsIn.forEach(q -> 
-        {
-            for(Vertex v : q.vertex)
-            {
-                vertexMap.put(v, q);
-            }
-        });
+        quadsIn.forEach(q ->  addPolyToVertexMap(vertexMap, q));
         
+        Set<CSGPolygon> polys = Collections.newSetFromMap(new IdentityHashMap<>());
+        polys.addAll(quadsIn);
         
 //        double totalArea = 0;
-        
-    
         
         /** 
          * Cleared at top of each loop and set to true if and only if 
@@ -452,23 +457,34 @@ public class CSGNode implements Iterable<CSGPolygon>
         {
             potentialMatchesRemain = false;
             
-            for( java.util.Map.Entry<Vertex, Collection<CSGPolygon>> entry : vertexMap.asMap().entrySet())
+            Iterator<Entry<Vertex, SimpleUnorderedArrayList<CSGPolygon>>> it = vertexMap.entrySet().iterator();
+            while(it.hasNext())
             {
-                // looking specifically for T junctions
-                if(entry.getValue().size() == 2)
+                Entry<Vertex, SimpleUnorderedArrayList<CSGPolygon>> entry = it.next();
+                SimpleUnorderedArrayList<CSGPolygon> bucket = entry.getValue();
+                if(bucket.size() < 2)
                 {
+                    // nothing to simplify here
+                    it.remove();
+                }
+                else if(bucket.size() == 2)
+                {
+                    // eliminate T junctions
                     Vertex v = entry.getKey();
-                    Iterator<CSGPolygon> it = entry.getValue().iterator();
-                    CSGPolygon first = it.next();
-                    CSGPolygon second = it.next();
+                    CSGPolygon first = bucket.get(0);
+                    CSGPolygon second = bucket.get(1);
                     @Nullable CSGPolygon newPoly = joinAtVertex(v, first, second);
                     if(newPoly != null)
                     {
                         potentialMatchesRemain = true;
-                        vertexMap.remove(v, first);
-                        vertexMap.remove(v, second);
-                        vertexMap.put(v, newPoly);
-                        break;
+                        // we won't see a CME because not adding or removing any vertices at this point except via the iterator
+                        it.remove();
+                        polys.remove(first);
+                        removePolyFromVertexMap(vertexMap, first, v);
+                        polys.remove(second);
+                        removePolyFromVertexMap(vertexMap, second, v);
+                        polys.add(newPoly);
+                        addPolyToVertexMap(vertexMap, newPoly);
                     }
                 }
             }
@@ -575,11 +591,34 @@ public class CSGNode implements Iterable<CSGPolygon>
 //        ArrayList<ICSGPolygon> retVal = new ArrayList<>();
 //        polyMap.values().forEach((p) -> retVal.addAll(p.toQuadsCSG()));
 //        return retVal;
-        Set<CSGPolygon> polys = Collections.newSetFromMap( new IdentityHashMap<>());
-        polys.addAll(vertexMap.values());
         return polys;
     }
 
+    private void removePolyFromVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vertex excludingVertex )
+    {
+        for(Vertex v : poly.vertex)
+        {
+            if(v == excludingVertex) continue;
+            SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
+            if(bucket == null) continue;
+            bucket.removeIfPresent(poly);
+        }
+    }
+    
+    private void addPolyToVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    {
+        for(Vertex v : poly.vertex)
+        {
+            SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
+            if(bucket == null)
+            {
+                bucket = new SimpleUnorderedArrayList<>();
+                vertexMap.put(v, bucket);
+            }
+            bucket.add(poly);
+        }
+    }
+    
     private @Nullable CSGPolygon joinAtVertex(Vertex key, CSGPolygon first, CSGPolygon second)
     {
         // TODO Auto-generated method stub

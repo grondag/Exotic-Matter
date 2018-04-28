@@ -10,7 +10,7 @@ public class CSGPolygon
     public final IPolygon original;
 
     public boolean isInverted;
-
+    
     public CSGPolygon(IPolygon original)
     {
         this(original, original.vertexCount());
