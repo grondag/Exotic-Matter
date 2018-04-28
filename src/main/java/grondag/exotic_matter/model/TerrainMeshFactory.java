@@ -1,5 +1,8 @@
 package grondag.exotic_matter.model;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +23,6 @@ import grondag.exotic_matter.render.SurfaceTopology;
 import grondag.exotic_matter.render.SurfaceType;
 import grondag.exotic_matter.render.Vec3f;
 import grondag.exotic_matter.varia.Color;
-import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
 import net.minecraft.block.Block;
@@ -93,13 +95,58 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //    private static LongOpenHashSet hitMap = new LongOpenHashSet();
 //    private static AtomicInteger tryCount = new AtomicInteger();
 //    private static AtomicInteger hitCount = new AtomicInteger();
-    
+//    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
+//    private static int index = 0;
     @Override
     public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
-        shapeTimer.start();
-        Collection<IPolygon> result = innerShapeQuads(modelState);
-        shapeTimer.stop();
+//        shapeTimer.start();
+//        Collection<IPolygon> result = innerShapeQuads(modelState);
+//        shapeTimer.stop();
+//        synchronized(modelStates)
+//        {
+//            modelStates[index++] = modelState;
+//            if(index == modelStates.length)
+//            {
+//                try
+//                {
+//                    ByteBuffer bytes = ByteBuffer.allocate(modelStates.length * 4 * Long.BYTES);
+//                    for(ISuperModelState mstate : modelStates)
+//                    {
+//                        assert mstate.getShape() == ModShapes.TERRAIN_FILLER || mstate.getShape() == ModShapes.TERRAIN_HEIGHT;
+//                        assert mstate.getTerrainState() != null;
+//                        bytes.putLong(mstate.getBits0());
+//                        bytes.putLong(mstate.getBits1());
+//                        bytes.putLong(mstate.getBits2());
+//                        bytes.putLong(mstate.getBits3());
+//                    }
+//                    bytes.flip();
+//                    FileOutputStream fos = new FileOutputStream("terrainState.data");
+//                    fos.getChannel().write(bytes);
+//                    fos.close();
+//                    
+//                    
+//                    FileInputStream fis = new FileInputStream("terrainState.data");
+//                    ByteBuffer testBytes = ByteBuffer.allocate(modelStates.length * 4 * Long.BYTES);
+//                    fis.getChannel().read(testBytes);
+//                    fis.close();
+//                    testBytes.flip();
+//                    for(int i = 0; i < modelStates.length; i++)
+//                    {
+//                        ModelState testModelState = new ModelState(testBytes.getLong(), testBytes.getLong(), testBytes.getLong(), testBytes.getLong());
+//                        ISuperModelState originalModelState = modelStates[i];
+//                        assert testModelState.equalsIncludeStatic(originalModelState);
+//                        assert testModelState.getShape() == ModShapes.TERRAIN_FILLER || testModelState.getShape() == ModShapes.TERRAIN_HEIGHT;
+//                        assert testModelState.getTerrainState() != null;
+//                    }
+//                }
+//                catch (Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
+//                index = 0;
+//            }
+//        }
 //        if(shapeTimer.stop())
 //        {
 //            ExoticMatter.INSTANCE.info("Terrain geometry potential cache hit rate = %d percent", (hitCount.get() *  100) / tryCount.get());
@@ -107,12 +154,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //            hitCount.set(0);
 //            ExoticMatter.INSTANCE.info("Terrain geometry max cached states = %d", hitMap.size());
 //        }
-        return result;
-    }
-    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 100000);
-    private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
-    {
-        ArrayList<IPolygon> rawQuads = new ArrayList<>();
+//        return result;
+//    }
+//    private static MicroTimer shapeTimer = new MicroTimer("terrainGetShapeQuads", 400000);
+//   
+//   
+//    private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
+//    {
         IMutablePolygon template = Poly.mutable(4);
 
         template.setColor(Color.WHITE);
@@ -121,8 +169,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // default - need to change for sides and bottom
         template.setNominalFace(EnumFacing.UP);
 
-
         TerrainState flowState = modelState.getTerrainState();
+        
+//        synchronized(stateList)
+//        {
+//            stateList.add(modelState.getShape() ==ModShapes.TERRAIN_FILLER ?  -flowState.getStateKey() : flowState.getStateKey());
+//        }
         
 //        tryCount.incrementAndGet();
 //        synchronized(hitMap)
@@ -133,6 +185,94 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //            }
 //        }
 
+        Collection<IPolygon> result = flowState.isFullCube()
+            ?  cubeQuads(template)
+            : CSGMesh.intersect(terrainQuads(flowState, template), cubeQuads(template));
+
+        // scale all quads UVs according to position to match what surface painter expects
+        // Any quads with a null face are assumed to be part of the top face
+        
+        // We want top face textures to always join irrespective of Y.
+        // Other face can vary based on orthogonal dimension to break up appearance of layers.
+        for(IPolygon quad : result)
+        {
+            EnumFacing face = quad.getNominalFace();
+            if(face == null)
+            {
+                assert false : "Terrain Mesh Generator is outputting quad with null nominal face.";
+                face = EnumFacing.UP;
+            }
+            
+            IMutablePolygon mutableQuad = quad.mutableReference();
+            
+            switch(face)
+            {
+                case NORTH:
+                {
+                    int zHash = MathHelper.hash(modelState.getPosZ());
+                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                }
+                case SOUTH:
+                {
+                    int zHash = MathHelper.hash(modelState.getPosZ());
+                    mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                }
+                case EAST:
+                {
+                    int xHash = MathHelper.hash(modelState.getPosX());
+                    mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                }
+                case WEST:
+                {
+                    int xHash = MathHelper.hash(modelState.getPosX());
+                    mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                } 
+                case DOWN:
+                {
+                    int yHash = MathHelper.hash(modelState.getPosY());
+                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                }
+                case UP:
+                default:
+                {
+                    mutableQuad.setMinU(modelState.getPosX());
+                    mutableQuad.setMaxU(quad.getMinU() +  1);
+                    mutableQuad.setMinV(modelState.getPosZ());
+                    mutableQuad.setMaxV(quad.getMinV() + 1);
+                    break;
+                }
+            }
+        }
+        
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
+        
+        return result;
+    }
+
+    private List<IPolygon> terrainQuads(TerrainState flowState, IMutablePolygon template)
+    {
+        ArrayList<IPolygon> terrainQuads = new ArrayList<>();
+        
         // center vertex setup
         FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
 
@@ -414,7 +554,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
         final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple();
         
-        //single top face if it is relatively flat and all sides can be drawn without a mid vertex
+        //simple top face if it is relatively flat and all sides can be drawn without a mid vertex
         if(isTopSimple)
         {
             IMutablePolygon qi = Poly.mutable(template, 4);
@@ -429,7 +569,15 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             qi.setVertexNormal(2, normCorner[HorizontalCorner.NORTH_EAST.ordinal()]);
             qi.setVertexNormal(3, normCorner[HorizontalCorner.NORTH_WEST.ordinal()]);
 
-            rawQuads.add(qi);    
+            //break into tris unless it is coplanar
+            if(qi.isOnSinglePlane())
+            {
+                terrainQuads.add(qi);   
+            }
+            else
+            {
+                qi.addTrisToList(terrainQuads);
+            }
         }
 
         for(HorizontalFace side: HorizontalFace.values())
@@ -449,7 +597,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
                     qi.setVertexNormal(1, normCenter);
                     qi.setVertexNormal(2, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);                    
-                    rawQuads.add(qi);    
+                    terrainQuads.add(qi);    
                 }
 
                 // side
@@ -464,7 +612,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
                         new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                rawQuads.add(qSide);
+                terrainQuads.add(qSide);
 
             }
             else
@@ -474,13 +622,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 qi.setVertexNormal(0, normSide[side.ordinal()]);
                 qi.setVertexNormal(1, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
                 qi.setVertexNormal(2, normCenter);
-                rawQuads.add(qi);
+                terrainQuads.add(qi);
 
                 qi = quadInputsCenterRight[side.ordinal()];
                 qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);
                 qi.setVertexNormal(1, normSide[side.ordinal()]);
                 qi.setVertexNormal(2, normCenter);     
-                rawQuads.add(qi);
+                terrainQuads.add(qi);
 
                 //Sides
                 IMutablePolygon qSide = Poly.mutable(template);
@@ -494,7 +642,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                rawQuads.add(qSide);
+                terrainQuads.add(qSide);
 
                 qSide = Poly.mutable(qSide);
                 qSide.setSurfaceInstance(SURFACE_SIDE);
@@ -505,7 +653,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
                         new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                rawQuads.add(qSide);
+                terrainQuads.add(qSide);
             }
         }     
 
@@ -517,8 +665,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         qBottom.setSurfaceInstance(SURFACE_SIDE);
         qBottom.setNominalFace(EnumFacing.DOWN);        
         qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
-        rawQuads.add(qBottom);
+        terrainQuads.add(qBottom);
+        
+        return terrainQuads;
+    }
 
+    private List<IPolygon> cubeQuads(IMutablePolygon template)
+    {
         ArrayList<IPolygon> cubeQuads = new ArrayList<>();
         cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         IMutablePolygon faceQuad = Poly.mutableCopyOf(template);
@@ -534,87 +687,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(faceQuad), EnumFacing.SOUTH).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
         cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(faceQuad), EnumFacing.EAST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
         cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(faceQuad), EnumFacing.WEST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
-
-        Collection<IPolygon> result = CSGMesh.intersect(rawQuads, cubeQuads);
-
-        // scale all quads UVs according to position to match what surface painter expects
-        // Any quads with a null face are assumed to be part of the top face
-        
-        // We want top face textures to always join irrespective of Y.
-        // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(IPolygon quad : result)
-        {
-            EnumFacing face = quad.getNominalFace();
-            if(face == null)
-            {
-                assert false : "Terrain Mesh Generator is outputting quad with null nominal face.";
-                face = EnumFacing.UP;
-            }
-            
-            IMutablePolygon mutableQuad = quad.mutableReference();
-            
-            switch(face)
-            {
-                case NORTH:
-                {
-                    int zHash = MathHelper.hash(modelState.getPosZ());
-                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                }
-                case SOUTH:
-                {
-                    int zHash = MathHelper.hash(modelState.getPosZ());
-                    mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                }
-                case EAST:
-                {
-                    int xHash = MathHelper.hash(modelState.getPosX());
-                    mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                }
-                case WEST:
-                {
-                    int xHash = MathHelper.hash(modelState.getPosX());
-                    mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                } 
-                case DOWN:
-                {
-                    int yHash = MathHelper.hash(modelState.getPosY());
-                    mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                }
-                case UP:
-                default:
-                {
-                    mutableQuad.setMinU(modelState.getPosX());
-                    mutableQuad.setMaxU(quad.getMinU() +  1);
-                    mutableQuad.setMinV(modelState.getPosZ());
-                    mutableQuad.setMaxV(quad.getMinV() + 1);
-                    break;
-                }
-            }
-        }
-        
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
-        
-        return result;
+        return cubeQuads;
     }
 
     /**
