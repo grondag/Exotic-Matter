@@ -1,69 +1,66 @@
 package grondag.exotic_matter.render;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
 
-
-public interface ICSGSplitAcceptor
+public abstract class ICSGSplitAcceptor
 {
-    public void acceptFront(CSGPolygon poly);
-    public void acceptBack(CSGPolygon poly);
-    public void acceptCoplanarFront(CSGPolygon poly);
-    public void acceptCoplanarBack(CSGPolygon poly);
-    public boolean hasBack();
-    public Iterator<CSGPolygon> allBack();
-    public boolean hasFront();
-    public Iterator<CSGPolygon> allFront();
-    
-    public static class ClipAcceptor implements ICSGSplitAcceptor
-    {
-        int size = 1;
-        int index = 0;
-        
-        Object[] items = new Object[24];
-        final List<CSGPolygon> output;
-        
-        public ClipAcceptor(CSGPolygon toClip, CSGNode firstNode, List<CSGPolygon> output)
-        {
-            this.output = output;
-            this.items[0] = toClip;
-            this.items[1] = firstNode;
-        }
+    protected int size;
+    protected int index;
+    protected Object[] items = new Object[24];
 
-        /**
-         * Advances to the next poly/node to be split. Returns false if at end.
-         */
-        public boolean advance()
-        {
-            return ++index < size;
-        }
+    public abstract void acceptFront(CSGPolygon poly);
+    public abstract void acceptBack(CSGPolygon poly);
+    public abstract void acceptCoplanarFront(CSGPolygon poly);
+    public abstract void acceptCoplanarBack(CSGPolygon poly);
+    
+    public final void splitPolyStartingWith(CSGPolygon toClip, CSGNode firstNode)
+    {
+        this.items[0] = toClip;
+        this.items[1] = firstNode;
+        this.size = 1;
+        this.index = 0;
         
-        public CSGPolygon currentPoly()
+        do
         {
-            return (CSGPolygon) this.items[index * 2];
-        }
-        
-        public CSGNode currentNode()
+            currentNode().plane.splitQuad(currentPoly(), this);
+        } 
+        while(++index < size);
+    }
+    
+    protected final CSGPolygon currentPoly()
+    {
+        return (CSGPolygon) this.items[index * 2];
+    }
+    
+    protected final CSGNode currentNode()
+    {
+        return (CSGNode) this.items[index * 2 + 1];
+    }
+    
+    protected final void expandIfNecessary()
+    {
+        if(size * 2 == this.items.length)
         {
-            return (CSGNode) this.items[index * 2 + 1];
+            this.items = Arrays.copyOf(this.items, this.size * 4);
         }
-        
-        private void expandIfNecessary()
+    }
+    
+    public final static class ClipAcceptor extends ICSGSplitAcceptor
+    {
+        private final List<CSGPolygon> output = new ArrayList<>();
+
+        public final List<CSGPolygon> output()
         {
-            if(size * 2 == this.items.length)
-            {
-                this.items = Arrays.copyOf(this.items, this.size * 4);
-            }
+            return this.output;
         }
+   
         
         @Override
-        public void acceptFront(CSGPolygon poly)
+        public final void acceptFront(CSGPolygon poly)
         {
             CSGNode n = this.currentNode();
             if(n.front == null)
@@ -80,7 +77,7 @@ public interface ICSGSplitAcceptor
         }
 
         @Override
-        public void acceptBack(CSGPolygon poly)
+        public final void acceptBack(CSGPolygon poly)
         {
               // not adding back plane polys to the output when
               // we get to leaf nodes is what does the clipping 
@@ -95,137 +92,70 @@ public interface ICSGSplitAcceptor
         }
 
         @Override
-        public void acceptCoplanarFront(CSGPolygon poly)
+        public final void acceptCoplanarFront(CSGPolygon poly)
         {
             this.acceptFront(poly);
             
         }
 
         @Override
-        public void acceptCoplanarBack(CSGPolygon poly)
+        public final void acceptCoplanarBack(CSGPolygon poly)
         {
             this.acceptBack(poly);
         }
-
-        @Override
-        public boolean hasBack()
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Iterator<CSGPolygon> allBack()
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean hasFront()
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Iterator<CSGPolygon> allFront()
-        {
-            throw new UnsupportedOperationException();
-        }
-        
     }
     
-    public static class FrontBack implements ICSGSplitAcceptor
-    {
-
-        protected final SimpleUnorderedArrayList<CSGPolygon> front = new SimpleUnorderedArrayList<>();
-        protected final SimpleUnorderedArrayList<CSGPolygon> back = new SimpleUnorderedArrayList<>();
-        
-        public void clear()
-        {
-            this.front.clear();
-            this.back.clear();
-        }
-        
-        @Override
-        public void acceptFront(CSGPolygon poly)
-        {
-            this.front.add(poly);
-        }
-
-        @Override
-        public void acceptBack(CSGPolygon poly)
-        {
-            this.back.add(poly);
-        }
-
-        @Override
-        public void acceptCoplanarFront(CSGPolygon poly)
-        {
-            this.acceptFront(poly);
-        }
-
-        @Override
-        public void acceptCoplanarBack(CSGPolygon poly)
-        {
-            this.acceptBack(poly);
-        }
-
-        @Override
-        public boolean hasBack()
-        {
-            return !this.back.isEmpty();
-        }
-
-        @Override
-        public Iterator<CSGPolygon> allBack()
-        {
-            return this.back.iterator();
-        }
-
-        @Override
-        public boolean hasFront()
-        {
-            return !this.front.isEmpty();
-        }
-
-        @Override
-        public Iterator<CSGPolygon> allFront()
-        {
-            return this.front.iterator();
-        }
-        
-    }
     
     /**
-     * Assigns co-planar polys to a CSG node and front back 
-     * to separate lists.  allFront and allBack do NOT include coplanars.
-     * Will throw NPE if coplanar node not set!
+     * Assigns co-planar polys to the current node and front back 
+     * to stack.  
      */
-    public static class CoFrontBack extends  FrontBack
+    public final static class CoFrontBack extends  ICSGSplitAcceptor
     {
-        private @Nullable CSGNode coplanarNode;
-        
         @Override
-        public void clear()
+        public final void acceptFront(CSGPolygon poly)
         {
-            super.clear();
-            this.coplanarNode = null;
-        }
-        
-        public void setCoplanarNode(CSGNode coplanarNode)
-        {
-            this.coplanarNode = coplanarNode;
-        }
-        
-        @Override
-        public void acceptCoplanarFront(CSGPolygon poly)
-        {
-            this.coplanarNode.add(poly);
+            CSGNode n = this.currentNode();
+            if(n.front == null)
+            {
+                n.front = new CSGNode(poly);
+            }
+            else
+            {
+                this.expandIfNecessary();
+                final int i = (size++) * 2;
+                this.items[i] = poly;
+                this.items[i + 1] = n.front;
+            }
         }
 
         @Override
-        public void acceptCoplanarBack(CSGPolygon poly)
+        public final void acceptBack(CSGPolygon poly)
         {
-            this.coplanarNode.add(poly);
+            CSGNode n = this.currentNode();
+            if(n.back == null)
+            {
+                n.back = new CSGNode(poly);
+            }
+            else
+            {
+                this.expandIfNecessary();
+                final int i = (size++) * 2;
+                this.items[i] = poly;
+                this.items[i + 1] = n.back;
+            }
+        }
+        
+        @Override
+        public final void acceptCoplanarFront(CSGPolygon poly)
+        {
+            this.currentNode().add(poly);
+        }
+
+        @Override
+        public final void acceptCoplanarBack(CSGPolygon poly)
+        {
+            this.currentNode().add(poly);
         }
     }
 }

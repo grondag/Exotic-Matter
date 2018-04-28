@@ -64,7 +64,7 @@ public class CSGNode implements Iterable<CSGPolygon>
     /**
      * Plane used for BSP.
      */
-    private @Nullable CSGPlane plane;
+    CSGPlane plane;
     
     /**
      * RawQuads in front of the plane.
@@ -77,26 +77,29 @@ public class CSGNode implements Iterable<CSGPolygon>
     @Nullable CSGNode back;
 
     /**
-     * Returns root node of BSP tree with given polygons.
-     *
-     * Polygons in the input are copied so that nothing is mutated.
+     * Returns root node of BSP tree with given polygons. <p>
+     * 
+     * Polygons must be coplanar. (not  validated)<br>
+     * Input collection must have at least one polygon or will crash.
+     * Polygons in the input are copied so that nothing is mutated.<br>
      */
     public CSGNode(Collection<IPolygon> shapeIn)
     {
-        for(IPolygon q : shapeIn)
+        Iterator<IPolygon> it = shapeIn.iterator();
+        CSGPolygon poly = new CSGPolygon(it.next());
+        this.plane = new CSGPlane(poly);
+        
+        ICSGSplitAcceptor.CoFrontBack target = new ICSGSplitAcceptor.CoFrontBack();
+        
+        while(true)
         {
-            if(q.isOnSinglePlane())
-            {
-                this.addToBSPTree(new CSGPolygon(q));
-            }
-            else
-            {
-                for(IPolygon t : q.toTris())
-                {
-                    this.addToBSPTree(new CSGPolygon(t));
-                }
-            }
-         }
+            target.splitPolyStartingWith(poly, this);
+            
+            
+            if(it.hasNext())
+                poly = new CSGPolygon(it.next());
+            else break;
+        }
     }
 
     /**
@@ -139,67 +142,25 @@ public class CSGNode implements Iterable<CSGPolygon>
         };
     }
 
+    /** 
+     * Meant to be called on root node
+     */
     public void addAll(Iterable<CSGPolygon> polys)
     {
-        for(CSGPolygon p : polys)
-        {
-            this.addToBSPTree(p);
-        }
-    }
-    
-    /**
-     * Adds poly to this tree. Meant to be called on root node.
-     */
-    private void addToBSPTree(final CSGPolygon csgPolygon)
-    {
-        CSGPolygon p = csgPolygon;
-        @Nullable CSGNode node  = this;
-        
-        ArrayDeque<Pair<CSGNode, CSGPolygon>> stack = new ArrayDeque<>();
-        
         ICSGSplitAcceptor.CoFrontBack target = new ICSGSplitAcceptor.CoFrontBack();
         
-        while(true)
+        for(CSGPolygon p : polys)
         {
-            if(node.quads.isEmpty())
-            {
-                node.add(p);
-            }
-            else
-            {
-                target.setCoplanarNode(node);
-                
-                node.plane.splitQuad(p, target);
-                
-                if(target.hasFront())  
-                {
-                    if(node.front == null) node.front = new CSGNode();
-                    Iterator<CSGPolygon> it = target.allFront();
-                    while(it.hasNext()) stack.push(Pair.of(node.front, it.next()));
-                }
-                
-                if(target.hasBack())  
-                {
-                    if(node.back == null) node.back = new CSGNode();
-                    Iterator<CSGPolygon> it = target.allBack();
-                    while(it.hasNext()) stack.push(Pair.of(node.back, it.next()));
-                }
-                
-                target.clear();
-            }
-            
-            if(stack.isEmpty())  break;
-            Pair<CSGNode, CSGPolygon> next = stack.pop();
-            node = next.getLeft();
-            p = next.getRight();
+            target.splitPolyStartingWith(p, this);
         }
     }
 
     
-    /**
-     * Constructor. Creates a node without polygons.
-     */
-    private CSGNode() { }
+    CSGNode(CSGPolygon firstPoly)
+    { 
+        this.plane = new CSGPlane(firstPoly);
+        this.quads.add(firstPoly);        
+    }
 
     @Override
     public CSGNode clone()
@@ -227,8 +188,6 @@ public class CSGNode implements Iterable<CSGPolygon>
     
     private void invertNode()
     {
-        if (this.plane == null && quads.isEmpty()) return;
-
         this.quads.forEach(q -> q.flip());
         this.plane.flip();
 
@@ -246,35 +205,16 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     private List<CSGPolygon> clipQuads(List<CSGPolygon> quadsIn)
     {
-        if (this.plane == null) return new ArrayList<CSGPolygon>(quadsIn);
-
-        List<CSGPolygon> result = new ArrayList<>();
+        ICSGSplitAcceptor.ClipAcceptor target = new ICSGSplitAcceptor.ClipAcceptor();
         
         for(CSGPolygon p : quadsIn)
         {
-            this.clipQuad(p, result);
+            target.splitPolyStartingWith(p, this);
         }
         
-        return result;
+        return target.output();
     }
 
-    /**
-     * Clips the given poly against every node of this tree,
-     * adding it or split polygons that are in front of all node planes
-     * to the provided list.
-     */
-    private void clipQuad(final CSGPolygon poly, List<CSGPolygon> output)
-    {
-        
-        ICSGSplitAcceptor.ClipAcceptor target = new ICSGSplitAcceptor.ClipAcceptor(poly, this, output);
-        
-        do
-        {
-            target.currentNode().plane.splitQuad(target.currentPoly(), target);
-        } 
-        while(target.advance());
-        
-    }
 
     /**
      * Remove all polygons in this BSP tree that are inside the input BSP tree.
@@ -655,7 +595,6 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     void add(CSGPolygon poly)
     {
-        if(this.plane == null) this.plane = new CSGPlane(poly);
         this.quads.add(poly);
     }
 
