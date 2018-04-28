@@ -103,6 +103,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        if(shapeTimer.stop())
 //        {
 //            ExoticMatter.INSTANCE.info("Terrain geometry potential cache hit rate = %d percent", (hitCount.get() *  100) / tryCount.get());
+//            tryCount.set(0);
+//            hitCount.set(0);
 //            ExoticMatter.INSTANCE.info("Terrain geometry max cached states = %d", hitMap.size());
 //        }
         return result;

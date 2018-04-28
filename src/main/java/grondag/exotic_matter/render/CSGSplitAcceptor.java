@@ -6,7 +6,7 @@ import java.util.List;
 
 
 
-public abstract class ICSGSplitAcceptor
+public abstract class CSGSplitAcceptor
 {
     protected int size;
     protected int index;
@@ -51,7 +51,7 @@ public abstract class ICSGSplitAcceptor
         }
     }
     
-    public final static class ClipAcceptor extends ICSGSplitAcceptor
+    public final static class ClipAcceptor extends CSGSplitAcceptor
     {
         private final List<CSGPolygon> output = new ArrayList<>();
 
@@ -110,7 +110,7 @@ public abstract class ICSGSplitAcceptor
      * Assigns co-planar polys to the current node and front back 
      * to stack.  
      */
-    public final static class CoFrontBack extends  ICSGSplitAcceptor
+    public final static class CoFrontBack extends  CSGSplitAcceptor
     {
         @Override
         public final void acceptFront(CSGPolygon poly)

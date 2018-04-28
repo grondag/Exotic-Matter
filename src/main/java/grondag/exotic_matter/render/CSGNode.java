@@ -89,7 +89,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         CSGPolygon poly = new CSGPolygon(it.next());
         this.plane = new CSGPlane(poly);
         
-        ICSGSplitAcceptor.CoFrontBack target = new ICSGSplitAcceptor.CoFrontBack();
+        CSGSplitAcceptor.CoFrontBack target = new CSGSplitAcceptor.CoFrontBack();
         
         while(true)
         {
@@ -147,7 +147,7 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     public void addAll(Iterable<CSGPolygon> polys)
     {
-        ICSGSplitAcceptor.CoFrontBack target = new ICSGSplitAcceptor.CoFrontBack();
+        CSGSplitAcceptor.CoFrontBack target = new CSGSplitAcceptor.CoFrontBack();
         
         for(CSGPolygon p : polys)
         {
@@ -205,7 +205,7 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     private List<CSGPolygon> clipQuads(List<CSGPolygon> quadsIn)
     {
-        ICSGSplitAcceptor.ClipAcceptor target = new ICSGSplitAcceptor.ClipAcceptor();
+        CSGSplitAcceptor.ClipAcceptor target = new CSGSplitAcceptor.ClipAcceptor();
         
         for(CSGPolygon p : quadsIn)
         {

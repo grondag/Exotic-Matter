@@ -165,7 +165,7 @@ public class CSGPlane
      * @param back back polgons
      */
     
-    public void splitQuad(CSGPolygon poly, ICSGSplitAcceptor target)  
+    public void splitQuad(CSGPolygon poly, CSGSplitAcceptor target)  
     {
 //        splitTimer.start();
 //        splitQuadInner(poly, target);
@@ -211,7 +211,7 @@ public class CSGPlane
         }
     }
     
-    private void splitSpanning(CSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
+    private void splitSpanning(CSGPolygon poly, int combinedCount, CSGSplitAcceptor target)
 //    {
 //        splitSpanningTimer.start();
 //        splitSpanningInner(poly, combinedCount, target);
