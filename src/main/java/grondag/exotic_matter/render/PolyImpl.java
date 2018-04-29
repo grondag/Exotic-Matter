@@ -5,6 +5,7 @@ import java.util.List;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
+import grondag.exotic_matter.render.CSGNode.Root;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
@@ -112,44 +113,6 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
         }
     }
     
-    @Override
-    public void addTrisToList(List<IPolygon> list)
-    {
-        if(this.vertexCount == 3)
-        {
-            list.add(this);
-        }
-        else
-        {
-            int head = this.vertexCount - 1;
-            int tail = 1;
-
-            PolyImpl work = new PolyImpl(this, 3);
-            work.setVertex(0, this.getVertex(head));
-            work.setVertex(1, this.getVertex(0));
-            work.setVertex(2, this.getVertex(tail));
-            list.add(work);
-
-            while(head - tail > 1)
-            {
-                work = new PolyImpl(this, 3);
-                work.setVertex(0, this.getVertex(head));
-                work.setVertex(1, this.getVertex(tail));
-                work.setVertex(2, this.getVertex(++tail));
-                list.add(work);
-
-                if(head - tail > 1)
-                {
-                    work = new PolyImpl(this, 3);
-                    work.setVertex(0, this.getVertex(head));
-                    work.setVertex(1, this.getVertex(tail));
-                    work.setVertex(2, this.getVertex(--head));
-                    list.add(work);
-                }
-            }
-        }
-    }
-
 
     @Override
     public IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace)
@@ -487,5 +450,85 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     public Vertex[] vertexArray()
     {
         return this.vertices;
+    }
+
+    @Override
+    public void addTrisToCSGRoot(Root root)
+    {
+        if(this.vertexCount == 3)
+        {
+            root.addPolygon(this);
+        }
+        else
+        {
+            int head = this.vertexCount - 1;
+            int tail = 1;
+
+            PolyImpl work = new PolyImpl(this, 3);
+            work.setVertex(0, this.getVertex(head));
+            work.setVertex(1, this.getVertex(0));
+            work.setVertex(2, this.getVertex(tail));
+            root.addPolygon(work);
+
+            while(head - tail > 1)
+            {
+                work = new PolyImpl(this, 3);
+                work.setVertex(0, this.getVertex(head));
+                work.setVertex(1, this.getVertex(tail));
+                work.setVertex(2, this.getVertex(++tail));
+                root.addPolygon(work);
+
+                if(head - tail > 1)
+                {
+                    work = new PolyImpl(this, 3);
+                    work.setVertex(0, this.getVertex(head));
+                    work.setVertex(1, this.getVertex(tail));
+                    work.setVertex(2, this.getVertex(--head));
+                    root.addPolygon(work);
+                }
+            }
+        }        
+    }
+
+    @Override
+    public void addTrisToList(List<IPolygon> list)
+    {
+        // TODO: egregious hack is egregious
+        // is copy pasta of CSG version - couldn't be buggered at the time
+        // probably the right way is to accept a collection interface
+        // and implement that in CSG root
+        if(this.vertexCount == 3)
+        {
+            list.add(this);
+        }
+        else
+        {
+            int head = this.vertexCount - 1;
+            int tail = 1;
+
+            PolyImpl work = new PolyImpl(this, 3);
+            work.setVertex(0, this.getVertex(head));
+            work.setVertex(1, this.getVertex(0));
+            work.setVertex(2, this.getVertex(tail));
+            list.add(work);
+
+            while(head - tail > 1)
+            {
+                work = new PolyImpl(this, 3);
+                work.setVertex(0, this.getVertex(head));
+                work.setVertex(1, this.getVertex(tail));
+                work.setVertex(2, this.getVertex(++tail));
+                list.add(work);
+
+                if(head - tail > 1)
+                {
+                    work = new PolyImpl(this, 3);
+                    work.setVertex(0, this.getVertex(head));
+                    work.setVertex(1, this.getVertex(tail));
+                    work.setVertex(2, this.getVertex(--head));
+                    list.add(work);
+                }
+            }
+        }
     }
 }

@@ -68,16 +68,15 @@ public class TerrainState
     private final byte yOffset;
     private final long stateKey;
     
-    private static final byte SIMPLE_FLAG[] = new byte[5];
-    private static final int SIMPLE_FLAG_TOP_ORDINAL = 4;
-    
+    private static final byte SIMPLE_FLAG[] = new byte[4];
+    private static final byte SIMPLE_FLAG_TOP = 16;
+    private static final byte SIMPLE_FLAG_MOST_SIDES = 32;
     static
     {
         SIMPLE_FLAG[HorizontalFace.EAST.ordinal()] = 1;
         SIMPLE_FLAG[HorizontalFace.WEST.ordinal()] = 2;
         SIMPLE_FLAG[HorizontalFace.NORTH.ordinal()] = 4;
         SIMPLE_FLAG[HorizontalFace.SOUTH.ordinal()] = 8;
-        SIMPLE_FLAG[SIMPLE_FLAG_TOP_ORDINAL] = 16;
     }
     
     /** true if model vertex height calculations current */
@@ -176,7 +175,7 @@ public class TerrainState
         double max = 0;
         
         // center vertex does not matter if top is simplified to a single quad
-        if(!getSimpleFlag(SIMPLE_FLAG_TOP_ORDINAL))
+        if(!isTopSimple())
         {
             max = Math.max(max,getCenterVertexHeight());
         }
@@ -184,7 +183,7 @@ public class TerrainState
         for(int i = 0; i < 4; i++)
         {
             // side does not matter if side geometry is simplified
-            if(!getSimpleFlag(i))
+            if(!isSideSimple(i))
             {
                 max = Math.max(max, this.midSideHeight[i]);
             }
@@ -196,14 +195,32 @@ public class TerrainState
     
     public boolean isSideSimple(HorizontalFace face)
     {
-        refreshVertexCalculationsIfNeeded();
-        return this.getSimpleFlag(face.ordinal());
+        return this.isSideSimple(face.ordinal());
     }    
     
+    private boolean isSideSimple(int ordinal)
+    {
+        refreshVertexCalculationsIfNeeded();
+        byte flag = SIMPLE_FLAG[ordinal];
+        return (this.simpleFlags & flag) == flag;
+    }   
+    
+    /**
+     * True if top can be simplified to no more than two tris.  Is true implies all sides are simple.
+     */
     public boolean isTopSimple()
     {
         refreshVertexCalculationsIfNeeded();
-        return this.getSimpleFlag(SIMPLE_FLAG_TOP_ORDINAL);
+        return (this.simpleFlags & SIMPLE_FLAG_TOP) == SIMPLE_FLAG_TOP;
+    }
+    
+    /**
+     * True if at least two sides are simple.
+     */
+    public boolean areMostSidesSimple()
+    {
+        refreshVertexCalculationsIfNeeded();
+        return (this.simpleFlags & SIMPLE_FLAG_MOST_SIDES) == SIMPLE_FLAG_MOST_SIDES;
     }
     
     public boolean isFullCube()
@@ -212,7 +229,7 @@ public class TerrainState
         double top = 1.0 + yOffset + QuadHelper.EPSILON;
         
         // center vertex does not matter if top is simplified to a single quad
-        if(!getSimpleFlag(SIMPLE_FLAG_TOP_ORDINAL))
+        if(!isTopSimple())
         {
             if(getCenterVertexHeight() < top) return false;
         }
@@ -220,7 +237,7 @@ public class TerrainState
         for(int i = 0; i < 4; i++)
         {
             // side does not matter if side geometry is simplified
-            if(!getSimpleFlag(i))
+            if(!isSideSimple(i))
             {
                 if(this.midSideHeight[i] < top) return false;
             }
@@ -236,7 +253,7 @@ public class TerrainState
         double bottom = 0.0 + yOffset;
         
         // center vertex does not matter if top is simplified to a single quad
-        if(!getSimpleFlag(SIMPLE_FLAG_TOP_ORDINAL))
+        if(!isTopSimple())
         {
             if(getCenterVertexHeight() > bottom) return false;
         }
@@ -244,7 +261,7 @@ public class TerrainState
         for(int i = 0; i < 4; i++)
         {
             // side does not matter if side geometry is simplified
-            if(!getSimpleFlag(i))
+            if(!isSideSimple(i))
             {
                 if(this.midSideHeight[i] > bottom) return false;
             }
@@ -333,6 +350,7 @@ public class TerrainState
         
         //determine if sides and top geometry can be simplified
         boolean topIsSimple = true;
+        int simpleSideCount = 0;
         
         for(HorizontalFace side: HorizontalFace.values())
         {
@@ -340,36 +358,30 @@ public class TerrainState
             avg += midCornerHeight[HorizontalCorner.find(side, side.getRight()).ordinal()];
             avg /= 2;
             boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < QuadHelper.EPSILON;
-            setSimpleFlag(side.ordinal(), sideIsSimple);
-            topIsSimple = topIsSimple && sideIsSimple;
+            if(sideIsSimple)
+            {
+                this.simpleFlags |= SIMPLE_FLAG[side.ordinal()];
+                simpleSideCount++;
+            }
+            else
+            {
+                topIsSimple = false;
+            }
         }
 
-        double cross1 = (midCornerHeight[HorizontalCorner.NORTH_EAST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_WEST.ordinal()]) / 2.0;
-        double cross2 = (midCornerHeight[HorizontalCorner.NORTH_WEST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_EAST.ordinal()]) / 2.0;
-        setSimpleFlag(SIMPLE_FLAG_TOP_ORDINAL, topIsSimple & (Math.abs(cross1 - cross2) < 2.0 / BLOCK_LEVELS_FLOAT));
+        if(simpleSideCount > 1) this.simpleFlags |= SIMPLE_FLAG_MOST_SIDES;
+        
+        if(topIsSimple)
+        {
+            float cross1 = (midCornerHeight[HorizontalCorner.NORTH_EAST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_WEST.ordinal()]) / 2.0f;
+            float cross2 = (midCornerHeight[HorizontalCorner.NORTH_WEST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_EAST.ordinal()]) / 2.0f;
+            if(Math.abs(cross1 - cross2) < 1.0f) this.simpleFlags |= SIMPLE_FLAG_TOP;
+        }
         
         vertexCalcsDone = true;
 
     }
-    
-    private void setSimpleFlag(int ordinal, boolean value)
-    {
-        if(value)
-        {
-            this.simpleFlags |= SIMPLE_FLAG[ordinal];
-        }
-        else
-        {
-            this.simpleFlags &= ~SIMPLE_FLAG[ordinal];
-        }
-         
-    }
-    
-    private boolean getSimpleFlag(int ordinal)
-    {
-        return (this.simpleFlags & SIMPLE_FLAG[ordinal]) == SIMPLE_FLAG[ordinal];
-    }
-    
+   
     private float calcFarCornerVertexHeight(HorizontalCorner corner)
     {
         int heightCorner = getCornerHeight(corner);
@@ -429,6 +441,63 @@ public class TerrainState
         return retval;
     }
 
+    public int concavity()
+    {
+        int count = 0;
+        
+        final int center = this.getCenterHeight();
+        for(HorizontalFace side: HorizontalFace.values())
+        {
+            count += Math.max(0, this.getSideHeight(side) - center) / 12;
+        }
+        for(HorizontalCorner corner: HorizontalCorner.values())
+        {
+            count += Math.max(0, this.getCornerHeight(corner) - center) / 12;
+        }
+        return count;
+    }
+    
+    public int spread()
+    {
+        
+        final int center = this.getCenterHeight();
+        int min = center;
+        int max = center;
+        for(HorizontalFace side: HorizontalFace.values())
+        {
+            int h = this.getSideHeight(side);
+            if(h > max)
+                max = h;
+            else if(h < min)
+                min = h;
+        }
+        for(HorizontalCorner corner: HorizontalCorner.values())
+        {
+            int h = this.getCornerHeight(corner);
+            if(h > max)
+                max = h;
+            else if(h < min)
+                min = h;
+        }
+        return max-min;
+    }
+    
+    public int divergence()
+    {
+        
+        final int center = this.getCenterHeight();
+        int div = 0;
+        for(HorizontalFace side: HorizontalFace.values())
+        {
+            div += Math.abs(this.getSideHeight(side) - center);
+        }
+        for(HorizontalCorner corner: HorizontalCorner.values())
+        {
+            div += Math.abs(this.getCornerHeight(corner) - center);
+        }
+        return div;
+    }
+    
     public static long getBitsFromWorldStatically(ISuperBlock block, IBlockState state, IBlockAccess world, BlockPos pos)
     {
         return getBitsFromWorldStatically(block.isFlowFiller(), state, world, pos);

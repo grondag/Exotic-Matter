@@ -3,11 +3,13 @@ package grondag.exotic_matter.render;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class CSGPolygon
 {
     public final Vec3f faceNormal;
     public final Vertex[] vertex;
-    public final IPolygon original;
+    public final @Nullable IPolygon original;
 
     public boolean isInverted;
     
@@ -21,6 +23,21 @@ public class CSGPolygon
         this.vertex = Arrays.copyOf(original.vertexArray(), vCount);
         this.original = original;
         this.faceNormal = original.getFaceNormal();
+    }
+    
+    @Override
+    public CSGPolygon clone()
+    {
+        return new CSGPolygon(this);
+    }
+    
+    /** specifically for clone */
+    private CSGPolygon(CSGPolygon poly)
+    {
+        this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);
+        this.original = poly.original;
+        this.faceNormal = poly.faceNormal;
+        this.isInverted = poly.isInverted;
     }
     
     public CSGPolygon(CSGPolygon poly, int vCount)

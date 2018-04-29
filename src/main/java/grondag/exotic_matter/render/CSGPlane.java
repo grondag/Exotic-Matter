@@ -36,6 +36,8 @@ package grondag.exotic_matter.render;
 
 import java.awt.Polygon;
 
+import grondag.exotic_matter.varia.MicroTimer;
+
 public class CSGPlane
 {
     
@@ -174,8 +176,8 @@ public class CSGPlane
 //            splitSpanningTimer.reportAndClear();
 //        }
 //    }
-//    private static MicroTimer splitTimer = new MicroTimer("splitQuad", 10000000);
-//    private void splitQuadInner(CSGPolygon poly, ICSGSplitAcceptor target) 
+//    public static MicroTimer splitTimer = new MicroTimer("splitQuad", 100000000);
+//    private void splitQuadInner(CSGPolygon poly, CSGSplitAcceptor target) 
 //    {
         int combinedCount = 0;
         
@@ -212,14 +214,14 @@ public class CSGPlane
     }
     
     private void splitSpanning(CSGPolygon poly, int combinedCount, CSGSplitAcceptor target)
-//    {
+    {
 //        splitSpanningTimer.start();
 //        splitSpanningInner(poly, combinedCount, target);
 //        splitSpanningTimer.stop();
 //    }
-//    private static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
-//    private void splitSpanningInner(CSGPolygon poly, int combinedCount, ICSGSplitAcceptor target)
-    {
+//    public static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
+//    private void splitSpanningInner(CSGPolygon poly, int combinedCount, CSGSplitAcceptor target)
+//    {
         final int vcount = poly.vertex.length;
         
         final Vertex[] verts = poly.vertex;

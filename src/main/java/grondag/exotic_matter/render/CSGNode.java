@@ -54,14 +54,15 @@ import com.google.common.collect.Sets;
 
 import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import net.minecraft.util.math.MathHelper;
 
 
-public class CSGNode implements Iterable<CSGPolygon>
+public class CSGNode
 {
     /**
      * RawQuads.
      */
-    private List<CSGPolygon> quads = new ArrayList<>();
+    protected List<CSGPolygon> quads = new ArrayList<>();
     
     /**
      * Plane used for BSP.
@@ -78,6 +79,281 @@ public class CSGNode implements Iterable<CSGPolygon>
      */
     @Nullable CSGNode back;
 
+    private static final float CENTER_TO_CORNER_DISTANCE = MathHelper.sqrt(2);
+    private static final Vec3f CENTER_TO_CORNER_NORMAL_A = new Vec3f(CENTER_TO_CORNER_DISTANCE, 0, CENTER_TO_CORNER_DISTANCE);
+    private static final Vec3f CENTER_TO_CORNER_NORMAL_B = new Vec3f(CENTER_TO_CORNER_DISTANCE, 0, -CENTER_TO_CORNER_DISTANCE);
+    private static final Vec3f CENTER_TO_SIDE_NORMAL_A = new Vec3f(0, 0, 1);
+    private static final float CENTER_TO_SIDE_DIST_A = 0.5f;
+    
+    private static final Vec3f CENTER_TO_SIDE_NORMAL_B = new Vec3f(-1, 0, 0);
+    private static final float CENTER_TO_SIDE_DIST_B = -0.5f;
+//    static
+//    {
+//        PolyImpl p = new PolyImpl(4);
+//        p.addVertex(0, 0, 0, 0.5f, 0, 0, 0);
+//        p.addVertex(1, 1, 0, 0.5f, 0, 0, 0);
+//        p.addVertex(2, 1, 1, 0.5f, 0, 0, 0);
+//        p.addVertex(3, 0, 1, 0.5f, 0, 0, 0);
+//        CENTER_TO_SIDE_NORMAL_A = p.getFaceNormal();
+//        CENTER_TO_SIDE_DIST_A = CENTER_TO_SIDE_NORMAL_A.dotProduct(p.getVertex(0));
+//        
+//        p = new PolyImpl(4);
+//        p.addVertex(0, 0.5f, 0, 0, 0, 0, 0);
+//        p.addVertex(1, 0.5f, 0, 1, 0, 0, 0);
+//        p.addVertex(2, 0.5f, 1, 1, 0, 0, 0);
+//        p.addVertex(3, 0.5f, 1, 0, 0, 0, 0);
+//        CENTER_TO_SIDE_NORMAL_B = p.getFaceNormal();
+//        CENTER_TO_SIDE_DIST_B = CENTER_TO_SIDE_NORMAL_B.dotProduct(p.getVertex(0));
+//    }
+    
+    public static class Root extends CSGNode implements Iterable<CSGPolygon>
+    {
+        final CSGSplitAcceptor.CoFrontBack splitter = new CSGSplitAcceptor.CoFrontBack();
+        
+        private Root(Collection<IPolygon> shapeIn, boolean crossSplit)
+        {
+            super(new CSGPlane(CENTER_TO_CORNER_NORMAL_A, CENTER_TO_CORNER_DISTANCE));
+            this.front = new CSGNode(new CSGPlane(CENTER_TO_CORNER_NORMAL_B, 0));
+            this.back = new CSGNode(new CSGPlane(CENTER_TO_CORNER_NORMAL_B, 0));
+            
+            if(crossSplit)
+            {
+                this.front.front = new CSGNode(new CSGPlane(CENTER_TO_SIDE_NORMAL_B, CENTER_TO_SIDE_DIST_B));
+                this.front.back = new CSGNode(new CSGPlane(CENTER_TO_SIDE_NORMAL_A, CENTER_TO_SIDE_DIST_A));
+                this.back.front = new CSGNode(new CSGPlane(CENTER_TO_SIDE_NORMAL_A, CENTER_TO_SIDE_DIST_A));
+                this.back.back = new CSGNode(new CSGPlane(CENTER_TO_SIDE_NORMAL_B, CENTER_TO_SIDE_DIST_B));
+            }
+
+            shapeIn.forEach(p -> splitter.splitPolyStartingWith(new CSGPolygon(p), this));
+        }
+        
+        private Root(Collection<IPolygon> shapeIn)
+        {
+            super(new CSGPolygon(shapeIn.iterator().next()));
+            
+            Iterator<IPolygon> it = shapeIn.iterator();
+            it.next();
+            while(it.hasNext())
+            {
+                splitter.splitPolyStartingWith(new CSGPolygon(it.next()), this);
+            }
+        }
+        
+        private Root(CSGPlane plane)
+        {
+            super(plane);
+        }
+        
+        @Override
+        public CSGNode.Root clone()
+        {
+            //TODO: if serious about this need to do it without recursion
+            CSGNode.Root result = new CSGNode.Root(this.plane.clone());
+            if(this.front != null) result.front = this.front.clone();
+            if(this.back != null) result.back = this.back.clone();
+            this.quads.forEach(q -> result.quads.add(q.clone()));
+            return result;
+        }
+        
+        /**
+         * Non-recursive iterator to visit all nodes in this tree.
+         */
+        private Iterator<CSGNode> allNodes()
+        {
+            return new Iterator<CSGNode>()
+            {
+               private @Nullable CSGNode next;
+               ArrayDeque<CSGNode> stack = new ArrayDeque<>();
+               
+               {
+                   stack.push(Root.this);
+                   next = computeNext();
+               }
+               
+                protected CSGNode computeNext()
+                {
+                    if(stack.isEmpty()) return null;
+                    CSGNode result = stack.pop();
+                    if(result.front != null) stack.push(result.front);
+                    if(result.back != null) stack.push(result.back);
+                    return result;
+                }
+
+                @Override
+                public boolean hasNext()
+                {
+                    return next != null;
+                }
+
+                @Override
+                public CSGNode next()
+                {
+                    CSGNode result = next;
+                    this.next = computeNext();
+                    return result;
+                }
+            };
+        }
+
+        /** 
+         * Meant to be called on root node
+         */
+        protected void addAll(Iterable<CSGPolygon> polys)
+        {
+            for(CSGPolygon p : polys)
+            {
+                splitter.splitPolyStartingWith(p, this);
+            }
+        }
+
+        public void addPolygon(IPolygon poly)
+        {
+            splitter.splitPolyStartingWith(new CSGPolygon(poly), this);
+        }
+        
+        /**
+         * Converts solid space to empty space and vice versa
+         * for all nodes in this BSP tree
+         */
+        public void invert()
+        {
+            Iterator<CSGNode> nodes = this.allNodes();
+            
+            while(nodes.hasNext())
+            {
+                // invert node can swap the front/back references in 
+                // each node, which are used for iteration, but should
+                // not matter because we don't care about the order of
+                // iteration - we just need to visit each node
+                nodes.next().invertNode();;
+            }
+        }
+        
+        /**
+         * Returns a list excluding input polygons that are
+         * contained within this BSP tree, splitting polygons as necessary.<p>
+         * 
+         * The input list and its contents are not modified, but
+         * polys in the input list may be copied to the output list.
+         */
+        private List<CSGPolygon> clipQuads(List<CSGPolygon> quadsIn)
+        {
+            CSGSplitAcceptor.ClipAcceptor target = new CSGSplitAcceptor.ClipAcceptor();
+            
+            for(CSGPolygon p : quadsIn)
+            {
+                target.splitPolyStartingWith(p, this);
+            }
+            
+            return target.output();
+        }
+
+
+        /**
+         * Remove all polygons in this BSP tree that are inside the input BSP tree.
+         *
+         * This tree is modified, and polygons are split if necessary.
+         */
+        public void clipTo(CSGNode.Root bsp)
+        {
+            Iterator<CSGNode> nodes = this.allNodes();
+            
+            while(nodes.hasNext())
+            {
+                CSGNode node = nodes.next();
+                node.quads = bsp.clipQuads(node.quads);
+            }
+        }
+
+        
+        /**
+         * Returns all quads in this tree recombined as much as possible.
+         * Use for anything to be rendered.
+         * Generally only useful on root node!
+         * 
+         * TODO: add a prediction mechanism in the CSG operations
+         * to determine if it is worth calling this each time
+         * The average poly reduction is between 10 and 20%, but that
+         * may  not be evenly spread across all the invocations.
+         * If could predict from the input meshes when it would be 
+         * useful would save the cost of setup.
+         */
+        public List<IPolygon> recombinedRenderableQuads()
+        {
+//            recombinedRenderableQuadsCounter.start();
+//            List<IPolygon> result = recombinedRenderableQuadsInner();
+//            recombinedRenderableQuadsCounter.stop();
+//            return result;
+//        }
+//        public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
+//        private List<IPolygon> recombinedRenderableQuadsInner()
+//        {
+            IdentityHashMap<IPolygon, Collection<CSGPolygon>> ancestorBuckets = new IdentityHashMap<>();
+            
+            for(CSGPolygon quad : this) 
+            {
+                Collection<CSGPolygon> list =  ancestorBuckets.get(quad.original);
+                if(list == null)
+                {
+                    list = new SimpleUnorderedArrayList<CSGPolygon>();
+                    ancestorBuckets.put(quad.original, list);
+                }
+                list.add(quad);
+            }
+            
+            ArrayList<IPolygon> retVal = new ArrayList<>();
+            ancestorBuckets.values().forEach((quadList) ->
+            {
+                for(CSGPolygon p : recombine(quadList))
+                {
+                    p.addRenderableQuads(retVal);
+                }
+            });
+            
+            return retVal;
+        }
+        
+        @Override
+        public Iterator<CSGPolygon> iterator()
+        {
+            return new Iterator<CSGPolygon>()
+            {
+               Iterator<CSGNode> nodes = Root.this.allNodes();
+               CSGNode node = nodes.next();
+               Iterator<CSGPolygon> polys = node.quads.iterator();
+               @Nullable CSGPolygon next = computeNext();
+               
+                private CSGPolygon computeNext()
+                {
+                    if(polys.hasNext()) return polys.next();
+                    
+                    while(nodes.hasNext())
+                    {
+                        node = nodes.next();
+                        polys = node.quads.iterator();
+                        if(polys.hasNext()) return polys.next();
+                    }
+                    
+                    return null;
+                }
+
+                @Override
+                public boolean hasNext()
+                {
+                    return this.next != null;
+                }
+
+                @Override
+                public CSGPolygon next()
+                {
+                    CSGPolygon result = this.next;
+                    this.next = this.computeNext();
+                    return result;
+                }
+            };
+        }
+    }
+    
     /**
      * Returns root node of BSP tree with given polygons. <p>
      * 
@@ -85,107 +361,36 @@ public class CSGNode implements Iterable<CSGPolygon>
      * Input collection must have at least one polygon or will crash.
      * Polygons in the input are copied so that nothing is mutated.<br>
      */
-    public CSGNode(Collection<IPolygon> shapeIn)
+    public static Root create(Collection<IPolygon> shapeIn, boolean crossSplit)
     {
-        Iterator<IPolygon> it = shapeIn.iterator();
-        CSGPolygon poly = new CSGPolygon(it.next());
-        this.plane = new CSGPlane(poly);
-        
-        CSGSplitAcceptor.CoFrontBack target = new CSGSplitAcceptor.CoFrontBack();
-        
-        while(true)
-        {
-            target.splitPolyStartingWith(poly, this);
-            
-            
-            if(it.hasNext())
-                poly = new CSGPolygon(it.next());
-            else break;
-        }
+        return new Root(shapeIn, crossSplit);
+    }
+    
+    public static Root create(Collection<IPolygon> shapeIn)
+    {
+        return new Root(shapeIn);
     }
 
-    /**
-     * Non-recursive iterator to visit all nodes in this tree.
-     */
-    private Iterator<CSGNode> allNodes()
-    {
-        return new Iterator<CSGNode>()
-        {
-           private @Nullable CSGNode next;
-           ArrayDeque<CSGNode> stack = new ArrayDeque<>();
-           
-           {
-               stack.push(CSGNode.this);
-               next = computeNext();
-           }
-           
-            protected CSGNode computeNext()
-            {
-                if(stack.isEmpty()) return null;
-                CSGNode result = stack.pop();
-                if(result.front != null) stack.push(result.front);
-                if(result.back != null) stack.push(result.back);
-                return result;
-            }
-
-            @Override
-            public boolean hasNext()
-            {
-                return next != null;
-            }
-
-            @Override
-            public CSGNode next()
-            {
-                CSGNode result = next;
-                this.next = computeNext();
-                return result;
-            }
-        };
+    CSGNode(CSGPlane plane)
+    { 
+        this.plane = plane;
     }
-
-    /** 
-     * Meant to be called on root node
-     */
-    public void addAll(Iterable<CSGPolygon> polys)
-    {
-        CSGSplitAcceptor.CoFrontBack target = new CSGSplitAcceptor.CoFrontBack();
-        
-        for(CSGPolygon p : polys)
-        {
-            target.splitPolyStartingWith(p, this);
-        }
-    }
-
     
     CSGNode(CSGPolygon firstPoly)
     { 
-        this.plane = new CSGPlane(firstPoly);
+        this(new CSGPlane(firstPoly));
         this.quads.add(firstPoly);        
     }
 
     @Override
-    public CSGNode clone()
+    protected CSGNode clone()
     {
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Converts solid space to empty space and vice versa
-     * for all nodes in this BSP tree
-     */
-    public void invert()
-    {
-        Iterator<CSGNode> nodes = this.allNodes();
-        
-        while(nodes.hasNext())
-        {
-            // invert node can swap the front/back references in 
-            // each node, which are used for iteration, but should
-            // not matter because we don't care about the order of
-            // iteration - we just need to visit each node
-            nodes.next().invertNode();;
-        }
+        //TODO: if serious about this need to do it without recursion
+        CSGNode result = new CSGNode(this.plane.clone());
+        if(this.front != null) result.front = this.front.clone();
+        if(this.back != null) result.back = this.back.clone();
+        this.quads.forEach(q -> result.quads.add(q.clone()));
+        return result;
     }
     
     private void invertNode()
@@ -198,89 +403,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         this.back = temp;
     }
 
-    /**
-     * Returns a list excluding input polygons that are
-     * contained within this BSP tree, splitting polygons as necessary.<p>
-     * 
-     * The input list and its contents are not modified, but
-     * polys in the input list may be copied to the output list.
-     */
-    private List<CSGPolygon> clipQuads(List<CSGPolygon> quadsIn)
-    {
-        CSGSplitAcceptor.ClipAcceptor target = new CSGSplitAcceptor.ClipAcceptor();
-        
-        for(CSGPolygon p : quadsIn)
-        {
-            target.splitPolyStartingWith(p, this);
-        }
-        
-        return target.output();
-    }
 
-
-    /**
-     * Remove all polygons in this BSP tree that are inside the input BSP tree.
-     *
-     * This tree is modified, and polygons are split if necessary.
-     */
-    public void clipTo(CSGNode bsp)
-    {
-        Iterator<CSGNode> nodes = this.allNodes();
-        
-        while(nodes.hasNext())
-        {
-            CSGNode node = nodes.next();
-            node.quads = bsp.clipQuads(node.quads);
-        }
-    }
-
-    
-    /**
-     * Returns all quads in this tree recombined as much as possible.
-     * Use for anything to be rendered.
-     * Generally only useful on root node!
-     * 
-     * TODO: add a prediction mechanism in the CSG operations
-     * to determine if it is worth calling this each time
-     * The average poly reduction is between 10 and 20%, but that
-     * may  not be evenly spread across all the invocations.
-     * If could predict from the input meshes when it would be 
-     * useful would save the cost of setup.
-     */
-    public List<IPolygon> recombinedRenderableQuads()
-    {
-        recombinedRenderableQuadsCounter.start();
-        List<IPolygon> result = recombinedRenderableQuadsInner();
-        recombinedRenderableQuadsCounter.stop();
-        return result;
-    }
-    public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
-    private List<IPolygon> recombinedRenderableQuadsInner()
-    {
-        IdentityHashMap<IPolygon, Collection<CSGPolygon>> ancestorBuckets = new IdentityHashMap<>();
-        
-        for(CSGPolygon quad : this) 
-        {
-            Collection<CSGPolygon> list =  ancestorBuckets.get(quad.original);
-            if(list == null)
-            {
-                list = new SimpleUnorderedArrayList<CSGPolygon>();
-                ancestorBuckets.put(quad.original, list);
-            }
-            list.add(quad);
-        }
-        
-        ArrayList<IPolygon> retVal = new ArrayList<>();
-        ancestorBuckets.values().forEach((quadList) ->
-        {
-            for(CSGPolygon p : recombine(quadList))
-            {
-                p.addRenderableQuads(retVal);
-            }
-        });
-        
-        return retVal;
-    }
 
     
     /**
@@ -405,7 +528,7 @@ public class CSGNode implements Iterable<CSGPolygon>
 //    }
   
     
-    private Collection<CSGPolygon> recombine(Collection<CSGPolygon> quadsIn)
+    private static Collection<CSGPolygon> recombine(Collection<CSGPolygon> quadsIn)
     {
 //        quadInCount.addAndGet(quadsIn.size());   
 //        recombineCounter.start();
@@ -594,7 +717,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         return polys;
     }
 
-    private void removePolyFromVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vertex excludingVertex )
+    private static void removePolyFromVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vertex excludingVertex )
     {
         for(Vertex v : poly.vertex)
         {
@@ -605,7 +728,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         }
     }
     
-    private void addPolyToVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    private static void addPolyToVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
     {
         for(Vertex v : poly.vertex)
         {
@@ -619,7 +742,7 @@ public class CSGNode implements Iterable<CSGPolygon>
         }
     }
     
-    private @Nullable CSGPolygon joinAtVertex(Vertex key, CSGPolygon first, CSGPolygon second)
+    private static @Nullable CSGPolygon joinAtVertex(Vertex key, CSGPolygon first, CSGPolygon second)
     {
         // TODO Auto-generated method stub
         return null;
@@ -637,43 +760,4 @@ public class CSGNode implements Iterable<CSGPolygon>
         this.quads.add(poly);
     }
 
-    @Override
-    public Iterator<CSGPolygon> iterator()
-    {
-        return new Iterator<CSGPolygon>()
-        {
-           Iterator<CSGNode> nodes = CSGNode.this.allNodes();
-           CSGNode node = nodes.next();
-           Iterator<CSGPolygon> polys = node.quads.iterator();
-           @Nullable CSGPolygon next = computeNext();
-           
-            private CSGPolygon computeNext()
-            {
-                if(polys.hasNext()) return polys.next();
-                
-                while(nodes.hasNext())
-                {
-                    node = nodes.next();
-                    polys = node.quads.iterator();
-                    if(polys.hasNext()) return polys.next();
-                }
-                
-                return null;
-            }
-
-            @Override
-            public boolean hasNext()
-            {
-                return this.next != null;
-            }
-
-            @Override
-            public CSGPolygon next()
-            {
-                CSGPolygon result = this.next;
-                this.next = this.computeNext();
-                return result;
-            }
-        };
-    }
 }

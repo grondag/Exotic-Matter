@@ -143,8 +143,8 @@ public abstract class CSGMesh
     private static Collection<IPolygon> differenceClip(Collection<IPolygon> aPolys, Collection<IPolygon> bPolys)
     {
 
-        CSGNode a = new CSGNode(aPolys);
-        CSGNode b = new CSGNode(bPolys);
+        CSGNode.Root a = CSGNode.create(aPolys);
+        CSGNode.Root b = CSGNode.create(bPolys);
 
         a.invert();
         a.clipTo(b);
@@ -176,8 +176,13 @@ public abstract class CSGMesh
      */
     public static Collection<IPolygon> intersect(Collection<IPolygon> aMesh, Collection<IPolygon> bMesh)
     {
-        CSGNode a = new CSGNode(aMesh);
-        CSGNode b = new CSGNode(bMesh);
+        CSGNode.Root a = CSGNode.create(aMesh);
+        CSGNode.Root b = CSGNode.create(bMesh);
+        return intersect(a, b);
+    }
+    
+    public static Collection<IPolygon> intersect(CSGNode.Root a, CSGNode.Root b)
+    {
         a.invert();
         b.clipTo(a);
         b.invert();
@@ -249,8 +254,8 @@ public abstract class CSGMesh
 
     private static Collection<IPolygon> unionClip(Collection<IPolygon> aMesh, Collection<IPolygon> bMesh)
     {
-        CSGNode a = new CSGNode(aMesh);
-        CSGNode b = new CSGNode(bMesh);
+        CSGNode.Root a = CSGNode.create(aMesh);
+        CSGNode.Root b = CSGNode.create(bMesh);
         
         a.clipTo(b);
         b.clipTo(a);

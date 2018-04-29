@@ -158,6 +158,7 @@ public interface IPolygon
      */
     public void addTrisToList(List<IPolygon> list);
     
+    public void addTrisToCSGRoot(CSGNode.Root root);
       /**
       * Provide direct access to vertex array for CSG only.
       * Performance optimization.

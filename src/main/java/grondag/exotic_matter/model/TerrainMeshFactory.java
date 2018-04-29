@@ -1,17 +1,17 @@
 package grondag.exotic_matter.model;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.collect.ImmutableList;
+
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.render.CSGMesh;
+import grondag.exotic_matter.render.CSGNode;
 import grondag.exotic_matter.render.FaceVertex;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
@@ -62,11 +62,66 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         new AxisAlignedBB(0, 0, 0, 1, 1, 1)
     };
     
+    private final IPolygon template;
+    private final IPolygon[] bottoms = new IPolygon[5];
+    
+    private final CSGNode.Root[] terrainNodesSimple = new CSGNode.Root[5];
+    private final CSGNode.Root[] terrainNodesHybrid = new CSGNode.Root[5];
+//    private final CSGNode.Root[] terrainNodesComplex = new CSGNode.Root[5];
+    
+    private final CSGNode.Root cubeNodeSimple;
+    private final CSGNode.Root cubeNodeHybrid;
+//    private final CSGNode.Root cubeNodeComplex;
+    
+    private int getIndexForState(TerrainState state)
+    {
+        return state.getYOffset() + 2;
+    }
+    
+    /** 
+     * Used for Y coord of bottom face and as lower Y coord of side faces
+     * Expects values of -2 through +2 from {@link TerrainState#getYOffset()}
+     */
+    private int getBottomY(int yOffset)
+    {
+        return -2 - yOffset;
+    }
+    
     public TerrainMeshFactory()
     {
         super(  StateFormat.FLOW, 
                 ModelStateData.STATE_FLAG_NEEDS_POS, 
                 SURFACE_TOP.surface(), SURFACE_SIDE.surface());
+        
+        IMutablePolygon templateBuilder = Poly.mutable(4);
+
+        templateBuilder.setColor(Color.WHITE);
+        templateBuilder.setLockUV(true);
+        templateBuilder.setSurfaceInstance(SURFACE_TOP);
+        // default - need to change for sides and bottom
+        templateBuilder.setNominalFace(EnumFacing.UP);
+        template = templateBuilder;
+        
+        for(int i = 0; i < 5; i++)
+        {
+            // Bottom faces are pre-built
+            IMutablePolygon qBottom = Poly.mutable(template);
+            qBottom.setSurfaceInstance(SURFACE_SIDE);
+            qBottom.setNominalFace(EnumFacing.DOWN);        
+            qBottom.setupFaceQuad(0, 0, 1, 1, getBottomY(i-2), EnumFacing.NORTH);
+            bottoms[i] = qBottom;
+            
+            terrainNodesSimple[i] = CSGNode.create(ImmutableList.of(qBottom));
+            
+            terrainNodesHybrid[i] = CSGNode.create(ImmutableList.of(qBottom), false);
+            
+//            terrainNodesComplex[i] = CSGNode.create(ImmutableList.of(qBottom), true);
+            
+        }
+        List<IPolygon> cubeQuads = cubeQuads();
+        this.cubeNodeSimple = CSGNode.create(cubeQuads);
+        this.cubeNodeHybrid  = CSGNode.create(cubeQuads, false);
+//        this.cubeNodeComplex  = CSGNode.create(cubeQuads, true);
     }
 
     @Override
@@ -161,13 +216,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //   
 //    private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
 //    {
-        IMutablePolygon template = Poly.mutable(4);
-
-        template.setColor(Color.WHITE);
-        template.setLockUV(true);
-        template.setSurfaceInstance(SURFACE_TOP);
-        // default - need to change for sides and bottom
-        template.setNominalFace(EnumFacing.UP);
 
         TerrainState flowState = modelState.getTerrainState();
         
@@ -185,10 +233,38 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //            }
 //        }
 
-        Collection<IPolygon> result = flowState.isFullCube()
-            ?  cubeQuads(template)
-            : CSGMesh.intersect(terrainQuads(flowState, template), cubeQuads(template));
-
+        Collection<IPolygon> result;
+        
+        if(flowState.isFullCube())
+        {
+            result = cubeQuads();
+        }
+        else 
+        {
+            CSGNode.Root terrainNode;
+            CSGNode.Root cubeNode;
+            
+            if(flowState.isTopSimple())
+            {
+                terrainNode = terrainNodesSimple[getIndexForState(flowState)].clone();
+                cubeNode = this.cubeNodeSimple.clone();
+            }
+            else //if(flowState.areMostSidesSimple())
+            {
+                terrainNode = terrainNodesHybrid[getIndexForState(flowState)].clone();
+                cubeNode = this.cubeNodeHybrid.clone();
+            }
+//            else
+//            {
+//                terrainNode = terrainNodesComplex[getIndexForState(flowState)].clone();
+//                cubeNode = this.cubeNodeComplex.clone();
+//            }
+            addTerrainQuads(flowState, terrainNode);
+            result = CSGMesh.intersect(
+                    terrainNode, 
+                    cubeNode);
+        }
+        
         // scale all quads UVs according to position to match what surface painter expects
         // Any quads with a null face are assumed to be part of the top face
         
@@ -269,9 +345,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         return result;
     }
 
-    private List<IPolygon> terrainQuads(TerrainState flowState, IMutablePolygon template)
+    private void addTerrainQuads(TerrainState flowState, CSGNode.Root terrainQuads)
     {
-        ArrayList<IPolygon> terrainQuads = new ArrayList<>();
         
         // center vertex setup
         FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
@@ -503,8 +578,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
         }
 
-        /** Used for Y coord of bottom face and as lower Y coord of side faces*/
-        float bottom = -2 - flowState.getYOffset();// - QuadFactory.EPSILON;
+        int bottom = getBottomY(flowState.getYOffset());
 
         Vec3f normCenter = quadInputsCenterLeft[0].getFaceNormal().scale(quadInputsCenterLeft[0].getArea());
         normCenter = normCenter.add(quadInputsCenterLeft[1].getFaceNormal().scale(quadInputsCenterLeft[1].getArea()));
@@ -569,14 +643,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             qi.setVertexNormal(2, normCorner[HorizontalCorner.NORTH_EAST.ordinal()]);
             qi.setVertexNormal(3, normCorner[HorizontalCorner.NORTH_WEST.ordinal()]);
 
-            //break into tris unless it is coplanar
+            //break into tris unless it is truly coplanar
             if(qi.isOnSinglePlane())
             {
-                terrainQuads.add(qi);   
+                terrainQuads.addPolygon(qi);   
             }
             else
             {
-                qi.addTrisToList(terrainQuads);
+                qi.addTrisToCSGRoot(terrainQuads);
             }
         }
 
@@ -597,7 +671,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
                     qi.setVertexNormal(1, normCenter);
                     qi.setVertexNormal(2, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);                    
-                    terrainQuads.add(qi);    
+                    terrainQuads.addPolygon(qi);    
                 }
 
                 // side
@@ -612,7 +686,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
                         new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                terrainQuads.add(qSide);
+                terrainQuads.addPolygon(qSide);
 
             }
             else
@@ -622,13 +696,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 qi.setVertexNormal(0, normSide[side.ordinal()]);
                 qi.setVertexNormal(1, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
                 qi.setVertexNormal(2, normCenter);
-                terrainQuads.add(qi);
+                terrainQuads.addPolygon(qi);
 
                 qi = quadInputsCenterRight[side.ordinal()];
                 qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);
                 qi.setVertexNormal(1, normSide[side.ordinal()]);
                 qi.setVertexNormal(2, normCenter);     
-                terrainQuads.add(qi);
+                terrainQuads.addPolygon(qi);
 
                 //Sides
                 IMutablePolygon qSide = Poly.mutable(template);
@@ -642,7 +716,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                terrainQuads.add(qSide);
+                terrainQuads.addPolygon(qSide);
 
                 qSide = Poly.mutable(qSide);
                 qSide.setSurfaceInstance(SURFACE_SIDE);
@@ -653,32 +727,24 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
                         new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
-                terrainQuads.add(qSide);
+                terrainQuads.addPolygon(qSide);
             }
         }     
 
-        // Bottom face
-        IMutablePolygon qBottom = Poly.mutable(template);
-        //flip X-orthogonalAxis texture on bottom face
-//        qBottom.minU = 14 - qBottom.minU;
-//        qBottom.maxU = qBottom.minU + 2;
-        qBottom.setSurfaceInstance(SURFACE_SIDE);
-        qBottom.setNominalFace(EnumFacing.DOWN);        
-        qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
-        terrainQuads.add(qBottom);
-        
-        return terrainQuads;
+        // Bottom face is pre-added to CSGNode templates
+//        IMutablePolygon qBottom = Poly.mutable(template);
+//        qBottom.setSurfaceInstance(SURFACE_SIDE);
+//        qBottom.setNominalFace(EnumFacing.DOWN);        
+//        qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
+//        terrainQuads.add(qBottom);
+//        terrainQuads.add(getBottomForState(flowState));
     }
 
-    private List<IPolygon> cubeQuads(IMutablePolygon template)
+    private List<IPolygon> cubeQuads()
     {
         ArrayList<IPolygon> cubeQuads = new ArrayList<>();
         cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         IMutablePolygon faceQuad = Poly.mutableCopyOf(template);
-        
-        //flip X-orthogonalAxis texture on bottom face
-//        faceQuad.minU = 14 - faceQuad.minU;
-//        faceQuad.maxU = faceQuad.minU + 2;
         
         cubeQuads.add(Poly.mutableCopyOf(faceQuad).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH));
 
