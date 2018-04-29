@@ -18,7 +18,7 @@ public class TerrainPerf
     public void test()
     {
         ModelState[] modelStates = new ModelState[120000];
-        int[] offenders = new int[modelStates.length];
+//        int[] offenders = new int[modelStates.length];
         ConfigXM.BLOCKS.simplifyTerrainBlockGeometry = true;
         
         try
@@ -44,7 +44,7 @@ public class TerrainPerf
         
         TerrainMeshFactory mesher = new TerrainMeshFactory();
          
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 500; i++)
         {
             long elapsed = 0;
             long min = Long.MAX_VALUE;
@@ -78,7 +78,7 @@ public class TerrainPerf
                 max = Math.max(max, t);
                 if(t > 60000)
                 {
-                    offenders[j]++;
+//                    offenders[j]++;
                     longCount++;
                 }
                 elapsed += t;
@@ -88,7 +88,10 @@ public class TerrainPerf
             System.out.println("getShapeQuads min time  = " + min  + "ns");
             System.out.println("getShapeQuads max time  = " + max  + "ns");
             System.out.println("Runs exceeding 60,000ns: " + longCount);
-//            CSGNode.Root.recombinedRenderableQuadsCounter.reportAndClear();
+//            TerrainMeshFactory.reportAndClearHitCount();
+            CSGNode.Root.recombinedRenderableQuadsCounter.reportAndClear();
+            CSGNode.recombineCounter.reportAndClear();
+            CSGNode.reportRecombineStats();
 //            CSGPlane.splitTimer.reportAndClear();
 //            CSGPlane.splitSpanningTimer.reportAndClear();
             System.out.println("Error count = " + errorCount);
@@ -97,27 +100,27 @@ public class TerrainPerf
             System.out.println(" ");
         }
         
-        int offenderCount = 0;
-        int goodConcavity = 0;
-        int offenderConcavity = 0;
-        System.out.println("Repeat offenders");
-        for(int j = 0; j < modelStates.length; j++)
-        {
-            final int concavity = modelStates[j].getTerrainState().divergence();
-            if(offenders[j] > 4)
-            {
-                offenderConcavity += concavity;
-                offenderCount++;
-                System.out.println(offenders[j] + "x " + modelStates[j].getTerrainState().toString());
-            }
-            else
-            {
-                goodConcavity += concavity;
-            }
-        }
-        System.out.println("Repeat offender count: " + offenderCount);
-        System.out.println("Average concavity non-offenders: " + (float) goodConcavity / (modelStates.length - offenderCount));
-        System.out.println("Average concavity offenders: " + (float) offenderConcavity / offenderCount);
+//        int offenderCount = 0;
+//        int goodConcavity = 0;
+//        int offenderConcavity = 0;
+//        System.out.println("Repeat offenders");
+//        for(int j = 0; j < modelStates.length; j++)
+//        {
+//            final int concavity = modelStates[j].getTerrainState().divergence();
+//            if(offenders[j] > 4)
+//            {
+//                offenderConcavity += concavity;
+//                offenderCount++;
+//                System.out.println(offenders[j] + "x " + modelStates[j].getTerrainState().toString());
+//            }
+//            else
+//            {
+//                goodConcavity += concavity;
+//            }
+//        }
+//        System.out.println("Repeat offender count: " + offenderCount);
+//        System.out.println("Average concavity non-offenders: " + (float) goodConcavity / (modelStates.length - offenderCount));
+//        System.out.println("Average concavity offenders: " + (float) offenderConcavity / offenderCount);
     }
 
     

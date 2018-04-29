@@ -171,10 +171,14 @@ public final class Vertex extends Vec3f
 
     /**
      * True if this point is on the line formed by the two given points.
+     * Will return false for points that are "very close" to each other
+     * because there essentially isn't enough resolution to make a firm
+     * determination of what the line is.
      */
     public final boolean isOnLine(float x0, float y0, float z0, float x1, float y1, float z1)
     {
         float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
+        if(ab < QuadHelper.EPSILON * 5) return false;
         float bThis = Useful.distance(this.x, this.y, this.z, x1, y1, z1);
         float aThis = Useful.distance(x0, y0, z0, this.x, this.y, this.z);
         return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);

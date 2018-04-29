@@ -84,4 +84,18 @@ public class CSGPolygon
         
         return result;
     }
+    
+    public static final int VERTEX_NOT_FOUND = -1;
+    
+    /**
+     * Will return {@link #VERTEX_NOT_FOUND} (-1) if vertex is not part of this polygon.
+     */
+    public int indexForVertex(Vertex v)
+    {
+        for(int i = 0; i < this.vertex.length; i++)
+        {
+            if(this.vertex[i] == v) return i;
+        }
+        return VERTEX_NOT_FOUND;
+    }
 }

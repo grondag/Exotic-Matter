@@ -301,24 +301,31 @@ public interface IPolygon
      */
     public default boolean isConvex()
     {
-        if(this.vertexCount() == 3) return true;
+        return isConvex(this.vertexArray());
+    }
+
+    public static boolean isConvex(Vertex[] vertices)
+    {
+        final int size = vertices.length;
+        
+        if(size == 3) return true;
 
         float testX = 0;
         float testY = 0;
         float testZ = 0;
         boolean needTest = true;
                 
-        for(int thisIndex = 0; thisIndex < this.vertexCount(); thisIndex++)
+        for(int thisIndex = 0; thisIndex < size; thisIndex++)
         {
             int nextIndex = thisIndex + 1;
-            if(nextIndex == this.vertexCount()) nextIndex = 0;
+            if(nextIndex == size) nextIndex = 0;
 
             int priorIndex = thisIndex - 1;
-            if(priorIndex == -1) priorIndex = this.vertexCount() - 1;
+            if(priorIndex == -1) priorIndex = size - 1;
 
-            final Vertex thisVertex =  getVertex(thisIndex);
-            final Vertex nextVertex = getVertex(nextIndex);
-            final Vertex priorVertex = getVertex(priorIndex);
+            final Vertex thisVertex =  vertices[thisIndex];
+            final Vertex nextVertex = vertices[nextIndex];
+            final Vertex priorVertex = vertices[priorIndex];
             
             final float ax = thisVertex.x - priorVertex.x;
             final float ay = thisVertex.y - priorVertex.y;
@@ -349,7 +356,7 @@ public interface IPolygon
         }
         return true;
     }
-
+    
     public default boolean isOrthogonalTo(EnumFacing face)
     {
         return Math.abs(this.getFaceNormal().dotProduct(new Vec3f(face.getDirectionVec()))) <= QuadHelper.EPSILON;
