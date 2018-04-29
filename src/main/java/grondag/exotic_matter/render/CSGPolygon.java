@@ -3,13 +3,11 @@ package grondag.exotic_matter.render;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 public class CSGPolygon
 {
     public final Vec3f faceNormal;
     public final Vertex[] vertex;
-    public final @Nullable IPolygon original;
+    public final IPolygon original;
 
     public boolean isInverted;
     

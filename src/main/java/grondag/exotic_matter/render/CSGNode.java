@@ -42,19 +42,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
-
-import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.MicroTimer;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
 
@@ -172,7 +162,7 @@ public class CSGNode
                    next = computeNext();
                }
                
-                protected CSGNode computeNext()
+                protected @Nullable CSGNode computeNext()
                 {
                     if(stack.isEmpty()) return null;
                     CSGNode result = stack.pop();
@@ -271,44 +261,51 @@ public class CSGNode
         /**
          * Returns all quads in this tree recombined as much as possible.
          * Use for anything to be rendered.
-         * Generally only useful on root node!
-         * 
-         * TODO: add a prediction mechanism in the CSG operations
-         * to determine if it is worth calling this each time
-         * The average poly reduction is between 10 and 20%, but that
-         * may  not be evenly spread across all the invocations.
-         * If could predict from the input meshes when it would be 
-         * useful would save the cost of setup.
          */
+        @SuppressWarnings("unchecked")
         public List<IPolygon> recombinedRenderableQuads()
         {
-            recombinedRenderableQuadsCounter.start();
-            List<IPolygon> result = recombinedRenderableQuadsInner();
-            recombinedRenderableQuadsCounter.stop();
-            return result;
-        }
-        public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
-        private List<IPolygon> recombinedRenderableQuadsInner()
-        {
-            IdentityHashMap<IPolygon, Collection<CSGPolygon>> ancestorBuckets = new IdentityHashMap<>();
+//            recombinedRenderableQuadsCounter.start();
+//            List<IPolygon> result = recombinedRenderableQuadsInner();
+//            recombinedRenderableQuadsCounter.stop();
+//            return result;
+//        }
+//        public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
+//        @SuppressWarnings("unchecked")
+//        private List<IPolygon> recombinedRenderableQuadsInner()
+//        {
+            IdentityHashMap<IPolygon, Object> ancestorBuckets = new IdentityHashMap<>();
             
             for(CSGPolygon quad : this) 
             {
-                Collection<CSGPolygon> list =  ancestorBuckets.get(quad.original);
-                if(list == null)
+                Object bucket =  ancestorBuckets.get(quad.original);
+                if(bucket == null)
                 {
-                    list = new SimpleUnorderedArrayList<CSGPolygon>();
+                    ancestorBuckets.put(quad.original, quad);
+                }
+                else if(bucket instanceof SimpleUnorderedArrayList)
+                {
+                    ((SimpleUnorderedArrayList<CSGPolygon>) bucket).add(quad);
+                }
+                else
+                {
+                    SimpleUnorderedArrayList<CSGPolygon> list = new SimpleUnorderedArrayList<CSGPolygon>();
+                    list.add((CSGPolygon) bucket);
+                    list.add(quad);
                     ancestorBuckets.put(quad.original, list);
                 }
-                list.add(quad);
             }
             
             ArrayList<IPolygon> retVal = new ArrayList<>();
-            ancestorBuckets.values().forEach((quadList) ->
+            ancestorBuckets.values().forEach((bucket) ->
             {
-                for(CSGPolygon p : recombine(quadList))
+                if(bucket instanceof SimpleUnorderedArrayList)
                 {
-                    p.addRenderableQuads(retVal);
+                    recombinedAndAddRenderableToList(((SimpleUnorderedArrayList<CSGPolygon>) bucket), retVal);
+                }
+                else
+                {
+                    ((CSGPolygon)bucket).addRenderableQuads(retVal);
                 }
             });
             
@@ -325,7 +322,7 @@ public class CSGNode
                Iterator<CSGPolygon> polys = node.quads.iterator();
                @Nullable CSGPolygon next = computeNext();
                
-                private CSGPolygon computeNext()
+                private @Nullable CSGPolygon computeNext()
                 {
                     if(polys.hasNext()) return polys.next();
                     
@@ -560,32 +557,42 @@ public class CSGNode
         return joinedQuad;
         
     }
-  
     
-    private static Collection<CSGPolygon> recombine(Collection<CSGPolygon> quadsIn)
+    private static void recombinedAndAddRenderableToList(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
     {
-        quadInCount.addAndGet(quadsIn.size());   
-        recombineCounter.start();
-        Collection<CSGPolygon> result = recombineInner(quadsIn);
-        quadOutputCount.addAndGet(result.size());
-        if(recombineCounter.stop()) reportRecombineStats();
-        return result;
-    }
-    public static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 10000000);
-    private static AtomicInteger quadInCount = new AtomicInteger();
-    private static AtomicInteger quadOutputCount = new AtomicInteger();
-    public static void reportRecombineStats()
-    {
-        int in = quadInCount.get();
-        int out = quadOutputCount.get();
-        quadInCount.set(0);
-        quadOutputCount.set(0);
-        ExoticMatter.INSTANCE.info("CSG Poly recombination reduction = %d percent (of polygons processed, not total reduction)", ((in - out) * 100) / in );
-    }
-    
-    private static Collection<CSGPolygon> recombineInner(Collection<CSGPolygon> quadsIn)
-    {
-        if(quadsIn.size() <= 1) return quadsIn;
+//        quadInCount.addAndGet(quadsIn.size());
+//        final int startingOutputSize = output.size();
+//        recombineCounter.start();
+//        recombinedAndAddRenderableToListInner(quadsIn, output);
+//        quadOutputCount.addAndGet(output.size() - startingOutputSize);
+//        if(recombineCounter.stop()) reportRecombineStats();
+//    }
+//    public static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 10000000);
+//    private static AtomicInteger quadInCount = new AtomicInteger();
+//    private static AtomicInteger quadOutputCount = new AtomicInteger();
+//    private static AtomicInteger pairCount = new AtomicInteger();
+//    public static void reportRecombineStats()
+//    {
+//        int in = quadInCount.get();
+//        int out = quadOutputCount.get();
+//        quadInCount.set(0);
+//        quadOutputCount.set(0);
+//        ExoticMatter.INSTANCE.info("CSG Poly recombination reduction = %d percent (of polygons processed, not total reduction)", ((in - out) * 100) / in );
+//        ExoticMatter.INSTANCE.info("CSG Poly pair-wise count = %d percent (of polygons processed)", (pairCount.get() * 100) / in );
+//        pairCount.set(0);
+//    }
+//    
+//    private static void recombinedAndAddRenderableToListInner(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
+//    {
+        
+        if(quadsIn.size() == 2) 
+        {
+            recombinedAndAddRenderableToListPairwise(quadsIn, output);
+            return;
+        }
+
+        // Caller shouldn't use this for a single polygon...  don't want to handle it here
+//        assert quadsIn.size() > 1 : "Wasteful call to CSG recombine";
         
         /**
          * Index of all polys by vertex
@@ -651,9 +658,42 @@ public class CSGNode
                 }
             }
         }
-        return polys;
+        polys.forEach(p -> p.addRenderableQuads(output));
     }
 
+    /**
+     * Handles special case when there are only 2 polygons to join - avoids building a map.
+     * For volcano terrain, this is about 15% of the cases involving a potential join (more than 1 poly)
+     */
+    private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
+    {
+//        pairCount.incrementAndGet();
+        Iterator<CSGPolygon> it = quadsIn.iterator();
+        CSGPolygon polyA = it.next();
+        CSGPolygon polyB = it.next();
+        
+        for(Vertex vA : polyA.vertex)
+        {
+            for(Vertex vB : polyB.vertex)
+            {
+                if(vA == vB)
+                {
+                    @Nullable CSGPolygon newPoly = joinAtVertex(vA, polyA, polyB);
+                    if(newPoly == null)
+                        break;
+                    else
+                    {
+                        newPoly.addRenderableQuads(output);
+                        return;
+                    }
+                }
+            }
+        }
+        polyA.addRenderableQuads(output);
+        polyB.addRenderableQuads(output);
+    }
+            
+        
     private static void removePolyFromVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vertex excludingVertex )
     {
         for(Vertex v : poly.vertex)
