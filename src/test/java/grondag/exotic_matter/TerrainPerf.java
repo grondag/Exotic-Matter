@@ -8,12 +8,10 @@ import org.junit.Test;
 import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.TerrainMeshFactory;
-import grondag.exotic_matter.render.CSGNode;
-import grondag.exotic_matter.render.CSGPlane;
 
 public class TerrainPerf
 {
-
+   
     @Test
     public void test()
     {
@@ -42,10 +40,11 @@ public class TerrainPerf
               return;
           }
         
-        TerrainMeshFactory mesher = new TerrainMeshFactory();
          
-        for(int i = 0; i < 500; i++)
+        for(int i = 0; i < 64; i++)
         {
+            TerrainMeshFactory mesher = new TerrainMeshFactory();
+            
             long elapsed = 0;
             long min = Long.MAX_VALUE;
             long max = 0;
@@ -88,13 +87,15 @@ public class TerrainPerf
             System.out.println("getShapeQuads min time  = " + min  + "ns");
             System.out.println("getShapeQuads max time  = " + max  + "ns");
             System.out.println("Runs exceeding 60,000ns: " + longCount);
+//            mesher.reportCacheHits();
 //            TerrainMeshFactory.reportAndClearHitCount();
-            CSGNode.Root.recombinedRenderableQuadsCounter.reportAndClear();
-            CSGNode.recombineCounter.reportAndClear();
-            CSGNode.reportRecombineStats();
+//            CSGNode.Root.recombinedRenderableQuadsCounter.reportAndClear();
+//            CSGNode.recombineCounter.reportAndClear();
+//            CSGNode.reportRecombineStats();
 //            CSGPlane.splitTimer.reportAndClear();
 //            CSGPlane.splitSpanningTimer.reportAndClear();
             System.out.println("Error count = " + errorCount);
+//            CSGPlane.printTagCounts();
 //            System.out.println("minOffset = " + minOffset);
 //            System.out.println("maxOffset = " + maxOffset);
             System.out.println(" ");

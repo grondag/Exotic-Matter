@@ -8,8 +8,8 @@ import grondag.exotic_matter.varia.Useful;
 
 public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
 {
-    private final int capacity;
-    private final int maxFill;
+    public final int capacity;
+    public final int maxFill;
     protected final int positionMask;
     
     protected final LongSimpleCacheLoader<V> loader;
@@ -58,7 +58,7 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
                 }
                 else
                 {
-                    //another thread got there start
+                    //another thread got there first
                     return localState.zeroValue.get();
                 }
             }

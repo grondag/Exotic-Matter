@@ -696,6 +696,12 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
+    public long getTerrainBits()
+    {
+        return ModelStateData.P3F_FLOW_JOIN.getValue(bits3);
+    }
+    
+    @Override
     public void setTerrainState(TerrainState flowState)
     {
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)

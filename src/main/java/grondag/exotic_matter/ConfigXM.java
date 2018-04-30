@@ -53,6 +53,7 @@ public class ConfigXM
             DEBUG
         }
 
+        //TODO: get rid of this and use assertions instead
         @Comment("Set true to enable tracing output for block model state.  Can spam the log quite a bit, so leave false unless having problems.")
         public boolean debugModelState = true;
 

@@ -174,6 +174,8 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     TerrainState getTerrainState();
 
+    long getTerrainBits();
+    
     void setTerrainState(TerrainState flowState);
 
     /**

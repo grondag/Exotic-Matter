@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.cache.LongSimpleCacheLoader;
+import grondag.exotic_matter.cache.LongSimpleLoadingCache;
 import grondag.exotic_matter.render.CSGMesh;
 import grondag.exotic_matter.render.CSGNode;
 import grondag.exotic_matter.render.FaceVertex;
@@ -73,6 +75,31 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
+    private final LongSimpleLoadingCache<Collection<IPolygon>> modelCache = new LongSimpleLoadingCache<>(new TerrainCacheLoader(),  0xFFFF);
+
+//    private final AtomicInteger cacheAttempts = new AtomicInteger(0);
+//    private final AtomicInteger cacheMisses = new AtomicInteger(0);
+//    
+//    public void reportCacheHits()
+//    {
+//        final int attempts = cacheAttempts.get();
+//        final int hits = attempts - cacheMisses.get();
+//        System.out.println(String.format("Terrain cache hits: %d / %d (%f percent)", hits, attempts, 100f * hits / attempts ));
+//        System.out.println(String.format("Cache capacity = %d, maxfill = %d", modelCache.capacity, modelCache.maxFill));
+//        cacheMisses.set(0);
+//        cacheAttempts.set(0);
+//    }
+    
+    private class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPolygon>>
+    {
+        @Override
+        public Collection<IPolygon> load(long key)
+        {
+//            cacheMisses.incrementAndGet();
+            return createShapeQuads(new TerrainState(key));
+        }
+    }
+    
     private int getIndexForState(TerrainState state)
     {
         return state.getYOffset() + 2;
@@ -158,12 +185,113 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         Vec3f temp = vec.normalize();
         return new Vec3f(temp.x, temp.y * temp.y, temp.z);
     }
-
-
-    //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
-    //    private static int index = 0;
+   
     @Override
     public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
+    {
+        TerrainState flowState = modelState.getTerrainState();
+        
+        Collection<IPolygon> mesh;
+        
+        if(flowState.isFullCube())
+        {
+            mesh = cubeQuads();
+        }
+        else
+        {
+//            cacheAttempts.incrementAndGet();
+            mesh = this.modelCache.get(flowState.getStateKey());
+        }
+        
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        
+        // scale all quads UVs according to position to match what surface painter expects
+        // Any quads with a null face are assumed to be part of the top face
+
+        // We want top face textures to always join irrespective of Y.
+        // Other face can vary based on orthogonal dimension to break up appearance of layers.
+        for(IPolygon quad : mesh)
+        {
+            EnumFacing face = quad.getNominalFace();
+            if(face == null)
+            {
+                assert false : "Terrain Mesh Generator is outputting quad with null nominal face.";
+                face = EnumFacing.UP;
+            }
+
+            IMutablePolygon mutableQuad = Poly.mutableCopyOf(quad);
+
+            switch(face)
+            {
+            case NORTH:
+            {
+                int zHash = MathHelper.hash(modelState.getPosZ());
+                mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            }
+            case SOUTH:
+            {
+                int zHash = MathHelper.hash(modelState.getPosZ());
+                mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            }
+            case EAST:
+            {
+                int xHash = MathHelper.hash(modelState.getPosX());
+                mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            }
+            case WEST:
+            {
+                int xHash = MathHelper.hash(modelState.getPosX());
+                mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            } 
+            case DOWN:
+            {
+                int yHash = MathHelper.hash(modelState.getPosY());
+                mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            }
+            case UP:
+            default:
+            {
+                mutableQuad.setMinU(modelState.getPosX());
+                mutableQuad.setMaxU(quad.getMinU() +  1);
+                mutableQuad.setMinV(modelState.getPosZ());
+                mutableQuad.setMaxV(quad.getMinV() + 1);
+                break;
+            }
+            }
+            
+            builder.add(mutableQuad);
+        }
+
+        Collection<IPolygon> result = builder.build();
+        
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
+
+        return result;
+    }
+    
+    //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
+    //    private static int index = 0;
+    private @Nonnull Collection<IPolygon> createShapeQuads(TerrainState flowState)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);
@@ -224,126 +352,37 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //    private @Nonnull Collection<IPolygon> innerShapeQuads(ISuperModelState modelState)
         //    {
 
-        TerrainState flowState = modelState.getTerrainState();
-
         //        synchronized(stateList)
         //        {
         //            stateList.add(modelState.getShape() ==ModShapes.TERRAIN_FILLER ?  -flowState.getStateKey() : flowState.getStateKey());
         //        }
 
-        Collection<IPolygon> result;
 
-        if(flowState.isFullCube())
+        CSGNode.Root terrainNode;
+        CSGNode.Root cubeNode;
+
+        if(flowState.isTopSimple())
         {
-            result = cubeQuads();
+            terrainNode = terrainNodesSimple[getIndexForState(flowState)].clone();
+            cubeNode = this.cubeNodeSimple.clone();
         }
-        else 
+        else //if(flowState.areMostSidesSimple())
         {
-            CSGNode.Root terrainNode;
-            CSGNode.Root cubeNode;
-
-            if(flowState.isTopSimple())
-            {
-                terrainNode = terrainNodesSimple[getIndexForState(flowState)].clone();
-                cubeNode = this.cubeNodeSimple.clone();
-            }
-            else //if(flowState.areMostSidesSimple())
-            {
-                terrainNode = terrainNodesHybrid[getIndexForState(flowState)].clone();
-                cubeNode = this.cubeNodeHybrid.clone();
-            }
-            //            else
-            //            {
-            //                terrainNode = terrainNodesComplex[getIndexForState(flowState)].clone();
-            //                cubeNode = this.cubeNodeComplex.clone();
-            //            }
-            
-            addTerrainQuads(flowState, terrainNode);
-            
-            result = CSGMesh.intersect(
-                    cubeNode,
-                    terrainNode
-                    );
+            terrainNode = terrainNodesHybrid[getIndexForState(flowState)].clone();
+            cubeNode = this.cubeNodeHybrid.clone();
         }
-
-        // scale all quads UVs according to position to match what surface painter expects
-        // Any quads with a null face are assumed to be part of the top face
-
-        // We want top face textures to always join irrespective of Y.
-        // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(IPolygon quad : result)
-        {
-            EnumFacing face = quad.getNominalFace();
-            if(face == null)
-            {
-                assert false : "Terrain Mesh Generator is outputting quad with null nominal face.";
-            face = EnumFacing.UP;
-            }
-
-            IMutablePolygon mutableQuad = quad.mutableReference();
-
-            switch(face)
-            {
-            case NORTH:
-            {
-                int zHash = MathHelper.hash(modelState.getPosZ());
-                mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case SOUTH:
-            {
-                int zHash = MathHelper.hash(modelState.getPosZ());
-                mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case EAST:
-            {
-                int xHash = MathHelper.hash(modelState.getPosX());
-                mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case WEST:
-            {
-                int xHash = MathHelper.hash(modelState.getPosX());
-                mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            } 
-            case DOWN:
-            {
-                int yHash = MathHelper.hash(modelState.getPosY());
-                mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case UP:
-            default:
-            {
-                mutableQuad.setMinU(modelState.getPosX());
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(modelState.getPosZ());
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            }
-        }
-
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
-
-        return result;
+        //            else
+        //            {
+        //                terrainNode = terrainNodesComplex[getIndexForState(flowState)].clone();
+        //                cubeNode = this.cubeNodeComplex.clone();
+        //            }
+        
+        addTerrainQuads(flowState, terrainNode);
+        
+       return CSGMesh.intersect(
+                cubeNode,
+                terrainNode
+                );
     }
 
 //    private static LongOpenHashSet hitMap = new LongOpenHashSet();
