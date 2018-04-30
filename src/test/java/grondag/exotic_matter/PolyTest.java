@@ -20,7 +20,6 @@ public class PolyTest
     @Test
     public void test()
     {
-        Vec3f direction;
         Vec3f point;
         IMutablePolygon quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
@@ -53,12 +52,10 @@ public class PolyTest
         
         // point on plane
         point = new Vec3f(0.5f, 0.5f, 0.5f);
-        direction = new Vec3f(0, 123, 0);
         assertTrue(quad.containsPoint(point));
         
         // point on plane outside poly
         point = new Vec3f(-0.5f, 0.5f, 1.5f);
-        direction = new Vec3f(0, 123, 0);
         assertFalse(quad.containsPoint(point));
         
         // point with ray intersecting poly
@@ -66,7 +63,6 @@ public class PolyTest
         
         // point with ray intersecting plane outside poly
         point = new Vec3f(-32, 0.2f, 27);
-        direction = new Vec3f(0, 123, 0);
         assertFalse(quad.containsPoint(point));
              
         // point with ray facing away from poly

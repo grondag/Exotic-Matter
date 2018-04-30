@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
-import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;

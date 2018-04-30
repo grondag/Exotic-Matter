@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+@SuppressWarnings("null")
 public class PolyLocality
 {
     private interface IIdealPolygon
@@ -170,6 +171,7 @@ public class PolyLocality
     private class DirectRefPoly implements IIdealPolygon
     {
 
+        
         private ObjectVertex v0;
         private ObjectVertex v1;
         private ObjectVertex v2;
@@ -340,8 +342,6 @@ public class PolyLocality
 
         public String label();
     }
-
-    private static final int RUN_COUNT = 1000000;
 
     private class BasicMaker implements IPolyMaker
     {
@@ -638,6 +638,7 @@ public class PolyLocality
         }
     }
 
+    @SuppressWarnings("unused")
     private class MakerVertexValueReference implements IPolyMaker
     {
         @Override
@@ -658,6 +659,7 @@ public class PolyLocality
         }
     }
 
+    @SuppressWarnings("unused")
     private class MakerVertexValueRArray implements IPolyMaker
     {
         @Override
@@ -728,22 +730,13 @@ public class PolyLocality
             {
                 System.out.println(String.format("Starting run %d", i ));
 
-                long start = System.nanoTime();
                 runCreate(runner);
-                long end = System.nanoTime();
-//                System.out.println(String.format("Overall create duration (multiple threads) = %d ns", (end - start) / POLY_COUNT ));
                 System.out.println(String.format("makePoly in-thread run time = %d ns", runTime.get() / POLY_COUNT ));
 
-                start = System.nanoTime();
                 runExternalAccess(runner);
-                end = System.nanoTime();
-//                System.out.println(String.format("External access duration (multiple threads) = %d ns", (end - start) / POLY_COUNT ));
                 System.out.println(String.format("External access in-thread run time = %d ns", runTime.get() / POLY_COUNT ));
 
-                start = System.nanoTime();
                 runInternalAccess(runner);
-                end = System.nanoTime();
-//                System.out.println(String.format("Internal access duration (multiple threads) = %d ns", (end - start) / POLY_COUNT ));
                 System.out.println(String.format("Internal access in-thread run time = %d ns", runTime.get() / POLY_COUNT ));
                 
                 Arrays.fill(lists, 0, lists.length, null);

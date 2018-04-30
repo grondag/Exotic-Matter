@@ -1,22 +1,12 @@
 package grondag.exotic_matter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Random;
 
 import org.junit.Test;
 
 import grondag.exotic_matter.render.CSGPlane;
-import grondag.exotic_matter.render.FaceVertex;
-import grondag.exotic_matter.render.IMutablePolygon;
-import grondag.exotic_matter.render.Poly;
-import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Vec3f;
 import grondag.exotic_matter.render.Vertex;
-import grondag.exotic_matter.world.Rotation;
-import net.minecraft.util.EnumFacing;
 
 public class CSGPlanPerf
 {

@@ -14,7 +14,6 @@ import grondag.exotic_matter.network.PacketHandler;
 import grondag.exotic_matter.network.PacketUpdateModifierKeys;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;

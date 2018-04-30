@@ -13,7 +13,6 @@ import net.minecraft.util.math.Vec3i;
 class PolyImpl extends AbstractPolygon implements IMutablePolygon
 {
     private final Vertex[] vertices;
-    private int[] lineID;
     private final int vertexCount;
 
     PolyImpl()
@@ -31,7 +30,6 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
         assert vertexCount > 2 : "Bad polygon structure.";
         this.vertexCount = vertexCount;
         this.vertices = new Vertex[vertexCount];
-        this.lineID = new int[vertexCount];
     }
 
     PolyImpl(IPolygon template, int vertexCount)
@@ -74,6 +72,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     protected void copyProperties(IPolygon fromObject)
     {
         super.copyProperties(fromObject);
+//        this.tag = fromObject.getTag();
     }
 
     @Override
@@ -531,4 +530,19 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
             }
         }
     }
+    
+//    private String tag;
+//
+//    @Override
+//    public String getTag()
+//    {
+//        return tag;
+//    }
+//
+//    @Override
+//    public PolyImpl setTag(String tag)
+//    {
+//        this.tag = tag;
+//        return this;
+//    }
 }

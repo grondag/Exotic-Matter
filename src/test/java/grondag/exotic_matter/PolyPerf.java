@@ -10,7 +10,6 @@ import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.Poly;
 import jline.internal.Log;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.Vec3d;
 
 public class PolyPerf
 {

@@ -537,4 +537,11 @@ public interface IPolygon
     
         quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
+    
+//    /**
+//     * For testing
+//     */
+//    public String getTag();
+//    
+//    public IMutablePolygon setTag(String tag);
 }

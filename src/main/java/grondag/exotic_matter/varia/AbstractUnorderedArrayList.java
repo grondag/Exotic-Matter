@@ -6,8 +6,6 @@ import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.AbstractIterator;
-
 /**
  * Lightweight, non-concurrent collection-like class for managing small unordered lists.
  * Uses = for comparison.

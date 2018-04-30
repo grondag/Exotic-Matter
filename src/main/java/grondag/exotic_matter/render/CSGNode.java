@@ -79,24 +79,6 @@ public class CSGNode
     
     private static final Vec3f CENTER_TO_SIDE_NORMAL_B = new Vec3f(-1, 0, 0);
     private static final float CENTER_TO_SIDE_DIST_B = -0.5f;
-//    static
-//    {
-//        PolyImpl p = new PolyImpl(4);
-//        p.addVertex(0, 0, 0, 0.5f, 0, 0, 0);
-//        p.addVertex(1, 1, 0, 0.5f, 0, 0, 0);
-//        p.addVertex(2, 1, 1, 0.5f, 0, 0, 0);
-//        p.addVertex(3, 0, 1, 0.5f, 0, 0, 0);
-//        CENTER_TO_SIDE_NORMAL_A = p.getFaceNormal();
-//        CENTER_TO_SIDE_DIST_A = CENTER_TO_SIDE_NORMAL_A.dotProduct(p.getVertex(0));
-//        
-//        p = new PolyImpl(4);
-//        p.addVertex(0, 0.5f, 0, 0, 0, 0, 0);
-//        p.addVertex(1, 0.5f, 0, 1, 0, 0, 0);
-//        p.addVertex(2, 0.5f, 1, 1, 0, 0, 0);
-//        p.addVertex(3, 0.5f, 1, 0, 0, 0, 0);
-//        CENTER_TO_SIDE_NORMAL_B = p.getFaceNormal();
-//        CENTER_TO_SIDE_DIST_B = CENTER_TO_SIDE_NORMAL_B.dotProduct(p.getVertex(0));
-//    }
     
     public static class Root extends CSGNode implements Iterable<CSGPolygon>
     {

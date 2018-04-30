@@ -36,8 +36,6 @@ package grondag.exotic_matter.render;
 
 import java.awt.Polygon;
 
-import grondag.exotic_matter.varia.MicroTimer;
-
 public class CSGPlane
 {
     
@@ -169,6 +167,7 @@ public class CSGPlane
     
     public void splitQuad(CSGPolygon poly, CSGSplitAcceptor target)  
     {
+//        tagCounter.addTo(poly.original.getTag(), 1);
 //        splitTimer.start();
 //        splitQuadInner(poly, target);
 //        if(splitTimer.stop())
@@ -177,6 +176,19 @@ public class CSGPlane
 //        }
 //    }
 //    public static MicroTimer splitTimer = new MicroTimer("splitQuad", 100000000);
+//    public static Object2IntOpenHashMap<String> tagCounter = new Object2IntOpenHashMap<>();
+//
+//    public static void printTagCounts()
+//    {
+//        tagCounter.entrySet().stream().sequential().sorted(new Comparator<Entry<String, Integer>>() {
+//
+//            @Override
+//            public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2)
+//            {
+//                return o2.getValue().compareTo(o1.getValue());
+//            }}).forEach((Entry<String, Integer> e) -> System.out.println(e.getKey() + ", " + e.getValue()));
+//        tagCounter.clear();
+//    }
 //    private void splitQuadInner(CSGPolygon poly, CSGSplitAcceptor target) 
 //    {
         int combinedCount = 0;
@@ -192,12 +204,14 @@ public class CSGPlane
             if(combinedCount == 0)
             {
                 // coplanar
-                final Vec3f faceNorm = poly.isInverted ? poly.faceNormal.inverse() : poly.faceNormal;
+                final Vec3f faceNorm = poly.faceNormal;
                 float t = faceNorm.x * this.normalX + faceNorm.y * this.normalY + faceNorm.z * this.normalZ;
+                if(poly.isInverted) t = -t;
+                
                 if(t > 0) 
-                    target.acceptCoplanarFront(poly);
+                        target.acceptCoplanarFront(poly);
                 else 
-                    target.acceptCoplanarBack(poly);
+                        target.acceptCoplanarBack(poly);
             }
             else target.acceptBack(poly);
         }
@@ -225,11 +239,6 @@ public class CSGPlane
         final int vcount = poly.vertex.length;
         
         final Vertex[] verts = poly.vertex;
-        
-        // forces face normal to be computed if it has not been already
-        // this allows it to be copied to the split quad and 
-        // and avoids having incomputable face normals due to very small polys.
-        //poly.getFaceNormal();
         
         CSGPolygon frontQuad = new CSGPolygon(poly, (combinedCount & FRONT_MASK) + 2);
         int iFront = 0;

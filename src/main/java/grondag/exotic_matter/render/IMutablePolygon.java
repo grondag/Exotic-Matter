@@ -3,8 +3,6 @@ package grondag.exotic_matter.render;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-
 import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
@@ -177,7 +175,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Sets the face to be used for setupFace semantics
      */
-    EnumFacing setNominalFace(EnumFacing face);
+    EnumFacing setNominalFace(@Nullable EnumFacing face);
 
     /** 
      * applies the given transformation to this polygon
