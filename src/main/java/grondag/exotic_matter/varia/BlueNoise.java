@@ -1,9 +1,11 @@
 package grondag.exotic_matter.varia;
 
+import java.util.BitSet;
 import java.util.Random;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import net.minecraft.util.math.Vec3i;
 
 /**
  * Generates tileable 2d blue noise with integer coordinates using Bridson algorithm for Poisson disk sampling.
@@ -16,12 +18,12 @@ public class BlueNoise
     public final int size;
     public final int minSpacing;
     
-    public static BlueNoise create(int size, int minSpacing, int seed)
+    public static BlueNoise create(int size, int minSpacing, long seed)
     {
         return new BlueNoise(size, minSpacing, seed);
     }
     
-    private BlueNoise(int size, int minSpacing, int seed)
+    private BlueNoise(int size, int minSpacing, long seed)
     {
         this.size = size;
         this.minSpacing = minSpacing;
@@ -52,16 +54,18 @@ public class BlueNoise
     }
     
     
-    private void generate(int seed)
+    private void generate(long seed)
     {
         final Random r = new Random(seed);
         
         IntArrayList active = new IntArrayList();
         
+        BitSet points = new BitSet(size * size);
+        
         {
             final int first = indexOf(r.nextInt(), r.nextInt());
             active.add(first);
-            points.add(first);
+            points.set(first);
         }
         
         while(! active.isEmpty())
@@ -70,27 +74,49 @@ public class BlueNoise
             for(int i = 0; i < 60; i++)
             {
                 Point trial = generatePointAround(subject, r);
-                if(pointIsValid(trial))
+                if(pointIsValid(trial, points))
                 {
                     active.add(subject.index());
                     final int trialIndex = trial.index();
                     active.add(trialIndex);
-                    points.add(trialIndex);
+                    points.set(trialIndex);
                     break;
                 }
             }
         }
+        
+        for(int x = 0; x < size; x++)
+        {
+            for(int y = 0; y < size; y++)
+            {
+                final int index = indexOf(x, y);
+                if(points.get(index)) this.points.add(index);
+            }
+        }
     }
     
-    private boolean pointIsValid(Point p)
+    private boolean pointIsValid(Point p, BitSet points)
     {
-        for(int j = -minSpacing; j <= minSpacing; j++)
+        if(minSpacing <= 64)
         {
-            for(int k = -minSpacing; k <= minSpacing; k++)
+            // faster to use pre-computed offsets if feasible
+            for(Vec3i vec : Useful.DISTANCE_SORTED_CIRCULAR_OFFSETS)
             {
-                if(isSet(p.x + j, p.y + k) && Math.sqrt(j * j + k * k) <= minSpacing)
+                if(vec.getY() > minSpacing) break;
+                
+                if(points.get(indexOf(p.x + vec.getX(), p.y + vec.getZ()))) return false;
+            }
+        }
+        else
+        {
+            for(int j = -minSpacing; j <= minSpacing; j++)
+            {
+                for(int k = -minSpacing; k <= minSpacing; k++)
                 {
-                    return false;
+                    if(points.get(indexOf(p.x + j, p.y + k)) && Math.sqrt(j * j + k * k) <= minSpacing)
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -114,15 +140,15 @@ public class BlueNoise
         return this.points.contains(indexOf(x, y));
     }
     
-    public void set(int x, int y)
-    {
-        this.points.add(indexOf(x, y));
-    }
-    
-    public void clear(int x, int y)
-    {
-        this.points.rem(indexOf(x, y));
-    }
+//    public void set(int x, int y)
+//    {
+//        this.points.add(indexOf(x, y));
+//    }
+//    
+//    public void clear(int x, int y)
+//    {
+//        this.points.rem(indexOf(x, y));
+//    }
     
     private int xFromIndex(int index)
     {

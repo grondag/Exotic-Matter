@@ -25,12 +25,15 @@ import net.minecraft.world.World;
 
 
 /**
- * Random utilities that have not yet checked a more appropriate home.
+ * Random utilities that have not yet found a more appropriate home.
  */
 public class Useful 
 {
-    
-    private static final Vec3i DISTANCE_SORTED_CIRCULAR_OFFSETS[];
+    /**
+     * See {@link #getDistanceSortedCircularOffset(int)}.  If you simply want to iterate 
+     * all, can simply use this directly.
+     */
+    public static final Vec3i DISTANCE_SORTED_CIRCULAR_OFFSETS[];
     
     static
     {

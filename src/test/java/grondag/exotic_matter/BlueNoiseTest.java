@@ -10,7 +10,7 @@ public class BlueNoiseTest
     @Test
     public void test()
     {
-        final int SIZE = 128;
+        final int SIZE = 256;
         long start = System.nanoTime();
         BlueNoise noise = BlueNoise.create(SIZE, 16, 37);
         long end = System.nanoTime();
