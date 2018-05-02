@@ -2,6 +2,7 @@ package grondag.exotic_matter.varia;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.chunk.Chunk;
 
@@ -160,9 +161,24 @@ public class PackedBlockPos
             return getPackedChunkPos(pos.getX(), pos.getZ());
     }
     
+    public static long getPackedChunkPos(ChunkPos chunkPos)
+    {
+        return getPackedChunkPos(chunkPos.x, chunkPos.z);
+    }
+    
     public static long getPackedChunkPos(Chunk chunk)
     {
-            return ((long)chunk.x) + CHUNK_BOUNDARY | (((long)chunk.z) + CHUNK_BOUNDARY) << 32;
+            return getPackedChunkPos(chunk.x, chunk.z);
+    }
+    
+    public static long getPackedChunkPos(long chunkX, long chunkZ)
+    {
+            return (chunkX) + CHUNK_BOUNDARY | ((chunkZ) + CHUNK_BOUNDARY) << 32;
+    }
+    
+    public static ChunkPos unpackChunkPos(long packedChunkPos)
+    {
+        return new ChunkPos(getChunkXPos(packedChunkPos), getChunkZPos(packedChunkPos));
     }
     
     /** analog of Chunk.chunkXPos */
