@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
 import grondag.exotic_matter.varia.PackedBlockPos;
+import grondag.exotic_matter.varia.PackedChunkPos;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
@@ -107,11 +108,11 @@ public class PackedBlockPosTest
         //chunk coords
         pos1 = new BlockPos(414, 2, -52234);
         ChunkPos cpos = new ChunkPos(pos1);
-        long1 = PackedBlockPos.getPackedChunkPos(PackedBlockPos.pack(pos1));
-        assert(PackedBlockPos.getChunkXPos(long1) == cpos.x);
-        assert(PackedBlockPos.getChunkZPos(long1) == cpos.z);
-        assert(PackedBlockPos.getChunkXStart(long1) == cpos.getXStart());
-        assert(PackedBlockPos.getChunkZStart(long1) == cpos.getZStart());
+        long1 = PackedChunkPos.getPackedChunkPos(PackedBlockPos.pack(pos1));
+        assert(PackedChunkPos.getChunkXPos(long1) == cpos.x);
+        assert(PackedChunkPos.getChunkZPos(long1) == cpos.z);
+        assert(PackedChunkPos.getChunkXStart(long1) == cpos.getXStart());
+        assert(PackedChunkPos.getChunkZStart(long1) == cpos.getZStart());
         
         
     }

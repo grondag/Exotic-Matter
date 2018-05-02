@@ -1,6 +1,7 @@
 package grondag.exotic_matter.world;
 
 import grondag.exotic_matter.varia.PackedBlockPos;
+import grondag.exotic_matter.varia.PackedChunkPos;
 import grondag.exotic_matter.varia.Useful;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
@@ -17,7 +18,7 @@ public class PerChunkBlockPosQueue
     
     public void enqueue(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         LongArrayFIFOQueue chunkQueue = chunks.get(packedChunkPos);
         
@@ -35,7 +36,7 @@ public class PerChunkBlockPosQueue
      */
     public BlockPos dequeue(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         LongArrayFIFOQueue chunkQueue = chunks.get(packedChunkPos);
         
@@ -62,7 +63,7 @@ public class PerChunkBlockPosQueue
     
     public int sizeInChunkAt(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         LongArrayFIFOQueue chunkQueue = chunks.get(packedChunkPos);
         

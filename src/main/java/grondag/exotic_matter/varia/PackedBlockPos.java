@@ -2,17 +2,14 @@ package grondag.exotic_matter.varia;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.chunk.Chunk;
 
 /**
  * Serialization of BlockPos to long values with functionality beyond the vanilla serialization methods in the BlockPos class.
  */
 public class PackedBlockPos
 {
-    private static final int WORLD_BOUNDARY = 30000000;
-    private static final int CHUNK_BOUNDARY = WORLD_BOUNDARY >> 4;
+    public static final int WORLD_BOUNDARY = 30000000;
     private static final int NUM_X_BITS = 1 + MathHelper.log2(MathHelper.smallestEncompassingPowerOfTwo(WORLD_BOUNDARY));
     private static final int NUM_Z_BITS = NUM_X_BITS;
     private static final int NUM_Y_BITS = 8;
@@ -146,65 +143,6 @@ public class PackedBlockPos
         return (packedValue & POSITION_MASK);
     }
     
-    public static long getPackedChunkPos(long packedBlockPos)
-    {
-           return getPackedChunkPos(getX(packedBlockPos), getZ(packedBlockPos));
-    }
-    
-    public static long getPackedChunkPos(int blockX, int blockZ)
-    {
-            return ((long)blockX >> 4) + CHUNK_BOUNDARY | (((long)blockZ >> 4) + CHUNK_BOUNDARY) << 32;
-    }
-    
-    public static long getPackedChunkPos(BlockPos pos)
-    {
-            return getPackedChunkPos(pos.getX(), pos.getZ());
-    }
-    
-    public static long getPackedChunkPos(ChunkPos chunkPos)
-    {
-        return getPackedChunkPos(chunkPos.x, chunkPos.z);
-    }
-    
-    public static long getPackedChunkPos(Chunk chunk)
-    {
-            return getPackedChunkPos(chunk.x, chunk.z);
-    }
-    
-    public static long getPackedChunkPos(long chunkX, long chunkZ)
-    {
-            return (chunkX) + CHUNK_BOUNDARY | ((chunkZ) + CHUNK_BOUNDARY) << 32;
-    }
-    
-    public static ChunkPos unpackChunkPos(long packedChunkPos)
-    {
-        return new ChunkPos(getChunkXPos(packedChunkPos), getChunkZPos(packedChunkPos));
-    }
-    
-    /** analog of Chunk.chunkXPos */
-    public static int getChunkXPos(long packedChunkPos)
-    {
-        return (int)((packedChunkPos & 0xFFFFFFFF) - CHUNK_BOUNDARY);
-    }
-    
-    /** analog of Chunk.chunkZPos */
-    public static int getChunkZPos(long packedChunkPos)
-    {
-        return (int)(((packedChunkPos >> 32) & 0xFFFFFFFF) - CHUNK_BOUNDARY);
-    }
-    
-    /** analog of Chunk.getXStart() */
-    public static int getChunkXStart(long packedChunkPos)
-    {
-        return getChunkXPos(packedChunkPos) << 4;
-    }
-    
-    /** analog of Chunk.getZStart() */
-    public static int getChunkZStart(long packedChunkPos)
-    {
-        return getChunkZPos(packedChunkPos) << 4;
-    }
-
     public static long offset(long packedBlockPos, EnumFacing face)
     {
         switch(face)

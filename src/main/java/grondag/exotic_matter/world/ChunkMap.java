@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 
-import grondag.exotic_matter.varia.PackedBlockPos;
+import grondag.exotic_matter.varia.PackedChunkPos;
 import grondag.exotic_matter.varia.Useful;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
@@ -27,13 +27,13 @@ public abstract class ChunkMap<T> implements Iterable<T>
     
     public boolean contains(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         return chunks.containsKey(packedChunkPos);
     }
     
     public T getOrCreate(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         T result = chunks.get(packedChunkPos);
         
@@ -48,14 +48,14 @@ public abstract class ChunkMap<T> implements Iterable<T>
     @Nullable
     public T getIfExists(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         return chunks.get(packedChunkPos);
     }
     
     public void remove(BlockPos pos)
     {
-        long packedChunkPos = PackedBlockPos.getPackedChunkPos(pos);
+        long packedChunkPos = PackedChunkPos.getPackedChunkPos(pos);
         
         chunks.remove(packedChunkPos);
     }
