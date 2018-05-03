@@ -10,30 +10,30 @@ public class PackedChunkPos
 
     public static long getPackedChunkPos(BlockPos pos)
     {
-            return PackedChunkPos.getPackedChunkPos(pos.getX(), pos.getZ());
+            return PackedChunkPos.getPackedChunkPosFromBlockXZ(pos.getX(), pos.getZ());
     }
 
     public static long getPackedChunkPos(long packedBlockPos)
     {
-           return PackedChunkPos.getPackedChunkPos(PackedBlockPos.getX(packedBlockPos), PackedBlockPos.getZ(packedBlockPos));
+           return PackedChunkPos.getPackedChunkPosFromBlockXZ(PackedBlockPos.getX(packedBlockPos), PackedBlockPos.getZ(packedBlockPos));
     }
 
-    public static long getPackedChunkPos(int blockX, int blockZ)
+    public static long getPackedChunkPosFromBlockXZ(int blockX, int blockZ)
     {
             return ((long)blockX >> 4) + PackedChunkPos.CHUNK_BOUNDARY | (((long)blockZ >> 4) + PackedChunkPos.CHUNK_BOUNDARY) << 32;
     }
 
     public static long getPackedChunkPos(ChunkPos chunkPos)
     {
-        return getPackedChunkPos(chunkPos.x, chunkPos.z);
+        return getPackedChunkPosFromChunkXZ(chunkPos.x, chunkPos.z);
     }
 
     public static long getPackedChunkPos(Chunk chunk)
     {
-            return getPackedChunkPos(chunk.x, chunk.z);
+            return getPackedChunkPosFromChunkXZ(chunk.x, chunk.z);
     }
 
-    public static long getPackedChunkPos(long chunkX, long chunkZ)
+    public static long getPackedChunkPosFromChunkXZ(int chunkX, int chunkZ)
     {
             return (chunkX) + PackedChunkPos.CHUNK_BOUNDARY | ((chunkZ) + PackedChunkPos.CHUNK_BOUNDARY) << 32;
     }
