@@ -35,7 +35,7 @@ public class PackedChunkPos
 
     public static long getPackedChunkPosFromChunkXZ(int chunkX, int chunkZ)
     {
-            return (chunkX) + PackedChunkPos.CHUNK_BOUNDARY | ((chunkZ) + PackedChunkPos.CHUNK_BOUNDARY) << 32;
+            return (chunkX + PackedChunkPos.CHUNK_BOUNDARY) | (((long)chunkZ + PackedChunkPos.CHUNK_BOUNDARY) << 32);
     }
 
     public static ChunkPos unpackChunkPos(long packedChunkPos)

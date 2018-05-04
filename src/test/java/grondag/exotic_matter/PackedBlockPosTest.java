@@ -1,5 +1,6 @@
 package grondag.exotic_matter;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Test;
@@ -105,16 +106,21 @@ public class PackedBlockPosTest
             
         }
         
+        Random r = new Random(1);
         //chunk coords
-        pos1 = new BlockPos(414, 2, -52234);
-        ChunkPos cpos = new ChunkPos(pos1);
-        long1 = PackedChunkPos.getPackedChunkPos(PackedBlockPos.pack(pos1));
-        assert(PackedChunkPos.getChunkXPos(long1) == cpos.x);
-        assert(PackedChunkPos.getChunkZPos(long1) == cpos.z);
-        assert(PackedChunkPos.getChunkXStart(long1) == cpos.getXStart());
-        assert(PackedChunkPos.getChunkZStart(long1) == cpos.getZStart());
-        
-        
+        for(int i = 0; i < 1000000 ; i++)
+        {
+            pos1 = new BlockPos(r.nextInt(1000000) - 500000, r.nextInt(256), r.nextInt(1000000) - 500000);
+            ChunkPos cpos = new ChunkPos(pos1);
+            long1 = PackedChunkPos.getPackedChunkPos(PackedBlockPos.pack(pos1));
+            assert(PackedChunkPos.getChunkXPos(long1) == cpos.x);
+            assert(PackedChunkPos.getChunkZPos(long1) == cpos.z);
+            assert(PackedChunkPos.getChunkXStart(long1) == cpos.getXStart());
+            assert(PackedChunkPos.getChunkZStart(long1) == cpos.getZStart());
+            ChunkPos cpos2 = PackedChunkPos.unpackChunkPos(long1);
+            assert cpos2.x == cpos.x;
+            assert cpos2.z == cpos.z;
+        }
     }
 
 }
