@@ -73,6 +73,24 @@ public class Useful
         return DISTANCE_SORTED_CIRCULAR_OFFSETS[index];
     }
     
+    /**
+     * Returns the last (exclusive) offset index of {@value #DISTANCE_SORTED_CIRCULAR_OFFSETS}
+     * (also the index for {@link #getDistanceSortedCircularOffset(int)} that is at the given radius
+     * from the origin;
+     */
+    public static int getLastDistanceSortedOffsetIndex(int radius)
+    {
+        if(radius < 0) radius = 0;
+        int result = 0;
+        
+        while(++result < DISTANCE_SORTED_CIRCULAR_OFFSETS.length)
+        {
+            if(DISTANCE_SORTED_CIRCULAR_OFFSETS[result].getY() > radius) return result;
+        }
+        
+        return result;
+    }
+    
     public static int min(int... input)
     {
         int result = Integer.MAX_VALUE;
@@ -571,6 +589,7 @@ public class Useful
     /** sign bit is used to indicate static state */
     public static final int INT_SIGN_BIT = 1 << 31;
     public static final int INT_SIGN_BIT_INVERSE = ~INT_SIGN_BIT;
+    
 
     //   /**
     //    * Kept for possible future use.
