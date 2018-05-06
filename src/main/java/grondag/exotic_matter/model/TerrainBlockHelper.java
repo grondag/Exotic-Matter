@@ -142,6 +142,7 @@ public class TerrainBlockHelper
         
         if(TerrainBlockHelper.isFlowHeight(baseBlock)) return null;
         
+        // Checks for non-displaceable block
         if(filter != null && !filter.test(baseState)) return null;
         
         final int SHOULD_BE_AIR = -1;
