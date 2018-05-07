@@ -3,6 +3,7 @@ package grondag.exotic_matter.world;
 import org.apache.commons.lang3.tuple.Pair;
 
 import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -13,6 +14,11 @@ import net.minecraft.world.IBlockAccess;
 public class WorldHelper
 {
 
+    public static int horizontalDistanceSquared(BlockPos pos1, BlockPos pos2)
+    {
+        return Useful.squared(pos1.getX() - pos2.getX()) + Useful.squared(pos1.getZ() - pos2.getZ());
+    }
+    
     /** 
      * Sorts members of the BlockPos vector so that x is largest and z is smallest.
      * Useful when BlockPos represents a volume instead of a position.
