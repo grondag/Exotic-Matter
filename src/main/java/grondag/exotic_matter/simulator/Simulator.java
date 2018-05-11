@@ -178,6 +178,8 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         {
             ExoticMatter.INSTANCE.info("Simulator initialization started.");
     
+            ChunkLoader.clear();
+            
             this.assignedNumbersAuthority.clear();
             this.assignedNumbersAuthority.setDirtKeeper(this);
             
