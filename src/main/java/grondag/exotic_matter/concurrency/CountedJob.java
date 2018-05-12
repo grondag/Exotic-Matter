@@ -10,23 +10,25 @@ import java.util.concurrent.RunnableFuture;
 public class CountedJob<V> extends Job
 {
     private final ICountedJobBacker backer;
-    private final int batchSize;
     private final JobTask<V> task;
+    private final int parallelThreshold;
+    
+    private static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
-    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int batchSize, boolean enablePerfCounting, String jobTitle, PerformanceCollector perfCollector)
+    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int minOperandsPerThread, boolean enablePerfCounting, String jobTitle, PerformanceCollector perfCollector)
     {
         super(enablePerfCounting, jobTitle, perfCollector);
+        this.parallelThreshold = minOperandsPerThread * THREAD_COUNT;
         this.backer = backer;
         this.task = task;
-        this.batchSize = batchSize;
     }
     
-    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int batchSize, PerformanceCounter perfCounter)
+    public CountedJob(ICountedJobBacker backer, JobTask<V> task, int minOperandsPerThread, PerformanceCounter perfCounter)
     {
         super(perfCounter);
+        this.parallelThreshold = minOperandsPerThread * THREAD_COUNT;
         this.backer = backer;
         this.task = task;
-        this.batchSize = batchSize;
     }
     
     /**
@@ -41,7 +43,7 @@ public class CountedJob<V> extends Job
     @Override
     public boolean worthRunningParallel()
     {
-        return this.backer.size() > batchSize;
+        return this.backer.size() > this.parallelThreshold;
     }
 
     @SuppressWarnings("unchecked")
@@ -64,7 +66,7 @@ public class CountedJob<V> extends Job
         Object[] operands = backer.getOperands();
         int size = Math.min(backer.size(), operands.length);
         
-        if(size == 1 || this.batchSize == 1)
+        if(size == 1)
         {
             for(int i = 0; i < operands.length; i++)
             {
@@ -79,6 +81,7 @@ public class CountedJob<V> extends Job
         else
         {
             int start = 0;
+            final int batchSize = (operands.length + THREAD_COUNT - 1) / THREAD_COUNT;
             while(start < operands.length && operands[start] != null)
             {
                 int end = Math.min(operands.length, start + batchSize);
