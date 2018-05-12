@@ -6,7 +6,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 
+import grondag.exotic_matter.simulator.Simulator;
 
+/**
+ * Use {@link Simulator#runTaskAppropriately(SimpleConcurrentList, java.util.function.Consumer, int, PerformanceCounter)} instead of this.
+ *
+ */
+@Deprecated
 public class CountedJob<V> extends Job
 {
     private final ICountedJobBacker backer;
@@ -15,6 +21,7 @@ public class CountedJob<V> extends Job
     
     private static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
+    @Deprecated
     public CountedJob(ICountedJobBacker backer, JobTask<V> task, int minOperandsPerThread, boolean enablePerfCounting, String jobTitle, PerformanceCollector perfCollector)
     {
         super(enablePerfCounting, jobTitle, perfCollector);
@@ -23,6 +30,7 @@ public class CountedJob<V> extends Job
         this.task = task;
     }
     
+    @Deprecated
     public CountedJob(ICountedJobBacker backer, JobTask<V> task, int minOperandsPerThread, PerformanceCounter perfCounter)
     {
         super(perfCounter);

@@ -1,14 +1,12 @@
 package grondag.exotic_matter;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
@@ -17,10 +15,7 @@ import org.junit.Test;
 import grondag.exotic_matter.concurrency.CountedJob;
 import grondag.exotic_matter.concurrency.JobTask;
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
-import grondag.exotic_matter.concurrency.StupidThreadPoolExecutor;
-import grondag.exotic_matter.concurrency.StupidThreadPoolExecutor.IIndexedRunnable;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 
 public class ThreadPoolTest
 {
@@ -30,7 +25,6 @@ public class ThreadPoolTest
     TestSubject[] thingArray;
     
     final Random r = new Random(5);
-    StupidThreadPoolExecutor stupid = new StupidThreadPoolExecutor();
     
     private final JobTask<TestSubject> jobTask = new JobTask<TestSubject>() 
     {
@@ -137,27 +131,6 @@ public class ThreadPoolTest
             
             this.expandList(1000);
         }
-        
-        
-//        for(int i = 0; i < 7; i++)
-//        {
-//            runStreaming();
-//        }
-//        
-//        for(int i = 0; i < 7; i++)
-//        {
-//            runStupidly();
-//        }
-//        
-//        for(int i = 0; i < 7; i++)
-//        {
-//            runJob();
-//        }
-//        
-//        for(int i = 0; i < 7; i++)
-//        {
-//            runStreaming();
-//        }
     }
     
     private void runSingle()
@@ -178,17 +151,6 @@ public class ThreadPoolTest
         this.SIMULATION_POOL.submit(() -> things.stream(true).forEach(t -> t.doSomething())).get();
         long end = System.nanoTime();
         System.out.println("Avg ns per run: " + (end - start) / things.size());
-    }
-    
-    private void runStupidly()
-    {
-        StupidTask task = new StupidTask();
-        System.out.println("Running stupid thread pool");
-        this.thingArray = things.getOperands();
-        long start = System.nanoTime();
-        stupid.doThings(task, 0, SIZE);
-        long end = System.nanoTime();
-        System.out.println("Avg ns per run: " + (end - start) / SIZE);
     }
     
     private void runStreaming() throws InterruptedException, ExecutionException
@@ -213,12 +175,4 @@ public class ThreadPoolTest
         System.out.println("Avg ns per run: " + (end - start) / things.size());
     }
     
-    public class StupidTask implements IIndexedRunnable
-    {
-        @Override
-        public void run(int index)
-        {
-            thingArray[index].doSomething();
-        }
-    }
 }

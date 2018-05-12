@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -13,6 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.annotation.Nullable;
@@ -20,6 +22,8 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.concurrency.PerformanceCounter;
+import grondag.exotic_matter.concurrency.SimpleConcurrentList;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
@@ -402,6 +406,28 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     public String tagName()
     {
         return NBT_TAG_SIMULATOR;
+    }
+
+    public static <T> void runTaskAppropriately(SimpleConcurrentList<T> list, Consumer<T> action, int concurrencyThreshold, PerformanceCounter counter)
+    {
+        counter.startRun();
+        if(list.size() > concurrencyThreshold)
+        {
+            try
+            {
+                SIMULATION_POOL.submit(() -> list.stream(true).forEach(action)).get();
+            }
+            catch (InterruptedException | ExecutionException e)
+            {
+                ExoticMatter.INSTANCE.error("Unexpected error", e);
+            }
+        }
+        else
+        {
+            list.stream(false).forEach( action);
+        }
+        counter.endRun();
+        counter.addCount(list.size());
     }
 
     public static Simulator instance()

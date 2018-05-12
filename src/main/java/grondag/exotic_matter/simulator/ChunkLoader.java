@@ -65,6 +65,8 @@ public class ChunkLoader
             
             //FIXME: remove
             ChunkPos pos = PackedChunkPos.unpackChunkPos(packedChunkPos);
+            if(pos.getXStart() > 32000 || pos.getXStart() < -32000)
+                ExoticMatter.INSTANCE.info("boop!");
             ExoticMatter.INSTANCE.info("Force loaded chunk @ %d, %d", pos.getXStart(), pos.getZStart());
             
             chunksUsedThisTicket++;
