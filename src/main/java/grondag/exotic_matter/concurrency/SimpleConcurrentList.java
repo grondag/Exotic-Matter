@@ -1,5 +1,6 @@
 package grondag.exotic_matter.concurrency;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +28,7 @@ import java.util.stream.StreamSupport;
 
 public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
 {
-    protected Object[]  items; 
+    protected T[]  items; 
     private volatile int capacity;
     private AtomicInteger size = new AtomicInteger(0);
     private volatile boolean isMaintaining = false;
@@ -35,20 +36,22 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
     
     private static final int DELETION_BATCH_SIZE = 1024;
     
-    public static <V> SimpleConcurrentList<V> create(boolean enablePerformanceCounting, String listName, PerformanceCollector perfCollector)
+    public static <V> SimpleConcurrentList<V> create(Class<V> clazz, boolean enablePerformanceCounting, String listName, PerformanceCollector perfCollector)
     {
-        return enablePerformanceCounting ? new Instrumented<V>(listName, perfCollector) : new SimpleConcurrentList<V>();
+        return enablePerformanceCounting ? new Instrumented<V>(clazz, listName, perfCollector) : new SimpleConcurrentList<V>(clazz);
     }
     
-    public static <V> SimpleConcurrentList<V> create(PerformanceCounter perfCounter)
+    public static <V> SimpleConcurrentList<V> create(Class<V> clazz, PerformanceCounter perfCounter)
     {
-        return perfCounter == null ? new SimpleConcurrentList<V>() : new Instrumented<V>(perfCounter);
+        return perfCounter == null ? new SimpleConcurrentList<V>(clazz) : new Instrumented<V>(clazz, perfCounter);
     }
     
-    private SimpleConcurrentList()
+    private SimpleConcurrentList(Class<T> clazz)
     {
         this.capacity = 16;
-        this.items = new Object[capacity];
+        @SuppressWarnings("unchecked")
+        final T[] a = (T[]) Array.newInstance(clazz, this.capacity);
+        this.items = a;
     }
    
     public PerformanceCounter removalPerfCounter() { return null; }
@@ -99,14 +102,13 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         }
     }
     
-    @SuppressWarnings("unchecked")
     public T get(int index)
     {
-        return (T) items[index];
+        return items[index];
     }
     
     @Override
-    public Object[] getOperands()
+    public T[] getOperands()
     {
         return this.items;
     }
@@ -118,7 +120,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
      * NOT THREAD SAFE
      * Caller must ensure no other methods are called while this method is ongoing.
      */
-    @SuppressWarnings("unchecked")
     public void removeSomeDeletedItems(Predicate<T> trueIfDeleted)
     {
         if(this.size.get() == 0) return;
@@ -157,9 +158,9 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
 
             for(int i = start; i < newSize; i++)
             {
-                Object item =  this.items[i];
+                T item =  this.items[i];
         
-                if(trueIfDeleted.test((T)item))
+                if(trueIfDeleted.test(item))
                 {
                     items[i] = items[--newSize];
                     items[newSize] = null;
@@ -180,7 +181,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
      * NOT THREAD SAFE
      * Caller must ensure no other methods are called while this method is ongoing.
      */
-    @SuppressWarnings("unchecked")
     public void removeAllDeletedItems(Predicate<T> trueIfDeleted)
     {
         if(this.size.get() == 0) return;
@@ -195,9 +195,9 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
             
             for(int i = 0; i < newSize; i++)
             {
-                Object item =  this.items[i];
+                T item =  this.items[i];
         
-                if(trueIfDeleted.test((T)item))
+                if(trueIfDeleted.test(item))
                 {
                     items[i] = items[--newSize];
                     items[newSize] = null;
@@ -233,10 +233,9 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         }
     }
     
-    @SuppressWarnings("unchecked")
     public Stream<T> stream(boolean isParallel)
     {
-        return (Stream<T>) StreamSupport.stream(Arrays.spliterator(items, 0, this.size.get()), isParallel);
+        return StreamSupport.stream(Arrays.spliterator(items, 0, this.size.get()), isParallel);
     }
 
     /**
@@ -253,13 +252,15 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
     {
         private final PerformanceCounter removalPerfCounter;
         
-        private Instrumented(String listName, PerformanceCollector perfCollector)
+        private Instrumented(Class<T> clazz, String listName, PerformanceCollector perfCollector)
         {
+            super(clazz);
             this.removalPerfCounter = PerformanceCounter.create(true, listName + " list item removal", perfCollector);
         }
         
-        private Instrumented(PerformanceCounter perfCounter)
+        private Instrumented(Class<T> clazz, PerformanceCounter perfCounter)
         {
+            super(clazz);
             this.removalPerfCounter = perfCounter;
         }
         
