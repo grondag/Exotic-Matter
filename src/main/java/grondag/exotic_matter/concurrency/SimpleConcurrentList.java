@@ -210,6 +210,7 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
 
         }
     }
+    
     /**
      * Removes all items in the list, ensuring no references are held.
      * NOT THREAD SAFE
