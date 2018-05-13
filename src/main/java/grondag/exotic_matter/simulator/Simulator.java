@@ -1,6 +1,7 @@
 package grondag.exotic_matter.simulator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.annotation.Nullable;
@@ -428,6 +431,31 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         }
         counter.endRun();
         counter.addCount(list.size());
+    }
+    
+    public static <T> void runTaskAppropriately(T[] array, int startInclusive, int endExclusive, Consumer<T> action, int concurrencyThreshold, PerformanceCounter counter)
+    {
+        counter.startRun();
+        final int size = endExclusive - startInclusive;
+        Stream<T> s = StreamSupport.stream(Arrays.spliterator(array, startInclusive, endExclusive), size > concurrencyThreshold);
+        
+        if(size > concurrencyThreshold)
+        {
+            try
+            {
+                SIMULATION_POOL.submit(() -> s.forEach(action)).get();
+            }
+            catch (InterruptedException | ExecutionException e)
+            {
+                ExoticMatter.INSTANCE.error("Unexpected error", e);
+            }
+        }
+        else
+        {
+            s.forEach( action);
+        }
+        counter.endRun();
+        counter.addCount(size);
     }
 
     public static Simulator instance()
