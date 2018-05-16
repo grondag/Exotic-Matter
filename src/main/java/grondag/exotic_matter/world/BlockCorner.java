@@ -75,11 +75,13 @@ public enum BlockCorner
 
     }
 
+    @SuppressWarnings("null")
     public static BlockCorner find(EnumFacing face1, EnumFacing face2)
     {
         return BlockCorner.CORNER_LOOKUP[face1.ordinal()][face2.ordinal()];
     }
     
+    @SuppressWarnings("null")
     public static BlockCorner find(EnumFacing.Axis axis, Rotation modelRotation)
     {
         return BlockCorner.MODEL_LOOKUP[axis.ordinal()][modelRotation.ordinal()];

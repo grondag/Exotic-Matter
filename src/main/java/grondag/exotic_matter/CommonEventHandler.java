@@ -2,6 +2,8 @@ package grondag.exotic_matter;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import grondag.exotic_matter.block.SuperModelBlock;
 import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
@@ -94,6 +96,7 @@ public class CommonEventHandler
 
     }
     
+    @SuppressWarnings("null")
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<Entity> event)
     {
@@ -116,7 +119,8 @@ public class CommonEventHandler
      * but Forge will spam warning messages because domain names don't match the 
      * current handler.
      */
-    public static void handleRegisterItems(String modID, RegistryEvent.Register<Item> event)
+    @SuppressWarnings("null")
+    public static void handleRegisterItems(@Nonnull String modID, @Nonnull RegistryEvent.Register<Item> event)
     {
         IForgeRegistry<Item> itemReg = event.getRegistry();
         IForgeRegistry<Block> blockReg = GameRegistry.findRegistry(Block.class);

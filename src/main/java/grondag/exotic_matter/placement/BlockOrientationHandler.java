@@ -174,19 +174,12 @@ public class BlockOrientationHandler
 
             BlockCorner corner = BlockCorner.find(pPos.onFace.getOpposite(), adjacentFace);
 
-            if(corner == null)
-            {
-                assert false : "Unable to find block corner from placement. This is very strange but probably harmless.";
-            }
-            else
-            {
-                outputModelState.setAxis(corner.orthogonalAxis);
+            outputModelState.setAxis(corner.orthogonalAxis);
 
-                if(outputModelState.hasAxisRotation())
-                {
-                    outputModelState.setAxisRotation(corner.modelRotation);
-                    isRotationDone = true;
-                }
+            if(outputModelState.hasAxisRotation())
+            {
+                outputModelState.setAxisRotation(corner.modelRotation);
+                isRotationDone = true;
             }
         }
         else
