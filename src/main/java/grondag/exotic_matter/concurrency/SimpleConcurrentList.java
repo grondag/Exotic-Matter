@@ -8,6 +8,9 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import net.minecraft.util.math.MathHelper;
+
 
 /**
  * Provides functionality similar to an array list, but with low overhead and high concurrency 
@@ -46,9 +49,14 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         return perfCounter == null ? new SimpleConcurrentList<V>(clazz) : new Instrumented<V>(clazz, perfCounter);
     }
     
-    private SimpleConcurrentList(Class<T> clazz)
+    public SimpleConcurrentList(Class<T> clazz)
     {
-        this.capacity = 16;
+        this(clazz, 16);
+    }
+    
+    public SimpleConcurrentList(Class<T> clazz, int initialCapacity)
+    {
+        this.capacity = MathHelper.smallestEncompassingPowerOfTwo(initialCapacity);
         @SuppressWarnings("unchecked")
         final T[] a = (T[]) Array.newInstance(clazz, this.capacity);
         this.items = a;
@@ -100,6 +108,31 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
                 items[index] = item;
             }
         }
+    }
+    
+    /**
+     * Adds all item at end of list.
+     * Safe for concurrent use with other adds.
+     * Not safe for concurrent use with other operations.
+     */
+    public void addAll(SimpleUnorderedArrayList<T> items)
+    {
+        assert !this.isMaintaining : "Unsupported add operation on simple concurrent list during maintenance operation";
+        
+        int endExclusive = this.size.addAndGet(items.size());
+        if(endExclusive > this.capacity)
+        {
+            synchronized(this)
+            {
+                if(endExclusive > this.capacity)
+                {
+                    int newCapacity = MathHelper.smallestEncompassingPowerOfTwo(endExclusive);
+                    this.items = Arrays.copyOf(this.items, newCapacity);
+                    this.capacity = newCapacity;
+                }
+            }
+        }
+        items.copyToArray(this.items,  endExclusive - items.size());
     }
     
     public T get(int index)

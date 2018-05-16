@@ -144,5 +144,8 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
             }};
     }
 
-
+    public void copyToArray(T[] target, int targetStart)
+    {
+        System.arraycopy(this.items, 0, target, targetStart, this.size);
+    }
 }
