@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -110,7 +111,7 @@ public class QuadContainer
         
     }
 
-    public List<BakedQuad> getQuads(EnumFacing face)
+    public List<BakedQuad> getQuads(@Nullable EnumFacing face)
     {
         if(face ==null) return this.general;
 

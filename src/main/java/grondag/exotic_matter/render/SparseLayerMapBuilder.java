@@ -2,6 +2,8 @@ package grondag.exotic_matter.render;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import net.minecraft.util.BlockRenderLayer;
@@ -43,7 +45,7 @@ public class SparseLayerMapBuilder
     
     public abstract class SparseLayerMap
     {
-        public abstract QuadContainer get(BlockRenderLayer layer);
+        public abstract @Nullable QuadContainer get(BlockRenderLayer layer);
         
         public abstract void set(BlockRenderLayer layer, QuadContainer value);
         
@@ -60,7 +62,7 @@ public class SparseLayerMapBuilder
         }
         
         @Override
-        public QuadContainer get(BlockRenderLayer layer)
+        public @Nullable QuadContainer get(BlockRenderLayer layer)
         {
             return values[layerIndices[layer.ordinal()]];
         }
@@ -80,7 +82,7 @@ public class SparseLayerMapBuilder
      
     private class SparseLayerSingletonMap extends SparseLayerMap
     {
-        private QuadContainer value;
+        private @Nullable QuadContainer value;
         
         private SparseLayerSingletonMap()
         {
@@ -88,7 +90,7 @@ public class SparseLayerMapBuilder
         }
         
         @Override
-        public QuadContainer get(BlockRenderLayer layer)
+        public @Nullable QuadContainer get(BlockRenderLayer layer)
         {
             return value;
         }
@@ -111,8 +113,8 @@ public class SparseLayerMapBuilder
      */
     private class SparseLayerSolidTransMap extends SparseLayerMap
     {
-        private QuadContainer solid;
-        private QuadContainer translucent;
+        private @Nullable QuadContainer solid;
+        private @Nullable QuadContainer translucent;
         
         private SparseLayerSolidTransMap()
         {
@@ -120,7 +122,7 @@ public class SparseLayerMapBuilder
         }
         
         @Override
-        public QuadContainer get(BlockRenderLayer layer)
+        public @Nullable QuadContainer get(BlockRenderLayer layer)
         {
             switch(layer)
             {

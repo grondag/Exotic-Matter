@@ -46,7 +46,7 @@ public class SuperBlockStackHelper
         return tag == null ? BlockSubstance.DEFAULT : BlockSubstance.deserializeNBT(tag);
     }
 
-    public static void setStackModelState(ItemStack stack, ISuperModelState modelState)
+    public static void setStackModelState(ItemStack stack, @Nullable ISuperModelState modelState)
     {
         NBTTagCompound tag = stack.getTagCompound();
         if(modelState == null)

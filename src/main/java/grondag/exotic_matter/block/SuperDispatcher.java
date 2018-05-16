@@ -195,11 +195,7 @@ public class SuperDispatcher
         if(!modelState.getRenderPassSet().renderLayout.containsBlockRenderLayer(BlockRenderLayer.SOLID)) return 0;
 
         SparseLayerMap map = modelCache.get(modelState);
-        if(map == null)
-        {
-            ExoticMatter.INSTANCE.warn("Missing layer map for occlusion key.");
-            return 0;
-        }
+        
 
         QuadContainer container = map.get(BlockRenderLayer.SOLID);
         if(container == null) 
@@ -266,7 +262,8 @@ public class SuperDispatcher
         ISuperModelState key = stack.getItem() instanceof CraftingItem
                 ? ((CraftingItem)stack.getItem()).modelState
                 : SuperBlockStackHelper.getStackModelState(stack);
-        return itemCache.get(key);
+                
+        return key == null ? originalModel : itemCache.get(key);
     }
   
     public DispatchDelegate getDelegate(ISuperBlock block)
@@ -338,15 +335,11 @@ public class SuperDispatcher
             if(layer == null)
             {
                 QuadContainer qc = damageCache.get(modelState.geometricState());
-                if(qc == null) 
-                    return QuadHelper.EMPTY_QUAD_LIST;
                 return qc.getQuads(side);
             }
             else
             {
                 SparseLayerMap map = modelCache.get(modelState);
-                if(map == null) 
-                    return QuadHelper.EMPTY_QUAD_LIST;
                 QuadContainer container = map.get(layer);
                 if(container == null)
                         return QuadHelper.EMPTY_QUAD_LIST;
