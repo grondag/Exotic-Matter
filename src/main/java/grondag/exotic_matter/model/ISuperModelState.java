@@ -290,4 +290,9 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     
     ISuperModelState clone();
 
+    default AxisAlignedBB getCollisionBoundingBox()
+    {
+        return this.getShape().meshFactory().collisionHandler().getCollisionBoundingBox(this);
+    }
+
 }

@@ -57,6 +57,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathNodeType;
+import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -92,7 +93,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 {
 
     /** non-null if this drops something other than itself */
-    private Item dropItem;
+    private @Nullable Item dropItem;
 
     /** Allow silk harvest. Defaults true. Use setAllowSilk to change */
     private boolean allowSilkHarvest = true;
@@ -111,7 +112,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     /**
      * Sub-items for the block. Initialized in {@link #createSubItems()}
      */
-    private List<ItemStack> subItems;
+    private @Nullable List<ItemStack> subItems;
     
     public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable BlockRenderMode blockRenderMode)
     {
@@ -325,45 +326,45 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Optional.Method(modid = "theoneprobe")
     public void addProbeInfo(@Nullable ProbeMode mode, @Nullable IProbeInfo probeInfo, @Nullable EntityPlayer player, @Nullable World world, @Nullable IBlockState blockState, @Nullable IProbeHitData data)
     {
+        if(blockState == null || world == null || data == null || probeInfo == null) return;
+        
         ISuperModelState modelState = this.getModelStateAssumeStateIsStale(blockState, world, data.getPos(), true);
         
-        if(modelState != null)
+        probeInfo.text(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
+        probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + modelState.getColorMap(PaintLayer.BASE).localizedName());
+        probeInfo.text(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
+        if(modelState.isOuterLayerEnabled())
         {
-            probeInfo.text(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
-            probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + modelState.getColorMap(PaintLayer.BASE).localizedName());
-            probeInfo.text(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
-            if(modelState.isOuterLayerEnabled())
-            {
-                probeInfo.text(I18n.translateToLocal("label.outer_color") + ": " + modelState.getColorMap(PaintLayer.OUTER).localizedName());
-                probeInfo.text(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
-            }
-            if(modelState.isMiddleLayerEnabled())
-            {
-                probeInfo.text(I18n.translateToLocal("label.middle_color") + ": " + modelState.getColorMap(PaintLayer.MIDDLE).localizedName());
-                probeInfo.text(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());
-            }
-            if(modelState.hasSpecies()) 
-            {
-                probeInfo.text(I18n.translateToLocal("label.species") + ": " + modelState.getSpecies());
-            }
-            
-            if(ConfigXM.BLOCKS.probeInfoLevel != ProbeInfoLevel.BASIC)
-            {
-                if(modelState.hasAxis())
-                {
-                    probeInfo.text(I18n.translateToLocal("label.axis") + ": " + modelState.getAxis());
-                    if(modelState.hasAxisOrientation())
-                    {
-                        probeInfo.text(I18n.translateToLocal("label.axis_inverted") + ": " + modelState.isAxisInverted());
-                    }
-                }
-                if(modelState.hasAxisRotation())
-                {
-                    probeInfo.text(I18n.translateToLocal("label.model_rotation") + ": " + modelState.getAxisRotation());
-                }
-                probeInfo.text(I18n.translateToLocal("label.position") + ": " + modelState.getPosX() + ", " + modelState.getPosY() + ", " + modelState.getPosZ());
-            }
+            probeInfo.text(I18n.translateToLocal("label.outer_color") + ": " + modelState.getColorMap(PaintLayer.OUTER).localizedName());
+            probeInfo.text(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
         }
+        if(modelState.isMiddleLayerEnabled())
+        {
+            probeInfo.text(I18n.translateToLocal("label.middle_color") + ": " + modelState.getColorMap(PaintLayer.MIDDLE).localizedName());
+            probeInfo.text(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());
+        }
+        if(modelState.hasSpecies()) 
+        {
+            probeInfo.text(I18n.translateToLocal("label.species") + ": " + modelState.getSpecies());
+        }
+        
+        if(ConfigXM.BLOCKS.probeInfoLevel != ProbeInfoLevel.BASIC)
+        {
+            if(modelState.hasAxis())
+            {
+                probeInfo.text(I18n.translateToLocal("label.axis") + ": " + modelState.getAxis());
+                if(modelState.hasAxisOrientation())
+                {
+                    probeInfo.text(I18n.translateToLocal("label.axis_inverted") + ": " + modelState.isAxisInverted());
+                }
+            }
+            if(modelState.hasAxisRotation())
+            {
+                probeInfo.text(I18n.translateToLocal("label.model_rotation") + ": " + modelState.getAxisRotation());
+            }
+            probeInfo.text(I18n.translateToLocal("label.position") + ": " + modelState.getPosX() + ", " + modelState.getPosY() + ", " + modelState.getPosZ());
+        }
+            
         probeInfo.text(I18n.translateToLocal("label.material") + ": " + this.getSubstance(blockState, world, data.getPos()).localizedName());
         
         if(ConfigXM.BLOCKS.probeInfoLevel == ProbeInfoLevel.DEBUG)
@@ -564,23 +565,18 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         if(this.getSubstance(state, world, pos).isTranslucent)
         {
             ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, world, pos, false);
-            if(modelState != null)
-            {
-                ColorMap colorMap = modelState.getColorMap(PaintLayer.BASE);
-                if(colorMap != null)
-                {
-                    Color lamp = Color.fromRGB(colorMap.getColor(EnumColorMap.LAMP));
-                    double desaturation = lamp.HCL_C * (Translucency.STAINED.alpha - modelState.getTranslucency().alpha);
-                    Color beaconLamp = Color.fromHCL(lamp.HCL_H, lamp.HCL_C - desaturation, Color.HCL_MAX, EnumHCLFailureMode.REDUCE_CHROMA);
-                    int color = beaconLamp.RGB_int;
-                    
-                    float[] result = new float[3];
-                    result[0] = ((color >> 16) & 0xFF) / 255f;
-                    result[1] = ((color >> 8) & 0xFF) / 255f;
-                    result[2] = (color & 0xFF) / 255f;
-                    return result;
-                }
-            }
+            
+            ColorMap colorMap = modelState.getColorMap(PaintLayer.BASE);
+            Color lamp = Color.fromRGB(colorMap.getColor(EnumColorMap.LAMP));
+            double desaturation = lamp.HCL_C * (Translucency.STAINED.alpha - modelState.getTranslucency().alpha);
+            Color beaconLamp = Color.fromHCL(lamp.HCL_H, lamp.HCL_C - desaturation, Color.HCL_MAX, EnumHCLFailureMode.REDUCE_CHROMA);
+            int color = beaconLamp.RGB_int;
+            
+            float[] result = new float[3];
+            result[0] = ((color >> 16) & 0xFF) / 255f;
+            result[1] = ((color >> 8) & 0xFF) / 255f;
+            result[2] = (color & 0xFF) / 255f;
+            return result;
         }
         return null;
     }
@@ -604,31 +600,13 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public AxisAlignedBB getBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
     {
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, worldIn, pos, true);
-        ICollisionHandler handler = modelState.getShape().meshFactory().collisionHandler();
-        if (handler == null)
-        {
-            return super.getBoundingBox(state, worldIn, pos);
-        }
-        else
-        {
-            return handler.getCollisionBoundingBox(modelState);
-        }
+        return this.getModelStateAssumeStateIsStale(state, worldIn, pos, true).getCollisionBoundingBox();
     }
 
     @Override
     public @Nullable AxisAlignedBB getCollisionBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
     {
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, worldIn, pos, true);
-        ICollisionHandler handler = modelState.getShape().meshFactory().collisionHandler();
-        if (handler == null)
-        {
-            return super.getCollisionBoundingBox(state, worldIn, pos);
-        }
-        else
-        {
-            return handler.getCollisionBoundingBox(modelState);
-        }
+        return this.getModelStateAssumeStateIsStale(state, worldIn, pos, true).getCollisionBoundingBox();
     }
 
      /** 
@@ -648,20 +626,21 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public List<ItemStack> getDrops(@Nonnull IBlockAccess world, @Nonnull BlockPos pos, @Nonnull IBlockState state, int fortune)
     {
-        if(this.dropItem == null)
+        Item dropItem = this.dropItem;
+        
+        if(dropItem == null)
         {
-            ItemStack stack = getStackFromBlock(state, world, pos);
-            if(stack != null)
-            {
-                return Collections.singletonList(stack);
-            }
+            ItemStack dropStack = getStackFromBlock(state, world, pos);
+            if(dropStack.isEmpty())
+                return ImmutableList.of();
+            else
+                return Collections.singletonList(dropStack);
         }
         else
         {
             int count = quantityDropped(world, pos, state);
-            return Collections.singletonList(new ItemStack(this.dropItem, count, 0));
+            return Collections.singletonList(new ItemStack(dropItem, count, 0));
         }
-        return Collections.emptyList();
     }
 
      /**
@@ -905,11 +884,13 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public final List<ItemStack> getSubItems()
     {
-        if(this.subItems == null)
+        List<ItemStack> result = this.subItems;
+        if(result == null)
         {
-            this.subItems = this.createSubItems();
+            result = this.createSubItems();
+            this.subItems = result;
         }
-        return this.subItems;
+        return result;
     }
     
     /**
@@ -970,19 +951,21 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public void harvestBlock(World worldIn, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, @Nullable ItemStack stack) 
     {
-        player.addStat(StatList.getBlockStats(this));
+        StatBase stats = StatList.getBlockStats(this);
+        if(stats != null) player.addStat(stats);
+        
         player.addExhaustion(0.025F);
 
-        if (this.canSilkHarvest(worldIn, pos, state, player) && EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0)
+        if (stack != null && this.canSilkHarvest(worldIn, pos, state, player) && EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0)
         {
             java.util.List<ItemStack> items = new java.util.ArrayList<ItemStack>();
 
             //this is the part that is different from Vanilla
             ItemStack itemstack = getStackFromBlock(state, worldIn, pos);
 
-            if (itemstack != null)
+            if (!itemstack.isEmpty())
             {
-                items.add(itemstack);
+                items.add(getStackFromBlock(state, worldIn, pos));
             }
 
             net.minecraftforge.event.ForgeEventFactory.fireBlockHarvesting(items, worldIn, pos, state, 0, 1.0f, true, player);
@@ -994,7 +977,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         else
         {
             harvesters.set(player);
-            int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
+            int i = stack == null ? 0 : EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
             this.dropBlockAsItem(worldIn, pos, state, i);
             harvesters.set(null);
         }

@@ -46,15 +46,16 @@ public class ExoticMatter implements IGrondagMod
     private static Logger log;
     
     @Override
-    @Nullable
     public Logger getLog()
     {
+        Logger result = log;
         // allow access to log during unit testing or other debug scenarios
-        if(ExoticMatter.log == null)
+        if(result == null)
         {
-            ExoticMatter.log = LogManager.getLogger();
+            result = LogManager.getLogger();
+            log = result;
         }
-        return ExoticMatter.log;
+        return result;
     }
 
     public static void setLog(Logger lOG)
@@ -72,7 +73,8 @@ public class ExoticMatter implements IGrondagMod
         }
     };
 	    
-	@SidedProxy(clientSide = "grondag.exotic_matter.ClientProxy", serverSide = "grondag.exotic_matter.ServerProxy")
+    @SuppressWarnings("null")
+    @SidedProxy(clientSide = "grondag.exotic_matter.ClientProxy", serverSide = "grondag.exotic_matter.ServerProxy")
 	public static CommonProxy proxy;
 
     static
