@@ -54,6 +54,17 @@ public class ItemHelper
 
     }
     
+    public static NBTTagCompound getOrCreateStackTag(ItemStack stack)
+    {
+        NBTTagCompound result = stack.getTagCompound();
+        if(result == null)
+        {
+            result = new NBTTagCompound();
+            stack.setTagCompound(result);
+        }
+        return result;
+    }
+    
     /**
      * True if item stacks can stack with each other - does not check for stack limit
      */

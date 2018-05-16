@@ -7,6 +7,7 @@ import grondag.exotic_matter.model.BlockRenderMode;
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.MetaUsage;
+import grondag.exotic_matter.varia.ItemHelper;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -113,14 +114,14 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         
         ItemStack stack = super.getStackFromBlock(currentState, world, pos);
         
-        if(stack != null)
+        if(!stack.isEmpty())
         {
             TileEntity blockTE = world.getTileEntity(pos);
             if (blockTE != null && blockTE instanceof SuperTileEntity) 
             {
                 // force refresh of TE state before persisting in stack
                 ((SuperTileEntity)blockTE).getModelState(currentState, world, pos, true);
-                blockTE.writeToNBT(stack.getTagCompound());
+                blockTE.writeToNBT(ItemHelper.getOrCreateStackTag(stack));
             }
         }
         return stack;
@@ -177,7 +178,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         TileEntity blockTE = worldIn.getTileEntity(pos);
         if (blockTE != null && blockTE instanceof SuperTileEntity) 
         {
-            ((SuperTileEntity)blockTE).readModNBT(stack.getTagCompound());
+            ((SuperTileEntity)blockTE).readModNBT(ItemHelper.getOrCreateStackTag(stack));
         }
     }
     
