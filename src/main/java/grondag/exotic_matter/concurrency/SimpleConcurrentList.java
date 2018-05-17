@@ -34,7 +34,6 @@ import net.minecraft.util.math.MathHelper;
 public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
 {
     protected T[]  items; 
-    private volatile int capacity;
     private AtomicInteger size = new AtomicInteger(0);
     private volatile boolean isMaintaining = false;
     private int nextDeletionStartIndex = 0;
@@ -58,9 +57,9 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
     
     public SimpleConcurrentList(Class<T> clazz, int initialCapacity)
     {
-        this.capacity = MathHelper.smallestEncompassingPowerOfTwo(initialCapacity);
+        initialCapacity = MathHelper.smallestEncompassingPowerOfTwo(initialCapacity);
         @SuppressWarnings("unchecked")
-        final T[] a = (T[]) Array.newInstance(clazz, this.capacity);
+        final T[] a = (T[]) Array.newInstance(clazz, initialCapacity);
         this.items = a;
     }
    
@@ -90,10 +89,8 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
      */
     public void add(T item)
     {
-        assert !this.isMaintaining : "Unsupported add operation on simple concurrent list during maintenance operation";
-        
         int index = this.size.getAndIncrement();
-        if(index < this.capacity)
+        if(index < this.items.length)
         {
             items[index] = item;
         }
@@ -101,11 +98,10 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         {
             synchronized(this)
             {
-                if(index >= this.capacity)
+                if(index >= this.items.length)
                 {
-                    int newCapacity = this.capacity * 2;
+                    int newCapacity = this.items.length * 2;
                     this.items = Arrays.copyOf(this.items, newCapacity);
-                    this.capacity = newCapacity;
                 }
                 items[index] = item;
             }
@@ -119,18 +115,15 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
      */
     public void addAll(SimpleUnorderedArrayList<T> items)
     {
-        assert !this.isMaintaining : "Unsupported add operation on simple concurrent list during maintenance operation";
-        
         int endExclusive = this.size.addAndGet(items.size());
-        if(endExclusive > this.capacity)
+        if(endExclusive > this.items.length)
         {
             synchronized(this)
             {
-                if(endExclusive > this.capacity)
+                if(endExclusive > this.items.length)
                 {
                     int newCapacity = MathHelper.smallestEncompassingPowerOfTwo(endExclusive);
                     this.items = Arrays.copyOf(this.items, newCapacity);
-                    this.capacity = newCapacity;
                 }
             }
         }
@@ -163,8 +156,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         // so does not, by itself, ensure thread safety
         synchronized(this)
         {
-            this.isMaintaining = true;
-            
             int newSize = this.size.get();
             int start;
             int end;
@@ -203,9 +194,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
             }
             
             this.size.set(newSize);
-            
-            this.isMaintaining = false;
-
         }
     }
     
@@ -224,8 +212,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         // so does not, by itself, ensure thread safety
         synchronized(this)
         {
-            this.isMaintaining = true;
-            
             int newSize = this.size();
             
             for(int i = 0; i < newSize; i++)
@@ -240,9 +226,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
             }
             
             this.size.set(newSize);
-            
-            this.isMaintaining = false;
-
         }
     }
     
@@ -257,15 +240,11 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         // so does not, by itself, ensure thread safety
         synchronized(this)
         {
-            this.isMaintaining = true;
-
             if(this.size.get() != 0)
             {
                 Arrays.fill(items, null);
                 this.size.set(0);
             }
-            
-            this.isMaintaining = false;
         }
     }
     
