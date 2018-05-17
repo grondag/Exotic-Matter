@@ -22,12 +22,12 @@ import grondag.exotic_matter.model.ShapeMeshGenerator;
 import grondag.exotic_matter.model.painter.QuadPainter;
 import grondag.exotic_matter.model.painter.QuadPainterFactory;
 import grondag.exotic_matter.model.varia.CraftingItem;
-import grondag.exotic_matter.render.QuadBakery;
-import grondag.exotic_matter.render.QuadContainer;
-import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.render.QuadBakery;
+import grondag.exotic_matter.render.QuadContainer;
+import grondag.exotic_matter.render.QuadHelper;
 import grondag.exotic_matter.render.SimpleItemBlockModel;
 import grondag.exotic_matter.render.SparseLayerMapBuilder;
 import grondag.exotic_matter.render.SparseLayerMapBuilder.SparseLayerMap;
@@ -41,12 +41,10 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.common.model.IModelState;
@@ -257,7 +255,7 @@ public class SuperDispatcher
         return result;
     }
     
-    public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
+    public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack)
     {
         ISuperModelState key = stack.getItem() instanceof CraftingItem
                 ? ((CraftingItem)stack.getItem()).modelState

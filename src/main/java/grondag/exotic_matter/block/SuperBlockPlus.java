@@ -28,7 +28,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
      */
     private static final Object TILE_ENTITY_AD_HOCK_CREATION_LOCK = new Object();
     
-    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, BlockRenderMode blockRenderMode)
+    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable BlockRenderMode blockRenderMode)
     {
         super(blockName, defaultMaterial, defaultModelState, blockRenderMode);
     }
@@ -41,6 +41,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
                 : new SuperTileEntity();
     }
 
+    @SuppressWarnings("null")
     public TileEntity getTileEntityReliably (World world, BlockPos pos)
     {
         TileEntity result = world.getTileEntity(pos);

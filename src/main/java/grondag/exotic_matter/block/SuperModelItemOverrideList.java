@@ -27,6 +27,6 @@ public class SuperModelItemOverrideList extends ItemOverrideList
 	@Override
 	public IBakedModel handleItemState(@Nonnull IBakedModel originalModel, @Nonnull ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity)
 	{
-		return dispatcher.handleItemState(originalModel, stack, world, entity);
+		return dispatcher.handleItemState(originalModel, stack);
 	}
 }
