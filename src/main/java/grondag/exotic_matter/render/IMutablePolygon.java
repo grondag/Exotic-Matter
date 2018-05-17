@@ -82,7 +82,7 @@ public interface IMutablePolygon extends IPolygon
      * except also sets nominal face to the given face in the start parameter. 
      * Returns self for convenience.
      */
-    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace);
 
     /** 
      * Sets up a quad with human-friendly semantics. <br><br>
@@ -97,7 +97,7 @@ public interface IMutablePolygon extends IPolygon
      * UV coordinates will be based on where rotated vertices project onto the nominal 
      * face for this quad (effectively lockedUV) unless face vertexes have UV coordinates.
      */
-    IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace);
     
     /** 
      * Sets up a quad with standard semantics.  
@@ -116,11 +116,11 @@ public interface IMutablePolygon extends IPolygon
      * but also sets nominal face with given face in start parameter.  
      * Returns self as convenience.
      */
-    IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
 
     //TODO use float version
     @Deprecated
-    public default IMutablePolygon setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, EnumFacing topFace)
+    public default IMutablePolygon setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, @Nullable EnumFacing topFace)
     {
         return this.setupFaceQuad(face, (float)x0, (float)y0, (float)x1, (float)y1, (float)depth, topFace);
     }
@@ -128,12 +128,12 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Triangular version of {@link #setupFaceQuad(EnumFacing, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
     /**
      * Triangular version of {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
     /** sets surface value and returns self for convenience */
     IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance);

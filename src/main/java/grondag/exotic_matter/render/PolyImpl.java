@@ -2,6 +2,7 @@ package grondag.exotic_matter.render;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
@@ -114,7 +115,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     
 
     @Override
-    public IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace)
     {
         
         EnumFacing defaultTop = QuadHelper.defaultTopOf(this.getNominalFace());

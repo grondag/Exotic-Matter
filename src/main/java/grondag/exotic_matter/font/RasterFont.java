@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.imageio.stream.FileImageOutputStream;
 
 import org.lwjgl.opengl.GL11;
@@ -86,7 +87,7 @@ public class RasterFont extends TextureAtlasSprite
     /**
      * Created during init, loaded to texture map during load, null after that.
      */
-    private BufferedImage fontMap;
+    private @Nullable BufferedImage fontMap;
 
 
     /**
@@ -244,7 +245,7 @@ public class RasterFont extends TextureAtlasSprite
         return fontImage;
     }
 
-    private Font getFont(ResourceLocation res, float size)
+    private @Nullable Font getFont(ResourceLocation res, float size)
     {
         Font font;
         try
@@ -268,13 +269,13 @@ public class RasterFont extends TextureAtlasSprite
         }
     }
     
-    public GlyphInfo getGlyphInfo(char c)
+    public @Nullable GlyphInfo getGlyphInfo(char c)
     {
         if(c < 0 || c > 255) return null;
         return this.glyphArray[c];
     }
     
-    public GlyphInfo getNumericSubscript(int i)
+    public @Nullable GlyphInfo getNumericSubscript(int i)
     {
         if(i < 0 || i > 9) return null;
         return this.glyphArray[256 + i];
