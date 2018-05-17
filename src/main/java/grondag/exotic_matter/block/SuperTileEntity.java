@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -67,7 +66,7 @@ public class SuperTileEntity extends TileEntity
     //  INSTANCE MEMBERS
     ////////////////////////////////////////////////////////////////////////
     
-    protected ISuperModelState modelState = new ModelState();
+    protected @Nullable ISuperModelState modelState = null;
   
     //  public IExtendedBlockState exBlockState;
     private boolean isModelStateCacheDirty = true;
@@ -222,9 +221,12 @@ public class SuperTileEntity extends TileEntity
 
     public ISuperModelState getModelState(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     { 
-        if(this.modelState == null)
+        ISuperModelState result = this.modelState;
+        
+        if(result == null)
         {
-            this.modelState = ((ISuperBlock)state.getBlock()).getDefaultModelState();
+            result = ((ISuperBlock)state.getBlock()).getDefaultModelState();
+            this.modelState = result;
             this.isModelStateCacheDirty = true;
             
             // necessary for species
@@ -233,12 +235,12 @@ public class SuperTileEntity extends TileEntity
         
         if(this.isModelStateCacheDirty && refreshFromWorldIfNeeded)
         {
-            this.modelState.refreshFromWorld(state, world, pos);
+            result.refreshFromWorld(state, world, pos);
             this.isModelStateCacheDirty = false;
         }
         
         
-        return this.modelState; 
+        return result; 
     }
     
     /**
@@ -257,6 +259,7 @@ public class SuperTileEntity extends TileEntity
     }
     
     /** intended for use in TESR - don't refresh unless missing because should be up to date from getExtendedState called before this */
+    @SuppressWarnings("null")
     public ISuperModelState getCachedModelState()
     {
         return this.modelState == null ? this.getModelState(this.world.getBlockState(this.pos), world, pos, true) : this.modelState;
@@ -311,7 +314,7 @@ public class SuperTileEntity extends TileEntity
     public boolean isVirtual() { return false; }
     
     @SideOnly(Side.CLIENT)
-    private net.minecraft.util.math.AxisAlignedBB renderBB;
+    private @Nullable net.minecraft.util.math.AxisAlignedBB renderBB;
     
     /**
      * Cache result. Gets called alot for TESR. <br><br>
