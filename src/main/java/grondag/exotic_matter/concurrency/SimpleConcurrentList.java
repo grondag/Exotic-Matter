@@ -35,7 +35,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
 {
     protected T[]  items; 
     private AtomicInteger size = new AtomicInteger(0);
-    private volatile boolean isMaintaining = false;
     private int nextDeletionStartIndex = 0;
     
     private static final int DELETION_BATCH_SIZE = 1024;
@@ -103,8 +102,8 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
                     int newCapacity = this.items.length * 2;
                     this.items = Arrays.copyOf(this.items, newCapacity);
                 }
-                items[index] = item;
             }
+            items[index] = item;
         }
     }
     

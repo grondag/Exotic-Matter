@@ -37,6 +37,25 @@ public class SimpleConcurrentListTest
         }
         System.out.println(" ");
         
+        System.out.println("Add single thread.");
+        for(int i = 0; i < 13; i++)
+        {
+            timer.start();
+            doTestAddSingle(inputs, 16);
+            timer.stop();
+            System.gc();
+        }
+        System.out.println(" ");
+        
+        System.out.println("Add single thread to non-concurrent simple list (for comparison)");
+        for(int i = 0; i < 13; i++)
+        {
+            timer.start();
+            doTestAddSingleNonConcurrent(inputs);
+            timer.stop();
+            System.gc();
+        }System.out.println(" ");
+        
         System.out.println("Add with preallocation.");
         for(int i = 0; i < 13; i++)
         {
@@ -63,6 +82,24 @@ public class SimpleConcurrentListTest
         SimpleConcurrentList<Integer> list = new SimpleConcurrentList<>(Integer.class, startingCapacity);
         
         inputs.parallelStream().forEach(i -> list.add(i));
+        
+        assert(list.size() == inputs.size());
+    }
+    
+    private void doTestAddSingle(SimpleUnorderedArrayList<Integer> inputs, int startingCapacity)
+    {
+        SimpleConcurrentList<Integer> list = new SimpleConcurrentList<>(Integer.class, startingCapacity);
+        
+        inputs.stream().forEach(i -> list.add(i));
+        
+        assert(list.size() == inputs.size());
+    }
+    
+    private void doTestAddSingleNonConcurrent(SimpleUnorderedArrayList<Integer> inputs)
+    {
+        SimpleUnorderedArrayList<Integer> list = new SimpleUnorderedArrayList<Integer>();
+        
+        inputs.stream().forEach(i -> list.add(i));
         
         assert(list.size() == inputs.size());
     }
