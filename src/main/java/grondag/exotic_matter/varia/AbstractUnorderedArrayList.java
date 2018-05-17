@@ -138,6 +138,7 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
             }
 
             @Override
+            @Nullable
             public T next()
             {
                 return get(i++);
