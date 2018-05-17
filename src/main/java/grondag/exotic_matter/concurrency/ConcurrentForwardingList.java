@@ -16,7 +16,7 @@ public class ConcurrentForwardingList<T> extends ForwardingList<T>
     
     public ConcurrentForwardingList(@Nonnull List<T> delegate)
     {
-        this.setDelegate(delegate);
+        this.delegate = delegate;
     }
     
     public void setDelegate(@Nonnull List<T> delegate)

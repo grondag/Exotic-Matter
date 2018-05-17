@@ -45,6 +45,7 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
             new PriorityBlockingQueue<Runnable>(11, new Comparator<Runnable>() 
             {
 
+                @SuppressWarnings("null")
                 @Override
                 public int compare(@Nullable Runnable o1, @Nullable Runnable o2)
                 {
@@ -103,7 +104,7 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
             this.isPrivileged = isPrivileged;
         }
 
-        private PrivilegedFutureTask(Runnable runnable, T result, boolean isPrivileged)
+        private PrivilegedFutureTask(Runnable runnable, @Nullable T result, boolean isPrivileged)
         {
             super(runnable, result);
             this.isPrivileged = isPrivileged;
@@ -147,15 +148,13 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
 
     public <T> Future<T> submit(Callable<T> task, boolean isPrivileged)
     {
-        if (task == null) throw new NullPointerException();
         RunnableFuture<T> ftask = new PrivilegedFutureTask<T>(task, isPrivileged);
         super.execute(ftask);
         return ftask;
     }
 
-    public <T> Future<T> submit(Runnable task, T result, boolean isPrivileged)
+    public <T> Future<T> submit(Runnable task, @Nullable T result, boolean isPrivileged)
     {
-        if (task == null) throw new NullPointerException();
         RunnableFuture<T> ftask = new PrivilegedFutureTask<T>(task, result, isPrivileged);
         super.execute(ftask);
         return ftask;
@@ -163,7 +162,6 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
 
     public Future<?> submit(Runnable task, boolean isPrivileged)
     {
-        if (task == null) throw new NullPointerException();
         RunnableFuture<Void> ftask = new PrivilegedFutureTask<Void>(task, null, isPrivileged);
         super.execute(ftask);
         return ftask;
@@ -172,24 +170,28 @@ public class PrivilegedExecutor extends ThreadPoolExecutor
     @Override 
     public void execute(@Nullable Runnable command)
     {
+        if(command == null) throw new NullPointerException();
         this.execute(command, false);
     }
     
     @Override
     public Future<?> submit(@Nullable Runnable task)
     {
+        if(task == null) throw new NullPointerException();
         return this.submit(task, false);
     }
 
     @Override
     public <T> Future<T> submit(@Nullable Runnable task, @Nullable T result)
     {
+        if(task == null) throw new NullPointerException();
         return this.submit(task, result, false);
     }
 
     @Override
     public <T> Future<T> submit(@Nullable Callable<T> task)
     {
+        if(task == null) throw new NullPointerException();
         return this.submit(task, false);
     }
 

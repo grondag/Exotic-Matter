@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
 
@@ -44,7 +46,7 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         return enablePerformanceCounting ? new Instrumented<V>(clazz, listName, perfCollector) : new SimpleConcurrentList<V>(clazz);
     }
     
-    public static <V> SimpleConcurrentList<V> create(Class<V> clazz, PerformanceCounter perfCounter)
+    public static <V> SimpleConcurrentList<V> create(Class<V> clazz, @Nullable PerformanceCounter perfCounter)
     {
         return perfCounter == null ? new SimpleConcurrentList<V>(clazz) : new Instrumented<V>(clazz, perfCounter);
     }
@@ -62,7 +64,7 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         this.items = a;
     }
    
-    public PerformanceCounter removalPerfCounter() { return null; }
+    public @Nullable PerformanceCounter removalPerfCounter() { return null; }
     
     /**
      * Current number of items in the list.  Note
@@ -299,7 +301,7 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         }
         
         @Override
-        public PerformanceCounter removalPerfCounter() { return this.removalPerfCounter; }
+        public @Nullable PerformanceCounter removalPerfCounter() { return this.removalPerfCounter; }
         
         @Override 
         public void removeSomeDeletedItems(Predicate<T> trueIfDeleted)

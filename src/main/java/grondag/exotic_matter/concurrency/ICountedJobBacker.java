@@ -1,5 +1,6 @@
 package grondag.exotic_matter.concurrency;
 
+@Deprecated
 public interface ICountedJobBacker
 {
     /** 

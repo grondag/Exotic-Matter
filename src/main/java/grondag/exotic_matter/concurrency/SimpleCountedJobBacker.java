@@ -1,6 +1,7 @@
 package grondag.exotic_matter.concurrency;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Re-generates array needed by counted job
@@ -8,9 +9,10 @@ import javax.annotation.Nonnull;
  * {@link #setDirty()} any time you modify the collection
  *
  */
+@Deprecated
 public abstract class SimpleCountedJobBacker implements ICountedJobBacker
 {
-    private volatile Object[] operands = null;
+    private @Nullable volatile Object[] operands = null;
     
     public void setDirty()
     {
@@ -31,11 +33,12 @@ public abstract class SimpleCountedJobBacker implements ICountedJobBacker
         {
             synchronized(this)
             {
-                if(this.operands == null)
-                {
-                    this.operands = this.generateOperands();
-                }
                 result = this.operands;
+                if(result == null)
+                {
+                    result = this.generateOperands();
+                    this.operands = result;
+                }
             }
         }
         return result;
@@ -44,7 +47,6 @@ public abstract class SimpleCountedJobBacker implements ICountedJobBacker
     @Override
     public int size()
     {
-        Object[] ops = this.getOperands();
-        return ops == null ? 0 : ops.length;
+        return this.getOperands().length;
     }
 }
