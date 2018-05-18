@@ -291,4 +291,14 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
             this.removalPerfCounter.addCount(startCount - this.size());
         }
     }
+
+    public T[] toArray()
+    {
+        return Arrays.copyOf(this.items, this.size());
+    }
+    
+    public T[] toArray(final int fromInclusive, final int toExclusive)
+    {
+        return Arrays.copyOfRange(this.items, fromInclusive, toExclusive);
+    }
 }

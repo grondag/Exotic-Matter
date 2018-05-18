@@ -9,12 +9,6 @@ import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
 public class SimpleConcurrentListTest
 {
-
-    //b4 changes
-//    [15:39:59] [main/INFO] [grondag.exotic_matter.ExoticMatter]: Avg SimpleConcurrentList duration = 519412600 ns, total duration = 519, total runs = 1
-//    [15:40:00] [main/INFO] [grondag.exotic_matter.ExoticMatter]: Avg SimpleConcurrentList duration = 522582345 ns, total duration = 522, total runs = 1
-//    [15:40:00] [main/INFO] [grondag.exotic_matter.ExoticMatter]: Avg SimpleConcurrentList duration = 508847926 ns, total duration = 508, total  runs = 1
-   
     @Test
     public void test()
     {

@@ -2,6 +2,8 @@ package grondag.exotic_matter.model;
 
 import java.util.HashMap;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.HashBiMap;
 
 import net.minecraft.block.Block;
@@ -20,6 +22,7 @@ public class TerrainBlockRegistry
         stateMap.put(dynamicBlock, staticBlock);
     }
     
+    @Nullable
     public Block getStaticBlock(Block dynamicBlock)
     {
         return this.stateMap.get(dynamicBlock);
@@ -35,6 +38,7 @@ public class TerrainBlockRegistry
         fillerMap.put(heightBlock, fillerBlock);
     }
     
+    @Nullable
     public Block getFillerBlock(Block hieghtBlock)
     {
         return this.fillerMap.get(hieghtBlock);

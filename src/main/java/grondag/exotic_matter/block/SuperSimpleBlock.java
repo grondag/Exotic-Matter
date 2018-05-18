@@ -21,6 +21,7 @@ public class SuperSimpleBlock extends SuperBlock
     private final boolean isGeometryFullCube;
     private final WorldLightOpacity worldLightOpacity;
     
+    @SuppressWarnings("null")
     public SuperSimpleBlock(String blockName, BlockSubstance substance, ISuperModelState defaultModelState)
     {
         super(blockName, substance.material, defaultModelState, null);

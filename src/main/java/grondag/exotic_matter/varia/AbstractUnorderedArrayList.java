@@ -6,6 +6,8 @@ import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.util.math.MathHelper;
+
 /**
  * Lightweight, non-concurrent collection-like class for managing small unordered lists.
  * Uses = for comparison.
@@ -14,10 +16,19 @@ import javax.annotation.Nullable;
  */
 public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
 {
-
-    protected Object[] items = new Object[4];
+    protected Object[] items;
     
     protected int size = 0;
+    
+    protected AbstractUnorderedArrayList()
+    {
+        items = new Object[4];
+    }
+    
+    protected AbstractUnorderedArrayList(int startingCapacity)
+    {
+        items = new Object[MathHelper.smallestEncompassingPowerOfTwo(startingCapacity)];
+    }
     
     @Override
     public int size()

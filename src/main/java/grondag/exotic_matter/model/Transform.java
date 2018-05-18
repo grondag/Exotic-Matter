@@ -39,7 +39,7 @@ public class Transform
         IDENTITY_FACEMAP = getFaceMap(computeKey(null, false, Rotation.ROTATE_NONE));
     }
     
-    private static void populateLookups(@Nullable Axis axis, boolean isAxisInverted, @Nullable Rotation rotation)
+    private static void populateLookups(@Nullable Axis axis, boolean isAxisInverted, Rotation rotation)
     {
         int key = computeKey(axis, isAxisInverted, rotation);
         Matrix4f matrix = computeMatrix(axis, isAxisInverted, rotation);
@@ -89,7 +89,7 @@ public class Transform
         return MATRIX_LOOKUP[computeTransformKey(modelState)];
     }
     
-    private static Matrix4f computeMatrix(@Nullable EnumFacing.Axis axis, boolean isAxisInverted, @Nullable Rotation rotation)
+    private static Matrix4f computeMatrix(@Nullable EnumFacing.Axis axis, boolean isAxisInverted, Rotation rotation)
     {
         if(axis != null)
         {

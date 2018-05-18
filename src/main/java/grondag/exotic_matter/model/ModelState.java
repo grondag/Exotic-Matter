@@ -944,7 +944,7 @@ public class ModelState implements ISuperModelState
 
     public static @Nullable ModelState deserializeFromNBTIfPresent(NBTTagCompound tag)
     {
-        if(tag != null && tag.hasKey(NBT_MODEL_BITS))
+        if(tag.hasKey(NBT_MODEL_BITS))
         {
             ModelState result = new ModelState();
             result.deserializeNBT(tag);

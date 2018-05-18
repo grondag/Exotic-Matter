@@ -13,6 +13,7 @@ public class SuperStaticBlock extends SuperBlockPlus
     private final boolean isGeometryFullCube;
     private final WorldLightOpacity worldLightOpacity;
     
+    @SuppressWarnings("null")
     public SuperStaticBlock(String blockName, BlockSubstance substance, ISuperModelState defaultModelState)
     {
         super(blockName, substance.material, defaultModelState, null);

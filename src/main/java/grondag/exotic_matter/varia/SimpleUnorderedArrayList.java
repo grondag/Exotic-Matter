@@ -8,6 +8,16 @@ package grondag.exotic_matter.varia;
  */
 public class SimpleUnorderedArrayList<T> extends AbstractUnorderedArrayList<T>
 {
+    public SimpleUnorderedArrayList()
+    {
+        super();
+    }
+    
+    public SimpleUnorderedArrayList(int startingCapacity)
+    {
+        super(startingCapacity);
+    }
+    
     /**
      * Returns true if was added (not already present)
      */

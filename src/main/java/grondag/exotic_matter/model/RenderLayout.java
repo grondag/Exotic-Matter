@@ -2,6 +2,8 @@ package grondag.exotic_matter.model;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.varia.BinaryEnumSet;
 import net.minecraft.util.BlockRenderLayer;
@@ -103,8 +105,8 @@ public class RenderLayout
     
     /**
      * Returns null if given container index is out of range.
-     * @return 
      */
+    @Nullable
     public BlockRenderLayer BlockRenderLayerFromContainerIndex(int containerIndex)
     {
         if(containerIndex < 0 || containerIndex >= this.blockLayerCount)

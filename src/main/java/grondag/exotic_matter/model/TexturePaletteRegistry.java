@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
@@ -247,7 +249,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         @Override
         public List<String> getTexturesForPrestich()
         {
-            if(this.textureBaseName == null) return Collections.emptyList();
             
             ArrayList<String> textureList = new ArrayList<String>();
             
@@ -311,8 +312,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         @Override
         public String getSampleTextureName() 
         { 
-            if(textureBaseName == null) return "";
-            
             switch(textureLayout)
             {
             case BIGTEX:
@@ -332,6 +331,7 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
          * See {@link #getSampleSprite()}
          */
         @SideOnly(Side.CLIENT)
+        @Nullable
         private EnhancedSprite sampleSprite;
         
         @Override
@@ -355,14 +355,12 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         
         private String buildTextureName(int version)
         {
-            if(textureBaseName == null) return "";
-            
             return (this.textureLayout == TextureLayout.BIGTEX || this.textureLayout == TextureLayout.BIGTEX_ANIMATED)
                     ? buildTextureNameBigTex()
                     : buildTextureName_X_8(version);
         }
         
-        /* (non-Javadoc)
+        /**
          * @see grondag.hard_science.superblock.texture.ITexturePallette#getTextureName(int, int)
          */
         @Override
@@ -373,7 +371,6 @@ public class TexturePaletteRegistry implements Iterable<ITexturePalette>
         
         private String buildTextureName(int version, int index)
         {
-            if(textureBaseName == null) return "";
             switch(textureLayout)
             {
             case MASONRY_5:

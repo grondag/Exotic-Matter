@@ -16,8 +16,6 @@ public class VoxelBitField
     
     private final BitSet bits;
     
-    private Vec3i origin;
-    
     private double inflatedVolume = 0;
     /** if this was the result of a simplification, the empty space added */
     public double getInflatedVolume() { return inflatedVolume; }
@@ -26,7 +24,7 @@ public class VoxelBitField
     /** if this was the result of a simplification, the filled space discarded */
     public double getDiscardedVolume() { return discardedVolume; }   
 
-    private ArrayList<DistanceRankedVoxel> distances;
+    @Nullable private ArrayList<DistanceRankedVoxel> distances;
     
     private static class DistanceRankedVoxel extends Vec3i
     {
@@ -43,6 +41,7 @@ public class VoxelBitField
     {
         private static final DistanceComparator INSTANCE = new DistanceComparator();
         
+        @SuppressWarnings("null")
         @Override
         public int compare(@Nullable DistanceRankedVoxel o1, @Nullable DistanceRankedVoxel o2)
         {
@@ -147,8 +146,9 @@ public class VoxelBitField
     
     public void setOrigin(int x, int y, int z)
     {
-        this.origin = new Vec3i(clamp(x), clamp(y), clamp(z));
-        this.distances = new ArrayList<DistanceRankedVoxel>(getBitsPerAxis() * getBitsPerAxis() * getBitsPerAxis());
+        final Vec3i origin = new Vec3i(clamp(x), clamp(y), clamp(z));
+        
+        ArrayList<DistanceRankedVoxel> distances = new ArrayList<DistanceRankedVoxel>(getBitsPerAxis() * getBitsPerAxis() * getBitsPerAxis());
         this.firstDistanceIndex = 0;
         
         for(int i = 0; i < getBitsPerAxis(); i++)
@@ -158,11 +158,12 @@ public class VoxelBitField
                 for(int k = 0; k < getBitsPerAxis(); k++)
                 {
                     DistanceRankedVoxel point = new DistanceRankedVoxel(i, j, k, origin);
-                    this.distances.add(point);
+                    distances.add(point);
                 }
             }
         }
-        this.distances.sort(DistanceComparator.INSTANCE);
+        distances.sort(DistanceComparator.INSTANCE);
+        this.distances = distances;
     }
     
     /**
@@ -171,6 +172,10 @@ public class VoxelBitField
      */
     public boolean areAllBitsConsumed()
     {
+        ArrayList<DistanceRankedVoxel> distances = this.distances;
+        
+        if(distances == null) return false;
+        
         return firstDistanceIndex >= distances.size() || distances.size() == 0;
     }
     
@@ -182,8 +187,13 @@ public class VoxelBitField
      * (Voxels are only unfilled after that, as boxes are created that consume them.)
      * Returns null if no more filled voxels.
      */
+    @Nullable
     public VoxelBox getNearestVoxelBox()
     {
+        final ArrayList<DistanceRankedVoxel> distances = this.distances;
+        
+        if(distances == null) return null;
+        
         while(firstDistanceIndex < distances.size())
         {
             DistanceRankedVoxel candidate = distances.get(firstDistanceIndex);

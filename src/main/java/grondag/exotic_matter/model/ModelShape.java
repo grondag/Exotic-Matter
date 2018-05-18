@@ -63,10 +63,9 @@ public class ModelShape<T extends ShapeMeshGenerator>
         return allByName.get(systemName);
     }
     
-    @Nullable
     public static ModelShape<?> get(int ordinal)
     {
-        return ordinal < 0 || ordinal >= allByOrdinal.size() ? null : allByOrdinal.get(ordinal);
+        return allByOrdinal.get(ordinal);
     }
     
     private static List<ModelShape<?>> guiAvailableShapes = ImmutableList.of();
@@ -86,8 +85,9 @@ public class ModelShape<T extends ShapeMeshGenerator>
     }
     
     private boolean factoryNeedLoad = true;
-    private T factory = null;
+    private @Nullable T factory = null;
     
+    @SuppressWarnings("null")
     public T meshFactory()
     {
         if(this.factoryNeedLoad)

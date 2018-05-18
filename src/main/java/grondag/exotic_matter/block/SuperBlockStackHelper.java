@@ -67,6 +67,7 @@ public class SuperBlockStackHelper
     @Nullable
     public static ISuperModelState getStackModelState(ItemStack stack)
     {
+        @SuppressWarnings("null")
         ISuperModelState stackState = stack.hasTagCompound()
                 ? ModelState.deserializeFromNBTIfPresent(stack.getTagCompound().getCompoundTag(SuperBlockStackHelper.NBT_MODEL_STATE))
                 : null;

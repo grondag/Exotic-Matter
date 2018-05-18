@@ -15,6 +15,7 @@ public interface IItemModelRegistrant
 {
     public void handleBake(ModelBakeEvent event);
     
+    @SuppressWarnings("null")
     public default void handleRegister(IForgeRegistry<Item> itemReg)
     {
         Item item = (Item)this;
