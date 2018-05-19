@@ -53,7 +53,7 @@ public class PerformanceCollector
         ExoticMatter.INSTANCE.info("--------------------------------------------------------------------------------------");
         for(PerformanceCounter counter : this.counters)
         {
-            ExoticMatter.INSTANCE.info((counter.runTime() * 100 / total) + "% " + counter.stats());
+            if(counter.runTime() > 0) ExoticMatter.INSTANCE.info((counter.runTime() * 100 / total) + "% " + counter.stats());
         }
         ExoticMatter.INSTANCE.info("--------------------------------------------------------------------------------------");
         ExoticMatter.INSTANCE.info(String.format("TOTAL TIME = %1$.3fs (%2$,dns)", (double)total/1000000000L, total));
