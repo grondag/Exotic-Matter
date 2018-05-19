@@ -79,6 +79,19 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
      */
     public static final Simulator RAW_INSTANCE_DO_NOT_USE = new Simulator();
     
+    /**
+     * Needed to prevent overhead of retrieving instance each time this is needed.  Needed all over.
+     */
+    private static int currentTick;
+    
+    /**
+     * Needed to prevent overhead of retrieving instance each time this is needed.  Needed all over.
+     */
+    public static final int currentTick()
+    {
+        return currentTick;
+    }
+    
     private static final HashSet<Class<? extends ISimulationTopNode>> nodeTypes = new HashSet<>();
     
     public static void register(Class<? extends ISimulationTopNode> nodeType)
@@ -316,6 +329,8 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                     }
                 }
 
+                currentTick = lastSimTick;
+                
                 if(!Simulator.this.tickables.isEmpty())
                 {
                     for(ISimulationTickable tickable : Simulator.this.tickables)
@@ -348,7 +363,6 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     }
 
     public @Nullable World getWorld() { return this.world; }
-    public int getTick() { return this.lastSimTick; }
 
     // Frame execution logic
     Runnable offTickFrame = new Runnable()
