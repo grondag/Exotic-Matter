@@ -14,6 +14,7 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -432,9 +433,9 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         {
             try
             {
-                SIMULATION_POOL.submit(() -> list.stream(true).forEach(action)).get();
+                SIMULATION_POOL.submit(() -> list.stream(true).forEach(action)).get(1, TimeUnit.SECONDS);
             }
-            catch (InterruptedException | ExecutionException e)
+            catch (InterruptedException | ExecutionException | TimeoutException e)
             {
                 ExoticMatter.INSTANCE.error("Unexpected error", e);
             }
@@ -457,9 +458,9 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         {
             try
             {
-                SIMULATION_POOL.submit(() -> s.forEach(action)).get();
+                SIMULATION_POOL.submit(() -> s.forEach(action)).get(1, TimeUnit.SECONDS);
             }
-            catch (InterruptedException | ExecutionException e)
+            catch (InterruptedException | ExecutionException | TimeoutException e)
             {
                 ExoticMatter.INSTANCE.error("Unexpected error", e);
             }
