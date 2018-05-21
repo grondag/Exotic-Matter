@@ -6,6 +6,7 @@ import grondag.exotic_matter.world.HorizontalFace;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 
 public class TerrainState
@@ -23,6 +24,7 @@ public class TerrainState
     public final static long STATE_BIT_MASK = 0x7FFFFFFFFFFFFFL;
 
     public final static int BLOCK_LEVELS_INT = 12;
+    public final static int BLOCK_LEVELS_INT_HALF = BLOCK_LEVELS_INT / 2;
     public final static float BLOCK_LEVELS_FLOAT = (float) BLOCK_LEVELS_INT;
     public final static int MIN_HEIGHT = -23;
     public final static int NO_BLOCK = MIN_HEIGHT - 1;
@@ -89,6 +91,11 @@ public class TerrainState
     private float midSideHeight[] = new float[HorizontalFace.values().length];
     /** cache model vertex height calculations */
     private float farSideHeight[] = new float[HorizontalFace.values().length];
+    
+    private float minVertexHeightExcludingCenter;
+    private float maxVertexHeightExcludingCenter;
+    private float averageVertexHeightIncludingCenter;
+    
     private byte simpleFlags = 0;
     
     public long getStateKey()
@@ -293,16 +300,6 @@ public class TerrainState
         return aboveCount >= 16 ? 255 : aboveCount;
     }
     
-    /**
-     * Returns minimum corner vertex height of block.
-     * Used for determining where the bottom of blocks starts.
-     */
-//    public float getMinCornerVertexHeight()
-//    {
-//        refreshVertexCalculationsIfNeeded();
-//        return Math.min(Math.min(midCornerHeight[0], midCornerHeight[1]), Math.min(midCornerHeight[2], midCornerHeight[3]));
-//    }
-    
     public float getCenterVertexHeight()
     {
         return (float) getCenterHeight() / BLOCK_LEVELS_FLOAT;
@@ -335,18 +332,40 @@ public class TerrainState
     private void refreshVertexCalculationsIfNeeded()
     {
         if(vertexCalcsDone) return;
+        
+        final float centerHeight = this.getCenterVertexHeight();
+        
+        float max = Float.MIN_VALUE;
+        float min = Float.MAX_VALUE;
+        float total = centerHeight;
+        
         for(HorizontalFace side : HorizontalFace.values())
         {
-            midSideHeight[side.ordinal()] = calcMidSideVertexHeight(side);
+            final float h = calcMidSideVertexHeight(side);
+            total += h;
+            if(h > max) max = h;
+            if(h < min) min = h;
+            
+            midSideHeight[side.ordinal()] = h;
             farSideHeight[side.ordinal()] = calcFarSideVertexHeight(side);
             
         }
         
         for(HorizontalCorner corner: HorizontalCorner.values())
         {
-            midCornerHeight[corner.ordinal()] = calcMidCornerVertexHeight(corner);
+            final float h = calcMidCornerVertexHeight(corner);
+            
+            total += h;
+            if(h > max) max = h;
+            if(h < min) min = h;
+            
+            midCornerHeight[corner.ordinal()] = h;
             farCornerHeight[corner.ordinal()] = calcFarCornerVertexHeight(corner);
         }
+        
+        this.maxVertexHeightExcludingCenter = max;
+        this.minVertexHeightExcludingCenter = min;
+        this.averageVertexHeightIncludingCenter = total / 9;
         
         //determine if sides and top geometry can be simplified
         boolean topIsSimple = true;
@@ -354,7 +373,7 @@ public class TerrainState
         
         for(HorizontalFace side: HorizontalFace.values())
         {
-            double avg = midCornerHeight[HorizontalCorner.find(side, side.getLeft()).ordinal()];
+            float avg = midCornerHeight[HorizontalCorner.find(side, side.getLeft()).ordinal()];
             avg += midCornerHeight[HorizontalCorner.find(side, side.getRight()).ordinal()];
             avg /= 2;
             boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < QuadHelper.EPSILON;
@@ -626,5 +645,49 @@ public class TerrainState
         if(h > 0) return -2 * BLOCK_LEVELS_INT + h;
     
         return NO_BLOCK;
+    }
+
+    /**
+     * Amount of lava, in fluid levels, that should be retained on top of this block.
+     * Designed to promote smooth terrain generation by acting similar to a box filter.<p>
+     * 
+     * Computed based on slopes of lines from side and corner middle verticesto center vertex.<p>
+     * 
+     * Return values are clamped to the range from 1 level to 18 levels (1.5 blocks)
+     */
+    public int retentionLevels()
+    {
+        refreshVertexCalculationsIfNeeded();
+        
+        final float center = this.getCenterVertexHeight();
+
+        final float max = this.maxVertexHeightExcludingCenter;
+        final float min = this.minVertexHeightExcludingCenter;
+        final float avg = this.averageVertexHeightIncludingCenter;
+        
+        final float drop = max - min;
+        
+        // no drop gives one half block of retention
+        if(drop == 0) return BLOCK_LEVELS_INT_HALF;
+        
+        /** essentially the distance from a box filter result */
+        final float diffFromAvgLevels = (avg - center) * BLOCK_LEVELS_INT;
+        
+        int result;
+        
+        if(center <= min)
+        {
+            // center is (or shares) lowest point
+            result = Math.round(diffFromAvgLevels) + BLOCK_LEVELS_INT_HALF;
+        }
+        else
+        {
+            // center is part of a slope
+            result = drop < 1
+                    ? Math.round(diffFromAvgLevels + (1 - drop) * BLOCK_LEVELS_INT_HALF)
+                    : Math.round(diffFromAvgLevels);
+        }
+        
+        return MathHelper.clamp(result, 1, BLOCK_LEVELS_INT + BLOCK_LEVELS_INT_HALF);
     }
 }
