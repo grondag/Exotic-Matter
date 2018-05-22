@@ -1,5 +1,8 @@
 package grondag.exotic_matter;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.Test;
 
 import gnu.trove.list.TLongList;
@@ -59,6 +62,16 @@ public class UsefulTest
         direction = new Vec3d(-3.0, 0.0, 3.0);
         box = new AxisAlignedBB(608.9, 5.0, 770.9, 610.1, 6.0, 772.1);
         assert(Useful.doesRayIntersectAABB(origin, direction, box));
+        
+        
+        Random r = ThreadLocalRandom.current();
+        for(int n = 0; n < 100; n++)
+        {
+            long l = r.nextLong();
+            final int low = Useful.longToIntLow(l);
+            final int high = Useful.longToIntHigh(l);
+            assert Useful.longFromInts(low, high) == l;
+        }
     }
 
 }

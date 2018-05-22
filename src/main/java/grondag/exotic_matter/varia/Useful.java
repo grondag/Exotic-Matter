@@ -489,6 +489,33 @@ public class Useful
     }
 
     /**
+     * Gives low bits of long value for serialization as two int values<br>.
+     * Use {@link #longFromInts(int, int)} to reconstruct.
+     */
+    public static final int longToIntLow(final long input)
+    {
+        return (int) input;
+    }
+    
+    /**
+     * Gives high bits of long value for serialization as two int values<br>.
+     * Use {@link #longFromInts(int, int)} to reconstruct.
+     */
+    public static final int longToIntHigh(final long input)
+    {
+        return (int) (input >> 32);
+    }
+    
+    /**
+     * Reconstitutes long value from integer values given by
+     * {@link #longToIntLow(long)} and {@link #longToIntHigh(long)}
+     */
+    public static final long longFromInts(final int high, final int low)
+    {
+        return (long)high << 32 | low & 0xFFFFFFFFL;
+    }
+    
+    /**
      * Returns bit mask for a value of given bit length 
      */
     public static int intBitMask(int bitLength)
