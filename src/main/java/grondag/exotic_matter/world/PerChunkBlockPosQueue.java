@@ -1,7 +1,5 @@
 package grondag.exotic_matter.world;
 
-import grondag.exotic_matter.varia.PackedBlockPos;
-import grondag.exotic_matter.varia.PackedChunkPos;
 import grondag.exotic_matter.varia.Useful;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;

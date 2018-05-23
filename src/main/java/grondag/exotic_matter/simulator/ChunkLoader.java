@@ -3,7 +3,7 @@ package grondag.exotic_matter.simulator;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.PackedChunkPos;
+import grondag.exotic_matter.world.PackedChunkPos;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.ChunkPos;

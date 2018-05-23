@@ -1,6 +1,7 @@
 package grondag.exotic_matter.varia;
 
 import grondag.exotic_matter.serialization.NBTDictionary;
+import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 

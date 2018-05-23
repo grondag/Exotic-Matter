@@ -6,8 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
 import gnu.trove.list.TLongList;
-import grondag.exotic_matter.varia.PackedBlockPos;
 import grondag.exotic_matter.varia.Useful;
+import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 

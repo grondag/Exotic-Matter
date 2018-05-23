@@ -1,4 +1,4 @@
-package grondag.exotic_matter.varia;
+package grondag.exotic_matter.world;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;

@@ -14,6 +14,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TLongArrayList;
+import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;

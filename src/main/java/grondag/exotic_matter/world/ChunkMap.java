@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 
-import grondag.exotic_matter.varia.PackedChunkPos;
 import grondag.exotic_matter.varia.Useful;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;

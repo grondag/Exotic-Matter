@@ -5,8 +5,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.varia.PackedBlockPos;
-import grondag.exotic_matter.varia.PackedChunkPos;
+import grondag.exotic_matter.world.PackedBlockPos;
+import grondag.exotic_matter.world.PackedChunkPos;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
