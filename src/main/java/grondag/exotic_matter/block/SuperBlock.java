@@ -69,6 +69,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
@@ -1239,25 +1240,39 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         this.dropItem = dropItem;
         return this;
     }
+    
+    /**
+     * Want to avoid the synchronization penalty of pooled block pos.
+     * For use only in {@link #shouldSideBeRendered(IBlockState, IBlockAccess, BlockPos, EnumFacing)}
+     */
+    protected static ThreadLocal<MutableBlockPos> shouldSideBeRenderedPos = new ThreadLocal<MutableBlockPos>()
+    {
+
+        @Override
+        protected MutableBlockPos initialValue()
+        {
+            return new MutableBlockPos();
+        }
+    };
 
     @Override
     @SideOnly(Side.CLIENT)
     public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side)
     {
-
         if(this.getSubstance(blockState, blockAccess, pos).isTranslucent)
         {
-            BlockPos otherPos = pos.offset(side);
-            IBlockState otherBlockState = blockAccess.getBlockState(otherPos);
+            final MutableBlockPos mpos = shouldSideBeRenderedPos.get().setPos(pos).move(side);
+            
+            IBlockState otherBlockState = blockAccess.getBlockState(mpos);
             Block block = otherBlockState.getBlock();
             if(block instanceof SuperBlock)
             {
                 ISuperBlock sBlock = (ISuperBlock)block;
                 // only match with blocks with same "virtuality" as this one
-                if(this.isVirtual() == sBlock.isVirtual() && sBlock.getSubstance(otherBlockState, blockAccess, otherPos).isTranslucent)
+                if(this.isVirtual() == sBlock.isVirtual() && sBlock.getSubstance(otherBlockState, blockAccess, mpos).isTranslucent)
                 {
                     ISuperModelState myModelState = this.getModelStateAssumeStateIsCurrent(blockState, blockAccess, pos, false);
-                    ISuperModelState otherModelState = sBlock.getModelStateAssumeStateIsCurrent(otherBlockState, blockAccess, otherPos, false);
+                    ISuperModelState otherModelState = sBlock.getModelStateAssumeStateIsCurrent(otherBlockState, blockAccess, mpos, false);
                     // for transparent blocks, want blocks with same apperance and species to join
                     return (myModelState.hasSpecies() && myModelState.getSpecies() != otherModelState.getSpecies())
                             || !myModelState.doShapeAndAppearanceMatch(otherModelState);

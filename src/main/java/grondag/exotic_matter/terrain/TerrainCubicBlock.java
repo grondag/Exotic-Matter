@@ -14,6 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 
 public class TerrainCubicBlock extends SuperSimpleBlock
@@ -68,11 +69,13 @@ public class TerrainCubicBlock extends SuperSimpleBlock
         return true;
     }
   
+    
     @Override
     public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side)
     {
-        IBlockState neighborState = blockAccess.getBlockState(pos.offset(side));
-        return !neighborState.doesSideBlockRendering(blockAccess, pos.offset(side), side.getOpposite());
+        final MutableBlockPos mpos = shouldSideBeRenderedPos.get().setPos(pos).move(side);
+        IBlockState neighborState = blockAccess.getBlockState(mpos);
+        return !neighborState.doesSideBlockRendering(blockAccess, mpos, side.getOpposite());
     }
     
     @Override

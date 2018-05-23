@@ -20,7 +20,7 @@ public class SuperBlockMasonryMatch extends AbstractNonFaceTest
         this.block = block;
         //last param = false prevents recursion - we don't need the full model state (which depends on this logic)
         this.matchSpecies = matchSpecies;
-        this.origin = pos;
+        this.origin = pos.toImmutable();
     }
     
     @Override 

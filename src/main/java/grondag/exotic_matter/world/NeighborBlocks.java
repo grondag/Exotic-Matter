@@ -18,7 +18,7 @@ import net.minecraft.world.IBlockAccess;
 public class NeighborBlocks
 {
 
-    public final static int[] FACE_FLAGS = new int[]{1, 2, 4, 8, 16, 32};
+    public final static int[] FACE_FLAGS = {1, 2, 4, 8, 16, 32};
 
     // EnumFacing.values().length + BlockCorner.values().length + FarCorner.values().length = 6 + 
     private final static int STATE_COUNT = 6 + 12 + 8;

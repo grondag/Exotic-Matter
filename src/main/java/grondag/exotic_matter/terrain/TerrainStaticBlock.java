@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -71,17 +72,19 @@ public class TerrainStaticBlock extends SuperStaticBlock
     @SideOnly(Side.CLIENT)
     public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side)
     {
+        final MutableBlockPos mpos = shouldSideBeRenderedPos.get().setPos(pos).move(side);
+        
         //see Config.render().enableFaceCullingOnFlowBlocks for explanation
-        IBlockState neighborState = blockAccess.getBlockState(pos.offset(side));
+        IBlockState neighborState = blockAccess.getBlockState(mpos);
         if(ConfigXM.RENDER.enableFaceCullingOnFlowBlocks && TerrainBlockHelper.isFlowBlock(neighborState.getBlock()))
         {
             int myOcclusionKey = this.getOcclusionKey(blockState, blockAccess, pos, side);
-            int otherOcclusionKey = ((ISuperBlock)neighborState.getBlock()).getOcclusionKey(neighborState, blockAccess, pos.offset(side), side.getOpposite());
+            int otherOcclusionKey = ((ISuperBlock)neighborState.getBlock()).getOcclusionKey(neighborState, blockAccess, mpos, side.getOpposite());
             return myOcclusionKey != otherOcclusionKey;
         }
         else
         {
-            return !neighborState.doesSideBlockRendering(blockAccess, pos.offset(side), side.getOpposite());
+            return !neighborState.doesSideBlockRendering(blockAccess, mpos, side.getOpposite());
         }
     }
 
