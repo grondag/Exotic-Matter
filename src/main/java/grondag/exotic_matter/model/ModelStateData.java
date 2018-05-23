@@ -1,6 +1,8 @@
 package grondag.exotic_matter.model;
 
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.EnumElement;
@@ -93,10 +95,10 @@ public class ModelStateData
     /**
      * Use this as factory for model state block tests that DON'T need to refresh from world.
      */
-    public static final IExtraStateFactory<ISuperModelState> TEST_GETTER_STATIC = new IExtraStateFactory<ISuperModelState>()
+    public static final IExtraStateFactory TEST_GETTER_STATIC = new IExtraStateFactory()
     {
         @Override
-        public ISuperModelState get(IBlockAccess worldIn, BlockPos pos, IBlockState state)
+        public @Nullable ISuperModelState get(IBlockAccess worldIn, BlockPos pos, IBlockState state)
         {
             Block block = state.getBlock();
             return (block instanceof ISuperBlock) 
@@ -108,10 +110,10 @@ public class ModelStateData
     /**
      * Use this as factory for model state block tests that DO need to refresh from world.
      */
-    public static final IExtraStateFactory<ISuperModelState> TEST_GETTER_DYNAMIC = new IExtraStateFactory<ISuperModelState>()
+    public static final IExtraStateFactory TEST_GETTER_DYNAMIC = new IExtraStateFactory()
     {
         @Override
-        public ISuperModelState get(IBlockAccess worldIn, BlockPos pos, IBlockState state)
+        public @Nullable ISuperModelState get(IBlockAccess worldIn, BlockPos pos, IBlockState state)
         {
             Block block = state.getBlock();
             return (block instanceof ISuperBlock) 

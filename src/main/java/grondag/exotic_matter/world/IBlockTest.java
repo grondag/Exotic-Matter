@@ -1,5 +1,6 @@
 package grondag.exotic_matter.world;
 
+import grondag.exotic_matter.model.ISuperModelState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -14,7 +15,7 @@ import net.minecraft.world.IBlockAccess;
  * 
  * See NeighborBlocks for example of usage.
  */
-public interface IBlockTest<T>
+public interface IBlockTest
 {
 	public boolean testBlock(EnumFacing face, IBlockAccess world, IBlockState ibs, BlockPos pos);
     public boolean testBlock(BlockCorner corner, IBlockAccess world, IBlockState ibs, BlockPos pos);
@@ -22,20 +23,20 @@ public interface IBlockTest<T>
 
 	public default boolean wantsModelState() { return false; }
 	
-	public default boolean testBlock(EnumFacing face, IBlockAccess world, IBlockState ibs, BlockPos pos, T modelState)
+	public default boolean testBlock(EnumFacing face, IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
 	{
 	    return testBlock(face, world, ibs, pos);
 	}
 	
-	public default boolean testBlock(BlockCorner corner, IBlockAccess world, IBlockState ibs, BlockPos pos, T modelState)
+	public default boolean testBlock(BlockCorner corner, IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
     {
         return testBlock(corner, world, ibs, pos);
     }
 	
-	public default boolean testBlock(FarCorner corner, IBlockAccess world, IBlockState ibs, BlockPos pos, T modelState)
+	public default boolean testBlock(FarCorner corner, IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
     {
         return testBlock(corner, world, ibs, pos);
     }
 	
-	public default T getExtraState() { return null; }
+	public default ISuperModelState getExtraState() { return null; }
 }

@@ -13,7 +13,7 @@ import net.minecraft.world.IBlockAccess;
  * Base class for block tests that don't care about facing.
  *
  */
-public abstract class AbstractNonFaceTest implements IBlockTest<ISuperModelState>
+public abstract class AbstractNonFaceTest implements IBlockTest
 {
     abstract protected boolean testBlock(IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState);
 

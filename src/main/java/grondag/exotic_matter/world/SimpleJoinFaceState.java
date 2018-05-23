@@ -73,7 +73,7 @@ public enum SimpleJoinFaceState
         return fjs;
     }
     
-    public static SimpleJoinFaceState find(EnumFacing face, NeighborBlocks<?>.NeighborTestResults tests)
+    public static SimpleJoinFaceState find(EnumFacing face, NeighborBlocks.NeighborTestResults tests)
     {
         int faceFlags = 0;
 

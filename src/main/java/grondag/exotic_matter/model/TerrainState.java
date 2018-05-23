@@ -30,6 +30,19 @@ public class TerrainState
     public final static int NO_BLOCK = MIN_HEIGHT - 1;
     public final static int MAX_HEIGHT = 36;
     
+    /**
+     * Want to avoid the synchronization penalty of pooled block pos.
+     */
+    private static ThreadLocal<BlockPos.MutableBlockPos> mutablePos = new ThreadLocal<BlockPos.MutableBlockPos>()
+    {
+
+        @Override
+        protected MutableBlockPos initialValue()
+        {
+            return new BlockPos.MutableBlockPos();
+        }
+    };
+    
     // Use these insted of magic number for filler block meta values
     /** This value is for a height block two below another height block, offset of 2 added to vertex heights*/
 //    public final static int FILL_META_DOWN2 = 0;
@@ -522,14 +535,15 @@ public class TerrainState
         return getBitsFromWorldStatically(block.isFlowFiller(), state, world, pos);
     }
    
-    
-    private static long getBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, BlockPos pos)
+    private static long getBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos)
     {
         int centerHeight;
         int sideHeight[] = new int[4];
         int cornerHeight[] = new int[4];
         int yOffset = 0;
     
+        BlockPos.MutableBlockPos mPos = mutablePos.get();
+        
         //        HardScience.log.info("flowstate getBitsFromWorld @" + pos.toString());
     
         int yOrigin = pos.getY();
@@ -540,7 +554,9 @@ public class TerrainState
             int offset = TerrainBlockHelper.getYOffsetFromState(state);
             yOrigin -= offset;
             yOffset = offset;
-            originState = world.getBlockState(pos.down(offset));
+            
+            mPos.setPos(pos.getX(), pos.getY() - offset, pos.getZ());
+            originState = world.getBlockState(mPos);
             if(!TerrainBlockHelper.isFlowHeight(originState.getBlock()))
             {
                 return EMPTY_BLOCK_STATE_KEY;
@@ -553,7 +569,8 @@ public class TerrainState
             //                HardScience.log.info("flowstate is height block");
     
             // try to use block above as height origin
-            originState = world.getBlockState(pos.up().up());
+            mPos.setPos(pos.getX(), pos.getY() + 2, pos.getZ());
+            originState = world.getBlockState(mPos);
             if(TerrainBlockHelper.isFlowHeight(originState.getBlock()))
             {
                 yOrigin += 2;
@@ -562,7 +579,8 @@ public class TerrainState
             }
             else
             {
-                originState = world.getBlockState(pos.up());
+                mPos.setPos(pos.getX(), pos.getY() + 1, pos.getZ());
+                originState = world.getBlockState(mPos);
                 if(TerrainBlockHelper.isFlowHeight(originState.getBlock()))
                 {
                     yOrigin += 1;
@@ -581,16 +599,15 @@ public class TerrainState
         int[][] neighborHeight = new int[3][3];
         neighborHeight[1][1] = TerrainBlockHelper.getFlowHeightFromState(originState);
     
-        MutableBlockPos mutablePos = new MutableBlockPos();
         for(int x = 0; x < 3; x++)
         {
             for(int z = 0; z < 3; z++)
             {
                 if(x == 1 && z == 1 ) continue;
-                mutablePos.setPos(pos.getX() - 1 + x, yOrigin, pos.getZ() - 1 + z);
+                mPos.setPos(pos.getX() - 1 + x, yOrigin, pos.getZ() - 1 + z);
     
                 // use cache if available
-                neighborHeight[x][z] = TerrainBlockHelper.getFlowHeight(world, mutablePos);
+                neighborHeight[x][z] = TerrainBlockHelper.getFlowHeight(world, mPos);
     
             }
         }

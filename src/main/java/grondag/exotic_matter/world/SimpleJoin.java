@@ -9,12 +9,12 @@ public class SimpleJoin
     
     public static final int STATE_COUNT = 64; // 2^6
     
-    public SimpleJoin(NeighborBlocks<?>.NeighborTestResults testResults)
+    public SimpleJoin(NeighborBlocks.NeighborTestResults testResults)
     {
         this.joins = getIndex(testResults);
     }
     
-    public static byte getIndex(NeighborBlocks<?>.NeighborTestResults testResults)
+    public static byte getIndex(NeighborBlocks.NeighborTestResults testResults)
     {
         byte j = 0;
         for(EnumFacing face : EnumFacing.values())

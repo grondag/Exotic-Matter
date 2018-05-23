@@ -15,6 +15,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -100,43 +101,63 @@ public class SuperTileEntity extends TileEntity
         }
     }
  
+    /**
+     * Want to avoid the synchronization penalty of pooled block pos.
+     */
+    private static ThreadLocal<MutableBlockPos> updateClientPos = new ThreadLocal<MutableBlockPos>()
+    {
+        @Override
+        protected MutableBlockPos initialValue()
+        {
+            return new MutableBlockPos();
+        }
+    };
+    
     public void updateClientRenderState()
     {
         this.isModelStateCacheDirty = true;
+        
+        MutableBlockPos mPos = updateClientPos.get();
+        final int x = pos.getX();
+        final int y = pos.getY();
+        final int z = pos.getZ();
+        
+        invalidateClientCache(mPos.setPos(x - 1, y - 1, z - 1));
+        invalidateClientCache(mPos.setPos(x - 1, y - 1, z));
+        invalidateClientCache(mPos.setPos(x - 1, y - 1, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x - 1, y, z - 1));
+        invalidateClientCache(mPos.setPos(x - 1, y, z));
+        invalidateClientCache(mPos.setPos(x - 1, y, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x - 1, y + 1, z - 1));
+        invalidateClientCache(mPos.setPos(x - 1, y + 1, z));
+        invalidateClientCache(mPos.setPos(x - 1, y + 1, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x, y - 1, z - 1));
+        invalidateClientCache(mPos.setPos(x, y - 1, z));
+        invalidateClientCache(mPos.setPos(x, y - 1, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x, y, z - 1));
+        invalidateClientCache(mPos.setPos(x, y, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x, y + 1, z - 1));
+        invalidateClientCache(mPos.setPos(x, y + 1, z));
+        invalidateClientCache(mPos.setPos(x, y + 1, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x + 1, y - 1, z - 1));
+        invalidateClientCache(mPos.setPos(x + 1, y - 1, z));
+        invalidateClientCache(mPos.setPos(x + 1, y - 1, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x + 1, y, z - 1));
+        invalidateClientCache(mPos.setPos(x + 1, y, z));
+        invalidateClientCache(mPos.setPos(x + 1, y, z + 1));
+        
+        invalidateClientCache(mPos.setPos(x + 1, y + 1, z - 1));
+        invalidateClientCache(mPos.setPos(x + 1, y + 1, z));
+        invalidateClientCache(mPos.setPos(x + 1, y + 1, z + 1));
 
-        invalidateClientCache(pos.up());
-        invalidateClientCache(pos.down());
-        invalidateClientCache(pos.east());
-        invalidateClientCache(pos.west());
-        invalidateClientCache(pos.north());
-        invalidateClientCache(pos.south());
-
-        invalidateClientCache(pos.up().east());
-        invalidateClientCache(pos.up().west());
-        invalidateClientCache(pos.up().north());
-        invalidateClientCache(pos.up().south());
-
-        invalidateClientCache(pos.down().east());
-        invalidateClientCache(pos.down().west());
-        invalidateClientCache(pos.down().north());
-        invalidateClientCache(pos.down().south());
-
-        invalidateClientCache(pos.north().east());
-        invalidateClientCache(pos.north().west());
-        invalidateClientCache(pos.south().east());
-        invalidateClientCache(pos.south().west());
-
-        invalidateClientCache(pos.up().north().east());
-        invalidateClientCache(pos.up().south().east());
-        invalidateClientCache(pos.up().north().west());
-        invalidateClientCache(pos.up().south().west());
-
-        invalidateClientCache(pos.down().north().east());
-        invalidateClientCache(pos.down().south().east());
-        invalidateClientCache(pos.down().north().west());
-        invalidateClientCache(pos.down().south().west());
-
-        this.world.markBlockRangeForRenderUpdate(pos.up().north().east(), pos.down().south().west());
+        this.world.markBlockRangeForRenderUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
 
     }
 
@@ -328,7 +349,7 @@ public class SuperTileEntity extends TileEntity
         net.minecraft.util.math.AxisAlignedBB result = this.renderBB;
         if(result == null)
         {
-            result = new net.minecraft.util.math.AxisAlignedBB(getPos().add(-1, 0, -1), getPos().add(1, 1, 1));
+            result = new net.minecraft.util.math.AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
             this.renderBB = result;
         }
         return result; 

@@ -142,7 +142,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      * for this block.  Used in model state refresh from world.
      */
     @Override
-    public IBlockTest<ISuperModelState> blockJoinTest(IBlockAccess worldIn, IBlockState state, BlockPos pos, ISuperModelState modelState)
+    public IBlockTest blockJoinTest(IBlockAccess worldIn, IBlockState state, BlockPos pos, ISuperModelState modelState)
     {
         return new SuperBlockBorderMatch(this, modelState, true);
     }

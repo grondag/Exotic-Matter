@@ -22,7 +22,7 @@ public class CornerJoinFaceSelector
         }
     }
 
-    public int getIndexFromNeighbors(NeighborBlocks<?>.NeighborTestResults tests)
+    public int getIndexFromNeighbors(NeighborBlocks.NeighborTestResults tests)
     {
         return joinIndex[CornerJoinFaceState.find(face, tests).ordinal()];
     }

@@ -227,25 +227,25 @@ public class ModelState implements ISuperModelState
 
             long b3 = bits3;
 
-            NeighborBlocks<ISuperModelState> neighbors = null;
+            NeighborBlocks neighbors = null;
 
             if((STATE_FLAG_NEEDS_CORNER_JOIN & stateFlags) == STATE_FLAG_NEEDS_CORNER_JOIN)
             {
-                neighbors = new NeighborBlocks<>(world, pos, TEST_GETTER_STATIC);
-                NeighborBlocks<ISuperModelState>.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
+                neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
+                NeighborBlocks.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
                 b3 = ModelStateData.P3B_BLOCK_JOIN.setValue(CornerJoinBlockStateSelector.findIndex(tests), b3);
             }
             else if ((STATE_FLAG_NEEDS_SIMPLE_JOIN & stateFlags) == STATE_FLAG_NEEDS_SIMPLE_JOIN)
             {
-                neighbors = new NeighborBlocks<>(world, pos, TEST_GETTER_STATIC);
-                NeighborBlocks<ISuperModelState>.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
+                neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
+                NeighborBlocks.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
                 b3 = ModelStateData.P3B_BLOCK_JOIN.setValue(SimpleJoin.getIndex(tests), b3);
             }
 
             if((STATE_FLAG_NEEDS_MASONRY_JOIN & stateFlags) == STATE_FLAG_NEEDS_MASONRY_JOIN)
             {
-                if(neighbors == null) neighbors = new NeighborBlocks<>(world, pos, TEST_GETTER_STATIC);
-                NeighborBlocks<ISuperModelState>.NeighborTestResults masonryTests = neighbors.getNeighborTestResults(new SuperBlockMasonryMatch((ISuperBlock) state.getBlock(), this.getSpecies(), pos));
+                if(neighbors == null) neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
+                NeighborBlocks.NeighborTestResults masonryTests = neighbors.getNeighborTestResults(new SuperBlockMasonryMatch((ISuperBlock) state.getBlock(), this.getSpecies(), pos));
                 b3 = ModelStateData.P3B_MASONRY_JOIN.setValue(SimpleJoin.getIndex(masonryTests), b3);
             }
 

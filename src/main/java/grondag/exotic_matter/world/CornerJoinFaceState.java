@@ -149,7 +149,7 @@ public enum CornerJoinFaceState
         return fjs;
     }
     
-    public static CornerJoinFaceState find(EnumFacing face, NeighborBlocks<?>.NeighborTestResults tests)
+    public static CornerJoinFaceState find(EnumFacing face, NeighborBlocks.NeighborTestResults tests)
     {
         int faceFlags = 0;
         int cornerFlags = 0;

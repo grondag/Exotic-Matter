@@ -28,7 +28,7 @@ public class CornerJoinBlockStateSelector
         }
     }
     
-    public static int findIndex(NeighborBlocks<?>.NeighborTestResults tests)
+    public static int findIndex(NeighborBlocks.NeighborTestResults tests)
     {
         SimpleJoin baseJoin = new SimpleJoin(tests);
         return BLOCK_JOIN_SELECTOR[baseJoin.getIndex()].getIndexFromNeighbors(tests);
@@ -66,7 +66,7 @@ public class CornerJoinBlockStateSelector
         return count;
     }
     
-    private int getIndexFromNeighbors(NeighborBlocks<?>.NeighborTestResults tests)
+    private int getIndexFromNeighbors(NeighborBlocks.NeighborTestResults tests)
     {
         int index = 0;
         int shift = 1;

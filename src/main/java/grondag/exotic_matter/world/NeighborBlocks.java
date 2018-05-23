@@ -1,9 +1,12 @@
 package grondag.exotic_matter.world;
 
+import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.IBlockAccess;
 
 /**
@@ -12,7 +15,7 @@ import net.minecraft.world.IBlockAccess;
  * Position is immutable, blockstates are looked up lazily 
  * and values are cached for reuse.
  */
-public class NeighborBlocks<T>
+public class NeighborBlocks
 {
 
     public final static int[] FACE_FLAGS = new int[]{1, 2, 4, 8, 16, 32};
@@ -21,26 +24,30 @@ public class NeighborBlocks<T>
     private final static int STATE_COUNT = 6 + 12 + 8;
     
     private IBlockState blockStates[] = new IBlockState[STATE_COUNT];
-    private Object modelStates[] = new Object[STATE_COUNT];
+    private ISuperModelState modelStates[] = new ISuperModelState[STATE_COUNT];
 
 
     private final IBlockAccess world;
-    private final BlockPos pos;
-    private final IExtraStateFactory<T> factory;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final IExtraStateFactory factory;
+    private final MutableBlockPos mutablePos = new MutableBlockPos();
 
     /**
      * Gathers blockstates for adjacent positions as needed.
      */
-    @SuppressWarnings("unchecked")
     public NeighborBlocks(IBlockAccess worldIn, BlockPos pos) 
     {
-        this(worldIn, pos, (IExtraStateFactory<T>) IExtraStateFactory.NONE );
+        this(worldIn, pos, (IExtraStateFactory) IExtraStateFactory.NONE );
     }
 
-    public NeighborBlocks(IBlockAccess worldIn, BlockPos pos, IExtraStateFactory<T> factory) 
+    public NeighborBlocks(IBlockAccess worldIn, BlockPos pos, IExtraStateFactory factory) 
     {
         this.world = worldIn;
-        this.pos = pos;
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
         this.factory = factory;
     }
     
@@ -49,11 +56,14 @@ public class NeighborBlocks<T>
     //////////////////////////////
     public IBlockState getBlockState(EnumFacing face)
     {
-        if(blockStates[face.ordinal()] == null)
+        IBlockState result = blockStates[face.ordinal()];
+        if(result == null)
         {
-            blockStates[face.ordinal()] = world.getBlockState(pos.add(face.getDirectionVec()));
+            final Vec3i vec = face.getDirectionVec();
+            result = world.getBlockState(mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
+            blockStates[face.ordinal()] = result;
         }
-        return blockStates[face.ordinal()];
+        return result;
     }
 
     public IBlockState getBlockState(HorizontalFace face)
@@ -92,11 +102,14 @@ public class NeighborBlocks<T>
     }
     public IBlockState getBlockState(BlockCorner corner)
     {
-        if(blockStates[corner.superOrdinal] == null)
+        IBlockState result = blockStates[corner.superOrdinal];
+        if(result == null)
         {
-            blockStates[corner.superOrdinal] = world.getBlockState(pos.add(corner.directionVector));
+            final Vec3i vec = corner.directionVector;
+            result = world.getBlockState(mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
+            blockStates[corner.superOrdinal] = result;
         }
-        return blockStates[corner.superOrdinal];
+        return result;
     }
 
     public IBlockState getBlockState(EnumFacing face1, EnumFacing face2, EnumFacing face3)
@@ -107,108 +120,101 @@ public class NeighborBlocks<T>
 
     public IBlockState getBlockState(FarCorner corner)
     {
-        if(blockStates[corner.superOrdinal] == null)
+        IBlockState result = blockStates[corner.superOrdinal];
+        if(result == null)
         {
-            blockStates[corner.superOrdinal] = world.getBlockState(pos.add(corner.directionVector));
+            final Vec3i vec = corner.directionVector;
+            result = world.getBlockState(mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
+            blockStates[corner.superOrdinal] = result;
         }
-        return blockStates[corner.superOrdinal];
+        return result;
     }
     
     //////////////////////////////
     // MODEL STATE
     //////////////////////////////
-    @SuppressWarnings("unchecked")
-    public T getModelState(EnumFacing face)
+    
+    public ISuperModelState getModelState(EnumFacing face)
     {
-        if(modelStates[face.ordinal()] == null)
+        ISuperModelState result = modelStates[face.ordinal()];
+        if(result == null)
         {
-            modelStates[face.ordinal()] = this.factory.get(this.world, pos.add(face.getDirectionVec()), this.getBlockState(face));
-
-//            IBlockState state = this.getBlockState(face);
-//            Block block = state.getBlock();
-//            if(block instanceof SuperBlock)
-//            {
-//                modelStates[face.ordinal()] = ((SuperBlock)block).getModelStateAssumeStateIsCurrent(state, this.world, pos.add(face.getDirectionVec()), this.refreshModelStateFromWorld);
-//            }
+            IBlockState state = this.getBlockState(face);
+            final Vec3i vec = face.getDirectionVec();
+            mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
+            result = this.factory.get(this.world, mutablePos, state);
+            modelStates[face.ordinal()] = result;
         }
-        return (T) modelStates[face.ordinal()];
+        return result;
     }
 
-    public T getModelState(HorizontalFace face)
+    public ISuperModelState getModelState(HorizontalFace face)
     {
         return getModelState(face.face);
     }
 
-    public T getModelStateUp(HorizontalFace face)
+    public ISuperModelState getModelStateUp(HorizontalFace face)
     {
         return getModelState(face.face, EnumFacing.UP);
     }
 
-    public T getModelStateDown(HorizontalFace face)
+    public ISuperModelState getModelStateDown(HorizontalFace face)
     {
         return getModelState(face.face, EnumFacing.DOWN);
     }
-    public T getModelState(EnumFacing face1, EnumFacing face2)
+    public ISuperModelState getModelState(EnumFacing face1, EnumFacing face2)
     {
         BlockCorner corner = BlockCorner.find(face1, face2);
         return getModelState(corner);
     }
 
-    public T getModelState(HorizontalCorner corner)
+    public ISuperModelState getModelState(HorizontalCorner corner)
     {
         return getModelState(corner.face1.face, corner.face2.face);
     }
 
-    public T getModelStateUp(HorizontalCorner corner)
+    public ISuperModelState getModelStateUp(HorizontalCorner corner)
     {
         return getModelState(corner.face1.face, corner.face2.face, EnumFacing.UP);
     }
 
-    public T getModelStateDown(HorizontalCorner corner)
+    public ISuperModelState getModelStateDown(HorizontalCorner corner)
     {
         return getModelState(corner.face1.face, corner.face2.face, EnumFacing.DOWN);
     }
     
-    @SuppressWarnings("unchecked")
-    public T getModelState(BlockCorner corner)
+    public ISuperModelState getModelState(BlockCorner corner)
     {
-        if(modelStates[corner.superOrdinal] == null)
+        ISuperModelState result = modelStates[corner.superOrdinal];
+        if(result == null)
         {
-            modelStates[corner.superOrdinal] = this.factory.get(this.world, pos.add(corner.directionVector), this.getBlockState(corner));
+            IBlockState state = this.getBlockState(corner);
+            final Vec3i vec = corner.directionVector;
+            mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
+            result = this.factory.get(this.world, mutablePos, state);
+            modelStates[corner.superOrdinal] = result;
         }
-//        if(modelStates[corner.superOrdinal] == null)
-//        {
-//            IBlockState state = this.getBlockState(corner);
-//            Block block = state.getBlock();
-//            if(block instanceof SuperBlock)
-//            {
-//                modelStates[corner.superOrdinal] = ((SuperBlock)block).getModelStateAssumeStateIsCurrent(state, this.world, pos.add(corner.directionVector), this.refreshModelStateFromWorld);
-//            }
-//        }
-        return (T) modelStates[corner.superOrdinal];
+        return result;
     }
 
-    public T getModelState(EnumFacing face1, EnumFacing face2, EnumFacing face3)
+    public ISuperModelState getModelState(EnumFacing face1, EnumFacing face2, EnumFacing face3)
     {
         FarCorner corner = FarCorner.find(face1, face2, face3);
         return getModelState(corner);
     }
 
-    @SuppressWarnings("unchecked")
-    public T getModelState(FarCorner corner)
+    public ISuperModelState getModelState(FarCorner corner)
     {
-        if(modelStates[corner.superOrdinal] == null)
+        ISuperModelState result = modelStates[corner.superOrdinal];
+        if(result == null)
         {
-            modelStates[corner.superOrdinal] = this.factory.get(this.world, pos.add(corner.directionVector), this.getBlockState(corner));
-
-//            IBlockState state = this.getBlockState(corner);
-//            Block block = state.getBlock();
-//            if(block instanceof SuperBlock)
-//            {
-//                modelStates[corner.superOrdinal] = ((SuperBlock)block).getModelStateAssumeStateIsCurrent(state, this.world, pos.add(corner.directionVector), this.refreshModelStateFromWorld);
-//            }
+            IBlockState state = this.getBlockState(corner);
+            final Vec3i vec = corner.directionVector;
+            mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
+            result = this.factory.get(this.world, mutablePos, state);
+            modelStates[corner.superOrdinal] = result;
         }
-        return (T) modelStates[corner.superOrdinal];
+        return result;
     }
 
     //////////////////////////////
@@ -218,7 +224,7 @@ public class NeighborBlocks<T>
     /**
      * Apply given test to neighboring block states.
      */
-    public NeighborTestResults getNeighborTestResults(IBlockTest<T> test) {
+    public NeighborTestResults getNeighborTestResults(IBlockTest test) {
         return new NeighborTestResults(test);
     }
 
@@ -236,13 +242,14 @@ public class NeighborBlocks<T>
     {
         private int completionFlags = 0;
         private int resultFlags = 0;
-        private final IBlockTest<T> test;
+        private final IBlockTest test;
 
-        private NeighborTestResults(IBlockTest<T> test) {
+        private NeighborTestResults(IBlockTest test) {
             this.test = test;
         }
 
         // for testing
+        @SuppressWarnings("null")
         private NeighborTestResults(int faceFlags)
         {
             this.test = null;
@@ -252,37 +259,49 @@ public class NeighborBlocks<T>
         
         private boolean doTest(EnumFacing face)
         {
+            IBlockState state = getBlockState(face);
+            final Vec3i vec = face.getDirectionVec();
+            
             if(test.wantsModelState())
             {
-                return test.testBlock(face, world, getBlockState(face), pos.add(face.getDirectionVec()), getModelState(face));
+                ISuperModelState modelState = getModelState(face);
+                return test.testBlock(face, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()), modelState);
             }
             else
             {
-                return test.testBlock(face, world, getBlockState(face), pos.add(face.getDirectionVec()));
+                return test.testBlock(face, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
             }
         }
         
         private boolean doTest(BlockCorner corner)
         {
+            IBlockState state = getBlockState(corner);
+            final Vec3i vec = corner.directionVector;
+            
             if(test.wantsModelState())
             {
-                return test.testBlock(corner, world, getBlockState(corner), pos.add(corner.directionVector), getModelState(corner));
+                ISuperModelState modelState = getModelState(corner);
+                return test.testBlock(corner, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()), modelState);
             }
             else
             {
-                return test.testBlock(corner, world, getBlockState(corner), pos.add(corner.directionVector));
+                return test.testBlock(corner, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
             }
         }
         
         private boolean doTest(FarCorner corner)
         {
+            IBlockState state = getBlockState(corner);
+            final Vec3i vec = corner.directionVector;
+            
             if(test.wantsModelState())
             {
-                return test.testBlock(corner, world, getBlockState(corner), pos.add(corner.directionVector), getModelState(corner));
+                ISuperModelState modelState = getModelState(corner);
+                return test.testBlock(corner, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()), modelState);
             }
             else
             {
-                return test.testBlock(corner, world, getBlockState(corner), pos.add(corner.directionVector));
+                return test.testBlock(corner, world, state, mutablePos.setPos(x + vec.getX(), y + vec.getY(), z + vec.getZ()));
             }
         }
         
