@@ -21,19 +21,35 @@ public class SimpleThreadPoolExecutor
         /**
          * Returns true if more work remains.
          */
-        public void doSomeWork();
+        public boolean doSomeWork(int batchIndex);
         
-        public boolean hasWork();
+        /**
+         * If true, won't use parallel execution.
+         */
+        public boolean isSingleBatch();
     }
 
     private static final ISharableTask DUMMY_TASK = new ISharableTask()
     {
         @Override
-        public void doSomeWork() {  }
+        public boolean doSomeWork(int batchIndex) { return false; }
 
         @Override
-        public boolean hasWork() { return false; }
+        public boolean isSingleBatch() { return true; }
+
     };
+    
+    private static final long nextBatchIndexOffset;
+
+    static
+    {
+        try 
+        {
+            nextBatchIndexOffset = UNSAFE.objectFieldOffset
+                    (SimpleThreadPoolExecutor.class.getDeclaredField("nextBatchIndex"));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+    
     
     @SuppressWarnings("unused")
     private final ImmutableList<Thread> threads;
@@ -47,6 +63,9 @@ public class SimpleThreadPoolExecutor
     private final ReadWriteLock completionLock = new ReentrantReadWriteLock();
     
     private final Lock completionWriteLock = SimpleThreadPoolExecutor.this.completionLock.writeLock();
+    
+    @SuppressWarnings("unused")
+    private volatile int nextBatchIndex;
     
     public SimpleThreadPoolExecutor()
     {
@@ -64,6 +83,11 @@ public class SimpleThreadPoolExecutor
             thread.start();
         }
         this.threads = builder.build();
+    }
+    
+    private final int getNextBatchIndex()
+    {
+        return UNSAFE.getAndAddInt(this, nextBatchIndexOffset, 1);
     }
     
     public void stop()
@@ -87,29 +111,28 @@ public class SimpleThreadPoolExecutor
             {
                 final ISharableTask t = thingNeedingDone;
                 
-                completionLock.lock();
-                do
+                if(t != DUMMY_TASK)
                 {
+                    completionLock.lock();
                     try
                     { 
-                        t.doSomeWork();
+                        while(t.doSomeWork(getNextBatchIndex())) {};
                     }
                     catch (Exception e) 
                     { 
                         ExoticMatter.INSTANCE.error("Unhandled error during concurrent processing. Impact unknown.", e);
                     }
-                } while(t.hasWork());
-                
-                completionLock.unlock();
+                    completionLock.unlock();
+                }
                 
                 synchronized(lock)
                 {
                     try
                     {
-                        while (running && !thingNeedingDone.hasWork())
+                        do
                         {
                             lock.wait();
-                        }
+                        } while (running && thingNeedingDone == DUMMY_TASK);
                     }
                     catch (InterruptedException e)  { }
                 }
@@ -118,89 +141,117 @@ public class SimpleThreadPoolExecutor
 
     }
     
-    public void completeTask(ISharableTask task)
+    public final <V> void completeTask (V[] inputs, Consumer<V> operation, int startIndex, int endIndex, int concurrencyThreshold)
+    {
+        if(endIndex - startIndex <= concurrencyThreshold)
+        {
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                operation.accept(inputs[i]);
+            }
+        }
+        else
+        {
+            this.completeTaskParallel(new ArrayTask<>(inputs, operation, startIndex, endIndex));
+        }
+    }
+   
+    public final <V> void completeTask(V[] inputs, Consumer<V> operation, int startIndex, int endIndex)
+    {
+        completeTask(inputs, operation, startIndex, endIndex, 200);
+    }
+    
+    public final <V> void completeTask(V[] inputs, Consumer<V> operation)
+    {
+        completeTask(inputs, operation, 0, inputs.length);
+    }
+    
+    public final <V> void completeTask(V[] inputs, Consumer<V> operation, int concurrencyThreshold)
+    {
+        completeTask(inputs, operation, 0, inputs.length, concurrencyThreshold);
+    }
+    
+    public final void completeTask(ISharableTask task)
+    {
+        if(task.isSingleBatch())
+        {
+            try
+            { 
+                task.doSomeWork(0);
+            }
+            catch (Exception e) 
+            { 
+                ExoticMatter.INSTANCE.error("Unhandled error during concurrent processing. Impact unknown.", e);
+            }
+        }
+        else completeTaskParallel(task);
+    }
+    
+    private void completeTaskParallel(ISharableTask task)
     {
         this.thingNeedingDone = task;
         
+        // first batch always belongs to control thread
+        this.nextBatchIndex = 1;
+        
+        // wake up worker threads
         synchronized(startLock)
         {
             startLock.notifyAll();
         }
         
-        do
-        {
-            try
-            { 
-                task.doSomeWork();
+        try
+        { 
+            if(task.doSomeWork(0))
+            {
+                while(task.doSomeWork(getNextBatchIndex())) {};
             }
-            catch (Exception e) 
-            { 
-                e.printStackTrace();
-            }
-        } while(task.hasWork());
+        }
+        catch (Exception e) 
+        { 
+            ExoticMatter.INSTANCE.error("Unhandled error during concurrent processing. Impact unknown.", e);
+        }
        
-        completionWriteLock.lock();
-        
-        // don't hold reference
+        // don't hold reference & prevent restart of worker threads
         this.thingNeedingDone = DUMMY_TASK;
-        
+
+        // await completion of worker threads
+        completionWriteLock.lock();
         completionWriteLock.unlock();
     }
     
-    private static final long startIndexOffset;
-
-    static
-    {
-        try 
-        {
-            startIndexOffset = UNSAFE.objectFieldOffset
-                (ArrayTask.class.getDeclaredField("startIndex"));
-        } catch (Exception ex) { throw new Error(ex); }
-    }
-    
-    public static class ArrayTask<T> implements ISharableTask
+    protected static class ArrayTask<T> implements ISharableTask
     {
         protected final T[] theArray;
-        protected volatile int startIndex;
         protected final int endIndex;
         protected final int batchSize;
         protected final Consumer<T> operation;
         
-        public ArrayTask(T[] inputs, Consumer<T> operation, int startIndex, int endIndex, int batchSize)
+        protected ArrayTask(final T[] inputs, final Consumer<T> operation, final int startIndex, final int endIndex)
         {
             this.theArray = inputs;
-            this.startIndex = startIndex;
             this.endIndex = endIndex;
-            this.batchSize = batchSize;
+            this.batchSize = Math.max(1, (endIndex - startIndex) / 64);
             this.operation = operation;
-        }
-       
-        public ArrayTask(T[] inputs, Consumer<T> operation, int startIndex, int endIndex)
-        {
-            this(inputs, operation, startIndex, endIndex, Math.max(1, (endIndex - startIndex) / 64));
-        }
-        
-        public ArrayTask(T[] inputs, Consumer<T> operation)
-        {
-            this(inputs, operation, 0, inputs.length);
         }
         
         @Override
-        public final void doSomeWork()
+        public final boolean doSomeWork(final int batchIndex)
         {
-            int start = UNSAFE.getAndAddInt(this, startIndexOffset, batchSize);
-            final int end = Math.min(this.endIndex, start + batchSize);
+            int start = batchIndex * batchSize;
+            final int end = Math.min(endIndex, start + batchSize);
             for(; start < end; start++)
             {
                 operation.accept(theArray[start]);
             }
-//            System.out.println("Confirming stupid run of " + start + " to " + end + " on " + Thread.currentThread().getName());
+//            System.out.println("Confirming stimple run of " + start + " to " + end + " on " + Thread.currentThread().getName());
+            return end < endIndex;
         }
 
         @Override
-        public final boolean hasWork()
+        public boolean isSingleBatch()
         {
-            return startIndex < endIndex;
+            return endIndex <= batchSize;
         }
     }
 }

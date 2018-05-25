@@ -13,12 +13,13 @@ import org.junit.Test;
 
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
 import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor;
-import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor.ArrayTask;
 
 public class ThreadPoolTest
 {
+    @SuppressWarnings("null")
     SimpleConcurrentList<TestSubject> bigThings =  SimpleConcurrentList.create(TestSubject.class, false, "blort", null);
     
+    @SuppressWarnings("null")
     SimpleConcurrentList<TestSubject> smallThings =  SimpleConcurrentList.create(TestSubject.class, false, "blort", null);
     
     {
@@ -27,7 +28,7 @@ public class ThreadPoolTest
             bigThings.add(new TestSubject());
         }
         
-        for(int i = 0; i < 100; i++)
+        for(int i = 0; i < 1000; i++)
         {
             smallThings.add(new TestSubject());
         }
@@ -35,6 +36,7 @@ public class ThreadPoolTest
     
     private class TestSubject 
     {
+        @SuppressWarnings("unused")
         private int data;
         
         public void doSomething()
@@ -78,9 +80,10 @@ public class ThreadPoolTest
         System.out.println("Warm ups");
         for(int i = 0; i < 10; i++)
         {
-            SIMPLE_POOL.completeTask(new ArrayTask<>(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size()));
+            SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size());
+            SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size(), smallThings.size());
             this.SIMULATION_POOL.submit(() -> smallThings.stream(true).forEach(t -> t.doSomething())).get();
-            SIMPLE_POOL.completeTask(new ArrayTask<>(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size()));
+            SIMPLE_POOL.completeTask(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size());
             this.SIMULATION_POOL.submit(() -> bigThings.stream(true).forEach(t -> t.doSomething())).get();
         }
         System.out.println("");
@@ -90,6 +93,7 @@ public class ThreadPoolTest
         long iSmall = 0;
         long iBig = 0;
         long nanosSmallSimple = 0;
+        long nanosSmallSimpleSingleBatch = 0;
         long nanosSmallStream = 0;
         long nanosBigSimple = 0;
         long nanosBigStream = 0;
@@ -97,9 +101,14 @@ public class ThreadPoolTest
         while(true)
         {
             long start = System.nanoTime();
-            SIMPLE_POOL.completeTask(new ArrayTask<>(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size()));
+            SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size());
             long end = System.nanoTime();
             nanosSmallSimple += (end - start);
+            
+            start = System.nanoTime();
+            SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size(), smallThings.size());
+            end = System.nanoTime();
+            nanosSmallSimpleSingleBatch += (end - start);
             
             start = System.nanoTime();
             this.SIMULATION_POOL.submit(() -> smallThings.stream(true).forEach(t -> t.doSomething())).get();
@@ -107,7 +116,7 @@ public class ThreadPoolTest
             nanosSmallStream += (end - start);
             
             start = System.nanoTime();
-            SIMPLE_POOL.completeTask(new ArrayTask<>(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size()));
+            SIMPLE_POOL.completeTask(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size());
             end = System.nanoTime();
             nanosBigSimple += (end - start);
             
@@ -120,6 +129,7 @@ public class ThreadPoolTest
             iBig += this.bigThings.size();
             System.out.println("Avg Small Stream = "  + nanosSmallStream / (double)iSmall);
             System.out.println("Avg Small Simple = "  + nanosSmallSimple / (double)iSmall);
+            System.out.println("Avg Small Simple Single Batch = "  + nanosSmallSimpleSingleBatch / (double)iSmall);
             System.out.println("Avg Big Stream = "  + nanosBigStream / (double)iBig);
             System.out.println("Avg Big Simple = "  + nanosBigSimple / (double)iBig);
             System.out.println("");
