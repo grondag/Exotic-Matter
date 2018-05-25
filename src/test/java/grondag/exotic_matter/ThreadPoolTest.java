@@ -1,7 +1,6 @@
 package grondag.exotic_matter;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
@@ -12,61 +11,38 @@ import javax.annotation.Nullable;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.concurrency.CountedJob;
-import grondag.exotic_matter.concurrency.JobTask;
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
-import net.minecraft.util.math.Vec3d;
+import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor;
+import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor.ArrayTask;
 
 public class ThreadPoolTest
 {
-    final int SIZE = 1000000;
-    SimpleConcurrentList<TestSubject> things =  SimpleConcurrentList.create(TestSubject.class, false, "blort", null);
+    SimpleConcurrentList<TestSubject> bigThings =  SimpleConcurrentList.create(TestSubject.class, false, "blort", null);
     
-    TestSubject[] thingArray;
+    SimpleConcurrentList<TestSubject> smallThings =  SimpleConcurrentList.create(TestSubject.class, false, "blort", null);
     
-    final Random r = new Random(5);
-    
-    private final JobTask<TestSubject> jobTask = new JobTask<TestSubject>() 
     {
-        @Override
-        public void doJobTask(TestSubject operand)
+        for(int i = 0; i < 1000000; i++)
         {
-            operand.doSomething();
+            bigThings.add(new TestSubject());
         }
-    };
-    
-    private CountedJob<TestSubject> job = new CountedJob<TestSubject>(this.things, this.jobTask, 200, 
-            false, "Dothings", null);
-    
-    private final AtomicInteger[] externals = new AtomicInteger[16];
-    
-    private class TestSubject extends Vec3d
-    {
-        private final AtomicInteger externalRef;
         
-        public TestSubject(double xIn, double yIn, double zIn)
+        for(int i = 0; i < 100; i++)
         {
-            super(xIn, yIn, zIn);
-            this.externalRef = externals[((int)xIn) & 0xF];
+            smallThings.add(new TestSubject());
         }
+    }
+    
+    private class TestSubject 
+    {
+        private int data;
         
         public void doSomething()
         {
-            // just a bunch of garbage
-            final int i = this.externalRef.getAndIncrement();
-            Vec3d other = new Vec3d(i, -i, i * 2).normalize();
-            this.externalRef.addAndGet((int) Math.abs(this.dotProduct(other)));
-            
+            data++;
         }
     }
     
-    private void clearExternals()
-    {
-        for(int i = 0; i < this.externals.length; i++)
-        {
-            this.externals[i].set(1);
-        }
-    }
     
     final ForkJoinPool SIMULATION_POOL = new ForkJoinPool(
             Runtime.getRuntime().availableProcessors(),
@@ -91,88 +67,62 @@ public class ThreadPoolTest
                 }}, 
             true);
     
-    public ThreadPoolTest()
-    {
-        for(int i = 0; i < this.externals.length; i++)
-        {
-            this.externals[i] = new AtomicInteger();
-        }
-    }
+    final SimpleThreadPoolExecutor SIMPLE_POOL = new SimpleThreadPoolExecutor();
     
-    private void expandList(int howMany)
-    {
-        for(int i = 0; i < howMany; i++)
-        {
-            things.add(new TestSubject(r.nextDouble(), r.nextDouble(), r.nextDouble()));
-        }
-    }
+    
     
     @Test
     public void test() throws InterruptedException, ExecutionException
     {
-        this.expandList(1000);
         
         System.out.println("Warm ups");
         for(int i = 0; i < 10; i++)
         {
-            this.runSingle();
-            this.runParallel();
-            this.runJob();
+            SIMPLE_POOL.completeTask(new ArrayTask<>(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size()));
+            this.SIMULATION_POOL.submit(() -> smallThings.stream(true).forEach(t -> t.doSomething())).get();
+            SIMPLE_POOL.completeTask(new ArrayTask<>(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size()));
+            this.SIMULATION_POOL.submit(() -> bigThings.stream(true).forEach(t -> t.doSomething())).get();
         }
         System.out.println("");
         System.out.println("");
         
-        for(int i = 0; i < 1000; i++)
+        
+        long iSmall = 0;
+        long iBig = 0;
+        long nanosSmallSimple = 0;
+        long nanosSmallStream = 0;
+        long nanosBigSimple = 0;
+        long nanosBigStream = 0;
+        
+        while(true)
         {
-            this.runSingle();
-            this.runParallel();
-            this.runJob();
-            System.out.println("");
+            long start = System.nanoTime();
+            SIMPLE_POOL.completeTask(new ArrayTask<>(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size()));
+            long end = System.nanoTime();
+            nanosSmallSimple += (end - start);
             
-            this.expandList(1000);
+            start = System.nanoTime();
+            this.SIMULATION_POOL.submit(() -> smallThings.stream(true).forEach(t -> t.doSomething())).get();
+            end = System.nanoTime();
+            nanosSmallStream += (end - start);
+            
+            start = System.nanoTime();
+            SIMPLE_POOL.completeTask(new ArrayTask<>(bigThings.getOperands(), t -> t.doSomething(), 0, bigThings.size()));
+            end = System.nanoTime();
+            nanosBigSimple += (end - start);
+            
+            start = System.nanoTime();
+            this.SIMULATION_POOL.submit(() -> bigThings.stream(true).forEach(t -> t.doSomething())).get();
+            end = System.nanoTime();
+            nanosBigStream += (end - start);
+            
+            iSmall += this.smallThings.size();
+            iBig += this.bigThings.size();
+            System.out.println("Avg Small Stream = "  + nanosSmallStream / (double)iSmall);
+            System.out.println("Avg Small Simple = "  + nanosSmallSimple / (double)iSmall);
+            System.out.println("Avg Big Stream = "  + nanosBigStream / (double)iBig);
+            System.out.println("Avg Big Simple = "  + nanosBigSimple / (double)iBig);
+            System.out.println("");
         }
     }
-    
-    private void runSingle()
-    {
-        System.out.println("Running single thread, count = " + things.size());
-        this.clearExternals();
-        long start = System.nanoTime();
-        things.stream(false).forEach(t -> t.doSomething());
-        long end = System.nanoTime();
-        System.out.println("Avg ns per run: " + (end - start) / things.size());
-    }
-
-    private void runParallel() throws InterruptedException, ExecutionException
-    {
-        System.out.println("Running parallel, count = " + things.size());
-        this.clearExternals();
-        long start = System.nanoTime();
-        this.SIMULATION_POOL.submit(() -> things.stream(true).forEach(t -> t.doSomething())).get();
-        long end = System.nanoTime();
-        System.out.println("Avg ns per run: " + (end - start) / things.size());
-    }
-    
-    private void runStreaming() throws InterruptedException, ExecutionException
-    {
-        System.out.println("Running parallel stream");
-        long start = System.nanoTime();
-        if(things.size() > 1600)
-            this.SIMULATION_POOL.submit(() -> things.stream(true).forEach(t -> t.doSomething())).get();
-        else
-            things.stream(false).forEach(t -> t.doSomething());
-            
-        long end = System.nanoTime();
-        System.out.println("Avg ns per run: " + (end - start) / SIZE);
-    }
-    
-    private void runJob()
-    {
-        System.out.println("Running counted job, count = " + things.size());
-        long start = System.nanoTime();
-        this.job.runOn(SIMULATION_POOL);
-        long end = System.nanoTime();
-        System.out.println("Avg ns per run: " + (end - start) / things.size());
-    }
-    
 }
