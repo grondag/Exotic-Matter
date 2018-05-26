@@ -15,7 +15,9 @@ public class SimpleThreadPoolExecutor
 {
     @SuppressWarnings("null")
     private static final Unsafe UNSAFE = Danger.UNSAFE;
-            
+    
+    public static final int POOL_SIZE = Runtime.getRuntime().availableProcessors() - 1;
+    
     public static interface ISharableTask
     {
         /**
@@ -69,11 +71,9 @@ public class SimpleThreadPoolExecutor
     
     public SimpleThreadPoolExecutor()
     {
-        final int poolSize = Runtime.getRuntime().availableProcessors() - 1;
-        
         ImmutableList.Builder<Thread> builder = ImmutableList.builder();
         
-        for(int i = 0; i < poolSize; i++)
+        for(int i = 0; i < POOL_SIZE; i++)
         {
             Thread thread = new Thread(
                     new DoerOfThings(), 
@@ -222,36 +222,44 @@ public class SimpleThreadPoolExecutor
     
     protected static class ArrayTask<T> implements ISharableTask
     {
+        protected static final int SPLIT = (POOL_SIZE + 1) * 4;
         protected final T[] theArray;
         protected final int endIndex;
         protected final int batchSize;
+        protected final int batchCount;
         protected final Consumer<T> operation;
         
         protected ArrayTask(final T[] inputs, final Consumer<T> operation, final int startIndex, final int endIndex)
         {
             this.theArray = inputs;
             this.endIndex = endIndex;
-            this.batchSize = Math.max(1, (endIndex - startIndex) / 64);
+            final int size = endIndex - startIndex;
+            this.batchSize = Math.max(1, size / SPLIT);
+            this.batchCount  = (size + batchSize - 1) / batchSize;
             this.operation = operation;
         }
         
         @Override
         public final boolean doSomeWork(final int batchIndex)
         {
-            int start = batchIndex * batchSize;
-            final int end = Math.min(endIndex, start + batchSize);
-            for(; start < end; start++)
+            if(batchIndex < batchCount)
             {
-                operation.accept(theArray[start]);
-            }
-//            System.out.println("Confirming stimple run of " + start + " to " + end + " on " + Thread.currentThread().getName());
-            return end < endIndex;
+                int start = batchIndex * batchSize;
+                final int end = Math.min(endIndex, start + batchSize);
+                for(; start < end; start++)
+                {
+                    operation.accept(theArray[start]);
+                }
+    //            System.out.println("Confirming simple run of " + start + " to " + end + " on " + Thread.currentThread().getName());
+                return end < endIndex;
+            } 
+            else return false;
         }
 
         @Override
         public boolean isSingleBatch()
         {
-            return endIndex <= batchSize;
+            return this.batchCount <= 1;
         }
     }
 }

@@ -78,7 +78,7 @@ public class ThreadPoolTest
     {
         
         System.out.println("Warm ups");
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 50; i++)
         {
             SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size());
             SIMPLE_POOL.completeTask(smallThings.getOperands(), t -> t.doSomething(), 0, smallThings.size(), smallThings.size());
