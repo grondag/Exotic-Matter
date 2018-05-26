@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.concurrency.PerformanceCounter;
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
+import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
@@ -100,11 +101,15 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         nodeTypes.add(nodeType);
     }
     
+    
+    public static final SimpleThreadPoolExecutor SIMPLE_POOL = new SimpleThreadPoolExecutor();
+    
     /**
      * General-purpose thread pool. Use for any simulation-related activity
      * so long as it doesn't have specific timing or sequencing requirements.
      */
     @SuppressWarnings("null")
+    @Deprecated
     public static final ForkJoinPool SIMULATION_POOL = new ForkJoinPool(
             Runtime.getRuntime().availableProcessors(),
             new ForkJoinWorkerThreadFactory()

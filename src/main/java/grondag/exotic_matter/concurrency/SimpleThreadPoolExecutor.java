@@ -3,11 +3,13 @@ package grondag.exotic_matter.concurrency;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")
@@ -25,10 +27,7 @@ public class SimpleThreadPoolExecutor
          */
         public boolean doSomeWork(int batchIndex);
         
-        /**
-         * If true, won't use parallel execution.
-         */
-        public boolean isSingleBatch();
+        public void onThreadComplete();
     }
 
     private static final ISharableTask DUMMY_TASK = new ISharableTask()
@@ -37,8 +36,7 @@ public class SimpleThreadPoolExecutor
         public boolean doSomeWork(int batchIndex) { return false; }
 
         @Override
-        public boolean isSingleBatch() { return true; }
-
+        public void onThreadComplete() { }
     };
     
     private static final long nextBatchIndexOffset;
@@ -117,6 +115,7 @@ public class SimpleThreadPoolExecutor
                     try
                     { 
                         while(t.doSomeWork(getNextBatchIndex())) {};
+                        t.onThreadComplete();
                     }
                     catch (Exception e) 
                     { 
@@ -152,7 +151,7 @@ public class SimpleThreadPoolExecutor
         }
         else
         {
-            this.completeTaskParallel(new ArrayTask<>(inputs, operation, startIndex, endIndex));
+            this.completeTask(new ArrayTask<>(inputs, operation, startIndex, endIndex));
         }
     }
    
@@ -171,23 +170,40 @@ public class SimpleThreadPoolExecutor
         completeTask(inputs, operation, 0, inputs.length, concurrencyThreshold);
     }
     
-    public final void completeTask(ISharableTask task)
+    public final <T, V> void completeTask (final T[] inputs, final ArrayMappingConsumer<T,V> operation, final int startIndex, final int endIndex, final int concurrencyThreshold)
     {
-        if(task.isSingleBatch())
+        if(endIndex - startIndex <= concurrencyThreshold)
         {
-            try
-            { 
-                task.doSomeWork(0);
+            final Consumer<T> consumer = operation.getWorker();
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                consumer.accept(inputs[i]);
             }
-            catch (Exception e) 
-            { 
-                ExoticMatter.INSTANCE.error("Unhandled error during concurrent processing. Impact unknown.", e);
-            }
+            operation.completeThread();
         }
-        else completeTaskParallel(task);
+        else
+        {
+            this.completeTask(new ArrayMappingTask<>(inputs, operation, startIndex, endIndex));
+        }
     }
     
-    private void completeTaskParallel(ISharableTask task)
+    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V>operation, int startIndex, int endIndex)
+    {
+        completeTask(inputs, operation, startIndex, endIndex, 200);
+    }
+    
+    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V> operation)
+    {
+        completeTask(inputs, operation, 0, inputs.length);
+    }
+    
+    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V> operation, int concurrencyThreshold)
+    {
+        completeTask(inputs, operation, 0, inputs.length, concurrencyThreshold);
+    }
+    
+    
+    public final void completeTask(ISharableTask task)
     {
         this.thingNeedingDone = task;
         
@@ -206,6 +222,7 @@ public class SimpleThreadPoolExecutor
             {
                 while(task.doSomeWork(getNextBatchIndex())) {};
             }
+            task.onThreadComplete();
         }
         catch (Exception e) 
         { 
@@ -220,23 +237,23 @@ public class SimpleThreadPoolExecutor
         completionWriteLock.unlock();
     }
     
-    protected static class ArrayTask<T> implements ISharableTask
+    public static abstract  class AbstractArrayTask<T> implements ISharableTask
     {
         protected static final int SPLIT = (POOL_SIZE + 1) * 4;
         protected final T[] theArray;
         protected final int endIndex;
         protected final int batchSize;
         protected final int batchCount;
-        protected final Consumer<T> operation;
         
-        protected ArrayTask(final T[] inputs, final Consumer<T> operation, final int startIndex, final int endIndex)
+        protected abstract Consumer<T> getConsumer();
+        
+        protected AbstractArrayTask(final T[] inputs, final int startIndex, final int endIndex)
         {
             this.theArray = inputs;
             this.endIndex = endIndex;
             final int size = endIndex - startIndex;
             this.batchSize = Math.max(1, size / SPLIT);
             this.batchCount  = (size + batchSize - 1) / batchSize;
-            this.operation = operation;
         }
         
         @Override
@@ -244,22 +261,115 @@ public class SimpleThreadPoolExecutor
         {
             if(batchIndex < batchCount)
             {
+                final Consumer<T> operation = getConsumer();
                 int start = batchIndex * batchSize;
                 final int end = Math.min(endIndex, start + batchSize);
                 for(; start < end; start++)
                 {
                     operation.accept(theArray[start]);
                 }
-    //            System.out.println("Confirming simple run of " + start + " to " + end + " on " + Thread.currentThread().getName());
                 return end < endIndex;
             } 
             else return false;
         }
+    }
+    
+    private static class ArrayTask<T> extends AbstractArrayTask<T>
+    {
+        protected final Consumer<T> operation;
+        
+        protected ArrayTask(T[] inputs, Consumer<T> operation, int startIndex, int endIndex)
+        {
+            super(inputs, startIndex, endIndex);
+            this.operation = operation;
+        }
 
         @Override
-        public boolean isSingleBatch()
+        public final void onThreadComplete() { }
+        
+        @Override
+        public final Consumer<T> getConsumer()
         {
-            return this.batchCount <= 1;
+            return this.operation;
         }
     }
+    
+    public static class ArrayMappingConsumer<T,V>
+    {
+        private final BiConsumer<T, SimpleUnorderedArrayList<V>> operation;
+        private final Consumer<SimpleUnorderedArrayList<V>> collector;
+        
+        protected final ThreadLocal<Worker> workers = new ThreadLocal<Worker>()
+        {
+            @Override
+            protected ArrayMappingConsumer<T, V>.Worker initialValue()
+            {
+                return new Worker();
+            }
+        };
+        
+        public ArrayMappingConsumer(BiConsumer<T, SimpleUnorderedArrayList<V>> operation, Consumer<SimpleUnorderedArrayList<V>> collector)
+        {
+            this.operation = operation;
+            this.collector = collector;
+        }
+        
+        public ArrayMappingConsumer(BiConsumer<T, SimpleUnorderedArrayList<V>> operation, SimpleConcurrentList<V> target)
+        {
+            this.operation = operation;
+            this.collector = (r) -> {if(!r.isEmpty()) target.addAll(r);};
+        }
+        
+        private class Worker implements Consumer<T>
+        {
+            protected final SimpleUnorderedArrayList<V> results = new SimpleUnorderedArrayList<V>();
+            
+            @Override
+            public final void accept(@SuppressWarnings("null") T t)
+            {
+                operation.accept(t, results);
+            }
+            
+            protected final void completeThread()
+            {
+                collector.accept(results);
+                results.clear();
+            }
+        }
+        
+        protected final Consumer<T> getWorker()
+        {
+            return workers.get();
+        }
+        
+        protected final void completeThread()
+        {
+            workers.get().completeThread();
+        }
+    }
+    
+    private static class ArrayMappingTask<T, V> extends AbstractArrayTask<T>
+    {
+        protected final ArrayMappingConsumer<T,V> operation;
+        
+        protected ArrayMappingTask(T[] inputs, ArrayMappingConsumer<T,V> operation, int startIndex, int endIndex)
+        {
+            super(inputs, startIndex, endIndex);
+            this.operation = operation;
+        }
+
+        @Override
+        protected Consumer<T> getConsumer()
+        {
+            return operation.getWorker();
+        }
+
+        @Override
+        public void onThreadComplete()
+        {
+            operation.completeThread();
+        }
+    }
+    
+   
 }
