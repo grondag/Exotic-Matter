@@ -13,10 +13,12 @@ import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")
-public class SimpleThreadPoolExecutor
+public class ScatterGatherThreadPool
 {
     @SuppressWarnings("null")
     private static final Unsafe UNSAFE = Danger.UNSAFE;
+    
+    public static final int DEFAULT_BATCH_SIZE = 200;
     
     public static final int POOL_SIZE = Runtime.getRuntime().availableProcessors() - 1;
     
@@ -46,7 +48,7 @@ public class SimpleThreadPoolExecutor
         try 
         {
             nextBatchIndexOffset = UNSAFE.objectFieldOffset
-                    (SimpleThreadPoolExecutor.class.getDeclaredField("nextBatchIndex"));
+                    (ScatterGatherThreadPool.class.getDeclaredField("nextBatchIndex"));
         } catch (Exception ex) { throw new Error(ex); }
     }
     
@@ -62,12 +64,12 @@ public class SimpleThreadPoolExecutor
 
     private final ReadWriteLock completionLock = new ReentrantReadWriteLock();
     
-    private final Lock completionWriteLock = SimpleThreadPoolExecutor.this.completionLock.writeLock();
+    private final Lock completionWriteLock = ScatterGatherThreadPool.this.completionLock.writeLock();
     
     @SuppressWarnings("unused")
     private volatile int nextBatchIndex;
     
-    public SimpleThreadPoolExecutor()
+    public ScatterGatherThreadPool()
     {
         ImmutableList.Builder<Thread> builder = ImmutableList.builder();
         
@@ -102,8 +104,8 @@ public class SimpleThreadPoolExecutor
         @Override
         public void run()
         {
-            final Object lock = SimpleThreadPoolExecutor.this.startLock;
-            final Lock completionLock = SimpleThreadPoolExecutor.this.completionLock.readLock();
+            final Object lock = ScatterGatherThreadPool.this.startLock;
+            final Lock completionLock = ScatterGatherThreadPool.this.completionLock.readLock();
             
             while(running)
             {
@@ -140,7 +142,7 @@ public class SimpleThreadPoolExecutor
 
     }
     
-    public final <V> void completeTask (V[] inputs, Consumer<V> operation, int startIndex, int endIndex, int concurrencyThreshold)
+    public final <V> void completeTask (V[] inputs, int startIndex, int endIndex, int concurrencyThreshold, Consumer<V> operation)
     {
         if(endIndex - startIndex <= concurrencyThreshold)
         {
@@ -151,26 +153,56 @@ public class SimpleThreadPoolExecutor
         }
         else
         {
-            this.completeTask(new ArrayTask<>(inputs, operation, startIndex, endIndex));
+            this.completeTask(new ArrayTask<>(inputs, startIndex, endIndex, operation));
+        }
+    }
+    
+    public final <V> void completeTask (V[] inputs, int startIndex, int endIndex, int concurrencyThreshold, Consumer<V> operation, int batchSize)
+    {
+        if(endIndex - startIndex <= concurrencyThreshold)
+        {
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                operation.accept(inputs[i]);
+            }
+        }
+        else
+        {
+            this.completeTask(new ArrayTask<>(inputs, startIndex, endIndex, operation, batchSize));
         }
     }
    
-    public final <V> void completeTask(V[] inputs, Consumer<V> operation, int startIndex, int endIndex)
+    public final <V> void completeTask(V[] inputs, int startIndex, int endIndex, Consumer<V> operation)
     {
-        completeTask(inputs, operation, startIndex, endIndex, 200);
+        completeTask(inputs, startIndex, endIndex, DEFAULT_BATCH_SIZE, operation);
+    }
+    
+    public final <V> void completeTask(V[] inputs, int startIndex, int endIndex, Consumer<V> operation, int batchSize)
+    {
+        completeTask(inputs, startIndex, endIndex, (POOL_SIZE + 1) * batchSize, operation, batchSize);
     }
     
     public final <V> void completeTask(V[] inputs, Consumer<V> operation)
     {
-        completeTask(inputs, operation, 0, inputs.length);
+        completeTask(inputs, 0, inputs.length, operation);
     }
     
-    public final <V> void completeTask(V[] inputs, Consumer<V> operation, int concurrencyThreshold)
+    public final <V> void completeTask(V[] inputs, Consumer<V> operation, int batchSize)
     {
-        completeTask(inputs, operation, 0, inputs.length, concurrencyThreshold);
+        completeTask(inputs, 0, inputs.length, operation, batchSize);
     }
     
-    public final <T, V> void completeTask (final T[] inputs, final ArrayMappingConsumer<T,V> operation, final int startIndex, final int endIndex, final int concurrencyThreshold)
+    public final <V> void completeTask(V[] inputs, int concurrencyThreshold, Consumer<V> operation)
+    {
+        completeTask(inputs,0, inputs.length, concurrencyThreshold,  operation);
+    }
+    
+    public final <V> void completeTask(V[] inputs, int concurrencyThreshold, Consumer<V> operation, int batchSize)
+    {
+        completeTask(inputs,0, inputs.length, concurrencyThreshold,  operation, batchSize);
+    }
+    
+    public final <T, V> void completeTask (final T[] inputs, final int startIndex, final int endIndex, final int concurrencyThreshold, final ArrayMappingConsumer<T,V> operation)
     {
         if(endIndex - startIndex <= concurrencyThreshold)
         {
@@ -183,25 +215,56 @@ public class SimpleThreadPoolExecutor
         }
         else
         {
-            this.completeTask(new ArrayMappingTask<>(inputs, operation, startIndex, endIndex));
+            this.completeTask(new ArrayMappingTask<>(inputs, startIndex, endIndex, operation));
         }
     }
     
-    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V>operation, int startIndex, int endIndex)
+    public final <T, V> void completeTask (final T[] inputs, final int startIndex, final int endIndex, final int concurrencyThreshold, final ArrayMappingConsumer<T,V> operation, int batchSize)
     {
-        completeTask(inputs, operation, startIndex, endIndex, 200);
+        if(endIndex - startIndex <= concurrencyThreshold)
+        {
+            final Consumer<T> consumer = operation.getWorker();
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                consumer.accept(inputs[i]);
+            }
+            operation.completeThread();
+        }
+        else
+        {
+            this.completeTask(new ArrayMappingTask<>(inputs, startIndex, endIndex, operation, batchSize));
+        }
+    }
+    
+    public final <T, V> void completeTask(T[] inputs, int startIndex, int endIndex, final ArrayMappingConsumer<T,V>operation)
+    {
+        completeTask(inputs, startIndex, endIndex, DEFAULT_BATCH_SIZE, operation);
+    }
+    
+    public final <T, V> void completeTask(T[] inputs, int startIndex, int endIndex, final ArrayMappingConsumer<T,V>operation, int batchSize)
+    {
+        completeTask(inputs, startIndex, endIndex, (POOL_SIZE + 1) * batchSize, operation, batchSize);
     }
     
     public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V> operation)
     {
-        completeTask(inputs, operation, 0, inputs.length);
+        completeTask(inputs, 0, inputs.length, operation);
     }
     
-    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V> operation, int concurrencyThreshold)
+    public final <T, V> void completeTask(T[] inputs, final ArrayMappingConsumer<T,V> operation, int batchSize)
     {
-        completeTask(inputs, operation, 0, inputs.length, concurrencyThreshold);
+        completeTask(inputs, 0, inputs.length, operation, batchSize);
     }
     
+    public final <T, V> void completeTask(T[] inputs, int concurrencyThreshold, final ArrayMappingConsumer<T,V> operation)
+    {
+        completeTask(inputs, 0, inputs.length, concurrencyThreshold, operation);
+    }
+    
+    public final <T, V> void completeTask(T[] inputs, int concurrencyThreshold, final ArrayMappingConsumer<T,V> operation, int batchSize)
+    {
+        completeTask(inputs, 0, inputs.length, concurrencyThreshold, operation, batchSize);
+    }
     
     public final void completeTask(ISharableTask task)
     {
@@ -247,13 +310,17 @@ public class SimpleThreadPoolExecutor
         
         protected abstract Consumer<T> getConsumer();
         
-        protected AbstractArrayTask(final T[] inputs, final int startIndex, final int endIndex)
+        protected AbstractArrayTask(final T[] inputs, final int startIndex, final int endIndex, final int batchSize)
         {
             this.theArray = inputs;
             this.endIndex = endIndex;
-            final int size = endIndex - startIndex;
-            this.batchSize = Math.max(1, size / SPLIT);
-            this.batchCount  = (size + batchSize - 1) / batchSize;
+            this.batchSize = batchSize;
+            this.batchCount  = (endIndex - startIndex + batchSize - 1) / batchSize;
+        }
+        
+        protected AbstractArrayTask(final T[] inputs, final int startIndex, final int endIndex)
+        {
+            this(inputs, startIndex, endIndex, Math.max(1, (endIndex - startIndex) / SPLIT));
         }
         
         @Override
@@ -278,12 +345,18 @@ public class SimpleThreadPoolExecutor
     {
         protected final Consumer<T> operation;
         
-        protected ArrayTask(T[] inputs, Consumer<T> operation, int startIndex, int endIndex)
+        protected ArrayTask(T[] inputs, int startIndex, int endIndex, Consumer<T> operation)
         {
             super(inputs, startIndex, endIndex);
             this.operation = operation;
         }
 
+        protected ArrayTask(T[] inputs, int startIndex, int endIndex, Consumer<T> operation, int batchSize)
+        {
+            super(inputs, startIndex, endIndex, batchSize);
+            this.operation = operation;
+        }
+        
         @Override
         public final void onThreadComplete() { }
         
@@ -296,7 +369,7 @@ public class SimpleThreadPoolExecutor
     
     public static class ArrayMappingConsumer<T,V>
     {
-        private final BiConsumer<T, SimpleUnorderedArrayList<V>> operation;
+        private final BiConsumer<T, Consumer<V>> operation;
         private final Consumer<SimpleUnorderedArrayList<V>> collector;
         
         protected final ThreadLocal<Worker> workers = new ThreadLocal<Worker>()
@@ -308,32 +381,30 @@ public class SimpleThreadPoolExecutor
             }
         };
         
-        public ArrayMappingConsumer(BiConsumer<T, SimpleUnorderedArrayList<V>> operation, Consumer<SimpleUnorderedArrayList<V>> collector)
+        public ArrayMappingConsumer(BiConsumer<T, Consumer<V>> operation, Consumer<SimpleUnorderedArrayList<V>> collector)
         {
             this.operation = operation;
             this.collector = collector;
         }
         
-        public ArrayMappingConsumer(BiConsumer<T, SimpleUnorderedArrayList<V>> operation, SimpleConcurrentList<V> target)
+        public ArrayMappingConsumer(BiConsumer<T, Consumer<V>> operation, SimpleConcurrentList<V> target)
         {
             this.operation = operation;
             this.collector = (r) -> {if(!r.isEmpty()) target.addAll(r);};
         }
         
-        private class Worker implements Consumer<T>
+        private class Worker extends SimpleUnorderedArrayList<V> implements Consumer<T>
         {
-            protected final SimpleUnorderedArrayList<V> results = new SimpleUnorderedArrayList<V>();
-            
             @Override
             public final void accept(@SuppressWarnings("null") T t)
             {
-                operation.accept(t, results);
+                operation.accept(t, v -> this.add(v));
             }
             
             protected final void completeThread()
             {
-                collector.accept(results);
-                results.clear();
+                collector.accept(this);
+                this.clear();
             }
         }
         
@@ -352,9 +423,15 @@ public class SimpleThreadPoolExecutor
     {
         protected final ArrayMappingConsumer<T,V> operation;
         
-        protected ArrayMappingTask(T[] inputs, ArrayMappingConsumer<T,V> operation, int startIndex, int endIndex)
+        protected ArrayMappingTask(T[] inputs, int startIndex, int endIndex, ArrayMappingConsumer<T,V> operation)
         {
             super(inputs, startIndex, endIndex);
+            this.operation = operation;
+        }
+        
+        protected ArrayMappingTask(T[] inputs, int startIndex, int endIndex, ArrayMappingConsumer<T,V> operation, int batchSize)
+        {
+            super(inputs, startIndex, endIndex, batchSize);
             this.operation = operation;
         }
 

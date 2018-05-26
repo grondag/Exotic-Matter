@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.concurrency.PerformanceCounter;
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
-import grondag.exotic_matter.concurrency.SimpleThreadPoolExecutor;
+import grondag.exotic_matter.concurrency.ScatterGatherThreadPool;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
@@ -102,7 +102,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     }
     
     
-    public static final SimpleThreadPoolExecutor SIMPLE_POOL = new SimpleThreadPoolExecutor();
+    public static final ScatterGatherThreadPool SCATTER_GATHER_POOL = new ScatterGatherThreadPool();
     
     /**
      * General-purpose thread pool. Use for any simulation-related activity
