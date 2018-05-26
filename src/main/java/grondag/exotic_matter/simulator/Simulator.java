@@ -1,11 +1,10 @@
 package grondag.exotic_matter.simulator;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -14,20 +13,13 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.concurrency.PerformanceCounter;
-import grondag.exotic_matter.concurrency.SimpleConcurrentList;
 import grondag.exotic_matter.concurrency.ScatterGatherThreadPool;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
@@ -430,54 +422,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     {
         return NBT_TAG_SIMULATOR;
     }
-
-    public static <T> void runTaskAppropriately(SimpleConcurrentList<T> list, Consumer<T> action, int concurrencyThreshold, PerformanceCounter counter)
-    {
-        counter.startRun();
-        if(list.size() > concurrencyThreshold)
-        {
-            try
-            {
-                SIMULATION_POOL.submit(() -> list.stream(true).forEach(action)).get(1, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException e)
-            {
-                ExoticMatter.INSTANCE.error("Unexpected error", e);
-            }
-        }
-        else
-        {
-            list.stream(false).forEach( action);
-        }
-        counter.endRun();
-        counter.addCount(list.size());
-    }
-    
-    public static <T> void runTaskAppropriately(T[] array, int startInclusive, int endExclusive, Consumer<T> action, int concurrencyThreshold, PerformanceCounter counter)
-    {
-        counter.startRun();
-        final int size = endExclusive - startInclusive;
-        Stream<T> s = StreamSupport.stream(Arrays.spliterator(array, startInclusive, endExclusive), size > concurrencyThreshold);
-        
-        if(size > concurrencyThreshold)
-        {
-            try
-            {
-                SIMULATION_POOL.submit(() -> s.forEach(action)).get(1, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException e)
-            {
-                ExoticMatter.INSTANCE.error("Unexpected error", e);
-            }
-        }
-        else
-        {
-            s.forEach( action);
-        }
-        counter.endRun();
-        counter.addCount(size);
-    }
-
+   
     public static Simulator instance()
     {
         loadSimulatorIfNotLoaded();

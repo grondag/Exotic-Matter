@@ -202,6 +202,11 @@ public class ScatterGatherThreadPool
         completeTask(inputs,0, inputs.length, concurrencyThreshold,  operation, batchSize);
     }
     
+    public final <V> void completeTask(SimpleConcurrentList<V> list, int concurrencyThreshold, Consumer<V> operation)
+    {
+        completeTask(list.getOperands(), 0, list.size(), concurrencyThreshold, operation);
+    }
+    
     public final <T, V> void completeTask (final T[] inputs, final int startIndex, final int endIndex, final int concurrencyThreshold, final ArrayMappingConsumer<T,V> operation)
     {
         if(endIndex - startIndex <= concurrencyThreshold)
@@ -447,6 +452,4 @@ public class ScatterGatherThreadPool
             operation.completeThread();
         }
     }
-    
-   
 }
