@@ -31,7 +31,7 @@ import net.minecraft.util.math.MathHelper;
  *
  */
 
-public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
+public class SimpleConcurrentList<T> implements Iterable<T>
 {
     protected T[]  items; 
     private AtomicInteger size = new AtomicInteger(0);
@@ -69,7 +69,6 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
      * that it cannot be fully trusted as a limit
      * for numeric operation due to concurrent updates.
      */
-    @Override
     public int size()
     {
         return this.size.get();
@@ -151,7 +150,9 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         return items[index];
     }
     
-    @Override
+    /**
+     * Returns the backing array including null padding at end.
+     */
     public T[] getOperands()
     {
         return this.items;

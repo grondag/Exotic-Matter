@@ -1,15 +1,11 @@
 package grondag.exotic_matter.simulator;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
-import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -93,43 +89,13 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         nodeTypes.add(nodeType);
     }
     
-    
     public static final ScatterGatherThreadPool SCATTER_GATHER_POOL = new ScatterGatherThreadPool();
-    
-    /**
-     * General-purpose thread pool. Use for any simulation-related activity
-     * so long as it doesn't have specific timing or sequencing requirements.
-     */
-    @SuppressWarnings("null")
-    @Deprecated
-    public static final ForkJoinPool SIMULATION_POOL = new ForkJoinPool(
-            Runtime.getRuntime().availableProcessors(),
-            new ForkJoinWorkerThreadFactory()
-            {
-                private AtomicInteger count = new AtomicInteger(1);
-
-                @Override
-                public ForkJoinWorkerThread newThread(ForkJoinPool pool)
-                {
-                    ForkJoinWorkerThread result = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-                    result.setName("Exotic Matter Simulation Thread -" + count.getAndIncrement());
-                    return result;
-                }
-            },
-            new UncaughtExceptionHandler()
-            {
-                @Override
-                public void uncaughtException(Thread t, Throwable e)
-                {
-                    ExoticMatter.INSTANCE.getLog().error("Simulator thread terminated due to uncaught exception.  Badness may ensue.", e);
-                }}, 
-            true);
 
     /**
-     * For simulation step control - do not use for actual work.
+     * Main simulation control thread - runs outside server thread.
      */
     @SuppressWarnings("null")
-    private static final ExecutorService CONTROL_THREAD = Executors.newSingleThreadExecutor(
+    public static final ExecutorService CONTROL_THREAD = Executors.newSingleThreadExecutor(
             new ThreadFactory()
             {
                 private AtomicInteger count = new AtomicInteger(1);
