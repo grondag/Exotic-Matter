@@ -129,6 +129,23 @@ public class SimpleConcurrentList<T> implements Iterable<T>, ICountedJobBacker
         items.copyToArray(this.items,  endExclusive - items.size());
     }
     
+    public void addAll(final T[] itemsIn, final int startFrom, final int size)
+    {
+        int endExclusive = this.size.addAndGet(size);
+        if(endExclusive > this.items.length)
+        {
+            synchronized(this)
+            {
+                if(endExclusive > this.items.length)
+                {
+                    int newCapacity = MathHelper.smallestEncompassingPowerOfTwo(endExclusive);
+                    this.items = Arrays.copyOf(this.items, newCapacity);
+                }
+            }
+        }
+        System.arraycopy(itemsIn, startFrom, this.items, endExclusive - size, size);
+    }
+    
     public T get(int index)
     {
         return items[index];
