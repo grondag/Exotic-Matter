@@ -55,7 +55,7 @@ public class Surface
     public class SurfaceInstance
     {
         /** 
-         * The approximate in-world scale of the U texture orthogonalAxis.
+         * The approximate in-world scale of the U texture axis.
          * At scale = 1.0, 0 to 16 is one block.
          * At scale = 1/16, 0 to 1 is one block, etc.
          * Generally only comes into play for non-cubic surface painters.
@@ -63,7 +63,7 @@ public class Surface
         public final double uScale;
         
         /** 
-         * The approximate in-world scale of the V texture orthogonalAxis.
+         * The approximate in-world scale of the V texture axis.
          * At scale = 1.0, 0 to 16 is one block.
          * At scale = 1/16, 0 to 1 is one block, etc.
          * Generally only comes into play for non-cubic surface painters.
@@ -71,7 +71,7 @@ public class Surface
         public final double vScale;
         
         /**
-         * If true, texture painting should not vary by orthogonalAxis
+         * If true, texture painting should not vary by axis
          * orthogonal to the surface.  Ignored if {@link #textureSalt} is non-zero.
          */
         public final boolean ignoreDepthForRandomization;
@@ -93,7 +93,8 @@ public class Surface
          * If true, generator will assign colors to vertexes to indicate proximity to lamp surface.
          * Vertices next to lamp have color WHITE and those away have color BLACK.
          * If the lighting mode for the surface is shaded, then quad bake should color
-         * vertices to form a gradient.  
+         * vertices to form a gradient. <p>
+         * 
          * If the surface is full-brightness, need to re-color all vertices to white.
          */
         public final boolean isLampGradient;

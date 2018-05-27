@@ -11,7 +11,15 @@ import net.minecraft.util.math.Vec3d;
 
 public final class Vertex extends Vec3f
 {
+    /**
+     * Note that vertex texture coordinates are scaled 0-1 instead of 
+     * the 0-16 used in the quad min/max texture coordinates.
+     */
     public final float u;
+    /**
+     * Note that vertex texture coordinates are scaled 0-1 instead of 
+     * the 0-16 used in the quad min/max texture coordinates.
+     */
     public final float v;
     public final int color;
     public final @Nullable Vec3f normal;
