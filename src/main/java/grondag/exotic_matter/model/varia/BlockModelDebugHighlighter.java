@@ -30,7 +30,7 @@ public class BlockModelDebugHighlighter
 	{
         BlockPos pos = event.getTarget().getBlockPos();
         EntityPlayer player = event.getPlayer();
-        if(player != null)
+        if(player != null && pos != null)
         {
             World world = player.world;
     		IBlockState bs = world.getBlockState(pos);
