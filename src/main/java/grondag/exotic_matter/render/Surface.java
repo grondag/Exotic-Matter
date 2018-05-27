@@ -1,12 +1,33 @@
 package grondag.exotic_matter.render;
 
+import net.minecraft.util.math.MathHelper;
+
 public class Surface
 {
+    private static int clampUVScale(int rawValue)
+    {
+        if(rawValue <= 1) return 1;
+        
+        if((rawValue & rawValue - 1) == 0) return rawValue;
+        
+        final int high = MathHelper.smallestEncompassingPowerOfTwo(rawValue);
+        final int low = high / 2;
+        
+        return (high - rawValue) < (rawValue - low) ? high : low;
+    }
+    
+    private static int clampUVScale(double rawValue)
+    {
+        if(rawValue <= 1) return 1;
+        
+        return clampUVScale((int) Math.round(rawValue));
+    }
+    
     public final SurfaceType surfaceType;
     public final SurfaceTopology topology;
     
     /**
-     * Instance with unit scale uScale and vScale = 1.0, uses depth for bigtex
+     * Instance with unit scale uvScale = 1, uses depth for bigtex
      */
     public final SurfaceInstance unitInstance;
     
@@ -14,61 +35,78 @@ public class Surface
     {
         this.surfaceType = paintType;
         this.topology = topology;
-        this.unitInstance = new SurfaceInstance(1.0, 1.0, false, true, 0, false);
+        this.unitInstance = new SurfaceInstance(1, false, true, 0, false);
     }
     
-    public SurfaceInstance newInstance(double uScale, double vScale)
+    public SurfaceInstance newInstance(int uvScale)
     {
-        return new SurfaceInstance(uScale, vScale, false, true, 0, false);
+        return new SurfaceInstance(clampUVScale(uvScale), false, true, 0, false);
     }
     
-    public SurfaceInstance newInstance(double uScale, double vScale, boolean ignoreDepthForRandomization)
+    public SurfaceInstance newInstance(double uvScale)
     {
-        return new SurfaceInstance(uScale, vScale, ignoreDepthForRandomization, true, 0, false);
+        return new SurfaceInstance(clampUVScale(uvScale), false, true, 0, false);
     }
     
-    public SurfaceInstance newInstance(double uScale, double vScale, boolean ignoreDepthForRandomization, boolean allowBorders)
+    public SurfaceInstance newInstance(int uvScale, boolean ignoreDepthForRandomization)
     {
-        return new SurfaceInstance(uScale, vScale, ignoreDepthForRandomization, allowBorders, 0, false);
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, true, 0, false);
     }
     
-    public SurfaceInstance newInstance(double uScale, double vScale, boolean ignoreDepthForRandomization, boolean allowBorders, int textureSalt)
+    public SurfaceInstance newInstance(double uvScale, boolean ignoreDepthForRandomization)
     {
-        return new SurfaceInstance(uScale, vScale, ignoreDepthForRandomization, allowBorders, textureSalt, false);
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, true, 0, false);
+    }
+    
+    public SurfaceInstance newInstance(int uvScale, boolean ignoreDepthForRandomization, boolean allowBorders)
+    {
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, allowBorders, 0, false);
+    }
+    
+    public SurfaceInstance newInstance(double uvScale, boolean ignoreDepthForRandomization, boolean allowBorders)
+    {
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, allowBorders, 0, false);
+    }
+    
+    public SurfaceInstance newInstance(int uvScale, boolean ignoreDepthForRandomization, boolean allowBorders, int textureSalt)
+    {
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, allowBorders, textureSalt, false);
+    }
+    
+    public SurfaceInstance newInstance(double uvScale, boolean ignoreDepthForRandomization, boolean allowBorders, int textureSalt)
+    {
+        return new SurfaceInstance(clampUVScale(uvScale), ignoreDepthForRandomization, allowBorders, textureSalt, false);
     }
     
     public SurfaceInstance newInstance(boolean ignoreDepthForRandomization)
     {
-        return new SurfaceInstance(1, 1, ignoreDepthForRandomization, true, 0, false);
+        return new SurfaceInstance(1, ignoreDepthForRandomization, true, 0, false);
     }
     
     public SurfaceInstance newInstance(boolean ignoreDepthForRandomization, boolean allowBorders)
     {
-        return new SurfaceInstance(1, 1, ignoreDepthForRandomization, allowBorders, 0, false);
+        return new SurfaceInstance(1, ignoreDepthForRandomization, allowBorders, 0, false);
     }
     
     public SurfaceInstance newInstance(boolean ignoreDepthForRandomization, boolean allowBorders, int textureSalt)
     {
-        return new SurfaceInstance(1, 1, ignoreDepthForRandomization, allowBorders, textureSalt, false);
+        return new SurfaceInstance(1, ignoreDepthForRandomization, allowBorders, textureSalt, false);
     }
     
     public class SurfaceInstance
     {
         /** 
-         * The approximate in-world scale of the U texture axis.
-         * At scale = 1.0, 0 to 16 is one block.
-         * At scale = 1/16, 0 to 1 is one block, etc.
-         * Generally only comes into play for non-cubic surface painters.
+         * The approximate in-world scale of a 0-16 UV texture span.<br>
+         * Mist be at least 1 or a power of two.<br>
+         * If set to something that is not a power of two, will be rounded
+         * to the nearest power of 2 (and at least 1).<br>
+         * Scale of 1 means 0-16 is the size of one MC block.<br>
+         * Scale of 4, for example, means a UV span of 0-4 (16/4) would cover one MC block in world.<br>
+         * Default is 1 and generally only comes into play for non-cubic surface painters.<p>
+         * 
+         * See also {@link SurfaceTopology#TILED}
          */
-        public final double uScale;
-        
-        /** 
-         * The approximate in-world scale of the V texture axis.
-         * At scale = 1.0, 0 to 16 is one block.
-         * At scale = 1/16, 0 to 1 is one block, etc.
-         * Generally only comes into play for non-cubic surface painters.
-         */
-        public final double vScale;
+        public final int uvScale;
         
         /**
          * If true, texture painting should not vary by axis
@@ -115,19 +153,17 @@ public class Surface
         public final boolean disableOuter;
         
         private SurfaceInstance(
-                double uScale, 
-                double vScale, 
+                int uvScale, 
                 boolean ignoreDepthForRandomization, 
                 boolean allowBorders, 
                 int textureSalt, 
                 boolean isLampGradient)
         {
-            this(uScale, vScale, ignoreDepthForRandomization, allowBorders, textureSalt, isLampGradient, false, false, false);
+            this(uvScale, ignoreDepthForRandomization, allowBorders, textureSalt, isLampGradient, false, false, false);
         }
         
         private SurfaceInstance(
-                double uScale, 
-                double vScale, 
+                int uvScale, 
                 boolean ignoreDepthForRandomization, 
                 boolean allowBorders, 
                 int textureSalt, 
@@ -136,8 +172,7 @@ public class Surface
                 boolean disableMiddle,
                 boolean disableOuter)
         {
-            this.uScale = uScale;
-            this.vScale = vScale;
+            this.uvScale = uvScale;
             this.ignoreDepthForRandomization = ignoreDepthForRandomization;
             this.allowBorders = allowBorders;
             this.textureSalt = textureSalt;
@@ -149,8 +184,7 @@ public class Surface
         
         public SurfaceInstance()
         {
-            this.uScale = 1;
-            this.vScale = 1;
+            this.uvScale = 1;
             this.ignoreDepthForRandomization = false;
             this.allowBorders = false;
             this.textureSalt = 0;
@@ -160,51 +194,57 @@ public class Surface
             this.disableOuter = false;
         }
         
-        public SurfaceInstance withScale(double uScale, double vScale)
+        public SurfaceInstance withScale(int uvScale)
         {
-            return new SurfaceInstance(uScale, vScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(clampUVScale(uvScale), this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+                    this.disableBase, this.disableMiddle, this.disableOuter);
+        }
+        
+        public SurfaceInstance withScale(double uvScale)
+        {
+            return new SurfaceInstance(clampUVScale(uvScale), this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
                     this.disableBase, this.disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withIgnoreDepthForRandomization(boolean ignoreDepthForRandomization)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
                     this.disableBase, this.disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withAllowBorders(boolean allowBorders)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, allowBorders, this.textureSalt, this.isLampGradient,
                     this.disableBase, this.disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withTextureSalt(int textureSalt)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, this.allowBorders, textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, this.allowBorders, textureSalt, this.isLampGradient,
                     this.disableBase, this.disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withLampGradient(boolean isLampGradient)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, isLampGradient,
                     this.disableBase, this.disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withDisableBase(boolean disableBase)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
                     disableBase, this.disableMiddle, this.disableOuter);
         }
 
         public SurfaceInstance withDisableMiddle(boolean disableMiddle)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
                     this.disableBase, disableMiddle, this.disableOuter);
         }
         
         public SurfaceInstance withDisableOuter(boolean disableOuter)
         {
-            return new SurfaceInstance(this.uScale, this.vScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
+            return new SurfaceInstance(this.uvScale, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
                     this.disableBase, this.disableMiddle, disableOuter);
         }
         

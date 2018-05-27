@@ -14,23 +14,6 @@ public class QuadPainterFactory
         
         switch(surface.topology)
         {
-        case CYLINDRICAL:
-            switch(texture.textureLayout())
-            {
-            case BIGTEX:
-            case BIGTEX_ANIMATED:
-            case SPLIT_X_8:
-                return new SurfaceQuadPainterCylinder(modelState, surface, paintLayer);
-                
-            case BORDER_13:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-                
-            case MASONRY_5:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-                
-            default:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-            }
             
         case TILED:
             switch(texture.textureLayout())
@@ -50,24 +33,6 @@ public class QuadPainterFactory
                 return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
             }
             
-        case TOROIDAL:
-            switch(texture.textureLayout())
-            {
-            case BIGTEX:
-            case BIGTEX_ANIMATED:
-            case SPLIT_X_8:
-                return new SurfaceQuadPainterTorus(modelState, surface, paintLayer);
-                
-            case BORDER_13:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-                
-            case MASONRY_5:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-                
-            default:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
-            }
-
         case CUBIC:
             switch(texture.textureLayout())
             {
