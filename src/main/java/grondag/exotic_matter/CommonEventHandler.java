@@ -72,7 +72,8 @@ public class CommonEventHandler
     {
         SuperModelBlock.registerSuperModelBlocks(event);
         
-        //FIXME:  remove
+        //FIXME:  remove all of these
+        
         ISuperModelState workingModel;
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.CSGTEST);
@@ -82,6 +83,10 @@ public class CommonEventHandler
 //        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(4));
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
+        workingModel = new ModelState();
+        workingModel.setShape(ModShapes.SPHERE);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("shperetest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.COLUMN_SQUARE);

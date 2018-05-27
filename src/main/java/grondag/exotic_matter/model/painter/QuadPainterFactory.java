@@ -21,7 +21,7 @@ public class QuadPainterFactory
             case BIGTEX:
             case BIGTEX_ANIMATED:
             case SPLIT_X_8:
-                return new SurfaceQuadPainterTiles(modelState, surface, paintLayer);
+                return new SurfaceQuadPainterTiled(modelState, surface, paintLayer);
                 
             case BORDER_13:
                 return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);

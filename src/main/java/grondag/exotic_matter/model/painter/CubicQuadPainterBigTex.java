@@ -1,10 +1,13 @@
 package grondag.exotic_matter.model.painter;
 
+import java.util.List;
+
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TextureRotationType;
 import grondag.exotic_matter.model.TextureScale;
 import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
@@ -23,7 +26,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public IMutablePolygon paintQuad(IMutablePolygon quad)
+    public void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.
@@ -116,9 +119,9 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             quad.setMinV(surfaceVec.getY() * sliceIncrement);
             quad.setMaxV(quad.getMinV() + sliceIncrement);
         }
-        return quad;
+        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
     }
-
+    
     /** 
      * Transform input vector so that x & y correspond with u / v on the given face, with u,v origin at upper left
      * and z is depth, where positive values represent distance into the face (away from viewer). <br><br>

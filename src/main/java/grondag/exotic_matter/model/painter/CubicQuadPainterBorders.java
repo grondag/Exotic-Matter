@@ -1,9 +1,12 @@
 package grondag.exotic_matter.model.painter;
 
+import java.util.List;
+
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.render.FaceQuadInputs;
 import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
@@ -44,25 +47,28 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         super(modelState, surface, paintLayer);
         this.bjs = modelState.getCornerJoin();
     }
+    
+    @Override
+    protected final boolean isQuadValidForPainting(IPolygon inputQuad)
+    {
+        return super.isQuadValidForPainting(inputQuad)
+                && inputQuad.getSurfaceInstance().allowBorders
+                && inputQuad.getNominalFace() != null;
+    }
 
     @Override
-    public IMutablePolygon paintQuad(IMutablePolygon quad)
+    public final void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
     {
         assert quad.isLockUV() : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
         
-        if(!quad.getSurfaceInstance().allowBorders) return null;
-        
         EnumFacing face = quad.getNominalFace();
-        if(face == null) return null;
 
         FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][ bjs.getFaceJoinState(face).ordinal()];
 
-        if(inputs == null)
-            return null;
+        if(inputs == null) return;
         
         // don't render the "no border" texture unless this is a tile of some kind
-        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile())
-            return null;
+        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile()) return;
         
         quad.setRotation(inputs.rotation);
 //        cubeInputs.rotateBottom = false;
@@ -70,9 +76,9 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         quad.setMinV(inputs.flipV ? 16 : 0);
         quad.setMaxU(inputs.flipU ? 0 : 16);
         quad.setMaxV(inputs.flipV ? 0 : 16);
-        quad.setTextureName(this.texture.getTextureName(textureVersionForFace(quad.getNominalFace()), inputs.textureOffset));
+        quad.setTextureName(this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
         
-        return quad;
+        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
     }
     
     

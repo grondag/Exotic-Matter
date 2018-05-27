@@ -49,13 +49,15 @@ public abstract class QuadPainter
     protected final int translucencyArgb;
     
     /**
-     * Provided quad is already a clone, and should be
-     * modified directly and returned.
-     * Return null to exclude quad from output.
-     * RenderLayer, lighting mode and color will already be set.
-     * @return 
+     * At this point {@link #isQuadValidForPainting(IPolygon)} has been checked and is true. 
+     * Input quad will already be a clone and can be modified directly if expedient.
+     * RenderLayer, lighting mode and color will already be set.<p>
+     * 
+     * Resulting quad(s), if any, must be output using {@link #postPaintProcessQuadAndAddToList(IMutablePolygon, List, boolean)}.
+     * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
+     * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract IMutablePolygon paintQuad(IMutablePolygon quad);
+    protected abstract void paintQuad(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -96,34 +98,42 @@ public abstract class QuadPainter
         this.translucencyArgb = 0;
     }
 
-    /**
-     * If isItem = true will bump out quads from block center to provide
-     * better depth rendering of layers in tiem rendering.
-     */
-    public void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+    protected boolean isQuadValidForPainting(IPolygon inputQuad)
     {
-        if(inputQuad.getSurfaceInstance().surface() != this.surface) return;
-        
+        if(inputQuad.getSurfaceInstance().surface() != this.surface) return false;
+
         switch(this.paintLayer)
         {
         case BASE:
-            if(inputQuad.getSurfaceInstance().disableBase) return;
+            if(inputQuad.getSurfaceInstance().disableBase) return false;
             break;
-            
+
         case MIDDLE:
-            if(inputQuad.getSurfaceInstance().disableMiddle) return;
+            if(inputQuad.getSurfaceInstance().disableMiddle) return false;
             break;
-            
+
         case OUTER:
-            if(inputQuad.getSurfaceInstance().disableOuter) return;
+            if(inputQuad.getSurfaceInstance().disableOuter) return false;
             break;
-            
+
         case CUT:
         case LAMP:
         default:
             break;
-        
+
         }
+
+        return true;
+    }
+    
+    
+    /**
+     * If isItem = true will bump out quads from block center to provide
+     * better depth rendering of layers in item rendering.
+     */
+    public final void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+    {
+        if(!isQuadValidForPainting(inputQuad)) return;
     
         IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
         result.setRenderPass(this.renderPass);
@@ -133,37 +143,40 @@ public abstract class QuadPainter
      
         // TODO: Vary color slightly with species, as user-selected option
         
-        result = this.paintQuad(result);
-        
-        if(result != null) 
-        {
-            if(result.isLockUV())
-            {
-                // if lockUV is on, derive UV coords by projection
-                // of vertex coordinates on the plane of the quad's face
-                result.assignLockedUVCoordinates();;
-            }
-   
-            if(isItem)
-            {
-                switch(this.paintLayer)
-                {
-                case MIDDLE:
-                    result.scaleFromBlockCenter(1.01f);
-                    break;
-                    
-                case OUTER:
-                    result.scaleFromBlockCenter(1.02f);
-                    break;
-                    
-                default:
-                    break;
-                }
-            }
-            outputList.add(result);
-        }
+        this.paintQuad(result, outputList, isItem);
     }
     
+    /**
+     * Call from paint quad in sub classes to return results.
+     * Handles UV Lock and item scaling, then adds to the output list.
+     */
+    protected final void postPaintProcessQuadAndAddToList(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+    {
+        if(inputQuad.isLockUV())
+        {
+            // if lockUV is on, derive UV coords by projection
+            // of vertex coordinates on the plane of the quad's face
+            inputQuad.assignLockedUVCoordinates();;
+        }
+
+        if(isItem)
+        {
+            switch(this.paintLayer)
+            {
+            case MIDDLE:
+                inputQuad.scaleFromBlockCenter(1.01f);
+                break;
+
+            case OUTER:
+                inputQuad.scaleFromBlockCenter(1.02f);
+                break;
+
+            default:
+                break;
+            }
+        }
+        outputList.add(inputQuad);
+    }
     
     private void recolorQuad(IMutablePolygon result)
     {
@@ -227,16 +240,14 @@ public abstract class QuadPainter
         };
         
         @Override
-        public void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+        protected boolean isQuadValidForPainting(IPolygon inputQuad)
         {
-            // NOOP
+            return false;
         }
-
-
+        
         @Override
-        protected IMutablePolygon paintQuad(IMutablePolygon quad)
+        protected void paintQuad(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem)
         {
-            return null;
         }
         
     }

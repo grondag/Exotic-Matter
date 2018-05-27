@@ -1,39 +1,30 @@
 package grondag.exotic_matter.model.painter;
 
+import java.util.List;
+
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TextureRotationType;
 import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Surface;
+import grondag.exotic_matter.render.SurfaceTopology;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.math.MathHelper;
 
 /**
- * Paints unconstrained, non-wrapping 2d surface.
- * Expects that UV coordinates on incoming quads have the following properties:
- * A UV distance of 1 represents one block in world.
- * (UV scale on the surface instance will be 1.0)
- * UV values range from 0 through 256 and then repeat.
- * This means applied textures repeat every 256 blocks in both directions of the plane.
  * 
- * All textures will be smaller than 256x256 blocks, so attempts to 
- * alternate and rotate (if supported) the texture within that area to break up appearance.
- * 
- * Texture rotation and alternation is driven by relative position of UV coordinates
- * within the 256 x 256 block plane.
- * 
- * @author grondag
- *
+ * See {@link SurfaceTopology#TILED}
  */
-public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
+public class SurfaceQuadPainterTiled extends SurfaceQuadPainter
 {
-    public SurfaceQuadPainterTiles(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+    public SurfaceQuadPainterTiled(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         super(modelState, surface, paintLayer);
     }
 
     @Override
-    public IMutablePolygon paintQuad(IMutablePolygon quad)
+    public void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
     {
         assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         
@@ -95,6 +86,6 @@ public class SurfaceQuadPainterTiles extends SurfaceQuadPainter
 
             }
         }
-        return quad;
+        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
     }
 }

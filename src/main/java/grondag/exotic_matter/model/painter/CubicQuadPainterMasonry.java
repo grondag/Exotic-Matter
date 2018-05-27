@@ -1,9 +1,12 @@
 package grondag.exotic_matter.model.painter;
 
+import java.util.List;
+
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.render.FaceQuadInputs;
 import grondag.exotic_matter.render.IMutablePolygon;
+import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.world.Rotation;
 import grondag.exotic_matter.world.SimpleJoin;
@@ -24,29 +27,37 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     }
 
     @Override
-    public IMutablePolygon paintQuad(IMutablePolygon quad)
+    protected final boolean isQuadValidForPainting(IPolygon inputQuad)
+    {
+        return super.isQuadValidForPainting(inputQuad)
+                && inputQuad.getSurfaceInstance().allowBorders
+                && inputQuad.getNominalFace() != null;
+    }
+    
+    @Override
+    public final void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
     {
         assert quad.isLockUV() : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
         
-        if(!quad.getSurfaceInstance().allowBorders) return null;
+        // face won't be null - checked in validation method
+        final EnumFacing face = quad.getNominalFace();
         
-        EnumFacing face = quad.getNominalFace();
-        if(face == null) return null;
-        
+        @SuppressWarnings("null")
         SimpleJoinFaceState fjs = SimpleJoinFaceState.find(face, this.bjs);
         
+        @SuppressWarnings("null")
         FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][fjs.ordinal()];
         
-        if(inputs == null) return null;
+        if(inputs == null) return;
             
         quad.setRotation(inputs.rotation);
         quad.setMinU(inputs.flipU ? 16 : 0);
         quad.setMinV(inputs.flipV ? 16 : 0);
         quad.setMaxU(inputs.flipU ? 0 : 16);
         quad.setMaxV(inputs.flipV ? 0 : 16);
-        quad.setTextureName(this.texture.getTextureName(this.textureVersionForFace(quad.getNominalFace()), inputs.textureOffset));
+        quad.setTextureName(this.texture.getTextureName(this.textureVersionForFace(face), inputs.textureOffset));
         
-        return quad;
+        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
     }
     
     private static enum Textures
