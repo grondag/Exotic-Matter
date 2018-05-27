@@ -80,10 +80,10 @@ public class ThreadPoolTest
         System.out.println("Warm ups");
         for(int i = 0; i < 50; i++)
         {
-            SIMPLE_POOL.completeTask(smallThings.getOperands(), 0, smallThings.size(), t -> t.doSomething());
-            SIMPLE_POOL.completeTask(smallThings.getOperands(), 0, smallThings.size(), smallThings.size(), t -> t.doSomething());
+            SIMPLE_POOL.completeTask(smallThings, t -> t.doSomething());
+            SIMPLE_POOL.completeTask(smallThings, smallThings.size(), t -> t.doSomething());
             this.SIMULATION_POOL.submit(() -> smallThings.stream(true).forEach(t -> t.doSomething())).get();
-            SIMPLE_POOL.completeTask(bigThings.getOperands(), 0, bigThings.size(), t -> t.doSomething());
+            SIMPLE_POOL.completeTask(bigThings, t -> t.doSomething());
             this.SIMULATION_POOL.submit(() -> bigThings.stream(true).forEach(t -> t.doSomething())).get();
         }
         System.out.println("");
@@ -101,12 +101,12 @@ public class ThreadPoolTest
         while(true)
         {
             long start = System.nanoTime();
-            SIMPLE_POOL.completeTask(smallThings.getOperands(), 0, smallThings.size(), t -> t.doSomething());
+            SIMPLE_POOL.completeTask(smallThings, t -> t.doSomething());
             long end = System.nanoTime();
             nanosSmallSimple += (end - start);
             
             start = System.nanoTime();
-            SIMPLE_POOL.completeTask(smallThings.getOperands(), 0, smallThings.size(), smallThings.size(), t -> t.doSomething());
+            SIMPLE_POOL.completeTask(smallThings, smallThings.size(), t -> t.doSomething());
             end = System.nanoTime();
             nanosSmallSimpleSingleBatch += (end - start);
             
@@ -116,7 +116,7 @@ public class ThreadPoolTest
             nanosSmallStream += (end - start);
             
             start = System.nanoTime();
-            SIMPLE_POOL.completeTask(bigThings.getOperands(), 0, bigThings.size(), t -> t.doSomething());
+            SIMPLE_POOL.completeTask(bigThings, t -> t.doSomething());
             end = System.nanoTime();
             nanosBigSimple += (end - start);
             
