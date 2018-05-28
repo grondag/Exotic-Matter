@@ -2,6 +2,7 @@ package grondag.exotic_matter;
 
 
 import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.DummyColorHandler;
@@ -123,7 +124,7 @@ public class ClientProxy extends CommonProxy
         SuperTileEntity.updateRenderDistance();
     }
     
-    static final WorldStateCache worldStateCache = new WorldStateCache();
+    static final IWorldStateCache worldStateCache = new WorldStateCache();
 
     @Override
     public IWorldStateCache clientWorldStateCache()

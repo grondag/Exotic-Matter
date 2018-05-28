@@ -35,7 +35,9 @@ public class WorldStateNibble implements IWorldStateCache
         {
             modelStates = new ISuperModelState[4096];
             result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
-            modelStates[index] = result;
+            
+            // don't save in cache if not being refreshed - don't want to cache stale states
+            if(refreshFromWorld) modelStates[index] = result;
         }
         else
         {
@@ -43,12 +45,17 @@ public class WorldStateNibble implements IWorldStateCache
             if(result == null)
             {
                 result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
-                modelStates[index] = result;
+                // don't save in cache if not being refreshed - don't want to cache stale states
+                if(refreshFromWorld) modelStates[index] = result;
             }
-//            else modelHits.incrementAndGet();
+            else
+            {
+                if(refreshFromWorld) result.refreshFromWorld(blockState, world, pos);
+//                modelHits.incrementAndGet();
+            }
         }
         
-//        if((modelLookups.incrementAndGet() & 0xFFFFF) == 0xFFFFF) System.out.println("World state cache model hit rate = " + modelHits.get() / (float) modelLookups.get()); 
+//        if((modelLookups.incrementAndGet() & 0xFFF) == 0xFFF) System.out.println("World state cache model hit rate = " + modelHits.get() / (float) modelLookups.get()); 
         
         return result;
     }

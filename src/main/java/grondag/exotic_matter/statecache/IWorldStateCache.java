@@ -6,6 +6,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 /**
  * Non-static model states depend on world state and in some cases deriving the world-dependent
@@ -25,4 +26,8 @@ public interface IWorldStateCache
     ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld);
     
     int getFlowHeight(IBlockAccess world, MutableBlockPos pos);
+
+    default void markBlockRangeForRenderUpdate(int xStart, int i, int zStart, int xEnd, int j, int zEnd) {}
+
+    default void setWorld(World world) {}
 }
