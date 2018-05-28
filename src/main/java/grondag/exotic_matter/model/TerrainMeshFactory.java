@@ -183,7 +183,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private Vec3f shadowEnhance(Vec3f vec)
     {
         Vec3f temp = vec.normalize();
-        return new Vec3f(temp.x, temp.y * temp.y, temp.z);
+        return new Vec3f(temp.x, temp.y * temp.y, temp.z).normalize();
     }
    
     @Override
@@ -656,7 +656,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         normCenter = normCenter.add(quadInputsCenterRight[1].getFaceNormal().scale(quadInputsCenterRight[1].getArea()));
         normCenter = normCenter.add(quadInputsCenterRight[2].getFaceNormal().scale(quadInputsCenterRight[2].getArea()));
         normCenter = normCenter.add(quadInputsCenterRight[3].getFaceNormal().scale(quadInputsCenterRight[3].getArea()));
-        normCenter = shadowEnhance(normCenter).normalize();
+        normCenter = shadowEnhance(normCenter);
 
         Vec3f normSide[] = new Vec3f[4];
         for(HorizontalFace side : HorizontalFace.values())
@@ -673,7 +673,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     normTemp = normTemp.add(qi.getFaceNormal().scale(qi.getArea()));
                 }
             }
-            normSide[side.ordinal()] = shadowEnhance(normTemp).normalize();
+            normSide[side.ordinal()] = shadowEnhance(normTemp);
         }
 
         Vec3f normCorner[] = new Vec3f[4];
@@ -691,7 +691,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                     normTemp = normTemp.add(qi.getFaceNormal().scale(qi.getArea()));
                 }
             }
-            normCorner[corner.ordinal()] = shadowEnhance(normTemp).normalize();
+            normCorner[corner.ordinal()] = shadowEnhance(normTemp);
         }
 
         final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple();
