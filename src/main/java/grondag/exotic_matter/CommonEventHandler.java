@@ -86,7 +86,7 @@ public class CommonEventHandler
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.SPHERE);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("shperetest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.COLUMN_SQUARE);

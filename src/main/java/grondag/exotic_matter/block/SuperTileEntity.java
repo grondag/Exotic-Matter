@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.ISuperBlock;
 import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -217,7 +218,7 @@ public class SuperTileEntity extends TileEntity
      */
     public void readModNBT(NBTTagCompound compound)
     {
-        this.modelState.deserializeNBT(compound);
+        this.modelState = ModelState.deserializeFromNBTIfPresent(compound);
         this.onModelStateChange(true);
     }
     

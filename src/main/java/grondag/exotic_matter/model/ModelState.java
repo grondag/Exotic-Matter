@@ -46,7 +46,18 @@ import net.minecraft.world.World;
 public class ModelState implements ISuperModelState
 {
     private static final String NBT_MODEL_BITS = NBTDictionary.claim("modelState");
-    private static final String NBT_SHAPE = NBTDictionary.claim("texture");
+    private static final String NBT_SHAPE = NBTDictionary.claim("shape");
+    
+    /**
+     * Removes model state from the tag if present.
+     */
+    public static final void clearNBTValues(@Nullable NBTTagCompound tag)
+    {
+        if(tag == null) return;
+        tag.removeTag(NBT_MODEL_BITS);
+        tag.removeTag(NBT_SHAPE);
+        for(PaintLayer l : PaintLayer.values()) tag.removeTag(l.tagName);
+    }
     
     private boolean isStatic;
     private long bits0;
@@ -1005,7 +1016,7 @@ public class ModelState implements ISuperModelState
         tag.setString(NBT_SHAPE, this.getShape().systemName());
         
         // textures serialized by name because registered textures can change if mods/config change
-        Arrays.stream(PaintLayer.values()).forEach(l -> serializeTexture(tag, l));
+        for(PaintLayer l : PaintLayer.values()) serializeTexture(tag, l);
     }
     
     /**

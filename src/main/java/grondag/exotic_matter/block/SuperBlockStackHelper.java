@@ -19,7 +19,6 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 public class SuperBlockStackHelper
 {
-    public static String NBT_MODEL_STATE = NBTDictionary.claim("stackModelState");
     public static String NBT_SUPERMODEL_LIGHT_VALUE = NBTDictionary.claim("smLight");
     
     public static void setStackLightValue(ItemStack stack, int lightValue)
@@ -51,7 +50,7 @@ public class SuperBlockStackHelper
         NBTTagCompound tag = stack.getTagCompound();
         if(modelState == null)
         {
-            if(tag != null) tag.removeTag(SuperBlockStackHelper.NBT_MODEL_STATE);
+            ModelState.clearNBTValues(tag);
             return;
         }
         
@@ -61,7 +60,7 @@ public class SuperBlockStackHelper
             stack.setTagCompound(tag);
         }
         
-        tag.setTag(SuperBlockStackHelper.NBT_MODEL_STATE, modelState.serializeNBT());
+        modelState.serializeNBT(tag);
     }
 
     @Nullable
@@ -69,7 +68,7 @@ public class SuperBlockStackHelper
     {
         @SuppressWarnings("null")
         ISuperModelState stackState = stack.hasTagCompound()
-                ? ModelState.deserializeFromNBTIfPresent(stack.getTagCompound().getCompoundTag(SuperBlockStackHelper.NBT_MODEL_STATE))
+                ? ModelState.deserializeFromNBTIfPresent(stack.getTagCompound())
                 : null;
         
         //WAILA or other mods might create a stack with no NBT

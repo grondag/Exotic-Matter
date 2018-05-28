@@ -3,6 +3,9 @@ package grondag.exotic_matter.varia;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+/**
+ * Currently not used.  Possibly borrowed / adapted from somewhere else.
+ */
 public class ReflectionHelper
 {
     @SuppressWarnings("rawtypes")
