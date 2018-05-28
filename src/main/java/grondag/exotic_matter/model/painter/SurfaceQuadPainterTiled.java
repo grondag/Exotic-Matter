@@ -37,48 +37,57 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         int modelScale = surfIn.uvScale;
         int textureScale = this.texture.textureScale().sliceCount;
         
-        if(modelScale > textureScale)
+        /** 
+         * Max number of textured tiles needed in either direction to cover entire surface
+         * should be 1 or a power of 2, because both modelScale and textureScale are such.
+         */
+        int textureSlices = modelScale > textureScale ? 1 : modelScale / textureScale;
+       
+        /**  Max quad U value, may be outside the 0-16 range.*/
+        final float maxU = Math.max(quad.getMaxU(), quad.getMinU());
+        
+        /** Capture randomization hints from u values outside the 16 range.  */
+        final int uSalt = Math.round(maxU / 16);
+        
+        /** u tile position */
+        final int uOrdinal = ((Math.round(maxU % 16f) -1) / textureSlices);
+        
+        /**  Max quad V value, may be outside the 0-16 range. */
+        final float maxV = Math.max(quad.getMaxV(), quad.getMinV());
+        
+        /** Capture randomization hints from u values outside the 16 range.  */
+        final int vSalt = Math.round(maxU / 16);
+        
+        /** v tile position */
+        final  int vOrdinal = ((Math.round(maxV % 16f) - 1) / textureSlices);
+        
+        // bring unit uv coordinates within the range of our texture size
+        int shiftU = uOrdinal * textureSlices;
+        if(shiftU > 0)
         {
-            //TODO: tile the texture
+            quad.setMaxU(quad.getMaxU() - shiftU);
+            quad.setMinU(quad.getMinU() - shiftU);
         }
         
-        quad.setTextureName(this.texture.getTextureName(0));
+        int shiftV= vOrdinal * textureSlices;
+        if(shiftV > 0)
+        {
+            quad.setMaxV(quad.getMaxV() - shiftV);
+            quad.setMinV(quad.getMinV() - shiftV);
+        }
         
-//        float maxU = Math.max(quad.getMaxU(), quad.getMinU());
-//        int uOrdinal = ((Math.round(maxU) - 1) / textureSlices);
-//        
-//        float maxV = Math.max(quad.getMaxV(), quad.getMinV());
-//        int vOrdinal = ((Math.round(maxV) - 1) / textureSlices);
-//        
-//        // bring unit uv coordinates within the range of our texture size
-//        int shiftU = uOrdinal * textureSlices;
-//        if(shiftU > 0)
-//        {
-//            quad.setMaxU(quad.getMaxU() - shiftU);
-//            quad.setMinU(quad.getMinU() - shiftU);
-//        }
-//        
-//        int shiftV= vOrdinal * textureSlices;
-//        if(shiftV > 0)
-//        {
-//            quad.setMaxV(quad.getMaxV() - shiftV);
-//            quad.setMinV(quad.getMinV() - shiftV);
-//        }
-//        
-//        // uv coordinates should now be in range 0 to sliceCount
-//        // so just need to scale so that max values are 16.0
-//        
-//        float uvScale = 16f / this.texture.textureScale().sliceCount;
-//        quad.scaleQuadUV(uvScale, uvScale);
-//       
-//       int hash = MathHelper.hash(uOrdinal | (vOrdinal << 8));
-//        
-//        int textureVersion = this.texture.textureVersionMask() & (hash >> 4);
-//        quad.setTextureName(this.texture.getTextureName(textureVersion));
-//                
-//        //FIXME - doubt that the rest of this still works at all after
-//        //lockUV and texture rotation were refactored.
-//
+        // uv coordinates should now be in range 0 to sliceCount
+        // so just need to scale so that max values are 16.0
+        
+        float uvScale = 16f / textureSlices;
+        quad.scaleQuadUV(uvScale, uvScale);
+       
+       int hash = MathHelper.hash(uOrdinal | (vOrdinal << 8) | (uSalt << 16) | (vSalt << 24));
+        
+        int textureVersion = this.texture.textureVersionMask() & (hash >> 4);
+        quad.setTextureName(this.texture.getTextureName(textureVersion));
+                
+        //TODO: would this still work?
 //        int rotationOrdinal = this.texture.rotation().rotation.ordinal();
 //        if(this.texture.rotation().rotationType() == TextureRotationType.RANDOM)
 //        {
@@ -97,9 +106,9 @@ public class SurfaceQuadPainterTiled extends QuadPainter
 //                quad.setMaxU(quad.getMaxV());
 //                quad.setMinV(16 - oldMaxU);
 //                quad.setMaxV(16 - oldMinU);
-//
 //            }
 //        }
+        
         this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
     }
 }

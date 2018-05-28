@@ -1,5 +1,6 @@
 package grondag.exotic_matter.render;
 
+import grondag.exotic_matter.model.TextureScale;
 import net.minecraft.util.math.MathHelper;
 
 public class Surface
@@ -96,13 +97,16 @@ public class Surface
     public class SurfaceInstance
     {
         /** 
-         * The approximate in-world scale of a 0-16 UV texture span.<br>
-         * Mist be at least 1 or a power of two.<br>
-         * If set to something that is not a power of two, will be rounded
-         * to the nearest power of 2 (and at least 1).<br>
-         * Scale of 1 means 0-16 is the size of one MC block.<br>
-         * Scale of 4, for example, means a UV span of 0-4 (16/4) would cover one MC block in world.<br>
-         * Default is 1 and generally only comes into play for non-cubic surface painters.<p>
+         * The approximate in-world scale of the smallest wrapping dimension on this surface.<p>
+         * 
+         * Must be at least 1 or a power of two.  If set to something that is not a power of two, 
+         * setter methods will be round to the nearest power of 2 (and at least 1).<p>
+         * 
+         * If the surface is painted with a texture larger than this scale, the texture will be
+         * scaled down to fit in order to prevent visible seams. A scale of 4, for example,
+         * would force a 32x32 texture to be rendered at 1/8 scale.<p>
+         * 
+         * Default is equal to the largest texture size and generally only comes into play for non-cubic surface painters.<p>
          * 
          * See also {@link SurfaceTopology#TILED}
          */
@@ -184,7 +188,7 @@ public class Surface
         
         public SurfaceInstance()
         {
-            this.uvScale = 1;
+            this.uvScale = TextureScale.GIANT.sliceCount;
             this.ignoreDepthForRandomization = false;
             this.allowBorders = false;
             this.textureSalt = 0;

@@ -217,7 +217,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
     
     @Override
-    public void scaleQuadUV(float uScale, float vScale)
+    public final void scaleQuadUV(float uScale, float vScale)
     {
         this.minU *= uScale;
         this.maxU *= uScale;
@@ -225,6 +225,14 @@ public abstract class AbstractPolygon implements IMutablePolygon
         this.maxV *= vScale;
     }
     
+    @Override
+    public final void offsetQuadUV(float uOffset, float vOffset)
+    {
+        this.minU += uOffset;
+        this.maxU += uOffset;
+        this.minV += vOffset;
+        this.maxV += vOffset;        
+    }
     @Override
     public boolean hasFaceNormal()
     {

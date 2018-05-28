@@ -252,35 +252,48 @@ public class QuadHelper
         // create 20 triangles of the icosahedron
         List<IPolygon> results = new ArrayList<>(20);
         
-        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, template));
+        IMutablePolygon poly = Poly.mutable(template, 3);
         
-        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, template));
+        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly));
         
-        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, template));
+        //enable texture randomization by using multiples of 16 as boundaries for each face
         
-        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, template));
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly));
         
-        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, template));
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly));
+        
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly));
+        
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly));
 
-        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, template));
+        poly.offsetQuadUV(16, -64);
+        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly));
 
-        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, template));
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly));
         
-        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, template));
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly));
         
-        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, template));
+        poly.offsetQuadUV(0, 16);
+        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly));
 
-        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, template));
-        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, template));
+        poly.offsetQuadUV(16, 16);
+        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly));
+        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly));
   
         return results;
     }
@@ -302,9 +315,6 @@ public class QuadHelper
             newQuad.addVertex(2, points[p3], 0, 1, template.getColor(), normals[p3]);
         }
 
-        // used for testing
-//        newQuad.recolor((Useful.SALT_SHAKER.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
-        
         return newQuad;
     }
 

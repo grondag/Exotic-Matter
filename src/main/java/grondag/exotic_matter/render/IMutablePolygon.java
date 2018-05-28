@@ -202,4 +202,9 @@ public interface IMutablePolygon extends IPolygon
     /** applies the given transformation to this polygon*/
     void transform(Matrix4f matrix);
 
+    /**
+     * Adds the given offsets to min/max uv
+     */
+    public void offsetQuadUV(float uOffset, float vOffset);
+
 }
