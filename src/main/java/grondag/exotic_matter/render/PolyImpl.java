@@ -384,6 +384,16 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
             
             }
         }
+    }
+    
+    @Override
+    public void assignScaledUVCoordinates()
+    {
+        for(int i = 0; i < this.vertexCount(); i++)
+        {
+            Vertex v = (Vertex)getVertex(i);
+            this.setVertex(i, v.withUV(v.u * 16, v.v * 16));
+        }
         
     }
 

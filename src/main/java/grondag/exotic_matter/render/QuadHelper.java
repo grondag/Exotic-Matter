@@ -251,46 +251,56 @@ public class QuadHelper
         
         // create 20 triangles of the icosahedron
         List<IPolygon> results = new ArrayList<>(20);
+        
+        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, template));
 
+        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, template));
 
-        // 5 faces around point 0
-        results.add(makeIcosahedronFace(0, 11, 5, vertexes, normals, template));
-        results.add(makeIcosahedronFace(0, 5, 1, vertexes, normals, template));
-        results.add(makeIcosahedronFace(0, 1, 7, vertexes, normals, template));
-        results.add(makeIcosahedronFace(0, 7, 10, vertexes, normals, template));
-        results.add(makeIcosahedronFace(0, 10, 11, vertexes, normals, template));
+        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, template));
+        
+        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, template));
 
-        // 5 adjacent faces 
-        results.add(makeIcosahedronFace(1, 5, 9, vertexes, normals, template));
-        results.add(makeIcosahedronFace(5, 11, 4, vertexes, normals, template));
-        results.add(makeIcosahedronFace(11, 10, 2, vertexes, normals, template));
-        results.add(makeIcosahedronFace(10, 7, 6, vertexes, normals, template));
-        results.add(makeIcosahedronFace(7, 1, 8, vertexes, normals, template));
-
-        // 5 faces around point 3
-        results.add(makeIcosahedronFace(3, 9, 4, vertexes, normals, template));
-        results.add(makeIcosahedronFace(3, 4, 2, vertexes, normals, template));
-        results.add(makeIcosahedronFace(3, 2, 6, vertexes, normals, template));
-        results.add(makeIcosahedronFace(3, 6, 8, vertexes, normals, template));
-        results.add(makeIcosahedronFace(3, 8, 9, vertexes, normals, template));
-
-        // 5 adjacent faces 
-        results.add(makeIcosahedronFace(4, 9, 5, vertexes, normals, template));
-        results.add(makeIcosahedronFace(2, 4, 11, vertexes, normals, template));
-        results.add(makeIcosahedronFace(6, 2, 10, vertexes, normals, template));
-        results.add(makeIcosahedronFace(8, 6, 7, vertexes, normals, template));
-        results.add(makeIcosahedronFace(9, 8, 1, vertexes, normals, template));
+        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, template));
+        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, template));
   
         return results;
     }
     
-    private static IPolygon makeIcosahedronFace(int p1, int p2, int p3, Vec3d[] points, Vec3d[] normals, IPolygon template)
+    private static IPolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, Vec3d[] normals, IPolygon template)
     {
         IMutablePolygon newQuad = Poly.mutable(template, 3);
         
-        newQuad.addVertex(0, points[p1], 0, 0, template.getColor(), normals[p1]);
-        newQuad.addVertex(1, points[p2], 1, 0, template.getColor(), normals[p2]);
-        newQuad.addVertex(2, points[p3], 1, 1, template.getColor(), normals[p3]);
+        if(topHalf)
+        {
+            newQuad.addVertex(0, points[p1], 1, 1, template.getColor(), normals[p1]);
+            newQuad.addVertex(1, points[p2], 0, 1, template.getColor(), normals[p2]);
+            newQuad.addVertex(2, points[p3], 1, 0, template.getColor(), normals[p3]);
+        }
+        else
+        {
+            newQuad.addVertex(0, points[p1], 0, 0, template.getColor(), normals[p1]);
+            newQuad.addVertex(1, points[p2], 1, 0, template.getColor(), normals[p2]);
+            newQuad.addVertex(2, points[p3], 0, 1, template.getColor(), normals[p3]);
+        }
 
         // used for testing
 //        newQuad.recolor((Useful.SALT_SHAKER.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);

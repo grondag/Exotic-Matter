@@ -25,7 +25,7 @@ import net.minecraft.world.World;
 
 public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
-    private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.TILED);
     
     /** never changes so may as well save it */
     private final Collection<IPolygon> cachedQuads;
@@ -45,10 +45,10 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     private Collection<IPolygon> generateQuads()
     {
         IMutablePolygon template = Poly.mutable(4);
-        template.setLockUV(true);
+        template.setLockUV(false);
         template.setSurfaceInstance(SURFACE_MAIN.unitInstance);
   
-        Collection<IPolygon> result = QuadHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template);
+        Collection<IPolygon> result = QuadHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 1, template);
       
         IPolygon.recolor(result);
       
