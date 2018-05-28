@@ -298,12 +298,10 @@ public class SuperDispatcher
     
     public class DispatchDelegate implements IBakedModel, IModel
     {
-        private final BlockRenderMode blockRenderMode;
         private final String modelResourceString;
         
         private DispatchDelegate(BlockRenderMode blockRenderMode)
         {
-            this.blockRenderMode = blockRenderMode;
             this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderMode.ordinal());
         }
 
@@ -346,23 +344,9 @@ public class SuperDispatcher
         }
      
         @Override
-        public boolean isAmbientOcclusion()
+        public final boolean isAmbientOcclusion()
         {
-         
-            BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-            if(layer == null) return true;
-            
-            switch(layer)
-            {
-            case SOLID:
-                return !this.blockRenderMode.isSolidLayerFlatLighting;
-                
-            case TRANSLUCENT:
-                return !this.blockRenderMode.isTranlucentLayerFlatLighting;
-                
-            default:
-                return true;
-            }
+            return true;
         }
     
         @Override

@@ -8,38 +8,13 @@ import net.minecraft.util.BlockRenderLayer;
  */
 public enum RenderPass
 {
-    SOLID_SHADED(BlockRenderLayer.SOLID, true),
-    SOLID_FLAT(BlockRenderLayer.SOLID, false),
-    TRANSLUCENT_SHADED(BlockRenderLayer.TRANSLUCENT, true),
-    TRANSLUCENT_FLAT(BlockRenderLayer.TRANSLUCENT, false);
-    
+    SOLID_SHADED(BlockRenderLayer.SOLID),
+    TRANSLUCENT_SHADED(BlockRenderLayer.TRANSLUCENT);
     
     public final BlockRenderLayer blockRenderLayer;
-    public final boolean isShaded;
     
-    private RenderPass(BlockRenderLayer brl, boolean isShaded)
+    private RenderPass(BlockRenderLayer brl)
     {
         this.blockRenderLayer = brl;
-        this.isShaded = isShaded;
-    }
-    
-    /**
-     * Returns flat/shaded version of given shaded/flat value
-     */
-    public RenderPass flipShading()
-    {
-        switch(this)
-        {
-        case SOLID_FLAT:
-            return SOLID_SHADED;
-        case SOLID_SHADED:
-            return SOLID_FLAT;
-        case TRANSLUCENT_FLAT:
-            return TRANSLUCENT_SHADED;
-        case TRANSLUCENT_SHADED:
-            return TRANSLUCENT_FLAT;
-        default:
-            return null;
-        }
     }
 }

@@ -3,13 +3,10 @@ package grondag.exotic_matter;
 import java.io.IOException;
 import java.util.Map;
 
-import grondag.exotic_matter.block.SuperBlockTESR;
 import grondag.exotic_matter.block.SuperDispatcher;
 import grondag.exotic_matter.block.SuperDispatcher.DispatchDelegate;
-import grondag.exotic_matter.block.SuperModelTileEntityTESR;
 import grondag.exotic_matter.block.SuperStateMapper;
 import grondag.exotic_matter.block.SuperTileEntity;
-import grondag.exotic_matter.block.SuperTileEntityTESR;
 import grondag.exotic_matter.font.FontHolder;
 import grondag.exotic_matter.init.IItemModelRegistrant;
 import grondag.exotic_matter.model.ISuperBlock;
@@ -43,7 +40,6 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -224,10 +220,6 @@ public class ClientEventHandler
                 ((IItemModelRegistrant)item).handleRegister(itemReg);
             }
         }
-        
-        // Bind TESR to tile entity
-        ClientRegistry.bindTileEntitySpecialRenderer(SuperTileEntityTESR.class, SuperBlockTESR.INSTANCE);
-        ClientRegistry.bindTileEntitySpecialRenderer(SuperModelTileEntityTESR.class, SuperBlockTESR.INSTANCE);
     }
     
     

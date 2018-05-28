@@ -4,6 +4,7 @@ import static grondag.exotic_matter.model.ModelStateData.STATE_ENUM_RENDER_PASS_
 import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_DISABLE_BLOCK_ONLY;
 import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY;
 import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_IS_POPULATED;
+import static grondag.exotic_matter.model.ModelStateData.STATE_FLAG_NEEDS_SPECIES;
 
 import grondag.exotic_matter.render.RenderPass;
 
@@ -61,14 +62,10 @@ public class ModelStateFlagHelper
             int result = 0;
             
             boolean isBaseTranslucent = (i & IS_BASE_TRANSLUCENT) != 0;
-            boolean isBaseLit = (i & IS_BASE_LIT) != 0;
             boolean isLampPresent = (i & IS_LAMP_PRESENT) != 0;
             boolean isLampTranslucent = (i & IS_LAMP_TRANSLUCENT) != 0;
-            boolean isLampLit = (i & IS_LAMP_LIT) != 0;
             boolean isMiddlePresent = (i & IS_MIDDLE_PRESENT) != 0;
-            boolean isMiddleLit = (i & IS_MIDDLE_LIT) != 0;
             boolean isOuterPresent = (i & IS_OUTER_PRESENT) != 0;
-            boolean isOuterLit = (i & IS_OUTER_LIT) != 0;
             
             
             boolean isLampSolid = isLampPresent && !isLampTranslucent;
@@ -76,24 +73,14 @@ public class ModelStateFlagHelper
             
             int renderPassFlags = 0;
             
-            if((isBaseSolid && !isBaseLit) || (isLampSolid && !isLampLit))
+            if(isBaseSolid || isLampSolid)
             {
                 renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.SOLID_SHADED, renderPassFlags, true); 
             }
-           
-            if((isBaseSolid && isBaseLit) || (isLampSolid && isLampLit))
-            {
-                renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.SOLID_FLAT, renderPassFlags, true); 
-            }
             
-            if((!isBaseSolid && !isBaseLit) || (isLampPresent && isLampTranslucent && !isLampLit) || (isMiddlePresent &&  !isMiddleLit) || (isOuterPresent && !isOuterLit))
+            if((!isBaseSolid) || (isLampPresent && isLampTranslucent) || isMiddlePresent || isOuterPresent)
             {
                 renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.TRANSLUCENT_SHADED, renderPassFlags, true); 
-            }
-            
-            if((!isBaseSolid && isBaseLit) || (isLampPresent && isLampTranslucent && isLampLit) || (isMiddlePresent &&  isMiddleLit) || (isOuterPresent && isOuterLit))
-            {
-                renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.TRANSLUCENT_FLAT, renderPassFlags, true); 
             }
             
             RenderPassSet rps = RenderPassSet.findByFlags(renderPassFlags);
@@ -111,9 +98,12 @@ public class ModelStateFlagHelper
     {
         int index = 0;
         
-        ShapeMeshGenerator mesh = state.getShape().meshFactory();
+        final ModelShape<?> shape = state.getShape();
+        final ShapeMeshGenerator mesh = shape.meshFactory();
         
         int flags = STATE_FLAG_IS_POPULATED | mesh.getStateFlags(state);
+        
+        if(shape.metaUsage() == MetaUsage.SPECIES) flags |= STATE_FLAG_NEEDS_SPECIES;
         
         ITexturePalette texBase = state.getTexture(PaintLayer.BASE);
         flags |= texBase.stateFlags();

@@ -29,10 +29,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
+public abstract class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
 {
-    public static final SuperBlockTESR INSTANCE = new SuperBlockTESR();
-    
     protected static void addVertexWithUV(BufferBuilder buffer, double x, double y, double z, double u, double v, int skyLight, int blockLight)
     {
         buffer.pos(x, y, z).color(0xFF, 0xFF, 0xFF, 0xFF).tex(u, v).lightmap(skyLight, blockLight).endVertex();

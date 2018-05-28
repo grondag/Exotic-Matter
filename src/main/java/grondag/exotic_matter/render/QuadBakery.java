@@ -11,6 +11,19 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class QuadBakery
 {
+    // There are 2 UV elements when we are using a BLOCK vertex format
+    // that accepts pre-baked lightmaps.  Assuming here that the 
+    // intention is for full brightness. (Don't have a way to pass something dimmer.)
+    private static final float[] fullBright = new float[2];
+
+    static
+    {
+        //Don't really understand how brightness format works, but this does the job.
+        //It mimics the lightmap that would be returned from a block in full brightness.
+        fullBright[0] = (15f * 0x20) / 0xFFFF;
+        fullBright[1] = (15f * 0x20) / 0xFFFF;
+    }
+    
     /**
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
@@ -94,16 +107,6 @@ public class QuadBakery
                 case UV: 
                     if(format.getElement(e).getIndex() == 1)
                     {
-                        // There are 2 UV elements when we are using a BLOCK vertex format
-                        // that accepts pre-baked lightmaps.  Assuming here that the 
-                        // intention is for full brightness. (Don't have a way to pass something dimmer.)
-                        float[] fullBright = new float[2];
-
-                        //Don't really understand how brightness format works, but this does the job.
-                        //It mimics the lightmap that would be returned from a block in full brightness.
-                        fullBright[0] = (float)(15 * 0x20) / 0xFFFF;
-                        fullBright[1] = (float)(15 * 0x20) / 0xFFFF;
-
                         LightUtil.pack(fullBright, vertexData, format, v, e);
                     }
                     else

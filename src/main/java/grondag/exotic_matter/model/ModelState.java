@@ -719,26 +719,17 @@ public class ModelState implements ISuperModelState
     @Override
     public RenderPass getRenderPass(PaintLayer layer)
     {
-        boolean needsFlat = this.isFullBrightness(layer);
-        
         switch(layer)
         {
         case BASE:
         case CUT:
         case LAMP:
         default:
-            if(this.isTranslucent(layer))
-            {
-                return needsFlat ? RenderPass.TRANSLUCENT_FLAT : RenderPass.TRANSLUCENT_SHADED;
-            }
-            else
-            {
-                return needsFlat ? RenderPass.SOLID_FLAT : RenderPass.SOLID_SHADED;
-            }
+            return this.isTranslucent(layer) ? RenderPass.TRANSLUCENT_SHADED : RenderPass.SOLID_SHADED;
             
         case MIDDLE:
         case OUTER:
-            return needsFlat ? RenderPass.TRANSLUCENT_FLAT : RenderPass.TRANSLUCENT_SHADED;
+            return RenderPass.TRANSLUCENT_SHADED;
         
         }
     }

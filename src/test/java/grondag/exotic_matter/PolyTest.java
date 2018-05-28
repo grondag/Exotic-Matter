@@ -37,7 +37,7 @@ public class PolyTest
         quad.setShouldContractUVs(false);
         quad.setNominalFace(null);
         quad.setRotation(Rotation.ROTATE_270);
-        quad.setRenderPass(RenderPass.TRANSLUCENT_FLAT);
+        quad.setRenderPass(RenderPass.TRANSLUCENT_SHADED);
         quad.setColor(0xFA123456);
         
         assert quad.isFullBrightness();
@@ -45,7 +45,7 @@ public class PolyTest
         assert !quad.shouldContractUVs();
         assert quad.getNominalFace() == null;
         assert quad.getRotation() == Rotation.ROTATE_270;
-        assert quad.getRenderPass() == RenderPass.TRANSLUCENT_FLAT;
+        assert quad.getRenderPass() == RenderPass.TRANSLUCENT_SHADED;
         assert quad.getColor() == 0xFA123456;
         
         quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
