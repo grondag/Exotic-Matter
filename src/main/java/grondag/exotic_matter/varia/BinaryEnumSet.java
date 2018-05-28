@@ -23,12 +23,12 @@ public class BinaryEnumSet<T extends Enum<?>>
      * Number of distinct values for flag values produced and consumed by this instance.
      * Derivation is trivially simple. Main use is for clarity.
      */
-    public int combinationCount()
+    public final int combinationCount()
     {
         return 2 << (values.length - 1);
     }
     
-    public int getFlagsForIncludedValues(@SuppressWarnings("unchecked") T... included)
+    public final int getFlagsForIncludedValues(@SuppressWarnings("unchecked") T... included)
     {
         int result = 0;
         for(T e : included)
@@ -48,17 +48,17 @@ public class BinaryEnumSet<T extends Enum<?>>
           return (1 << v0.ordinal()) | (1 << v1.ordinal()) | (1 << v2.ordinal());
     }
     
-    public int getFlagsForIncludedValues(T v0, T v1)
+    public final int getFlagsForIncludedValues(T v0, T v1)
     {
           return (1 << v0.ordinal()) | (1 << v1.ordinal());
     }
     
-    public int getFlagForValue(T v0)
+    public final int getFlagForValue(T v0)
     {
           return (1 << v0.ordinal());
     }
     
-    public int setFlagForValue(T v, int flagsIn, boolean isSet)
+    public final int setFlagForValue(T v, int flagsIn, boolean isSet)
     {
         if(isSet)
         {
@@ -70,12 +70,12 @@ public class BinaryEnumSet<T extends Enum<?>>
         }
     }
     
-    public boolean isFlagSetForValue(T v, int flagsIn)
+    public final boolean isFlagSetForValue(T v, int flagsIn)
     {
         return (flagsIn & (1 << v.ordinal())) != 0;
     }
     
-    public List<T> getValuesForSetFlags(int flagsIn)
+    public final List<T> getValuesForSetFlags(int flagsIn)
     {
         List<T> result = new ArrayList<T>(values.length);
         

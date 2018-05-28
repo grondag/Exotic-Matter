@@ -76,12 +76,12 @@ public class RenderLayout
         }
     }
     
-    public boolean containsRenderPass(RenderPass pass)
+    public final boolean containsRenderPass(RenderPass pass)
     {
         return BENUMSET_RENDER_PASS.isFlagSetForValue(pass, this.renderPassFlags);
     }
 
-    public boolean containsBlockRenderLayer(BlockRenderLayer layer)
+    public final boolean containsBlockRenderLayer(BlockRenderLayer layer)
     {
         return BENUMSET_BLOCK_RENDER_LAYER.isFlagSetForValue(layer, this.blockLayerFlags);
     }
@@ -90,7 +90,7 @@ public class RenderLayout
      * If block layer is present returns container index (0 or 1) where quads for the layer should be kept.
      * Returns -1 if layer not present.
      */
-    public int containerIndexFromBlockRenderLayer(BlockRenderLayer layer)
+    public final int containerIndexFromBlockRenderLayer(BlockRenderLayer layer)
     {
         return this.blockLayerContainerIndexes[layer.ordinal()];
     }
@@ -98,7 +98,7 @@ public class RenderLayout
     /** 
      * Convenience method 
      */
-    public int containerIndexFromRenderPass(RenderPass pass)
+    public final int containerIndexFromRenderPass(RenderPass pass)
     {
         return this.containerIndexFromBlockRenderLayer(pass.blockRenderLayer);
     }
@@ -107,7 +107,7 @@ public class RenderLayout
      * Returns null if given container index is out of range.
      */
     @Nullable
-    public BlockRenderLayer BlockRenderLayerFromContainerIndex(int containerIndex)
+    public final BlockRenderLayer BlockRenderLayerFromContainerIndex(int containerIndex)
     {
         if(containerIndex < 0 || containerIndex >= this.blockLayerCount)
         {

@@ -490,7 +490,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean canRenderInLayer(@Nonnull IBlockState state, @Nonnull BlockRenderLayer layer)
     {
-        return this.blockRenderMode() != BlockRenderMode.TESR && this.blockRenderMode().renderLayout.containsBlockRenderLayer(layer);
+        return this.blockRenderMode != BlockRenderMode.TESR && this.blockRenderMode.renderLayout.containsBlockRenderLayer(layer);
     }
    
     @Override
@@ -1297,7 +1297,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     protected abstract WorldLightOpacity worldLightOpacity(IBlockState state);
 
     @Override
-    public BlockRenderMode blockRenderMode()
+    public final BlockRenderMode blockRenderMode()
     {
         return blockRenderMode;
     }
