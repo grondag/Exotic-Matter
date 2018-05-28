@@ -84,16 +84,25 @@ public class CommonEventHandler
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
+        workingModel.setShape(ModShapes.CUBE);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.TEST_4X4);
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("blocktest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+        
+        workingModel = new ModelState();
         workingModel.setShape(ModShapes.SPHERE);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.COLUMN_SQUARE);
-        SquareColumnMeshFactory.setCutCount(4, workingModel);
+        SquareColumnMeshFactory.setCutCount(3, workingModel);
         SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_TEST_SINGLE);
         workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
+        
+        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BIGTEX_TEST_SINGLE);
+        workingModel.setColorMap(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
+        
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
         workingModel.setFullBrightness(PaintLayer.LAMP, true);
         workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT));

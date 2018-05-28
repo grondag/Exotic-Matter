@@ -37,10 +37,10 @@ public class CubeInputs{
         this.textureName = textureName;
         this.isOverlay = isOverlay;
         this.isItem = isItem;
-        this.u0 = flipU ? 16 : 0;
-        this.v0 = flipV ? 16 : 0;
-        this.u1 = flipU ? 0 : 16;
-        this.v1 = flipV ? 0 : 16;
+        this.u0 = flipU ? 1 : 0;
+        this.v0 = flipV ? 1 : 0;
+        this.u1 = flipU ? 0 : 1;
+        this.v1 = flipV ? 0 : 1;
         this.rotateBottom = true;
         this.surfaceInstance = IPolygon.NO_SURFACE;
     }

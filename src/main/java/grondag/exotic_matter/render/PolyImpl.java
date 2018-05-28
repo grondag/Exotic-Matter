@@ -159,45 +159,45 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
         switch(this.getNominalFace())
         {
         case UP:
-            setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(this.getColor())));
             break;
 
         case DOWN:     
-            setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 16-rv0.u() * 16, 16-rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 16-rv1.u() * 16, 16-rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 16-rv2.u() * 16, 16-rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 16-rv3.u() * 16, 16-rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(this.getColor())));
             break;
 
         case EAST:
-            setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor())));
             break;
 
         case WEST:
-            setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor())));
             break;
 
         case NORTH:
-            setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor())));
             break;
 
         case SOUTH:
-            setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u() * 16, rv0.v() * 16, rv0.color(this.getColor())));
-            setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u() * 16, rv1.v() * 16, rv1.color(this.getColor())));
-            setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u() * 16, rv2.v() * 16, rv2.color(this.getColor())));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u() * 16, rv3.v() * 16, rv3.color(this.getColor())));
+            setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor())));
+            setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor())));
+            setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor())));
+            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor())));
             break;
         }
 
@@ -300,7 +300,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
      */
     private void setVertex(int index, Vertex vertexIn)
     {
-        this.vertices[index] =  (Vertex)vertexIn;
+        this.vertices[index] =  vertexIn;
     }
 
     /**
@@ -312,7 +312,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     public void addVertex(int index, Vertex vertexIn)
     {
         assert this.vertices[index] == null : "attempt to change existing vertex";
-        this.vertices[index] = (Vertex)vertexIn;
+        this.vertices[index] = vertexIn;
     }
     
     @Override
@@ -357,46 +357,35 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
             switch(face)
             {
             case EAST:
-                this.setVertex(i, v.withUV((1 - v.z) * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.z), (1 - v.y)));
                 break;
                 
             case WEST:
-                this.setVertex(i, v.withUV(v.z * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.z, (1 - v.y)));
                 break;
                 
             case NORTH:
-                this.setVertex(i, v.withUV((1 - v.x) * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV((1 - v.x), (1 - v.y)));
                 break;
                 
             case SOUTH:
-                this.setVertex(i, v.withUV(v.x * 16, (1 - v.y) * 16));
+                this.setVertex(i, v.withUV(v.x, (1 - v.y)));
                 break;
                 
             case DOWN:
-                this.setVertex(i, v.withUV(v.x * 16, (1 - v.z) * 16));
+                this.setVertex(i, v.withUV(v.x, (1 - v.z)));
                 break;
                 
             case UP:
                 // our default semantic for UP is different than MC
                 // "top" is north instead of south
-                this.setVertex(i, v.withUV(v.x * 16, v.z * 16));
+                this.setVertex(i, v.withUV(v.x, v.z));
                 break;
             
             }
         }
     }
     
-    @Override
-    public void assignScaledUVCoordinates()
-    {
-        for(int i = 0; i < this.vertexCount(); i++)
-        {
-            Vertex v = (Vertex)getVertex(i);
-            this.setVertex(i, v.withUV(v.u * 16, v.v * 16));
-        }
-        
-    }
-
     @Override
     public void scaleFromBlockCenter(float scale)
     {

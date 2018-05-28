@@ -46,8 +46,8 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         result.isFullBrightness = false;
         result.u0 = 0;
         result.v0 = 0;
-        result.u1 = 16;
-        result.v1 = 16;
+        result.u1 = 1;
+        result.v1 = 1;
         result.isOverlay = false;
         result.surfaceInstance = SURFACE_MAIN.unitInstance;
         

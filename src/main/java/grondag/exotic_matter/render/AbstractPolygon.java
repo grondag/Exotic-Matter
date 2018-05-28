@@ -42,9 +42,9 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected long stateBits = DEFAULT_BITS;
     
     protected float minU = 0;
-    protected float maxU = 16;
+    protected float maxU = 1;
     protected float minV = 0;
-    protected float maxV = 16;
+    protected float maxV = 1;
 
     protected @Nullable Vec3f faceNormal;
     protected @Nullable String textureName;

@@ -54,21 +54,8 @@ public interface IMutablePolygon extends IPolygon
      * onto plane of the quad's face. If the quad is not rotated,
      * then semantics of vertex coordinates matches those of setupFaceQuad.
      * For example, on NSEW faces, "up" (+y) corresponds to the top of the texture.
-     * 
-     * Assigned values are in the range 0-16, as is conventional for MC.
      */
     public void assignLockedUVCoordinates();
-    
-    /**
-     * Assigns UV coordinates to each vertex by scaling vertex onto
-     * the texture simply assuming that vertex uv 0,0 maps to texture
-     * uv 0,0 and vertex uv 1,1 maps to texture uv 16, 16. <p>
-     * 
-     * IOW, multiplies all the vertex uv values by 16 to be
-     * consistent with MC texturing.
-     * 
-     */
-    public void assignScaledUVCoordinates();
 
     /** 
      * Unique scale transformation of all vertex coordinates 

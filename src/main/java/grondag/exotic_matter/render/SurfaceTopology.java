@@ -16,17 +16,16 @@ public enum SurfaceTopology
      * textured as if it were.)<p>
      * 
      * Models generating quads for this topology should emit
-     * quads with min/max UVs with the full span of 0-16. A UV
-     * span of 16 represents one in-world block.  The model mesh
-     * do not have to span a full block - vertex UV coordinates
-     * will be in the range 0-1 and map the mesh geometry to the quad UV span.<p>
+     * quads with min/max UVs with the full span of 0-1. A UV
+     * span of 1 represents one in-world block.  The model mesh
+     * do not have to span a full block.<p>
      * 
      * During BigTex painting, quad UV min/max will be set to some 
-     * sub-span of 0-16 based on location within the world and texture scale.
+     * sub-span of 0-1 based on location within the world and texture scale.
      * For single-block tiled texture painting, the span is not altered but UV coordinates
      * may be flipped, rotated or the underlying texture randomized if multiple versions exist.<p>
      * 
-     * Surface UV scale should always be 1.0 but is generally ignored for this surface type.
+     * Surface UV scale is generally ignored for this surface type.
      */
     CUBIC,
     

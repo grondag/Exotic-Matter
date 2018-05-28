@@ -21,27 +21,15 @@ import net.minecraft.util.math.MathHelper;
  * Immutable base interface for classes used to create and transform meshes before baking into MC quads.<p>
  * 
  * Regarding texture coordinates...<br>
- * UV min and max for the <em>polygon</em> are always in the range 0-16, by convention.
- * (Because MC uses 0-16.)  The span of 0-16 means "the entire width/height" of the texture.
+ * UV min and max for quads and vertices prior to baking are generally in the range 0-1. (Not the 0-16 MC convention)
+ * 
  * However, see SurfaceTopology for variation in that meaning...  <p>
  * 
- * As a result of that variation, some painted quads (BigTex painter) and models 
- * with surfaces independent of world location (cylinders, toroids, some multiblocks)
- * will have min UV values above 0 and/or max values less than 16.  This means the
- * quad should be rendered with a sub-area of the texture.<p>
- * 
- * Important:  the vertex UV coordinates are <em>always</em> in the range 0-1. The vertex
- * coordinates represent the location <em>within</em> the span of the texture described
- * by the quad UV min/max.<p>
- * 
- * So for example, if the quad UV min are both 0 and the quad UV max are both 8, 
- * a vertex UV coordinate of 0.5, 0.5 would translate to the point 0.25, 0.25 on the texture
- * in GL texture coordinates (in which 1.0 represents the width of the texture).<p>
- * 
- * Lastly, note that a "min" UV value in the polygon instance may not be the mathematical minimum
+ * Note that a "min" UV value in the polygon instance may not be the mathematical minimum
  * because UV values can be flipped for to reverse the texture during rendering.  Same applies to max.<p>
  * 
  */
+
 public interface IPolygon
 {
     SurfaceInstance NO_SURFACE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance;
@@ -57,7 +45,7 @@ public interface IPolygon
     /** 
      * Causes texture to appear rotated within the frame
      * of this texture. Relies on UV coordinates
-     * being in the range 0-16. <br><br>
+     * being in the range 0-1. <br><br>
      * 
      * Rotation happens during quad bake.
      * If lockUV is true, rotation happens after UV

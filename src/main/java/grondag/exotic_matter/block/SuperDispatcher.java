@@ -154,9 +154,9 @@ public class SuperDispatcher
                 {
                     // This is simple for tiled surface because UV scale is always 1.0
                     mutable.setMinU(0);
-                    mutable.setMaxU(16);
+                    mutable.setMaxU(1);
                     mutable.setMinV(0);
-                    mutable.setMaxV(16);
+                    mutable.setMaxV(1);
                 }
                 
                 builder.add(mutable);

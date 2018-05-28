@@ -37,7 +37,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     
     private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
-    private static final Surface SURFACE_CUT = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
+    public static final Surface SURFACE_CUT = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
     
     private static final BitPacker STATE_PACKER = new BitPacker();
     private static final BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
@@ -415,7 +415,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                     tri.setSurfaceInstance(SURFACE_MAIN.unitInstance);
                     tri.setupFaceQuad(face, 
                             new FaceVertex(1 - spec.baseMarginWidth, 1, 0),  
-                            new FaceVertex(1 - spec.baseMarginWidth, 1 -spec.baseMarginWidth, 0), 
+                            new FaceVertex(1 - spec.baseMarginWidth, 1 - spec.baseMarginWidth, 0), 
                             new FaceVertex(1, 1, 0), 
                             side);
                     builder.add(tri);                

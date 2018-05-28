@@ -158,11 +158,6 @@ public abstract class QuadPainter
             // of vertex coordinates on the plane of the quad's face
             inputQuad.assignLockedUVCoordinates();;
         }
-        else
-        {
-            // otherwise scale vertex uv values (0-1) to MC values (0-16)
-            inputQuad.assignScaledUVCoordinates();
-        }
 
         if(isItem)
         {

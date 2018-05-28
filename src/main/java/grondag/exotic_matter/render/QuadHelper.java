@@ -166,10 +166,10 @@ public class QuadHelper
                 double quadEndRadius = Useful.linearInterpolate(startRadius, endRadius, Math.min(1, (double) (j + 1) / raySlices ));
 
                 double uStart = ((double) (i % polysPerTextureSlice) / polysPerTextureSlice);
-                double u0 = 16.0 * uStart;
-                double u1 = 16.0 * (uStart + 1.0 / polysPerTextureSlice);
+                double u0 = uStart;
+                double u1 = uStart + 1.0 / polysPerTextureSlice;
                 double v0 = 0;
-                double v1 = 16.0 * rayLength;
+                double v1 = rayLength;
                 
                 Vec3d n0 = cylNormal(axisX, axisY, t1);
                 Vec3d n1= cylNormal(axisX, axisY, t0);
@@ -257,41 +257,41 @@ public class QuadHelper
         results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly));
         
-        //enable texture randomization by using multiples of 16 as boundaries for each face
+        //enable texture randomization by using texture offsets for each face
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly));
 
-        poly.offsetQuadUV(16, -64);
+        poly.offsetQuadUV(1, -4);
         results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly));
 
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 16);
+        poly.offsetQuadUV(0, 1);
         results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly));
 
-        poly.offsetQuadUV(16, 16);
+        poly.offsetQuadUV(1, 1);
         results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly));
   

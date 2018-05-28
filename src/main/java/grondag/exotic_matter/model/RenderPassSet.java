@@ -20,7 +20,6 @@ public enum RenderPassSet
     {
         this.renderLayout = new RenderLayout(passes);
         
-        // if no block render mode matches then must be rendered as TESR
         for(BlockRenderMode mode : BlockRenderMode.values())
         {
             if(mode.renderLayout.renderPassFlags == this.renderLayout.renderPassFlags)
@@ -29,8 +28,8 @@ public enum RenderPassSet
                 return;
             }
         }
-        this.blockRenderMode = null;
         assert false : "Invalid RenderPassSet";
+        this.blockRenderMode = BlockRenderMode.TESR;
     }
   
     public boolean canRenderAsNormalBlock()

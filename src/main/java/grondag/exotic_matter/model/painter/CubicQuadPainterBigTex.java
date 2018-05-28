@@ -4,6 +4,7 @@ import java.util.List;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
+import grondag.exotic_matter.model.SquareColumnMeshFactory;
 import grondag.exotic_matter.model.TextureRotationType;
 import grondag.exotic_matter.model.TextureScale;
 import grondag.exotic_matter.render.IMutablePolygon;
@@ -46,7 +47,6 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
 
         Vec3i surfaceVec = CubicQuadPainterBigTex.getSurfaceVector(this.pos, quad.getNominalFace(), this.texture.textureScale());
         
-                
         TextureScale scale = this.texture.textureScale();
         
         if(this.texture.textureVersionCount() == 1)
@@ -59,12 +59,14 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
                     ? quad.getSurfaceInstance().textureSalt 
                     : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.getSurfaceInstance().textureSalt << 12));
             
+
+            
             // rotation 
             quad.setRotation(this.allowTexRotation
                     ? Useful.offsetEnumValue(texture.rotation().rotation, depthAndSpeciesHash & 3)
                     : texture.rotation().rotation);
                     
-            
+          
             surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(), scale);
 
             quad.setTextureName(this.texture.getTextureName(0));

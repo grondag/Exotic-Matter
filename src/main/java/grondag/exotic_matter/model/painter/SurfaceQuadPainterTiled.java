@@ -43,44 +43,44 @@ public class SurfaceQuadPainterTiled extends QuadPainter
          */
         int textureSlices = modelScale > textureScale ? 1 : modelScale / textureScale;
        
-        /**  Max quad U value, may be outside the 0-16 range.*/
+        /**  Max quad U value may be outside the 0-1 range. */
         final float maxU = Math.max(quad.getMaxU(), quad.getMinU());
         
-        /** Capture randomization hints from u values outside the 16 range.  */
-        final int uSalt = Math.round(maxU / 16);
+        /** Capture randomization hints from u values.  */
+        final int uSalt = Math.round(maxU);
         
         /** u tile position */
-        final int uOrdinal = ((Math.round(maxU % 16f) -1) / textureSlices);
+        final int uOrdinal = Math.round(maxU * textureSlices) - 1;
         
-        /**  Max quad V value, may be outside the 0-16 range. */
+        /**  Max quad V value, may be outside the 0-1 range. */
         final float maxV = Math.max(quad.getMaxV(), quad.getMinV());
         
-        /** Capture randomization hints from u values outside the 16 range.  */
-        final int vSalt = Math.round(maxU / 16);
+        /** Capture randomization hints from u values.  */
+        final int vSalt = Math.round(maxU);
         
         /** v tile position */
-        final  int vOrdinal = ((Math.round(maxV % 16f) - 1) / textureSlices);
+        final  int vOrdinal = Math.round(maxV * textureSlices) - 1;
         
-        // bring unit uv coordinates within the range of our texture size
-        int shiftU = uOrdinal * textureSlices;
+        // temporary until splits working - bring unit uv coordinates within the 0-1 range
+        int shiftU = (int)maxU - 1;
         if(shiftU > 0)
         {
             quad.setMaxU(quad.getMaxU() - shiftU);
             quad.setMinU(quad.getMinU() - shiftU);
         }
         
-        int shiftV= vOrdinal * textureSlices;
+        int shiftV = (int)maxV - 1;
         if(shiftV > 0)
         {
             quad.setMaxV(quad.getMaxV() - shiftV);
             quad.setMinV(quad.getMinV() - shiftV);
         }
-        
-        // uv coordinates should now be in range 0 to sliceCount
-        // so just need to scale so that max values are 16.0
-        
-        float uvScale = 16f / textureSlices;
-        quad.scaleQuadUV(uvScale, uvScale);
+//        
+//        // uv coordinates should now be in range 0 to textureSlices
+//        // so just need to scale so that max values are 1.0
+//        
+//        float uvScale = 1f / textureSlices;
+//        quad.scaleQuadUV(uvScale, uvScale);
        
        int hash = MathHelper.hash(uOrdinal | (vOrdinal << 8) | (uSalt << 16) | (vSalt << 24));
         

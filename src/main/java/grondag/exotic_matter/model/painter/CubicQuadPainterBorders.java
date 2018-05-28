@@ -72,10 +72,10 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         
         quad.setRotation(inputs.rotation);
 //        cubeInputs.rotateBottom = false;
-        quad.setMinU(inputs.flipU ? 16 : 0);
-        quad.setMinV(inputs.flipV ? 16 : 0);
-        quad.setMaxU(inputs.flipU ? 0 : 16);
-        quad.setMaxV(inputs.flipV ? 0 : 16);
+        quad.setMinU(inputs.flipU ? 1 : 0);
+        quad.setMinV(inputs.flipV ? 1 : 0);
+        quad.setMaxU(inputs.flipU ? 0 : 1);
+        quad.setMaxV(inputs.flipV ? 0 : 1);
         quad.setTextureName(this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
         
         this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);

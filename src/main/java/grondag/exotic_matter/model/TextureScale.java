@@ -54,7 +54,7 @@ public enum TextureScale
         this.power = power;
         this.sliceCount = 1 << power;
         this.sliceCountMask = sliceCount - 1;
-        this.sliceIncrement = 16f / sliceCount;
+        this.sliceIncrement = 1f / sliceCount;
         this.modelStateFlag = modelStateFlag;
     }
 

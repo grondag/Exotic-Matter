@@ -32,10 +32,10 @@ public class QuadBakery
      */
     public static BakedQuad createBakedQuad(IPolygon raw, boolean forceItemFormat)
     {
-        float spanU = raw.getMaxU() - raw.getMinU();
-        float spanV = raw.getMaxV() - raw.getMinV();
+        final float spanU = raw.getMaxU() - raw.getMinU();
+        final float spanV = raw.getMaxV() - raw.getMinV();
         
-        TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(raw.getTextureName());
+        final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(raw.getTextureName());
         
         //Dimensions are vertex 0-4 and u/v 0-1.
         float[][] uvData = new float[4][2];
@@ -51,8 +51,8 @@ public class QuadBakery
         // scale UV coordinates to size of texture sub-region
         for(int v = 0; v < 4; v++)
         {
-            uvData[v][0] = raw.getMinU() + spanU * uvData[v][0] / 16F;
-            uvData[v][1] = raw.getMinV() + spanV * uvData[v][1] / 16F;
+            uvData[v][0] = raw.getMinU() + spanU * uvData[v][0];
+            uvData[v][1] = raw.getMinV() + spanV * uvData[v][1];
         }
 
         if(raw.shouldContractUVs())
@@ -75,6 +75,11 @@ public class QuadBakery
                 : net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM;
         
         float[] faceNormal = raw.getFaceNormalArray();          
+        
+        final float spriteMinU = textureSprite.getMinU();
+        final float spriteSpanU = textureSprite.getMaxU() - spriteMinU;
+        final float spriteMinV = textureSprite.getMinV();
+        final float spriteSpanV = textureSprite.getMaxV() - spriteMinV;
         
         for(int v = 0; v < 4; v++)
         {
@@ -113,8 +118,10 @@ public class QuadBakery
                     {
                         // This block handles the normal case: texture UV coordinates
                         float[] interpolatedUV = new float[2];
-                        interpolatedUV[0] = textureSprite.getInterpolatedU(uvData[v][0]);
-                        interpolatedUV[1] = textureSprite.getInterpolatedV(uvData[v][1]);
+                        
+                        // doing interpolation here vs using sprite methods to avoid wasteful multiply and divide by 16
+                        interpolatedUV[0] = spriteMinU + uvData[v][0] * spriteSpanU;
+                        interpolatedUV[1] = spriteMinV + uvData[v][1] * spriteSpanV;
                         LightUtil.pack(interpolatedUV, vertexData, format, v, e);
                     }
                     break;
@@ -146,7 +153,7 @@ public class QuadBakery
                float uOld = uvData[i][0];
                float vOld = uvData[i][1];
                uvData[i][0] = vOld;
-               uvData[i][1] = 16 - uOld;
+               uvData[i][1] = 1 - uOld;
            }
            break;
 
@@ -155,8 +162,8 @@ public class QuadBakery
            {
                float uOld = uvData[i][0];
                float vOld = uvData[i][1];
-               uvData[i][0] = 16 - uOld;
-               uvData[i][1] = 16 - vOld;
+               uvData[i][0] = 1 - uOld;
+               uvData[i][1] = 1 - vOld;
            }
            break;
        
@@ -165,7 +172,7 @@ public class QuadBakery
            {
                float uOld = uvData[i][0];
                float vOld = uvData[i][1];
-               uvData[i][0] = 16 - vOld;
+               uvData[i][0] = 1 - vOld;
                uvData[i][1] = uOld;
            }
         break;

@@ -279,6 +279,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
             }
             
+            // when above was written, quad UVs were normally in 0-16 range, 
+            // now expected to be 0-1, so scale to that standard
+            mutableQuad.scaleQuadUV(1f/16f, 1f/16f);
+            
             builder.add(mutableQuad);
         }
 
