@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.painter;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
@@ -35,7 +36,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     }
     
     @Override
-    public final void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
+    public final void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         assert quad.isLockUV() : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
         
@@ -57,7 +58,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
         quad.setMaxV(inputs.flipV ? 0 : 1);
         quad.setTextureName(this.texture.getTextureName(this.textureVersionForFace(face), inputs.textureOffset));
         
-        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
+        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
     }
     
     private static enum Textures

@@ -532,7 +532,7 @@ public interface IPolygon
      * Null if not fully on one of the faces.
      * Fudges a bit because painted quads can be slightly offset from the plane.
      */
-    public default EnumFacing getActualFace()
+    public default @Nullable EnumFacing getActualFace()
     {
         EnumFacing nominalFace = this.getNominalFace();
         

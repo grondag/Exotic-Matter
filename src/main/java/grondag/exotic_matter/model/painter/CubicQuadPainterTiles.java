@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.painter;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
@@ -19,7 +20,7 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     }
 
     @Override
-    public void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
+    public void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         assert quad.isLockUV() : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
         
@@ -36,6 +37,6 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
         quad.setRotation(rotation);
         quad.setTextureName(this.texture.getTextureName(textureVersion));
         
-        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
+        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
     }
 }

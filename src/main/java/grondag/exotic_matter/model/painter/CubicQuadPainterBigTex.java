@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.painter;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
@@ -27,7 +28,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public void paintQuad(IMutablePolygon quad, List<IPolygon> outputList, boolean isItem)
+    public void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.
@@ -121,7 +122,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             quad.setMinV(surfaceVec.getY() * sliceIncrement);
             quad.setMaxV(quad.getMinV() + sliceIncrement);
         }
-        this.postPaintProcessQuadAndAddToList(quad, outputList, isItem);
+        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
     }
     
     /** 

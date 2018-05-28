@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.painter;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.ColorMap;
 import grondag.exotic_matter.model.ColorMap.EnumColorMap;
@@ -57,7 +58,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void paintQuad(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem);
+    protected abstract void paintQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -131,7 +132,7 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void addPaintedQuadToList(IPolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+    public final void addPaintedQuadToList(IPolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
@@ -143,14 +144,14 @@ public abstract class QuadPainter
      
         // TODO: Vary color slightly with species, as user-selected option
         
-        this.paintQuad(result, outputList, isItem);
+        this.paintQuad(result, target, isItem);
     }
     
     /**
      * Call from paint quad in sub classes to return results.
      * Handles UV Lock and item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndAddToList(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+    protected final void postPaintProcessQuadAndAddToList(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
     {
         if(inputQuad.isLockUV())
         {
@@ -175,7 +176,7 @@ public abstract class QuadPainter
                 break;
             }
         }
-        outputList.add(inputQuad);
+        target.accept(inputQuad);
     }
     
     private void recolorQuad(IMutablePolygon result)
@@ -240,7 +241,7 @@ public abstract class QuadPainter
         }
         
         @Override
-        protected void paintQuad(IMutablePolygon inputQuad, List<IPolygon> outputList, boolean isItem)
+        protected void paintQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
         {
         }
         

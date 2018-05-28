@@ -3,6 +3,7 @@ package grondag.exotic_matter.block;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -33,6 +34,7 @@ import grondag.exotic_matter.render.SparseLayerMapBuilder;
 import grondag.exotic_matter.render.SparseLayerMapBuilder.SparseLayerMap;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.SurfaceTopology;
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -73,21 +75,17 @@ public class SuperDispatcher
 		@Override
 		public SparseLayerMap load(ISuperModelState key) {
 			
-		    Collection<IPolygon> paintedQuads = getFormattedQuads(key, false);
-		    
-		    @SuppressWarnings("unchecked")
-            ArrayList<IPolygon>[] containers = new ArrayList[BlockRenderLayer.values().length];
-		    for(int i = 0; i < containers.length; i++)
-		    {
-		        containers[i] = new ArrayList<IPolygon>();
-		    }
-		    
-			for(IPolygon quad : paintedQuads)
-			{
-			    containers[quad.getRenderPass().blockRenderLayer.ordinal()].add(quad);
-			}
+		    RenderLayout renderLayout = key.getRenderPassSet().renderLayout;
 
-			RenderLayout renderLayout = key.getRenderPassSet().renderLayout;
+            QuadContainer.Builder[] containers = new QuadContainer.Builder[BlockRenderLayer.values().length];
+		    for(BlockRenderLayer layer : BlockRenderLayer.values())
+            {
+		        if(renderLayout.containsBlockRenderLayer(layer))
+		            containers[layer.ordinal()] = new QuadContainer.Builder();
+            }
+            
+		    provideFormattedQuads(key, false, p ->
+		        containers[p.getRenderPass().blockRenderLayer.ordinal()].accept(p));
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.blockLayerFlags].makeNewMap();
 
@@ -97,7 +95,7 @@ public class SuperDispatcher
 			    {
 //			        if(Output.DEBUG_MODE && containers[layer.ordinal()].isEmpty())
 //			            Output.warn("SuperDispatcher BlockCacheLoader: Empty quads on enabled render layer.");
-			        result.set(layer, QuadContainer.fromRawQuads(containers[layer.ordinal()]));
+			        result.set(layer, containers[layer.ordinal()].build());
 			    }
 			}
 			return result;
@@ -110,24 +108,7 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	for(IPolygon quad : getFormattedQuads(key, true))
-	    	{
-	    	    switch(quad.getSurfaceInstance().surfaceType())
-	    	    {
-                case CUT:
-                    break;
-                case LAMP:
-                    break;
-                case MAIN:
-                    break;
-                default:
-                    break;
-	    	    
-	    	    
-	    	    }
-	    	    
-	    	    builder.add(QuadBakery.createBakedQuad(quad, true));
-	    	}
+	    	provideFormattedQuads(key, true, p -> builder.add(QuadBakery.createBakedQuad(p, true)));
 			return new SimpleItemBlockModel(builder.build(), true);
 		}       
     }
@@ -139,7 +120,7 @@ public class SuperDispatcher
         {
             Collection<IPolygon> quads = key.getShape().meshFactory().getShapeQuads(key);
             if(quads.isEmpty()) return QuadContainer.EMPTY_CONTAINER;
-            ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+            QuadContainer.Builder builder = new QuadContainer.Builder();
             for(IPolygon q : quads)
             {
                 IMutablePolygon mutable = Poly.mutableCopyOf(q);
@@ -159,9 +140,9 @@ public class SuperDispatcher
                     mutable.setMaxV(1);
                 }
                 
-                builder.add(mutable);
+                builder.accept(mutable);
             }
-            return QuadContainer.fromRawQuads(builder.build());
+            return builder.build();
         }       
     }
     
@@ -204,13 +185,11 @@ public class SuperDispatcher
         return container.getOcclusionHash(face);
     }
     
-    private Collection<IPolygon> getFormattedQuads(ISuperModelState modelState, boolean isItem)
+    private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
-        ArrayList<IPolygon> result = new ArrayList<>();
-         
         ShapeMeshGenerator mesher = modelState.getShape().meshFactory();
                 
-        ArrayList<QuadPainter> painters = new ArrayList<QuadPainter>();
+        SimpleUnorderedArrayList<QuadPainter> painters = new SimpleUnorderedArrayList<QuadPainter>();
         for(Surface surface : mesher.getSurfaces(modelState))
         {
             switch(surface.surfaceType)
@@ -249,10 +228,9 @@ public class SuperDispatcher
             Surface qSurface = shapeQuad.getSurfaceInstance().surface();
             for(QuadPainter p : painters)
             {
-                if(qSurface == p.surface) p.addPaintedQuadToList(shapeQuad, result, isItem);
+                if(qSurface == p.surface) p.addPaintedQuadToList(shapeQuad, target, isItem);
             }
         }
-        return result;
     }
     
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack)
