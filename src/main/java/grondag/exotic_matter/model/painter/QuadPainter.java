@@ -211,6 +211,12 @@ public abstract class QuadPainter
                     result.setVertexColor(i, vColor);
                 }
             }
+            
+            // if needed, change render pass of gradient surface to flat so that it doesn't get darkened by AO
+            if(!this.lampRenderPass.isShaded && this.renderPass.isShaded)
+            {
+                result.setRenderPass(this.renderPass.flipShading());
+            }
         }
         else
         {

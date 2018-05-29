@@ -62,10 +62,14 @@ public class ModelStateFlagHelper
             int result = 0;
             
             boolean isBaseTranslucent = (i & IS_BASE_TRANSLUCENT) != 0;
+            boolean isBaseLit = (i & IS_BASE_LIT) != 0;
             boolean isLampPresent = (i & IS_LAMP_PRESENT) != 0;
             boolean isLampTranslucent = (i & IS_LAMP_TRANSLUCENT) != 0;
+            boolean isLampLit = (i & IS_LAMP_LIT) != 0;
             boolean isMiddlePresent = (i & IS_MIDDLE_PRESENT) != 0;
+            boolean isMiddleLit = (i & IS_MIDDLE_LIT) != 0;
             boolean isOuterPresent = (i & IS_OUTER_PRESENT) != 0;
+            boolean isOuterLit = (i & IS_OUTER_LIT) != 0;
             
             
             boolean isLampSolid = isLampPresent && !isLampTranslucent;
@@ -73,14 +77,24 @@ public class ModelStateFlagHelper
             
             int renderPassFlags = 0;
             
-            if(isBaseSolid || isLampSolid)
+            if((isBaseSolid && !isBaseLit) || (isLampSolid && !isLampLit))
             {
                 renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.SOLID_SHADED, renderPassFlags, true); 
             }
+           
+            if((isBaseSolid && isBaseLit) || (isLampSolid && isLampLit))
+            {
+                renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.SOLID_FLAT, renderPassFlags, true); 
+            }
             
-            if((!isBaseSolid) || (isLampPresent && isLampTranslucent) || isMiddlePresent || isOuterPresent)
+            if((!isBaseSolid && !isBaseLit) || (isLampPresent && isLampTranslucent && !isLampLit) || (isMiddlePresent &&  !isMiddleLit) || (isOuterPresent && !isOuterLit))
             {
                 renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.TRANSLUCENT_SHADED, renderPassFlags, true); 
+            }
+            
+            if((!isBaseSolid && isBaseLit) || (isLampPresent && isLampTranslucent && isLampLit) || (isMiddlePresent &&  isMiddleLit) || (isOuterPresent && isOuterLit))
+            {
+                renderPassFlags = RenderLayout.BENUMSET_RENDER_PASS.setFlagForValue(RenderPass.TRANSLUCENT_FLAT, renderPassFlags, true); 
             }
             
             RenderPassSet rps = RenderPassSet.findByFlags(renderPassFlags);

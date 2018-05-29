@@ -139,7 +139,9 @@ public class SuperModelBlock extends SuperBlockPlus
     @Override
     public @Nullable TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
-        return new SuperModelTileEntity();
+        return this.blockRenderMode() == BlockRenderMode.TESR 
+                ? new SuperModelTileEntityTESR()
+                : new SuperModelTileEntity();
     }
     
     @Override

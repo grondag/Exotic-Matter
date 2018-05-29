@@ -17,6 +17,7 @@ import grondag.exotic_matter.model.ModShapes;
 import grondag.exotic_matter.model.ModelState;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.SquareColumnMeshFactory;
+import grondag.exotic_matter.model.Translucency;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
 import grondag.exotic_matter.simulator.WorldTaskManager;
@@ -105,6 +106,8 @@ public class CommonEventHandler
         
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
         workingModel.setFullBrightness(PaintLayer.LAMP, true);
+        workingModel.setTranslucent(PaintLayer.LAMP, true);
+        workingModel.setTranslucency(Translucency.STAINED);
         workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT));
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
 
