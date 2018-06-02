@@ -1,5 +1,8 @@
 package grondag.exotic_matter.render;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
@@ -40,6 +43,14 @@ public interface IMutablePolygon extends IPolygon
     void setVertexNormal(int index, Vec3f normal);
     
     public void setVertexColor(int index, int vColor);
+    
+    public void setVertex(int index, Vertex v);
+    
+    /**
+     * Transforms each vertex with the given function.
+     * Position of vertex isn't changed.
+     */
+    public void mapEachVertex(Function<Vertex, Vertex> mapper);
     
     ///// used in painters
     
@@ -193,5 +204,11 @@ public interface IMutablePolygon extends IPolygon
      * Adds the given offsets to min/max uv
      */
     public void offsetQuadUV(float uOffset, float vOffset);
+
+    /**
+     * Use to remove face normal that may have been copied from a template
+     * and the new quad may have different normal. Will force recalc if requested.
+     */
+    public void clearFaceNormal();
 
 }

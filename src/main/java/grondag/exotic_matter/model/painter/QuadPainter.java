@@ -9,6 +9,7 @@ import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.ITexturePalette;
 import grondag.exotic_matter.model.PaintLayer;
 import grondag.exotic_matter.model.TexturePaletteRegistry;
+import grondag.exotic_matter.model.TextureScale;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Poly;
@@ -17,7 +18,10 @@ import grondag.exotic_matter.render.RenderPass;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.render.Vertex;
 import grondag.exotic_matter.varia.Color;
+import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 
 public abstract class QuadPainter
@@ -54,7 +58,7 @@ public abstract class QuadPainter
      * Input quad will already be a clone and can be modified directly if expedient.
      * RenderLayer, lighting mode and color will already be set.<p>
      * 
-     * Resulting quad(s), if any, must be output using {@link #postPaintProcessQuadAndAddToList(IMutablePolygon, List, boolean)}.
+     * Resulting quad(s), if any, must be output using {@link #postPaintProcessQuadAndOutput(IMutablePolygon, List, boolean)}.
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
@@ -151,7 +155,7 @@ public abstract class QuadPainter
      * Call from paint quad in sub classes to return results.
      * Handles UV Lock and item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndAddToList(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
+    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
     {
         if(inputQuad.isLockUV())
         {
@@ -251,5 +255,74 @@ public abstract class QuadPainter
         {
         }
         
+    }
+    
+    /** 
+     * Transform input vector so that x & y correspond with u / v on the given face, with u,v origin at upper left
+     * and z is depth, where positive values represent distance into the face (away from viewer). <br><br>
+     * 
+     * Coordinates are start masked to the scale of the texture being used and when we reverse an orthogonalAxis, 
+     * we use the texture's sliceMask as the basis so that we remain within the frame of the
+     * texture scale we are using.  <br><br>
+     * 
+     * Note that the x, y components are for determining min/max UV values. 
+     * They should NOT be used to set vertex UV coordinates directly.
+     * All bigtex models should have lockUV = true, which means that 
+     * uv coordinates will be derived at time of quad bake by projecting each
+     * vertex onto the plane of the quad's nominal face. 
+     * Setting UV coordinates on a quad with lockUV=true has no effect.
+     */
+    protected static Vec3i getSurfaceVector(Vec3i vec, EnumFacing face, TextureScale scale)
+    {
+        int sliceCountMask = scale.sliceCountMask;
+        int x = vec.getX() & sliceCountMask;
+        int y = vec.getY() & sliceCountMask;
+        int z = vec.getZ() & sliceCountMask;
+        
+        switch(face)
+        {
+        case EAST:
+            return new Vec3i(sliceCountMask - z, sliceCountMask - y, -vec.getX());
+        
+        case WEST:
+            return new Vec3i(z, sliceCountMask - y, vec.getX());
+        
+        case NORTH:
+            return new Vec3i(sliceCountMask - x, sliceCountMask - y, vec.getZ());
+        
+        case SOUTH:
+            return new Vec3i(x, sliceCountMask - y, -vec.getZ());
+        
+        case DOWN:
+            return new Vec3i(x, sliceCountMask - z, vec.getY());
+    
+        case UP:
+        default:
+            return new Vec3i(x, z, -vec.getY());
+        }
+    }
+    
+    /** 
+     * Rotates given surface vector around the center of the texture by the given degree.
+     * 
+     */
+    protected static Vec3i rotateFacePerspective(Vec3i vec, Rotation rotation, TextureScale scale)
+    {
+        switch(rotation)
+        {
+        case ROTATE_90:
+            return new Vec3i(vec.getY(), scale.sliceCountMask - vec.getX(), vec.getZ());
+    
+        case ROTATE_180:
+            return new Vec3i(scale.sliceCountMask - vec.getX(), scale.sliceCountMask - vec.getY(), vec.getZ());
+            
+        case ROTATE_270:
+            return new Vec3i(scale.sliceCountMask - vec.getY(), vec.getX(), vec.getZ());
+    
+        case ROTATE_NONE:
+        default:
+            return vec;
+        
+        }
     }
 }

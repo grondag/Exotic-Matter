@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.varia;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import org.lwjgl.opengl.GL11;
@@ -14,14 +12,13 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.common.property.IExtendedBlockState;
 
 
 public class BlockModelDebugHighlighter 
@@ -64,35 +61,25 @@ public class BlockModelDebugHighlighter
             double d1,
             double d2,
             @Nonnull IBlockAccess world,
-            @Nonnull IBakedModel model, 
+            @Nonnull DispatchDelegate model, 
             @Nonnull IBlockState state, 
             @Nonnull BlockPos pos, 
             @Nonnull Tessellator tessellator, 
             @Nonnull BufferBuilder buffer)
     {
 
-        GlStateManager.disableDepth();
+//        GlStateManager.disableDepth();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.glLineWidth(1.0F);
+        GlStateManager.glLineWidth(2.0F);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+        GlStateManager.doPolygonOffset(-1f, -1f);
         GlStateManager.enablePolygonOffset();
-        GlStateManager.doPolygonOffset(-1, -1);
         
-        List<BakedQuad> quads = model.getQuads(state, null, 0);
-        if(!quads.isEmpty()) quads.forEach(q -> drawQuad(d0, d1, d2, q, tessellator, buffer));
+        model.forAllQuads((IExtendedBlockState) state, q -> drawQuad(d0, d1, d2, q, tessellator, buffer));
         
-        for(EnumFacing side : EnumFacing.values())
-        {
-            if(state.shouldSideBeRendered(world, pos, side))
-            {
-                quads = model.getQuads(state, side, 0);
-                if(!quads.isEmpty()) quads.forEach(q -> drawQuad(d0, d1, d2, q, tessellator, buffer));
-            }
-        }
-        
-        GlStateManager.enableDepth();
+//        GlStateManager.enableDepth();
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
@@ -110,6 +97,7 @@ public class BlockModelDebugHighlighter
             @Nonnull BufferBuilder buffer)
     {
         
+    
         int[] vertexData = quad.getVertexData();
         
         double[] normalData = new double[24];

@@ -25,7 +25,10 @@ public enum TextureScale
     /** UV length for each subdivision of the texture */
     public final float sliceIncrement;
     
-    /** number of texture subdivisions */
+    /** 
+     * Number of texture subdivisions for BigTex (each division is one block face).
+     * Equivalently, the uv width/block faces covered by the texture if rendered at 1:1 blockface:uv-distance scale.
+     */
     public final int sliceCount;
     
     /** mask to derive a value within the number of slice counts (sliceCount - 1) */

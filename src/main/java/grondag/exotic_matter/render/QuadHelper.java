@@ -42,6 +42,7 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.render.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -55,7 +56,13 @@ public class QuadHelper
 
     public static final List<BakedQuad> EMPTY_QUAD_LIST = new ImmutableList.Builder<BakedQuad>().build();
 
+    @Deprecated
     public static boolean epsilonEquals(double first, double second)
+    {
+        return Math.abs(first - second) < EPSILON;
+    }
+    
+    public static boolean epsilonEquals(float first, float second)
     {
         return Math.abs(first - second) < EPSILON;
     }
@@ -220,12 +227,12 @@ public class QuadHelper
     public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IPolygon template) 
     {
         /** vertex scale */
-        double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
+        final double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
         
         Vec3d[] vertexes = new Vec3d[12];
         
         // create 12 vertices of a icosahedron
-        double t = s * (1.0 + Math.sqrt(5.0)) / 2.0;
+        final double t = s * (1.0 + Math.sqrt(5.0)) / 2.0;
         int vi = 0;
         
         vertexes[vi++] = new Vec3d(-s,  t,  0).add(center);
@@ -253,45 +260,56 @@ public class QuadHelper
         List<IPolygon> results = new ArrayList<>(20);
         
         IMutablePolygon poly = Poly.mutable(template, 3);
+       
+        SurfaceInstance surf = poly.getSurfaceInstance();
+        if(surf != null && surf.topology() == SurfaceTopology.TILED)
+        {
+            final float uvMax = (float) (2 * s);
+            poly.setMaxU(uvMax);
+            poly.setMaxV(uvMax);
+            poly.setSurfaceInstance(surf.withWrap(uvMax));
+        }
         
+        int salt = 0;
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly));
         
         //enable texture randomization by using texture offsets for each face
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly));
 
-        poly.offsetQuadUV(1, -4);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly));
 
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly));
         
-        poly.offsetQuadUV(0, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly));
 
-        poly.offsetQuadUV(1, 1);
+        poly.setSurfaceInstance(poly.getSurfaceInstance().withTextureSalt(salt++));
         results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly));
         results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly));
   
@@ -302,17 +320,22 @@ public class QuadHelper
     {
         IMutablePolygon newQuad = Poly.mutable(template, 3);
         
+        
         if(topHalf)
         {
-            newQuad.addVertex(0, points[p1], 1, 1, template.getColor(), normals[p1]);
-            newQuad.addVertex(1, points[p2], 0, 1, template.getColor(), normals[p2]);
-            newQuad.addVertex(2, points[p3], 1, 0, template.getColor(), normals[p3]);
+            newQuad.addVertex(0, points[p1], 1, 1, template.getColor());//, normals[p1]);
+            newQuad.addVertex(1, points[p2], 0, 1, template.getColor());//, normals[p2]);
+            newQuad.addVertex(2, points[p3], 1, 0, template.getColor());//, normals[p3]);
+            // clear face normal if has been set somehow
+            newQuad.clearFaceNormal();
         }
         else
         {
-            newQuad.addVertex(0, points[p1], 0, 0, template.getColor(), normals[p1]);
-            newQuad.addVertex(1, points[p2], 1, 0, template.getColor(), normals[p2]);
-            newQuad.addVertex(2, points[p3], 0, 1, template.getColor(), normals[p3]);
+            newQuad.addVertex(0, points[p1], 0, 0, template.getColor());//, normals[p1]);
+            newQuad.addVertex(1, points[p2], 1, 0, template.getColor());//, normals[p2]);
+            newQuad.addVertex(2, points[p3], 0, 1, template.getColor());//, normals[p3]);
+            // clear face normal if has been set somehow
+            newQuad.clearFaceNormal();
         }
 
         return newQuad;

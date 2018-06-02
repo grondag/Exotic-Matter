@@ -79,7 +79,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         quad.setMaxV(inputs.flipV ? 0 : 1);
         quad.setTextureName(this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
         
-        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
     
     

@@ -247,6 +247,12 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
     
     @Override
+    public void clearFaceNormal()
+    {
+        this.faceNormal = null;
+    }
+    
+    @Override
     public IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance)
     {
         this.surfaceInstance = surfaceInstance;

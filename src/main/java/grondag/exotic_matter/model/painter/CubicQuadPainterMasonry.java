@@ -58,7 +58,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
         quad.setMaxV(inputs.flipV ? 0 : 1);
         quad.setTextureName(this.texture.getTextureName(this.textureVersionForFace(face), inputs.textureOffset));
         
-        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
     
     private static enum Textures

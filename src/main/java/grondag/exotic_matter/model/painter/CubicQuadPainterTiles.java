@@ -36,6 +36,6 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
         quad.setRotation(rotation);
         quad.setTextureName(this.texture.getTextureName(textureVersion));
         
-        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
 }

@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.painter;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
-import grondag.exotic_matter.model.TextureScale;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -13,30 +12,6 @@ import net.minecraft.util.math.Vec3i;
 public abstract class CubicQuadPainter extends QuadPainter
 {
 
-    /** 
-     * Rotates given surface vector around the center of the texture by the given degree.
-     * 
-     */
-    protected static Vec3i rotateFacePerspective(Vec3i vec, Rotation rotation, TextureScale scale)
-    {
-        switch(rotation)
-        {
-        case ROTATE_90:
-            return new Vec3i(vec.getY(), scale.sliceCountMask - vec.getX(), vec.getZ());
-    
-        case ROTATE_180:
-            return new Vec3i(scale.sliceCountMask - vec.getX(), scale.sliceCountMask - vec.getY(), vec.getZ());
-            
-        case ROTATE_270:
-            return new Vec3i(scale.sliceCountMask - vec.getY(), vec.getX(), vec.getZ());
-    
-        case ROTATE_NONE:
-        default:
-            return vec;
-        
-        }
-    }
-  
     /** use for texture version & rotation alternation. Lower 8 bits for version, upper for rotation */
     private final int variationHashX;
     /** use for texture version & rotation alternation. Lower 8 bits for version, upper for rotation */

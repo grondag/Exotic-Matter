@@ -1,6 +1,7 @@
 package grondag.exotic_matter.render;
 
-import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
@@ -77,11 +78,11 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public void addQuadsToList(List<IPolygon> list, boolean ensureConvex)
+    public void toQuads(Consumer<IPolygon> target, boolean ensureConvex)
     {
         if(this.vertexCount <= 4 && (!ensureConvex || this.isConvex()))
         {
-            list.add(this);
+            target.accept(this);
             return;
         }
         
@@ -93,7 +94,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
         work.setVertex(1, this.getVertex(0));
         work.setVertex(2, this.getVertex(1));
         work.setVertex(3, this.getVertex(tail));
-        list.add(work);
+        target.accept(work);
 
         while(head - tail > 1)
         {
@@ -107,9 +108,9 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
             }
             if(ensureConvex && !work.isConvex())
             {
-                work.addTrisToList(list);
+                work.toTris(target);
             }
-            else list.add(work);
+            else target.accept(work);
         }
     }
     
@@ -298,11 +299,23 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     /** 
      * Using this instead of referencing vertex array directly.
      */
-    private void setVertex(int index, Vertex vertexIn)
+    @Override
+    public void setVertex(int index, Vertex vertexIn)
     {
         this.vertices[index] =  vertexIn;
     }
 
+    @Override
+    public void mapEachVertex(Function<Vertex, Vertex> mapper)
+    {
+        for(int i = 0; i < this.vertexCount; i++)
+        {
+            final Vertex input = this.vertices[i];
+            final Vertex result = mapper.apply(input);
+            if(result != input) this.vertices[i] = result;
+        }
+    }
+    
     /**
      * Enforces immutability of vertex geometry once a vertex is added
      * by rejecting any attempt to set a vertex that already exists.
@@ -490,7 +503,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public void addTrisToList(List<IPolygon> list)
+    public void toTris(Consumer<IPolygon> target)
     {
         // TODO: egregious hack is egregious
         // is copy pasta of CSG version - couldn't be buggered at the time
@@ -498,7 +511,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
         // and implement that in CSG root
         if(this.vertexCount == 3)
         {
-            list.add(this);
+            target.accept(this);
         }
         else
         {
@@ -509,7 +522,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
             work.setVertex(0, this.getVertex(head));
             work.setVertex(1, this.getVertex(0));
             work.setVertex(2, this.getVertex(tail));
-            list.add(work);
+            target.accept(work);
 
             while(head - tail > 1)
             {
@@ -517,7 +530,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
                 work.setVertex(0, this.getVertex(head));
                 work.setVertex(1, this.getVertex(tail));
                 work.setVertex(2, this.getVertex(++tail));
-                list.add(work);
+                target.accept(work);
 
                 if(head - tail > 1)
                 {
@@ -525,7 +538,7 @@ class PolyImpl extends AbstractPolygon implements IMutablePolygon
                     work.setVertex(0, this.getVertex(head));
                     work.setVertex(1, this.getVertex(tail));
                     work.setVertex(2, this.getVertex(--head));
-                    list.add(work);
+                    target.accept(work);
                 }
             }
         }

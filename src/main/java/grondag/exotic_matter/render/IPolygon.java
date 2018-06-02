@@ -1,10 +1,10 @@
 package grondag.exotic_matter.render;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -142,6 +142,15 @@ public interface IPolygon
     
     public Vertex getVertex(int index);
     
+    public default void forEachVertex(Consumer<Vertex> consumer)
+    {
+        final int vertexCount = this.vertexCount();
+        for(int i = 0; i < vertexCount; i++)
+        {
+            consumer.accept(this.getVertex(i));
+        }
+    }
+    
     /**
      * Splits into quads if higher vertex count than four, otherwise returns self.
      * If ensureConvex is true, will also split quads that are concave into tris.
@@ -156,15 +165,23 @@ public interface IPolygon
         if(vertexCount == 4 && (!ensureConvex || this.isConvex())) 
             return ImmutableList.of(this);
         
-        ArrayList<IPolygon> result = new ArrayList<>();
-        this.addQuadsToList(result, ensureConvex);
-        return result;
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        this.toQuads(p -> builder.add(p), ensureConvex);
+        return builder.build();
     }
     
     /**
      * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
      */
-    public void addQuadsToList(List<IPolygon> list, boolean ensureConvex);
+    public default void addQuadsToList(List<IPolygon> list, boolean ensureConvex)
+    {
+        this.toQuads(p -> list.add(p), ensureConvex);
+    }
+    
+    /**
+     * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
+     */
+    public void toQuads(Consumer<IPolygon> target, boolean ensureConvex);
     
     /** 
      * If this is a quad or higher order polygon, returns new tris.
@@ -173,15 +190,23 @@ public interface IPolygon
     public default List<IPolygon> toTris()
     {
         if(this.vertexCount() == 3) return ImmutableList.of(this);
-        ArrayList<IPolygon> result = new ArrayList<>();
-        this.addTrisToList(result);
-        return result;
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        this.toTris(p -> builder.add(p));
+        return builder.build();
     }
     
     /**
      * Like {@link #toTris()} but doesn't instantiate a new list.
      */
-    public void addTrisToList(List<IPolygon> list);
+    public void toTris(Consumer<IPolygon> target);
+    
+    /**
+     * Like {@link #toTris()} but doesn't instantiate a new list.
+     */
+    public default void addTrisToList(List<IPolygon> list)
+    {
+        this.toTris(p -> list.add(p));
+    }
     
     public void addTrisToCSGRoot(CSGNode.Root root);
       /**

@@ -1,18 +1,15 @@
 package grondag.exotic_matter.model.painter;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.ISuperModelState;
 import grondag.exotic_matter.model.PaintLayer;
-import grondag.exotic_matter.model.SquareColumnMeshFactory;
 import grondag.exotic_matter.model.TextureRotationType;
 import grondag.exotic_matter.model.TextureScale;
 import grondag.exotic_matter.render.IMutablePolygon;
 import grondag.exotic_matter.render.IPolygon;
 import grondag.exotic_matter.render.Surface;
 import grondag.exotic_matter.varia.Useful;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
@@ -122,51 +119,8 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             quad.setMinV(surfaceVec.getY() * sliceIncrement);
             quad.setMaxV(quad.getMinV() + sliceIncrement);
         }
-        this.postPaintProcessQuadAndAddToList(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
     
-    /** 
-     * Transform input vector so that x & y correspond with u / v on the given face, with u,v origin at upper left
-     * and z is depth, where positive values represent distance into the face (away from viewer). <br><br>
-     * 
-     * Coordinates are start masked to the scale of the texture being used and when we reverse an orthogonalAxis, 
-     * we use the texture's sliceMask as the basis so that we remain within the frame of the
-     * texture scale we are using.  <br><br>
-     * 
-     * Note that the x, y components are for determining min/max UV values. 
-     * They should NOT be used to set vertex UV coordinates directly.
-     * All bigtex models should have lockUV = true, which means that 
-     * uv coordinates will be derived at time of quad bake by projecting each
-     * vertex onto the plane of the quad's nominal face. 
-     * Setting UV coordinates on a quad with lockUV=true has no effect.
-     */
-    protected static Vec3i getSurfaceVector(Vec3i vec, EnumFacing face, TextureScale scale)
-    {
-        int sliceCountMask = scale.sliceCountMask;
-        int x = vec.getX() & sliceCountMask;
-        int y = vec.getY() & sliceCountMask;
-        int z = vec.getZ() & sliceCountMask;
-        
-        switch(face)
-        {
-        case EAST:
-            return new Vec3i(sliceCountMask - z, sliceCountMask - y, -vec.getX());
-        
-        case WEST:
-            return new Vec3i(z, sliceCountMask - y, vec.getX());
-        
-        case NORTH:
-            return new Vec3i(sliceCountMask - x, sliceCountMask - y, vec.getZ());
-        
-        case SOUTH:
-            return new Vec3i(x, sliceCountMask - y, -vec.getZ());
-        
-        case DOWN:
-            return new Vec3i(x, sliceCountMask - z, vec.getY());
-    
-        case UP:
-        default:
-            return new Vec3i(x, z, -vec.getY());
-        }
-    }
+
 }

@@ -290,6 +290,28 @@ public class SuperDispatcher
             return this.modelResourceString;
         }
         
+        /**
+         * For the debug renderer - enumerates all painted quads for all layers.
+         * Pass in an extended block state.
+         */
+        public void forAllQuads(@Nullable IExtendedBlockState state, Consumer<BakedQuad> consumer)
+        {
+            ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
+            
+            SparseLayerMap map = modelCache.get(modelState);
+            for(QuadContainer qc : map.getAll())
+            {
+                if(qc != null)
+                {
+                    qc.getQuads(null).forEach(consumer);
+                    for(EnumFacing face : EnumFacing.VALUES)
+                    {
+                        qc.getQuads(face).forEach(consumer);
+                    }
+                }
+            }
+        }
+        
         @Override
         public TextureAtlasSprite getParticleTexture()
         {
@@ -322,6 +344,8 @@ public class SuperDispatcher
             }
         }
      
+        
+         
         @Override
         public boolean isAmbientOcclusion()
         {
