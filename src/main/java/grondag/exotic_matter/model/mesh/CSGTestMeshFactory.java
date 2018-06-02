@@ -15,7 +15,6 @@ import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
-import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
@@ -74,9 +73,9 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 //    result = new CSGShape(QuadFactory.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template));
 
       
-      Collection<IPolygon> quadsA = QuadHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
+      Collection<IPolygon> quadsA = MeshHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
       template.setSurfaceInstance(SURFACE_LAMP.unitInstance);
-      Collection<IPolygon> quadsB = QuadHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
+      Collection<IPolygon> quadsB = MeshHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));
 //      template.color = borderColor.getColorMap(EnumColorMap.BORDER);
