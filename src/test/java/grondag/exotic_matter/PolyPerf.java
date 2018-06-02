@@ -6,8 +6,8 @@ import javax.vecmath.Vector3f;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.render.IMutablePolygon;
-import grondag.exotic_matter.render.Poly;
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.Poly;
 import jline.internal.Log;
 import net.minecraft.util.EnumFacing;
 

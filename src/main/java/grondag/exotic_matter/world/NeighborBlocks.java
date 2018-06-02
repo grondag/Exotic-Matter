@@ -1,6 +1,6 @@
 package grondag.exotic_matter.world;
 
-import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;

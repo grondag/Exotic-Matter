@@ -3,6 +3,7 @@ package grondag.exotic_matter.block;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.model.varia.SuperDispatcher;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ICustomModelLoader;

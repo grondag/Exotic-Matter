@@ -4,10 +4,9 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.SuperSimpleBlock;
-import grondag.exotic_matter.model.BlockSubstance;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.TerrainBlockHelper;
+import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;

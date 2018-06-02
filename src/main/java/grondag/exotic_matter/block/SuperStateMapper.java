@@ -6,8 +6,7 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.Maps;
 
-import grondag.exotic_matter.model.BlockHarvestTool;
-import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.model.varia.SuperDispatcher;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;

@@ -3,13 +3,13 @@ package grondag.exotic_matter.placement;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
-import grondag.exotic_matter.block.SuperDispatcher;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.init.IItemModelRegistrant;
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.varia.SuperDispatcher;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.BlockFaceShape;

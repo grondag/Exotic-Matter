@@ -3,11 +3,11 @@ package grondag.exotic_matter.model.varia;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.ITexturePalette;
-import grondag.exotic_matter.model.PaintLayer;
-import grondag.exotic_matter.model.ColorMap.EnumColorMap;
+import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
+import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.texture.ITexturePalette;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleDigging;

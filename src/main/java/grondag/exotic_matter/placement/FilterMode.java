@@ -1,6 +1,6 @@
 package grondag.exotic_matter.placement;
 
-import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.serialization.IMessagePlusImmutable;
 import grondag.exotic_matter.serialization.IReadWriteNBTImmutable;
 import grondag.exotic_matter.serialization.NBTDictionary;

@@ -1,8 +1,8 @@
 package grondag.exotic_matter.varia;
 
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.varia.AbstractNonFaceTest;
+import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.world.AbstractNonFaceTest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;

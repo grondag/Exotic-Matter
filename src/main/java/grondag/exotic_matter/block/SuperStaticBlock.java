@@ -1,8 +1,7 @@
 package grondag.exotic_matter.block;
 
-import grondag.exotic_matter.model.BlockSubstance;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.WorldLightOpacity;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.varia.WorldLightOpacity;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;

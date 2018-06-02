@@ -2,7 +2,7 @@ package grondag.exotic_matter.world;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;

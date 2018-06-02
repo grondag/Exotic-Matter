@@ -1,8 +1,8 @@
 package grondag.exotic_matter.statecache;
 
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.TerrainState;
+import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.terrain.TerrainState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;

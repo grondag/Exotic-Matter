@@ -5,12 +5,12 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import grondag.exotic_matter.block.BlockSubstance;
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
 import grondag.exotic_matter.block.SuperModelBlock;
-import grondag.exotic_matter.model.BlockSubstance;
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.MetaUsage;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.BinaryEnumSet;
 import grondag.exotic_matter.varia.FixedRegionBounds;

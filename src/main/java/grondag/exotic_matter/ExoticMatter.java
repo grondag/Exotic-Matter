@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.SuperModelBlock;
-import grondag.exotic_matter.model.BlockSubstance;
-import grondag.exotic_matter.model.ModelState;
+import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.network.PacketHandler;
 import grondag.exotic_matter.network.PacketUpdateModifierKeys;
 import net.minecraft.creativetab.CreativeTabs;

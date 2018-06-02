@@ -5,9 +5,9 @@ import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.model.ModShapes;
-import grondag.exotic_matter.model.ModelState;
-import grondag.exotic_matter.model.TerrainMeshFactory;
+import grondag.exotic_matter.model.mesh.ModShapes;
+import grondag.exotic_matter.model.state.ModelState;
+import grondag.exotic_matter.terrain.TerrainMeshFactory;
 
 public class TerrainPerf
 {

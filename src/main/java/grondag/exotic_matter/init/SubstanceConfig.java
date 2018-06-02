@@ -1,6 +1,6 @@
 package grondag.exotic_matter.init;
 
-import grondag.exotic_matter.model.BlockHarvestTool;
+import grondag.exotic_matter.block.BlockHarvestTool;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RangeDouble;
 import net.minecraftforge.common.config.Config.RangeInt;

@@ -4,11 +4,11 @@ import javax.annotation.Nonnull;
 
 import org.lwjgl.opengl.GL11;
 
-import grondag.exotic_matter.block.SuperDispatcher.DispatchDelegate;
-import grondag.exotic_matter.model.BlockRenderMode;
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.render.PerQuadModelRenderer;
+import grondag.exotic_matter.model.render.BlockRenderMode;
+import grondag.exotic_matter.model.render.PerQuadModelRenderer;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.varia.SuperDispatcher;
+import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;

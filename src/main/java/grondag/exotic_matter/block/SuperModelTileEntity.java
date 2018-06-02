@@ -1,6 +1,5 @@
 package grondag.exotic_matter.block;
 
-import grondag.exotic_matter.model.BlockSubstance;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class SuperModelTileEntity extends SuperTileEntity

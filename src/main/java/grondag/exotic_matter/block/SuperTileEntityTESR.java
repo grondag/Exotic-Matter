@@ -1,6 +1,6 @@
 package grondag.exotic_matter.block;
 
-import grondag.exotic_matter.model.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayout;
 import net.minecraft.util.BlockRenderLayer;
 
 /**

@@ -6,10 +6,10 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.DummyColorHandler;
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
-import grondag.exotic_matter.model.BlockColorMapProvider;
-import grondag.exotic_matter.model.ISuperBlock;
+import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.statecache.IWorldStateCache;
 import grondag.exotic_matter.statecache.WorldStateCache;
 import net.minecraft.block.Block;

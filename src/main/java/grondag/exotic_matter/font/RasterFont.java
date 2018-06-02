@@ -22,11 +22,11 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.render.FaceVertex;
-import grondag.exotic_matter.render.IMutablePolygon;
-import grondag.exotic_matter.render.IPolygon;
-import grondag.exotic_matter.render.Poly;
-import grondag.exotic_matter.render.TextureHelper;
+import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.texture.TextureHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;

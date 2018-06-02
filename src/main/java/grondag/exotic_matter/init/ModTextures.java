@@ -1,17 +1,17 @@
 package grondag.exotic_matter.init;
 
-import static grondag.exotic_matter.model.TextureRotationType.*;
+import static grondag.exotic_matter.model.texture.TextureRotationType.*;
 import static grondag.exotic_matter.world.Rotation.*;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.ITexturePalette;
-import grondag.exotic_matter.model.TextureGroup;
-import grondag.exotic_matter.model.TextureLayout;
-import grondag.exotic_matter.model.TexturePaletteRegistry;
-import grondag.exotic_matter.model.TexturePaletteSpec;
-import grondag.exotic_matter.model.TextureRenderIntent;
-import grondag.exotic_matter.model.TextureScale;
+import grondag.exotic_matter.model.texture.ITexturePalette;
+import grondag.exotic_matter.model.texture.TextureGroup;
+import grondag.exotic_matter.model.texture.TextureLayout;
+import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
+import grondag.exotic_matter.model.texture.TexturePaletteSpec;
+import grondag.exotic_matter.model.texture.TextureRenderIntent;
+import grondag.exotic_matter.model.texture.TextureScale;
 
 public class ModTextures
 {

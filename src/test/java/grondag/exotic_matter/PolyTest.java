@@ -5,12 +5,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.render.FaceVertex;
-import grondag.exotic_matter.render.IMutablePolygon;
-import grondag.exotic_matter.render.Poly;
-import grondag.exotic_matter.render.QuadHelper;
-import grondag.exotic_matter.render.RenderPass;
-import grondag.exotic_matter.render.Vec3f;
+import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.Vec3f;
+import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 

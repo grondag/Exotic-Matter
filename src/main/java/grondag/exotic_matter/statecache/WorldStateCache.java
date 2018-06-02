@@ -4,8 +4,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
+import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;

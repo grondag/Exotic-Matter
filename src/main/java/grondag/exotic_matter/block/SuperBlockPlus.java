@@ -3,10 +3,9 @@ package grondag.exotic_matter.block;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.BlockRenderMode;
-import grondag.exotic_matter.model.ISuperBlock;
-import grondag.exotic_matter.model.ISuperModelState;
-import grondag.exotic_matter.model.MetaUsage;
+import grondag.exotic_matter.model.render.BlockRenderMode;
+import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.varia.ItemHelper;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
