@@ -53,7 +53,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
         template.setLockUV(false);
         template.setSurfaceInstance(SURFACE_MAIN.unitInstance);
   
-        Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template);
+        Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
       
         return result;
     }

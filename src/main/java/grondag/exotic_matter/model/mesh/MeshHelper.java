@@ -3,14 +3,20 @@ package grondag.exotic_matter.model.mesh;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.Vec3f;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class MeshHelper
@@ -105,7 +111,7 @@ public class MeshHelper
      * Makes a regular icosahedron, which is a very close approximation to a sphere for most purposes.
      * Loosely based on http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
      */
-    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IPolygon template) 
+    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IPolygon template, boolean smoothNormals) 
     {
         /** vertex scale */
         final double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
@@ -131,10 +137,14 @@ public class MeshHelper
         vertexes[vi++] = new Vec3d(-t,  0, -s).add(center);
         vertexes[vi++] = new Vec3d(-t,  0,  s).add(center);
 
-        Vec3d[] normals = new Vec3d[12];
-        for(int i = 0; i < 12; i++)
+        Vec3d[] normals = null;
+        if(smoothNormals)
         {
-            normals[i] = vertexes[i].subtract(center).normalize();
+            normals = new Vec3d[12];
+            for(int i = 0; i < 12; i++)
+            {
+                normals[i] = vertexes[i].subtract(center).normalize();
+            }
         }
         
         // create 20 triangles of the icosahedron
@@ -197,31 +207,49 @@ public class MeshHelper
         return results;
     }
     
-    private static IPolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, Vec3d[] normals, IPolygon template)
+    private static IPolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IPolygon template)
     {
         IMutablePolygon newQuad = Poly.mutable(template, 3);
         
-        
-        if(topHalf)
+        if(normals == null)
         {
-            newQuad.addVertex(0, points[p1], 1, 1, template.getColor());//, normals[p1]);
-            newQuad.addVertex(1, points[p2], 0, 1, template.getColor());//, normals[p2]);
-            newQuad.addVertex(2, points[p3], 1, 0, template.getColor());//, normals[p3]);
-            // clear face normal if has been set somehow
-            newQuad.clearFaceNormal();
+            if(topHalf)
+            {
+                newQuad.addVertex(0, points[p1], 1, 1, template.getColor());
+                newQuad.addVertex(1, points[p2], 0, 1, template.getColor());
+                newQuad.addVertex(2, points[p3], 1, 0, template.getColor());
+            }
+            else
+            {
+                newQuad.addVertex(0, points[p1], 0, 0, template.getColor());
+                newQuad.addVertex(1, points[p2], 1, 0, template.getColor());
+                newQuad.addVertex(2, points[p3], 0, 1, template.getColor());
+            }
         }
         else
         {
-            newQuad.addVertex(0, points[p1], 0, 0, template.getColor());//, normals[p1]);
-            newQuad.addVertex(1, points[p2], 1, 0, template.getColor());//, normals[p2]);
-            newQuad.addVertex(2, points[p3], 0, 1, template.getColor());//, normals[p3]);
-            // clear face normal if has been set somehow
-            newQuad.clearFaceNormal();
+            if(topHalf)
+            {
+                newQuad.addVertex(0, points[p1], 1, 1, template.getColor(), normals[p1]);
+                newQuad.addVertex(1, points[p2], 0, 1, template.getColor(), normals[p2]);
+                newQuad.addVertex(2, points[p3], 1, 0, template.getColor(), normals[p3]);
+            }
+            else
+            {
+                newQuad.addVertex(0, points[p1], 0, 0, template.getColor(), normals[p1]);
+                newQuad.addVertex(1, points[p2], 1, 0, template.getColor(), normals[p2]);
+                newQuad.addVertex(2, points[p3], 0, 1, template.getColor(), normals[p3]);
+            }
         }
-
+        // clear face normal if has been set somehow
+        newQuad.clearFaceNormal();
         return newQuad;
     }
 
+    /**
+     * This method is intended for boxes that fit within a single world block.
+     * Typically used with locked UV coordinates.
+     */
     public static List<IPolygon> makeBox(AxisAlignedBB box, IPolygon template)
     {
         List<IPolygon> retVal = new ArrayList<>(6);
@@ -255,5 +283,61 @@ public class MeshHelper
         retVal.add(quad);
         
         return retVal;
+    }
+    
+    /**
+     * This method is intended for boxes that span multiple world blocks.
+     * Typically used with unlocked UV coordinates and tiled surface painter.
+     * Will emit quads with uv min/max outside the 0-1 range.
+     * Textures will render 1:1, no wrapping.
+     */
+    public static List<IPolygon> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IPolygon template)
+    {
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        
+        final float xEnd = origin.x + xSize;
+        final float yEnd = origin.y + ySize;
+        final float zEnd = origin.z + zSize;
+        final int color = template.getColor();
+        
+        IMutablePolygon quad = Poly.mutable(template, 4);
+        quad.setLockUV(false);
+        quad.setMinU(0);
+        quad.setMaxU(xSize);
+        quad.setMinV(0);
+        quad.setMaxV(zSize);
+        quad.setNominalFace(EnumFacing.UP);
+        quad.addVertex(0, xEnd, yEnd, origin.z, 0, 0, color, 0, 1, 0);
+        quad.addVertex(1, origin.x, yEnd, origin.z, 0, 0, color, 0, 1, 0);
+        quad.addVertex(2, origin.x, yEnd, zEnd, 0, 0, color, 0, 1, 0);
+        quad.addVertex(3, xEnd, yEnd, zEnd, 0, 0, color, 0, 1, 0);
+//        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
+        builder.add(quad);
+    
+//        quad = Poly.mutable(template);
+//        quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
+//        builder.add(quad);
+//    
+//        //-X
+//        quad = Poly.mutable(template);
+//        quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
+//        builder.add(quad);
+//        
+//        //+X
+//        quad = Poly.mutable(template);
+//        quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
+//        builder.add(quad);
+//        
+//        //-Z
+//        quad = Poly.mutable(template);
+//        quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
+//        builder.add(quad);
+//        
+//        //+Z
+//        quad = Poly.mutable(template);
+//        quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
+//        builder.add(quad);
+        
+        return builder.build();
     }
 }
