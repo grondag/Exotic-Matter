@@ -7,8 +7,8 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
@@ -16,7 +16,6 @@ import grondag.exotic_matter.model.primitives.Vec3f;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class MeshHelper
@@ -290,6 +289,8 @@ public class MeshHelper
      * Typically used with unlocked UV coordinates and tiled surface painter.
      * Will emit quads with uv min/max outside the 0-1 range.
      * Textures will render 1:1, no wrapping.
+     * 
+     * TODO: incomplete
      */
     public static List<IPolygon> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IPolygon template)
     {
