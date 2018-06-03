@@ -210,6 +210,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             mesh = this.modelCache.get(flowState.getStateKey());
         }
         
+        assert mesh != null : "Model cache returned null mesh";
+        
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         // scale all quads UVs according to position to match what surface painter expects
