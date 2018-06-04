@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.model.mesh.ModShapes;
 import grondag.exotic_matter.model.render.BlockRenderMode;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelState;
@@ -46,7 +47,13 @@ import net.minecraftforge.event.RegistryEvent.Register;
  */
 public class SuperModelBlock extends SuperBlockPlus  
 {
+    private static final ModelState DEFAULT_MODEL_STATE;
     
+    static
+    {
+        DEFAULT_MODEL_STATE = new ModelState();
+        DEFAULT_MODEL_STATE.setShape(ModShapes.CUBE);
+    }
     /**
      * Harvest tool for this block based on block substance. Set during getActualState
      * so that harvest/tool methods can have access to location-dependent substance information.
@@ -127,7 +134,7 @@ public class SuperModelBlock extends SuperBlockPlus
     public SuperModelBlock(String blockName, Material defaultMaterial, BlockRenderMode blockRenderMode, WorldLightOpacity worldLightOpacity, 
                 boolean isHyperMatter, boolean isGeometryFullCube)
     {
-        super(blockName, defaultMaterial, new ModelState(), blockRenderMode);
+        super(blockName, defaultMaterial, DEFAULT_MODEL_STATE.clone(), blockRenderMode);
         this.isHyperMatter = isHyperMatter;
         this.fullBlock = isGeometryFullCube;
         this.worldLightOpacity = worldLightOpacity;

@@ -15,7 +15,7 @@ public enum SpeciesMode implements IMessagePlusImmutable<SpeciesMode>, IReadWrit
     MATCH_MOST,
     COUNTER_MOST;
     
-    private static final String TAG_NAME = NBTDictionary.claim("regionOrientation");
+    private static final String TAG_NAME = NBTDictionary.claim("speciesMode");
 
     @Override
     public SpeciesMode deserializeNBT(NBTTagCompound tag)
