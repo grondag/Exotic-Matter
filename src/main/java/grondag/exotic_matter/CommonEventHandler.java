@@ -91,25 +91,25 @@ public class CommonEventHandler
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.SPHERE);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.WHITE);
+        workingModel.setFullBrightness(PaintLayer.BASE, true);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.COLUMN_SQUARE);
         SquareColumnMeshFactory.setCutCount(3, workingModel);
         SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_TEST_SINGLE);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
         workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
         
-        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BIGTEX_TEST_SINGLE);
+        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_SUBTLE);
         workingModel.setColorMap(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
         
-        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
+        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.WHITE);
         workingModel.setFullBrightness(PaintLayer.LAMP, true);
-        workingModel.setTranslucent(PaintLayer.LAMP, true);
-        workingModel.setTranslucency(Translucency.STAINED);
         workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT));
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel)
+            .setCreativeTab(ExoticMatter.tabMod));
 
     }
     

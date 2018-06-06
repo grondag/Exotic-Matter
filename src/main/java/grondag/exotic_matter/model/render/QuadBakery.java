@@ -5,6 +5,7 @@ import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.relauncher.Side;
@@ -13,14 +14,23 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class QuadBakery
 {
+    //Still fuzzy on how the lightmap coordinates work, but this does the job.
+    //It mimics the lightmap that would be returned from a block in full brightness.
+    public static final int MAX_LIGHT = 15 * 0x20;
+    public static final float MAX_LIGHT_FLOAT = (float)MAX_LIGHT / 0xFFFF;
+    public static final float[] LIGHTMAP_FULLBRIGHT = {MAX_LIGHT_FLOAT, MAX_LIGHT_FLOAT};
+    
     /**
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
      * Use this for item models.  Doing so will disable pre-baked lighting
      * and cause the quad to include normals.
      */
+    @SuppressWarnings("null")
     public static BakedQuad createBakedQuad(IPolygon raw, boolean forceItemFormat)
     {
+        int glowBits = raw.isFullBrightness() ? 0xFFFF : 0;
+        
         final float spanU = raw.getMaxU() - raw.getMinU();
         final float spanV = raw.getMaxV() - raw.getMinV();
         
@@ -30,8 +40,12 @@ public class QuadBakery
         float[][] uvData = new float[4][2];
         for(int v = 0; v < 4; v++)
         {
-            uvData[v][0] = (float) raw.getVertex(v).u;
-            uvData[v][1] = (float) raw.getVertex(v).v;
+            final Vertex vertex = raw.getVertex(v);
+            if(vertex.glow != 0)
+                glowBits |= (0xF << (v * 4));
+            
+            uvData[v][0] = vertex.u;
+            uvData[v][1] = vertex.v;
         }
         
         // apply texture rotation
@@ -59,9 +73,9 @@ public class QuadBakery
          * not be used if the quad is full brightness and not being rendered as an item.
          * This should be OK, because we generally don't care about shading for full-brightness render.
          */
-        VertexFormat format = !forceItemFormat && (raw.isFullBrightness() || raw.getSurfaceInstance().isLampGradient)
-                ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.BLOCK
-                : net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM;
+        VertexFormat format = forceItemFormat || glowBits == 0
+                ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM
+                : net.minecraft.client.renderer.vertex.DefaultVertexFormats.BLOCK;
         
         float[] faceNormal = raw.getFaceNormalArray();          
         
@@ -72,7 +86,6 @@ public class QuadBakery
         
         for(int v = 0; v < 4; v++)
         {
-
             for(int e = 0; e < format.getElementCount(); e++)
             {
                 switch(format.getElement(e).getUsage())
@@ -83,8 +96,8 @@ public class QuadBakery
 
                 case NORMAL: 
                 {
-                    final Vertex vert = raw.getVertex(v);
-                    LightUtil.pack(vert.normal == null ? faceNormal : vert.normal.toArray(), vertexData, format, v, e);
+                    final Vertex vertex = raw.getVertex(v);
+                    LightUtil.pack(vertex.normal == null ? faceNormal : vertex.normal.toArray(), vertexData, format, v, e);
                     break;
                 }
                 case COLOR:
@@ -99,21 +112,8 @@ public class QuadBakery
                     break;
                 }
                 case UV: 
-                    if(format.getElement(e).getIndex() == 1)
-                    {
-                        // There are 2 UV elements when we are using a BLOCK vertex format
-                        // that accepts pre-baked lightmaps.  Assuming here that the 
-                        // intention is for full brightness. (Don't have a way to pass something dimmer.)
-                        float[] fullBright = new float[2];
-
-                        //Don't really understand how brightness format works, but this does the job.
-                        //It mimics the lightmap that would be returned from a block in full brightness.
-                        fullBright[0] = (float)(15 * 0x20) / 0xFFFF;
-                        fullBright[1] = (float)(15 * 0x20) / 0xFFFF;
-
-                        LightUtil.pack(fullBright, vertexData, format, v, e);
-                    }
-                    else
+                    // Note that we don't handle lightmaps here - will be handled in LitBakedQuad
+                    if(format.getElement(e).getIndex() == 0)
                     {
                         // This block handles the normal case: texture UV coordinates
                         float[] interpolatedUV = new float[2];
@@ -131,11 +131,15 @@ public class QuadBakery
             }
         }
 
-        boolean applyDiffuseLighting = !raw.isFullBrightness()
-                && !raw.getSurfaceInstance().isLampGradient();
+        boolean applyDiffuseLighting = !raw.isFullBrightness();
         
-        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.getNominalFace(), textureSprite, applyDiffuseLighting, 
-                format));
+        return format == DefaultVertexFormats.ITEM
+                ? new BakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, applyDiffuseLighting, format)
+                : new LitBakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, applyDiffuseLighting, format, glowBits);
+        
+                //TODO: restore quad caching
+//        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.getNominalFace(), textureSprite, applyDiffuseLighting, 
+//                format));
     }
     
     private static void applyTextureRotation(IPolygon raw, float[][] uvData)

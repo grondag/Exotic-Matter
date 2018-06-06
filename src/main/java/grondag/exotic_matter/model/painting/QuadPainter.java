@@ -194,30 +194,23 @@ public abstract class QuadPainter
         {
             // If the surface has a lamp gradient or is otherwise pre-shaded 
             // we don't want to see a gradient when rendering at full brightness
-            // so make all vertices white before we recolor.
+            // so make all vertices same color.
             result.replaceColor(color);
         }
-        
         else if(result.getSurfaceInstance().isLampGradient && this.lampColorMap != null)
         {
-            // if surface has a lamp gradient and rendered with shading, need
-            // to replace the colors to form the gradient.
-            int shadedColor = QuadHelper.shadeColor(color, (LightUtil.diffuseLight(result.getNormalFace()) + 2) / 3, false);
+            // If surface has a lamp gradient and rendered with shading, 
+            // replace white with the lamp color and black with the normal color.
+            // Shading will be handled at bake via per-vertex glow.
             int lampColor = this.lampColorMap.getColor(EnumColorMap.LAMP);
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    int vColor = v.color == Color.WHITE ? lampColor : shadedColor;
+                    int vColor = v.color == Color.WHITE ? lampColor : color;
                     result.setVertexColor(i, vColor);
                 }
-            }
-            
-            // if needed, change render pass of gradient surface to flat so that it doesn't get darkened by AO
-            if(!this.lampRenderPass.isShaded && this.renderPass.isShaded)
-            {
-                result.setRenderPass(this.renderPass.flipShading());
             }
         }
         else

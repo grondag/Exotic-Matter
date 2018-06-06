@@ -90,4 +90,9 @@ public class ModTextures
     public static final ITexturePalette BLOCK_NOISE_SUBTLE = TexturePaletteRegistry.addTexturePallette("noise_subtle", "noise_subtle", new TexturePaletteSpec(BLOCK_COBBLE));
 
     public static final ITexturePalette BLOCK_NOISE_SUBTLE_ZOOM = TexturePaletteRegistry.addZoomedPallete(BLOCK_NOISE_SUBTLE);
+
+    public static final ITexturePalette WHITE = TexturePaletteRegistry.addTexturePallette("white", "white", 
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SPLIT_X_8)
+            .withRotation(FIXED.with(ROTATE_NONE)).withGroups(TextureGroup.STATIC_TILES));
+
 }

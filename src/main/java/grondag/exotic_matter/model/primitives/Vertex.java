@@ -15,6 +15,7 @@ public final class Vertex extends Vec3f
     public final float v;
     public final int color;
     public final @Nullable Vec3f normal;
+    public final byte glow;
     
     public Vertex(Vec3f point, float u, float v, int color, Vec3f normal)
     {
@@ -32,13 +33,24 @@ public final class Vertex extends Vec3f
         this(x, y, z, u, v, color, null);
     }
 
+    public Vertex(float x, float y, float z, float u, float v, int color, int glow)
+    {
+        this(x, y, z, u, v, color, null, glow);
+    }
+    
     public Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal)
+    {
+        this(x, y, z, u, v, color, normal, 0);
+    }
+    
+    public Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal, int glow)
     {
         super(x, y, z);
         this.u = u;
         this.v = v;
         this.color = color;
         this.normal = normal;
+        this.glow = (byte) (glow & 0xF);
     }
     
     public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
@@ -46,6 +58,11 @@ public final class Vertex extends Vec3f
         this(x, y, z, u, v, color, new Vec3f(normalX, normalY, normalZ));
     }
 
+    public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ, int glow)
+    {
+        this(x, y, z, u, v, color, new Vec3f(normalX, normalY, normalZ), glow);
+    }
+    
     /**
      * Not supported because is immutable
      */
@@ -62,38 +79,44 @@ public final class Vertex extends Vec3f
     public final Vertex flipped()
     {
         return this.normal == null
-                ? new Vertex(this.x, this.y, this.z, this.u, this.v, this.color)
-                : new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal.inverse());
+                ? new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, null, this.glow)
+                : new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal.inverse(), this.glow);
     }
     
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(float normalXIn, float normalYIn, float normalZIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normalXIn, normalYIn, normalZIn);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normalXIn, normalYIn, normalZIn, this.glow);
     }
     
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(Vec3f normal)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normal);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normal, this.glow);
     }
 
     /** returns copy of this vertex with given color */
     public final Vertex withColor(int colorIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal);
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, this.glow);
     }
 
+    /** returns copy of this vertex with given glow (0-15) */
+    public final Vertex withGlow(int glowIn)
+    {
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, glowIn);
+    }
+    
     /** returns copy of this vertex with given UV */
     public final Vertex withUV(float uNew, float vNew)
     {
-        return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normal);
+        return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normal, this.glow);
     }
     
     /** returns copy of this vertex with given XYZ coords */
     public final Vertex withXYZ(float xNew, float yNew, float zNew)
     {
-        return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normal);
+        return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normal, this.glow);
     }
     
     public final Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
@@ -107,16 +130,16 @@ public final class Vertex extends Vec3f
             tmp.scale(1f / tmp.w);
         }
 
-        if(this.normal != null)
+        if(this.normal == null)
+        {
+            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color, null, this.glow);
+        }
+        else
         {
             Vector4f tmpNormal = new Vector4f(this.normal.x, this.normal.y, this.normal.z, 1f);
             matrix.transform(tmpNormal);
             float normScale= (float) (1/Math.sqrt(tmpNormal.x*tmpNormal.x + tmpNormal.y*tmpNormal.y + tmpNormal.z*tmpNormal.z));
-            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color, tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale);
-        }
-        else
-        {
-            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color);
+            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color, tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale, this.glow);
         }
 
     }
@@ -215,6 +238,8 @@ public final class Vertex extends Vec3f
         final float newU = this.u + (otherVertex.u - this.u) * otherWeight;
         final float newV = this.v + (otherVertex.v - this.v) * otherWeight;
         
+        final int newGlow = (int) (this.glow + (otherVertex.glow - this.glow) * otherWeight);
+        
         final int thisRed = this.color & 0xFF;
         final int thisGreen = this.color & 0xFF00;
         final int thisBlue = this.color & 0xFF0000;
@@ -230,7 +255,7 @@ public final class Vertex extends Vec3f
         
         if(thisNormal == null || otherNormal == null)
         {
-            return new Vertex(newX, newY, newZ, newU, newV, newColor);
+            return new Vertex(newX, newY, newZ, newU, newV, newColor, null, newGlow);
         }
         else
         {
@@ -239,7 +264,7 @@ public final class Vertex extends Vec3f
             final float normZ = thisNormal.z + (otherNormal.z - thisNormal.z) * otherWeight;
             final float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
             
-            return new Vertex(newX, newY, newZ, newU, newV, newColor, normX * normScale, normY * normScale, normZ * normScale);
+            return new Vertex(newX, newY, newZ, newU, newV, newColor, normX * normScale, normY * normScale, normZ * normScale, newGlow);
         }
     }
   

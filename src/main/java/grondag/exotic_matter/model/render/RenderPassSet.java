@@ -3,6 +3,8 @@ package grondag.exotic_matter.model.render;
 
 import static grondag.exotic_matter.model.render.RenderPass.*;
 
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+
 public enum RenderPassSet
 {
     SOLID_S(SOLID_SHADED),
@@ -36,7 +38,26 @@ public enum RenderPassSet
     
     private RenderPassSet(RenderPass... passes)
     {
-        this.renderLayout = new RenderLayout(passes);
+        
+        // TODO: quick hack - force to use only the shaded modes
+        SimpleUnorderedArrayList<RenderPass> hack = new SimpleUnorderedArrayList<>();
+        for(RenderPass p : passes)
+        {
+            switch(p)
+            {
+            case SOLID_FLAT:
+            case SOLID_SHADED:
+                hack.addIfNotPresent(RenderPass.SOLID_SHADED);
+                break;
+                
+            case TRANSLUCENT_FLAT:
+            case TRANSLUCENT_SHADED:
+                hack.addIfNotPresent(RenderPass.TRANSLUCENT_SHADED);
+                break;
+            
+            }
+        }
+        this.renderLayout = new RenderLayout(hack.toArray(new RenderPass[hack.size()]));
         
         this.hasFlatRenderPass = this.renderLayout.containsRenderPass(SOLID_FLAT) || this.renderLayout.containsRenderPass(TRANSLUCENT_FLAT);
         

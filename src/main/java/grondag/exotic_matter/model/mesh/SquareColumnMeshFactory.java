@@ -34,6 +34,7 @@ import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.FaceSide;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.AxisDirection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -428,7 +429,6 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                     builder.add(tri);                
                 }
                 
-
                 // margin corner sides
                 {
                     IMutablePolygon quad = Poly.mutable(template);
@@ -573,13 +573,15 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
 
     private void setupCutSideQuad(IMutablePolygon qi, SimpleQuadBounds qb)
     {
-        int deepColor = qi.getSurfaceInstance().isLampGradient ? Color.BLACK : Color.WHITE;
+        final boolean isLampGradient = qi.getSurfaceInstance().isLampGradient;
+        final int deepColor = isLampGradient ? Color.BLACK : Color.WHITE;
+        final byte glow = isLampGradient ? (byte)9 : (byte)0;
         
         qi.setupFaceQuad(qb.face,
-                new FaceVertex.Colored(qb.x0, qb.y0, qb.depth, Color.WHITE),
-                new FaceVertex.Colored(qb.x1, qb.y0, qb.depth, Color.WHITE),
-                new FaceVertex.Colored(qb.x1, qb.y1, qb.depth, deepColor),
-                new FaceVertex.Colored(qb.x0, qb.y1, qb.depth, deepColor), 
+                new FaceVertex.Colored(qb.x0, qb.y0, qb.depth, Color.WHITE, glow),
+                new FaceVertex.Colored(qb.x1, qb.y0, qb.depth, Color.WHITE, glow),
+                new FaceVertex.Colored(qb.x1, qb.y1, qb.depth, deepColor, (byte)0),
+                new FaceVertex.Colored(qb.x0, qb.y1, qb.depth, deepColor, (byte)0), 
                 qb.topFace);
     }
     
