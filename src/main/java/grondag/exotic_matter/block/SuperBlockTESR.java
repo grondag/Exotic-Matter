@@ -4,8 +4,8 @@ import javax.annotation.Nonnull;
 
 import org.lwjgl.opengl.GL11;
 
-import grondag.exotic_matter.model.render.BlockRenderMode;
 import grondag.exotic_matter.model.render.PerQuadModelRenderer;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
@@ -29,16 +29,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
+public abstract class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
 {
-    public static final SuperBlockTESR INSTANCE = new SuperBlockTESR();
-    
     protected static void addVertexWithUV(BufferBuilder buffer, double x, double y, double z, double u, double v, int skyLight, int blockLight)
     {
         buffer.pos(x, y, z).color(0xFF, 0xFF, 0xFF, 0xFF).tex(u, v).lightmap(skyLight, blockLight).endVertex();
     }
 
-    private final DispatchDelegate tesrDelegate = SuperDispatcher.INSTANCE.delegates[BlockRenderMode.TESR.ordinal()];
+    private final DispatchDelegate tesrDelegate = SuperDispatcher.INSTANCE.delegates[RenderLayout.NONE.blockLayerFlags];
     
     @Override
     public void render(@Nonnull SuperTileEntity te, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
@@ -58,7 +56,6 @@ public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
     protected void renderBlock(SuperTileEntity te, BufferBuilder buffer)
     {
         SuperBlock block = (SuperBlock) te.getBlockType();
-        if(block.blockRenderMode() != BlockRenderMode.TESR) return;
         
         if(MinecraftForgeClient.getRenderPass() == 0)
         {
@@ -108,7 +105,7 @@ public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
         if (translucent ) 
         {
             
-            if(modelState.getRenderPassSet().renderLayout.containsBlockRenderLayer(BlockRenderLayer.TRANSLUCENT))
+            if(modelState.getRenderLayout().containsBlockRenderLayer(BlockRenderLayer.TRANSLUCENT))
             {
                 PerQuadModelRenderer.INSTANCE.renderModel(world, this.tesrDelegate, state, te.getPos(), buffer, true, 0L);
 
@@ -119,7 +116,7 @@ public class SuperBlockTESR extends TileEntitySpecialRenderer<SuperTileEntity>
         }
         else
         {
-            if(modelState.getRenderPassSet().renderLayout.containsBlockRenderLayer(BlockRenderLayer.SOLID))
+            if(modelState.getRenderLayout().containsBlockRenderLayer(BlockRenderLayer.SOLID))
             {
                 PerQuadModelRenderer.INSTANCE.renderModel(world, this.tesrDelegate, state, te.getPos(), buffer, true, 0L);
             }

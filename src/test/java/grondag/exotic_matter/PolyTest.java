@@ -10,8 +10,8 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vec3f;
-import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
 public class PolyTest
@@ -30,14 +30,14 @@ public class PolyTest
         assert quad.shouldContractUVs();
         assert quad.getNominalFace() == EnumFacing.UP;
         assert quad.getRotation() == Rotation.ROTATE_NONE;
-        assert quad.getRenderPass() == RenderPass.SOLID_SHADED;
+        assert quad.getRenderPass() == BlockRenderLayer.SOLID;
         
         quad.setFullBrightness(true);
         quad.setLockUV(true);
         quad.setShouldContractUVs(false);
         quad.setNominalFace(null);
         quad.setRotation(Rotation.ROTATE_270);
-        quad.setRenderPass(RenderPass.TRANSLUCENT_FLAT);
+        quad.setRenderPass(BlockRenderLayer.TRANSLUCENT);
         quad.setColor(0xFA123456);
         
         assert quad.isFullBrightness();
@@ -45,7 +45,7 @@ public class PolyTest
         assert !quad.shouldContractUVs();
         assert quad.getNominalFace() == null;
         assert quad.getRotation() == Rotation.ROTATE_270;
-        assert quad.getRenderPass() == RenderPass.TRANSLUCENT_FLAT;
+        assert quad.getRenderPass() == BlockRenderLayer.TRANSLUCENT;
         assert quad.getColor() == 0xFA123456;
         
         quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);

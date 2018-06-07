@@ -12,8 +12,7 @@ import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.Transform;
-import grondag.exotic_matter.model.render.RenderPass;
-import grondag.exotic_matter.model.render.RenderPassSet;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.serialization.IMessagePlus;
@@ -23,6 +22,7 @@ import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.Rotation;
 import grondag.exotic_matter.world.SimpleJoin;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -192,9 +192,9 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
      * Determines what rendering path should apply for the given paint layer
      * based on user choices and the constraints imposed by MC rendering.  
      */
-    RenderPass getRenderPass(PaintLayer layer);
+    BlockRenderLayer getRenderPass(PaintLayer layer);
 
-    RenderPassSet getRenderPassSet();
+    RenderLayout getRenderLayout();
 
     boolean hasAxis();
 

@@ -32,7 +32,7 @@ public class BinaryEnumMapTest
         assertFalse(bem.isFlagSetForValue(BlockRenderLayer.CUTOUT_MIPPED, flags));
         
         flags = bem.getFlagsForIncludedValues(BlockRenderLayer.values());
-        assertArrayEquals(bem.getValuesForSetFlags(flags).toArray(BlockRenderLayer.values()), BlockRenderLayer.values());
+        assertArrayEquals(bem.getValuesForSetFlags(flags), BlockRenderLayer.values());
         
         assertTrue(bem.combinationCount() == 16);
 

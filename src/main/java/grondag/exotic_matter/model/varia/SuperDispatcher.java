@@ -26,7 +26,6 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.render.BlockRenderMode;
 import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
@@ -73,7 +72,7 @@ public class SuperDispatcher
 		@Override
 		public SparseLayerMap load(ISuperModelState key) {
 			
-		    RenderLayout renderLayout = key.getRenderPassSet().renderLayout;
+		    RenderLayout renderLayout = key.getRenderLayout();
 
             QuadContainer.Builder[] containers = new QuadContainer.Builder[BlockRenderLayer.values().length];
 		    for(BlockRenderLayer layer : BlockRenderLayer.values())
@@ -83,7 +82,7 @@ public class SuperDispatcher
             }
             
 		    provideFormattedQuads(key, false, p ->
-		        containers[p.getRenderPass().blockRenderLayer.ordinal()].accept(p));
+		        containers[p.getRenderPass().ordinal()].accept(p));
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.blockLayerFlags].makeNewMap();
 
@@ -153,11 +152,11 @@ public class SuperDispatcher
             this.layerMapBuilders[i] = new SparseLayerMapBuilder(RenderLayout.BENUMSET_BLOCK_RENDER_LAYER.getValuesForSetFlags(i));
         }
         
-        this.delegates = new DispatchDelegate[BlockRenderMode.values().length];
-        for(BlockRenderMode mode : BlockRenderMode.values())
+        this.delegates = new DispatchDelegate[RenderLayout.ALL_LAYOUTS.size()];
+        for(RenderLayout layout : RenderLayout.ALL_LAYOUTS)
         {
-            DispatchDelegate newDelegate = new DispatchDelegate(mode);
-            this.delegates[mode.ordinal()] = newDelegate;
+            DispatchDelegate newDelegate = new DispatchDelegate(layout);
+            this.delegates[layout.blockLayerFlags] = newDelegate;
         }
     }
     
@@ -169,7 +168,7 @@ public class SuperDispatcher
 
     public int getOcclusionKey(ISuperModelState modelState, EnumFacing face)
     {
-        if(!modelState.getRenderPassSet().renderLayout.containsBlockRenderLayer(BlockRenderLayer.SOLID)) return 0;
+        if(!modelState.getRenderLayout().containsBlockRenderLayer(BlockRenderLayer.SOLID)) return 0;
 
         SparseLayerMap map = modelCache.get(modelState);
         
@@ -242,7 +241,7 @@ public class SuperDispatcher
   
     public DispatchDelegate getDelegate(ISuperBlock block)
     {
-        return this.delegates[block.blockRenderMode().ordinal()];
+        return this.delegates[block.renderLayout().blockLayerFlags];
     }
     
     /**
@@ -269,18 +268,16 @@ public class SuperDispatcher
      */
     public DispatchDelegate getItemDelegate()
     {
-        return this.delegates[BlockRenderMode.TRANSLUCENT_SHADED.ordinal()];
+        return this.delegates[RenderLayout.TRANSLUCENT_ONLY.blockLayerFlags];
     }
     
     public class DispatchDelegate implements IBakedModel, IModel
     {
-        private final BlockRenderMode blockRenderMode;
         private final String modelResourceString;
         
-        private DispatchDelegate(BlockRenderMode blockRenderMode)
+        private DispatchDelegate(RenderLayout blockRenderLayout)
         {
-            this.blockRenderMode = blockRenderMode;
-            this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderMode.ordinal());
+            this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderLayout.blockLayerFlags);
         }
 
         /** only used for block layer version */
@@ -342,27 +339,11 @@ public class SuperDispatcher
                 return container.getQuads(side);
             }
         }
-     
-        
          
         @Override
         public boolean isAmbientOcclusion()
         {
-         
-            BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-            if(layer == null) return true;
-            
-            switch(layer)
-            {
-            case SOLID:
-                return !this.blockRenderMode.isSolidLayerFlatLighting;
-                
-            case TRANSLUCENT:
-                return !this.blockRenderMode.isTranlucentLayerFlatLighting;
-                
-            default:
-                return true;
-            }
+            return true;
         }
     
         @Override

@@ -8,7 +8,6 @@ import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.render.RenderPassSet;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.terrain.TerrainState;
 import grondag.exotic_matter.varia.BitPacker;
@@ -168,6 +167,7 @@ public class ModelStateData
     
     /** see {@link #STATE_FLAG_NEEDS_MASONRY_JOIN} */
     public static final BooleanElement STATE_BIT_NEEDS_MASONRY_JOIN = STATE_PACKER.createBooleanElement();
+    
     /** 
      * Applies to block-type states.  
      * True if is a block type state and requires masonry join info.
@@ -213,7 +213,15 @@ public class ModelStateData
     /** Set if either Base/Cut or Lamp (if present) paint layers are translucent */
     public static final int STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY = (int) STATE_BIT_HAS_TRANSLUCENT_GEOMETRY.comparisonMask();
     
-    public static final EnumElement<RenderPassSet> STATE_ENUM_RENDER_PASS_SET = STATE_PACKER.createEnumElement(RenderPassSet.class);
+    /** see {@link #STATE_FLAG_HAS_SOLID_RENDER} */
+    public static final BooleanElement STATE_BIT_HAS_SOLID_RENDER = STATE_PACKER.createBooleanElement();
+    /** True if any layer sould render in the solid block render layer */
+    public static final int STATE_FLAG_HAS_SOLID_RENDER = (int) STATE_BIT_HAS_TRANSLUCENT_GEOMETRY.comparisonMask();
+    
+    /** see {@link #STATE_FLAG_HAS_TRANSLUCENT_RENDER} */
+    public static final BooleanElement STATE_BIT_HAS_TRANSLUCENT_RENDER = STATE_PACKER.createBooleanElement();
+    /** True if any layer should render in the translucent block render layer */
+    public static final int STATE_FLAG_HAS_TRANSLUCENT_RENDER = (int) STATE_BIT_HAS_TRANSLUCENT_GEOMETRY.comparisonMask();
     
     /** use this to turn off flags that should not be used with non-block state formats */
     public static final int STATE_FLAG_DISABLE_BLOCK_ONLY = ~(

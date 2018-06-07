@@ -3,7 +3,7 @@ package grondag.exotic_matter.block;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.render.BlockRenderMode;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.varia.ItemHelper;
@@ -27,17 +27,15 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
      */
     private static final Object TILE_ENTITY_AD_HOCK_CREATION_LOCK = new Object();
     
-    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable BlockRenderMode blockRenderMode)
+    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayout renderLayout)
     {
-        super(blockName, defaultMaterial, defaultModelState, blockRenderMode);
+        super(blockName, defaultMaterial, defaultModelState, renderLayout);
     }
 
     @Override
     public @Nullable TileEntity createNewTileEntity(@Nonnull World worldIn, int meta)
     {
-        return this.blockRenderMode() == BlockRenderMode.TESR 
-                ? new SuperTileEntityTESR()
-                : new SuperTileEntity();
+        return new SuperTileEntity();
     }
 
     @SuppressWarnings("null")

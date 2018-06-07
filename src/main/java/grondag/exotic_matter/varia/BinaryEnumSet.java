@@ -1,7 +1,6 @@
 package grondag.exotic_matter.varia;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Array;
 
 /**
  * Used for fast mapping of a enum to boolean values
@@ -14,9 +13,12 @@ public class BinaryEnumSet<T extends Enum<?>>
 {
     private T[] values;
     
-    public BinaryEnumSet(Class<T> e)
+    private final Class<T> clazz;
+    
+    public BinaryEnumSet(Class<T> clazz)
     {
-        this.values = e.getEnumConstants();
+        this.clazz = clazz;
+        this.values = clazz.getEnumConstants();
     }
     
     /**
@@ -75,20 +77,20 @@ public class BinaryEnumSet<T extends Enum<?>>
         return (flagsIn & (1 << v.ordinal())) != 0;
     }
     
-    public final List<T> getValuesForSetFlags(int flagsIn)
+    public final T[] getValuesForSetFlags(int flagsIn)
     {
-        List<T> result = new ArrayList<T>(values.length);
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(clazz, Integer.bitCount(flagsIn));
         
         final int bitCount = Integer.SIZE - Integer.numberOfLeadingZeros(flagsIn);
-        
+        int j = 0;
         for(int i = 0; i < bitCount; i++)
         {
             if((flagsIn & (1 << i)) != 0)
             {
-                result.add(values[i]);
+                result[j++] = values[i];
             }
         }
-        
         return result;
     }
 }

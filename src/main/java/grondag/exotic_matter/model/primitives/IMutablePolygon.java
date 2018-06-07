@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -8,8 +7,8 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
-import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
@@ -58,7 +57,7 @@ public interface IMutablePolygon extends IPolygon
     
     public void setTextureName(@Nullable String textureName);
 
-    public void setRenderPass(RenderPass renderPass);
+    public void setRenderPass(BlockRenderLayer renderPass);
 
     public void setFullBrightness(boolean isFullBrightnessIntended);
 

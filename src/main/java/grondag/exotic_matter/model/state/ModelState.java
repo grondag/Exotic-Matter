@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.state;
 
-import static grondag.exotic_matter.model.state.ModelStateData.STATE_ENUM_RENDER_PASS_SET;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS_ORIENTATION;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS_ROTATION;
@@ -11,6 +10,8 @@ import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_SIMPLE_JOIN;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_SPECIES;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_TEXTURE_ROTATION;
+import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_SOLID_RENDER;
+import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_TRANSLUCENT_RENDER;
 import static grondag.exotic_matter.model.state.ModelStateData.TEST_GETTER_STATIC;
 
 import java.util.Arrays;
@@ -31,8 +32,7 @@ import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.Transform;
-import grondag.exotic_matter.model.render.RenderPass;
-import grondag.exotic_matter.model.render.RenderPassSet;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -48,6 +48,7 @@ import grondag.exotic_matter.world.SimpleJoin;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -740,29 +741,36 @@ public class ModelState implements ISuperModelState
     ////////////////////////////////////////////////////
 
     @Override
-    public RenderPass getRenderPass(PaintLayer layer)
+    public BlockRenderLayer getRenderPass(PaintLayer layer)
     {
-        
         switch(layer)
         {
         case BASE:
         case CUT:
         case LAMP:
         default:
-            return this.isTranslucent(layer) ? RenderPass.TRANSLUCENT_SHADED : RenderPass.SOLID_SHADED;
+            return this.isTranslucent(layer) ? BlockRenderLayer.TRANSLUCENT : BlockRenderLayer.SOLID;
             
         case MIDDLE:
         case OUTER:
-            return RenderPass.TRANSLUCENT_SHADED;
+            return BlockRenderLayer.TRANSLUCENT;
         
         }
     }
-
+    
     @Override
-    public RenderPassSet getRenderPassSet()
+    public RenderLayout getRenderLayout()
     {
-       this.populateStateFlagsIfNeeded();
-       return STATE_ENUM_RENDER_PASS_SET.getValue(this.stateFlags);
+        this.populateStateFlagsIfNeeded();
+        
+        if((this.stateFlags & STATE_FLAG_HAS_SOLID_RENDER) == STATE_FLAG_HAS_SOLID_RENDER)
+            return ((this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_RENDER) == STATE_FLAG_HAS_TRANSLUCENT_RENDER)
+                ? RenderLayout.SOLID_AND_TRANSLUCENT 
+                : RenderLayout.SOLID_ONLY;
+        else 
+            return ((this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_RENDER) == STATE_FLAG_HAS_TRANSLUCENT_RENDER)
+                ? RenderLayout.TRANSLUCENT_ONLY
+                : RenderLayout.NONE;
     }
     
     @Override

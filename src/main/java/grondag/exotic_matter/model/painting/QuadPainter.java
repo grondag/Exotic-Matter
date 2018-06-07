@@ -8,9 +8,7 @@ import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
-import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vertex;
-import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -20,13 +18,12 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 
 public abstract class QuadPainter
 {
     /** color map for this surface */
     protected final ColorMap myColorMap;
-    protected final RenderPass renderPass;
+    protected final BlockRenderLayer renderPass;
     
     /** 
      * Color map for lamp surface - used to render lamp gradients
@@ -34,12 +31,6 @@ public abstract class QuadPainter
      */
     protected final ColorMap lampColorMap;
 
-    /**
-    * Render layer for lamp surface - used to render lamp gradients
-    * Only populated for BOTTOM/CUT surfaces
-    */
-    protected final RenderPass lampRenderPass;
-    
     /**
      * True if paint layer is supposed to be rendered at full brightness.
      */
@@ -74,12 +65,10 @@ public abstract class QuadPainter
         if(paintLayer == PaintLayer.BASE || paintLayer == PaintLayer.CUT)
         {
             this.lampColorMap = modelState.getColorMap(PaintLayer.LAMP);
-            this.lampRenderPass = modelState.getRenderPass(PaintLayer.LAMP);
         }
         else
         {
             this.lampColorMap = null;
-            this.lampRenderPass = null;
         }
         
         ITexturePalette tex = modelState.getTexture(paintLayer);
@@ -92,7 +81,6 @@ public abstract class QuadPainter
     {
         this.myColorMap = null;
         this.lampColorMap = null;
-        this.lampRenderPass = null;
         this.renderPass = null;
         this.isFullBrightnessIntended = false;
         this.surface = null;
@@ -185,7 +173,7 @@ public abstract class QuadPainter
     {
         int color = this.myColorMap.getColor(this.isFullBrightnessIntended ? EnumColorMap.LAMP : EnumColorMap.BASE);
         
-        if(this.renderPass.blockRenderLayer == BlockRenderLayer.TRANSLUCENT)
+        if(this.renderPass == BlockRenderLayer.TRANSLUCENT)
         {
             color = this.translucencyArgb | (color & 0x00FFFFFF);
         }

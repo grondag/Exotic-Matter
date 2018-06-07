@@ -13,11 +13,11 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.SurfaceType;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
-import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
@@ -139,7 +139,7 @@ public interface IPolygon
      */
     public float getMaxV();
 
-    public RenderPass getRenderPass();
+    public BlockRenderLayer getRenderPass();
 
     public SurfaceInstance getSurfaceInstance();
 

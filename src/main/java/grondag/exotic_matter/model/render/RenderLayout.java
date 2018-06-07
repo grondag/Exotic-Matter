@@ -1,8 +1,11 @@
 package grondag.exotic_matter.model.render;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.varia.BinaryEnumSet;
 import net.minecraft.util.BlockRenderLayer;
@@ -13,30 +16,32 @@ import net.minecraft.util.BlockRenderLayer;
  */
 public class RenderLayout
 {
-    public static final BinaryEnumSet<RenderPass> BENUMSET_RENDER_PASS = new BinaryEnumSet<RenderPass>(RenderPass.class);
     public static final BinaryEnumSet<BlockRenderLayer> BENUMSET_BLOCK_RENDER_LAYER = new BinaryEnumSet<BlockRenderLayer>(BlockRenderLayer.class);
     
-    public static int blockRenderLayerFlagsFromRenderPasses(RenderPass...passes)
+    private static final RenderLayout[] lookup = new RenderLayout[BENUMSET_BLOCK_RENDER_LAYER.combinationCount()];
+    
+    static
     {
-        int flags = 0;
-        for(RenderPass pass : passes)
+        for(int i = 0; i < lookup.length; i ++)
         {
-            flags = BENUMSET_BLOCK_RENDER_LAYER.setFlagForValue(pass.blockRenderLayer, flags, true);
+            lookup[i] = new RenderLayout(BENUMSET_BLOCK_RENDER_LAYER.getValuesForSetFlags(i));
         }
-        return flags;
     }
     
-    /** 
-     * How many render passes in this set.
-     */
-    public final int renderPassCount;
+    public static ImmutableList<RenderLayout> ALL_LAYOUTS = ImmutableList.copyOf(lookup);
     
-    public final int renderPassFlags;
-
-    public final List<RenderPass> renderPassList;
-
+    public static RenderLayout find(BlockRenderLayer...passes)
+    {
+        return lookup[BENUMSET_BLOCK_RENDER_LAYER.getFlagsForIncludedValues(passes)];
+    }
+    
+    public static final RenderLayout SOLID_ONLY = lookup[BENUMSET_BLOCK_RENDER_LAYER.getFlagForValue(BlockRenderLayer.SOLID)];
+    public static final RenderLayout TRANSLUCENT_ONLY = lookup[BENUMSET_BLOCK_RENDER_LAYER.getFlagForValue(BlockRenderLayer.TRANSLUCENT)];
+    public static final RenderLayout SOLID_AND_TRANSLUCENT = lookup[BENUMSET_BLOCK_RENDER_LAYER.getFlagsForIncludedValues(BlockRenderLayer.SOLID, BlockRenderLayer.TRANSLUCENT)];
+    public static final RenderLayout NONE = lookup[BENUMSET_BLOCK_RENDER_LAYER.getFlagsForIncludedValues()];
+    
     /**
-     * Sizes quad container - values range from 0 (empty) to 2 (both SOLID and TRANLUCENT)
+     * Sizes quad container
      */
     public final int blockLayerCount;
     
@@ -48,36 +53,19 @@ public class RenderLayout
     
     private final BlockRenderLayer[] containerLayers;
     
-    public RenderLayout(RenderPass...passes)
+    private RenderLayout(BlockRenderLayer... passes)
     {
-        this.renderPassFlags = BENUMSET_RENDER_PASS.getFlagsForIncludedValues(passes);;
-        this.renderPassList =  BENUMSET_RENDER_PASS.getValuesForSetFlags(this.renderPassFlags);
-        this.renderPassCount = this.renderPassList.size();
-        
-        this.blockLayerFlags = blockRenderLayerFlagsFromRenderPasses(passes);
-        this.blockLayerList =  BENUMSET_BLOCK_RENDER_LAYER.getValuesForSetFlags(this.blockLayerFlags);
+        this.containerLayers = passes;
+        this.blockLayerFlags = BENUMSET_BLOCK_RENDER_LAYER.getFlagsForIncludedValues(passes);
+        this.blockLayerList =  ImmutableList.copyOf(passes);
         this.blockLayerCount = this.blockLayerList.size();
-        
-        this.containerLayers = new BlockRenderLayer[this.blockLayerCount];
                 
-        int nextContainerIndex = 0;
-        for(BlockRenderLayer layer : BlockRenderLayer.values())
+        Arrays.fill(blockLayerContainerIndexes, -1);
+        
+        for(int i = 0; i < this.blockLayerCount; i++)
         {
-            if(this.containsBlockRenderLayer(layer))
-            {
-                this.containerLayers[nextContainerIndex] = layer;
-                this.blockLayerContainerIndexes[layer.ordinal()] = nextContainerIndex++;
-            }
-            else
-            {
-                this.blockLayerContainerIndexes[layer.ordinal()] = -1;
-            }
+            this.blockLayerContainerIndexes[passes[i].ordinal()] = i;
         }
-    }
-    
-    public final boolean containsRenderPass(RenderPass pass)
-    {
-        return BENUMSET_RENDER_PASS.isFlagSetForValue(pass, this.renderPassFlags);
     }
 
     public final boolean containsBlockRenderLayer(BlockRenderLayer layer)
@@ -92,14 +80,6 @@ public class RenderLayout
     public final int containerIndexFromBlockRenderLayer(BlockRenderLayer layer)
     {
         return this.blockLayerContainerIndexes[layer.ordinal()];
-    }
-    
-    /** 
-     * Convenience method 
-     */
-    public final int containerIndexFromRenderPass(RenderPass pass)
-    {
-        return this.containerIndexFromBlockRenderLayer(pass.blockRenderLayer);
     }
     
     /**

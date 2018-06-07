@@ -1,14 +1,9 @@
 package grondag.exotic_matter.model.varia;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.render.QuadContainer;
 import net.minecraft.util.BlockRenderLayer;
-
 
 
 /**
@@ -18,12 +13,12 @@ public class SparseLayerMapBuilder
 {
     private final int[] layerIndices = new int[BlockRenderLayer.values().length];
     private final int size;
-    public final ImmutableList<BlockRenderLayer> layerList;
+    public final BlockRenderLayer[] layers;
     
-    public SparseLayerMapBuilder(List<BlockRenderLayer> layers)
+    public SparseLayerMapBuilder(BlockRenderLayer... layers)
     {
-        this.size = layers.size();
-        this.layerList = ImmutableList.copyOf(layers);
+        this.size = layers.length;
+        this.layers = layers;
         int counter = 0;
         
         for(BlockRenderLayer l: layers)
@@ -37,7 +32,7 @@ public class SparseLayerMapBuilder
         if(this.size == 1)
             return new SparseLayerSingletonMap();
         
-        else if(this.size == 2 && this.layerList.get(0) == BlockRenderLayer.SOLID && this.layerList.get(1) == BlockRenderLayer.TRANSLUCENT)
+        else if(this.size == 2 && this.layers[0] == BlockRenderLayer.SOLID && this.layers[1] == BlockRenderLayer.TRANSLUCENT)
             return new SparseLayerSolidTransMap();
         
         else 

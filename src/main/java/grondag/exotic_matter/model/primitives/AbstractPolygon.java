@@ -3,13 +3,13 @@ package grondag.exotic_matter.model.primitives;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
-import grondag.exotic_matter.model.render.RenderPass;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.EnumElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.LongElement;
 import grondag.exotic_matter.varia.BitPacker.BitElement.NullableEnumElement;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractPolygon implements IMutablePolygon
@@ -22,7 +22,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     
     protected static final NullableEnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createNullableEnumElement(EnumFacing.class);
     protected static final EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
-    protected static final EnumElement<RenderPass> RENDERPASS_BITS = BITPACKER.createEnumElement(RenderPass.class);
+    protected static final EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
     protected static final BooleanElement FULLBRIGHT_BITS = BITPACKER.createBooleanElement();
     protected static final BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
     protected static final BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
@@ -33,7 +33,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
         long defaultBits = 0xFFFFFFFFL; // white
         defaultBits = NOMINAL_FACE_BITS.setValue(null, defaultBits);
         defaultBits = ROTATION_BITS.setValue(Rotation.ROTATE_NONE, defaultBits);
-        defaultBits = RENDERPASS_BITS.setValue(RenderPass.SOLID_SHADED, defaultBits);
+        defaultBits = RENDERPASS_BITS.setValue(BlockRenderLayer.SOLID, defaultBits);
         defaultBits = FULLBRIGHT_BITS.setValue(false, defaultBits);
         defaultBits = LOCKUV_BITS.setValue(false, defaultBits);
         defaultBits = CONTRACTUV_BITS.setValue(true, defaultBits);
@@ -138,13 +138,13 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public RenderPass getRenderPass()
+    public BlockRenderLayer getRenderPass()
     {
         return RENDERPASS_BITS.getValue(this.stateBits);
     }
 
     @Override
-    public void setRenderPass(RenderPass renderPass)
+    public void setRenderPass(BlockRenderLayer renderPass)
     {
         this.stateBits = RENDERPASS_BITS.setValue(renderPass, this.stateBits);
     }

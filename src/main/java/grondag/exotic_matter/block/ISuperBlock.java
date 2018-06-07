@@ -6,7 +6,7 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.init.IBlockItemRegistrator;
-import grondag.exotic_matter.model.render.BlockRenderMode;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateProperty;
 import grondag.exotic_matter.world.IBlockTest;
@@ -75,7 +75,7 @@ public interface ISuperBlock extends IBlockItemRegistrator
     boolean addLandingEffects(IBlockState state, WorldServer worldObj, BlockPos blockPosition, IBlockState iblockstate, EntityLivingBase entity,
             int numberOfParticles);
 
-    BlockRenderMode blockRenderMode();
+    RenderLayout renderLayout();
 
     /**
      * {@inheritDoc} <br><br>

@@ -9,9 +9,7 @@ import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModShapes;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.render.BlockRenderMode;
-import grondag.exotic_matter.model.render.RenderPass;
-import grondag.exotic_matter.model.render.RenderPassSet;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.world.CornerJoinBlockStateSelector;
@@ -89,19 +87,11 @@ public class ModelStateTest
         assert(reloadedState.getSimpleJoin().getIndex() == CornerJoinBlockStateSelector.getJoinState(69).simpleJoin.getIndex());
         assert(reloadedState.isAxisInverted());
         assert(reloadedState.getStaticShapeBits() == 879579585L);
-        RenderPassSet rps = reloadedState.getRenderPassSet();
-        assert(rps.renderLayout.containsBlockRenderLayer(BlockRenderLayer.SOLID) == true);
-        assert(rps.renderLayout.containsBlockRenderLayer(BlockRenderLayer.CUTOUT) == false);
-        assert(rps.renderLayout.containsBlockRenderLayer(BlockRenderLayer.CUTOUT_MIPPED) == false);
-        assert(rps.renderLayout.containsBlockRenderLayer(BlockRenderLayer.TRANSLUCENT) == true);
-        
-
-        assert(rps.renderLayout.containsRenderPass(RenderPass.SOLID_SHADED));
-        assert(rps.renderLayout.containsRenderPass(RenderPass.TRANSLUCENT_SHADED));
-        
-        assert(rps.blockRenderMode == BlockRenderMode.BOTH_SHADED);
-
-             
+        RenderLayout rps = reloadedState.getRenderLayout();
+        assert(rps.containsBlockRenderLayer(BlockRenderLayer.SOLID) == true);
+        assert(rps.containsBlockRenderLayer(BlockRenderLayer.CUTOUT) == false);
+        assert(rps.containsBlockRenderLayer(BlockRenderLayer.CUTOUT_MIPPED) == false);
+        assert(rps.containsBlockRenderLayer(BlockRenderLayer.TRANSLUCENT) == true);
     }
 
 }

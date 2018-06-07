@@ -14,10 +14,10 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ConfigXM.BlockSettings.ProbeInfoLevel;
 import grondag.exotic_matter.model.color.ColorMap;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
+import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.render.BlockRenderMode;
+import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.model.state.ModelState;
@@ -66,9 +66,9 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
@@ -107,14 +107,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     /** see {@link #isAssociatedBlock(Block)} */
     protected Block associatedBlock;
     
-    private final BlockRenderMode blockRenderMode;
+    private final RenderLayout renderLayout;
     
     /**
      * Sub-items for the block. Initialized in {@link #createSubItems()}
      */
     private @Nullable List<ItemStack> subItems;
     
-    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable BlockRenderMode blockRenderMode)
+    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayout renderLayout)
     {
         super(defaultMaterial);
         
@@ -132,9 +132,9 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 
         this.defaultModelStateBits = defaultModelState.serializeToInts();
         
-        this.blockRenderMode = blockRenderMode == null
-                ? defaultModelState.getRenderPassSet().blockRenderMode
-                : blockRenderMode;
+        this.renderLayout = renderLayout == null
+                ? defaultModelState.getRenderLayout()
+                : renderLayout;
     }   
 
     /**
@@ -489,7 +489,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean canRenderInLayer(@Nonnull IBlockState state, @Nonnull BlockRenderLayer layer)
     {
-        return this.blockRenderMode != BlockRenderMode.TESR && this.blockRenderMode.renderLayout.containsBlockRenderLayer(layer);
+        return this.renderLayout.containsBlockRenderLayer(layer);
     }
    
     @Override
@@ -1296,8 +1296,8 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     protected abstract WorldLightOpacity worldLightOpacity(IBlockState state);
 
     @Override
-    public final BlockRenderMode blockRenderMode()
+    public final RenderLayout renderLayout()
     {
-        return blockRenderMode;
+        return renderLayout;
     }
 }
