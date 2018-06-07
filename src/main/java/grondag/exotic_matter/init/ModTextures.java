@@ -95,4 +95,10 @@ public class ModTextures
             new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SPLIT_X_8)
             .withRotation(FIXED.with(ROTATE_NONE)).withGroups(TextureGroup.STATIC_TILES));
 
+    public static final ITexturePalette BIGTEX_MARBLE = TexturePaletteRegistry.addTexturePallette("marble", "marble", new TexturePaletteSpec(ExoticMatter.INSTANCE)
+            .withVersionCount(1).withScale(TextureScale.MEDIUM).withLayout(TextureLayout.BIGTEX)
+            .withRotation(CONSISTENT.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.STATIC_TILES));
+    public static final ITexturePalette BIGTEX_MARBLE_ZOOM = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE);
+    public static final ITexturePalette BIGTEX_MARBLE_ZOOM_X2 = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE_ZOOM);
+
 }
