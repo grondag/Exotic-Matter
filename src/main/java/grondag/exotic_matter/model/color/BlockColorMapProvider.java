@@ -15,7 +15,7 @@ public class BlockColorMapProvider
 {
     public static final BlockColorMapProvider INSTANCE = new BlockColorMapProvider();
     public static final ColorMap COLOR_BASALT = INSTANCE.getColorMap(Hue.COBALT, Chroma.NEUTRAL, Luminance.MEDIUM_DARK);
-    public static final ColorMap COLOR_LAVA = INSTANCE.getColorMap(Hue.ROSE, Chroma.RICH, Luminance.BRIGHT);
+    public static final ColorMap COLOR_LAVA = INSTANCE.getMostest(Hue.ROSE);
     
     // note: can't be static because must come after Hue static initializaiton
     public final int hueCount = Hue.values().length;
@@ -85,6 +85,22 @@ public class BlockColorMapProvider
         return allColors[hue.ordinal()][chroma.ordinal()][luminance.ordinal()];
     }
 
+    public ColorMap getMostest(Hue hue)
+    {
+        ColorMap[][] chromas = allColors[hue.ordinal()];
+        for(int i = chromas.length - 1; i >= 0; i--)
+        {
+            ColorMap[] lums = chromas[i];
+            for(int j = lums.length - 1; j >= 0; j--)
+            {
+                if(lums[j] != null) 
+                    return lums[j];
+            }
+        }
+        // safety outlet - should never get here
+        assert false :  "Unable to find most intense/brightest color for hue " + hue.toString();
+        return validColors[0];
+    }
 
     public static void writeColorAtlas(File folderName)
     {
