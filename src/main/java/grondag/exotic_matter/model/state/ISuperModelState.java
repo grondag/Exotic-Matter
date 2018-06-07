@@ -119,10 +119,6 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     void setTexture(PaintLayer layer, ITexturePalette tex);
 
-    /** 
-     * Don't use this directly for rendering - user choice may not be workable.
-     * Use {@link #getRenderMode(PaintLayer)} instead.
-     */
     boolean isFullBrightness(PaintLayer layer);
 
     void setFullBrightness(PaintLayer layer, boolean isFullBrightness);
