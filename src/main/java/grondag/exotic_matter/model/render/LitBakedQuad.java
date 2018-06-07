@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
+import net.minecraft.client.renderer.vertex.VertexFormatElement.EnumUsage;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.model.pipeline.IVertexConsumer;
 import net.minecraftforge.client.model.pipeline.LightUtil;
@@ -43,103 +44,64 @@ public class LitBakedQuad extends BakedQuad
     };
     
     @SuppressWarnings("null")
-    private static class Wrapper implements IVertexConsumer
+    private static class Wrapper
     {
-        private @Nullable IVertexConsumer buffer;
-        private @Nullable IVertexConsumer lighter;
         private LitBakedQuad quad;
         private int vertexIndex = 0;
+        
+        protected final ForwardingVertexConsumer buffer = new ForwardingVertexConsumer()
+        {
+            @Override
+            public void put(final int element, float... data)
+            {
+                VertexFormatElement e = wrapped.getVertexFormat().getElement(element);
+                
+                if(e.getUsage() == EnumUsage.COLOR)
+                {
+                    quad.interpolateVertexColors(vertexIndex++, data);
+                }                    
+                wrapped.put(element, data);
+            }
+        };
+        
+        private static final float[] EMPTY_DATA = new float[4];
+        
+        protected final ForwardingVertexConsumer lighter = new ForwardingVertexConsumer()
+        {
+            @Override
+            public void put(final int element, float... data)
+            {
+                VertexFormatElement e = wrapped.getVertexFormat().getElement(element);
+                
+                if(e.getUsage() == EnumUsage.NORMAL)
+                {
+                    // force recalc - workaround for Forge #4916 until patched
+                    wrapped.put(element, EMPTY_DATA);
+                }
+                else
+                    wrapped.put(element, data);
+            }
+        };
         
         public final void wrap(IVertexConsumer lighter, LitBakedQuad quad) throws IllegalArgumentException, IllegalAccessException
         {
             this.vertexIndex = 0;
-            this.buffer = (IVertexConsumer) parentField.get(lighter);
-            this.lighter = lighter;
+            this.buffer.wrapped = (IVertexConsumer) parentField.get(lighter);
+            this.lighter.wrapped = lighter;
             this.quad = quad;
-            parentField.set(lighter, this);
+            parentField.set(lighter, buffer);
         }
         
         public final void unwrap()
         {
-            if(this.buffer != null && this.lighter != null)
+            if(this.buffer.wrapped != null && this.lighter.wrapped != null)
             try
             {
-                parentField.set(lighter, buffer);
+                parentField.set(lighter.wrapped, buffer.wrapped);
             }
             catch(Exception e) {};
-            this.buffer = null;
-            this.lighter = null;
-        }
-        
-        @Override
-        public VertexFormat getVertexFormat()
-        {
-            return buffer.getVertexFormat();
-        }
-
-        @Override
-        public void setQuadTint(int tint)
-        {
-            buffer.setQuadTint(tint);
-        }
-
-        @Override
-        public void setQuadOrientation(EnumFacing orientation)
-        {
-            buffer.setQuadOrientation(orientation);
-        }
-
-        @Override
-        public void setApplyDiffuseLighting(boolean diffuse)
-        {
-            buffer.setApplyDiffuseLighting(diffuse);
-        }
-
-        @Override
-        public void setTexture(TextureAtlasSprite texture)
-        {
-            buffer.setTexture(texture);
-        }
-
-        @Override
-        public void put(final int element, float... data)
-        {
-            VertexFormatElement e = buffer.getVertexFormat().getElement(element);
-            
-            switch(e.getUsage())
-            {
-            case COLOR:
-                this.quad.interpolateVertexColors(this.vertexIndex, data);
-                break;
-                
-            case UV:
-                if(e.getIndex() == 1)
-                {
-                    final int g = quad.getVertexGlow(vertexIndex);
-                    if(g == 0) 
-                        ;
-                    else if(g == 0xF)
-                    {
-                        data[0] = QuadBakery.MAX_LIGHT_FLOAT;
-                        data[1] = QuadBakery.MAX_LIGHT_FLOAT;
-                    }
-                    else
-                    {
-                        final float b = (float)(g * 0x20) / 0xFFFF;
-                        data[0] = Math.max(data[0], b);
-                        data[1] = Math.max(data[1], b);
-                    }
-                }
-                break;
-                
-            default:
-                break;
-            }
-            
-            if(element == buffer.getVertexFormat().getElementCount() - 1)
-                this.vertexIndex++;
-            
-            buffer.put(element, data);
+            this.buffer.wrapped = null;
+            this.lighter.wrapped = null;
         }
     }
     
@@ -155,28 +117,29 @@ public class LitBakedQuad extends BakedQuad
     private static boolean wrapError = false;
     
     @Override
-    public void pipe(IVertexConsumer consumer)
+    public void pipe(IVertexConsumer lighter)
     {
         if(parentField == null || wrapError)
         {
-            super.pipe(consumer);
+            super.pipe(lighter);
         }
         else
         {
-            boolean didWrap = false;
             Wrapper w = wrappers.get();
             try
             {
-                w.wrap(consumer, this);
-                didWrap = true;
+                w.wrap(lighter, this);
+                super.pipe(w.lighter);
             }
             catch (Exception e)
             {
                 wrapError = true;
                 ExoticMatter.INSTANCE.error("Unable to enable glow rendering due to unexpected error. Glow rendering will be disabled.", e);
             }
-            super.pipe(consumer);
-            if(didWrap) w.unwrap();
+            finally
+            {
+                w.unwrap();
+            }
         }
     }
 

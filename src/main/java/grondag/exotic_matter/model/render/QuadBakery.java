@@ -112,7 +112,6 @@ public class QuadBakery
                     break;
                 }
                 case UV: 
-                    // Note that we don't handle lightmaps here - will be handled in LitBakedQuad
                     if(format.getElement(e).getIndex() == 0)
                     {
                         // This block handles the normal case: texture UV coordinates
@@ -122,6 +121,19 @@ public class QuadBakery
                         interpolatedUV[0] = spriteMinU + uvData[v][0] * spriteSpanU;
                         interpolatedUV[1] = spriteMinV + uvData[v][1] * spriteSpanV;
                         LightUtil.pack(interpolatedUV, vertexData, format, v, e);
+                    }
+                    else
+                    {
+                        // There are 2 UV elements when we are using a BLOCK vertex format
+                        // The 2nd accepts pre-baked lightmaps.  
+                        float[] fullBright = new float[2];
+
+                        final float glow = (float)(((glowBits >> (v * 4)) & 0xF) * 0x20) / 0xFFFF;
+                                
+                        fullBright[0] = glow;
+                        fullBright[1] = glow;
+
+                        LightUtil.pack(fullBright, vertexData, format, v, e);
                     }
                     break;
 
