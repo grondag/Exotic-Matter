@@ -3,7 +3,6 @@ package grondag.exotic_matter.model.painting;
 import java.util.List;
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.color.ColorMap;
 import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -21,26 +20,10 @@ import net.minecraft.util.math.Vec3i;
 
 public abstract class QuadPainter
 {
-    /** color map for this surface */
-    protected final ColorMap myColorMap;
-    protected final BlockRenderLayer renderPass;
-    
-    /** 
-     * Color map for lamp surface - used to render lamp gradients
-     * Only populated for BOTTOM/CUT surfaces
-     */
-    protected final ColorMap lampColorMap;
-
-    /**
-     * True if paint layer is supposed to be rendered at full brightness.
-     */
-    protected final boolean isFullBrightnessIntended;
-    
-    protected final ITexturePalette texture;
+    protected final ISuperModelState modelState;
     public final Surface surface;
     public final PaintLayer paintLayer;
-    /** Do bitwise OR with color value to get correct alpha for rendering */
-    protected final int translucencyArgb;
+    protected final ITexturePalette texture;
     
     /**
      * At this point {@link #isQuadValidForPainting(IPolygon)} has been checked and is true. 
@@ -55,38 +38,22 @@ public abstract class QuadPainter
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
+        this.modelState = modelState;
         this.surface = surface;
         this.paintLayer = paintLayer;
-        this.myColorMap = modelState.getColorMap(paintLayer);
-        
-        this.renderPass = modelState.getRenderPass(paintLayer);
-        this.isFullBrightnessIntended = modelState.isFullBrightness(paintLayer);
 
-        if(paintLayer == PaintLayer.BASE || paintLayer == PaintLayer.CUT)
-        {
-            this.lampColorMap = modelState.getColorMap(PaintLayer.LAMP);
-        }
-        else
-        {
-            this.lampColorMap = null;
-        }
-        
         ITexturePalette tex = modelState.getTexture(paintLayer);
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
-        this.translucencyArgb = modelState.isTranslucent(paintLayer) ? modelState.getTranslucency().alphaARGB : 0xFF000000;
     }
     
     /** for null painter only */
+    @SuppressWarnings("null")
     private QuadPainter()
     {
-        this.myColorMap = null;
-        this.lampColorMap = null;
-        this.renderPass = null;
-        this.isFullBrightnessIntended = false;
+        this.modelState = null;
         this.surface = null;
         this.paintLayer = null;
         this.texture = null;
-        this.translucencyArgb = 0;
     }
 
     protected boolean isQuadValidForPainting(IPolygon inputQuad)
@@ -127,8 +94,8 @@ public abstract class QuadPainter
         if(!isQuadValidForPainting(inputQuad)) return;
     
         IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
-        result.setRenderPass(this.renderPass);
-        result.setFullBrightness(this.isFullBrightnessIntended);
+        result.setRenderPass(modelState.getRenderPass(paintLayer));
+        result.setFullBrightness(modelState.isFullBrightness(paintLayer));
 
         recolorQuad(result);
      
@@ -171,26 +138,27 @@ public abstract class QuadPainter
     
     private void recolorQuad(IMutablePolygon result)
     {
-        int color = this.myColorMap.getColor(this.isFullBrightnessIntended ? EnumColorMap.LAMP : EnumColorMap.BASE);
+        final boolean fullBright = modelState.isFullBrightness(paintLayer);
+        int color = modelState.getColorMap(paintLayer).getColor(fullBright ? EnumColorMap.LAMP : EnumColorMap.BASE);
         
-        if(this.renderPass == BlockRenderLayer.TRANSLUCENT)
+        if(modelState.getRenderPass(paintLayer) == BlockRenderLayer.TRANSLUCENT)
         {
-            color = this.translucencyArgb | (color & 0x00FFFFFF);
+            color = (this.modelState.isTranslucent(paintLayer) ? modelState.getTranslucency().alphaARGB : 0xFF000000) | (color & 0x00FFFFFF);
         }
         
-        if(this.isFullBrightnessIntended)
+        if(fullBright)
         {
             // If the surface has a lamp gradient or is otherwise pre-shaded 
             // we don't want to see a gradient when rendering at full brightness
             // so make all vertices same color.
             result.replaceColor(color);
         }
-        else if(result.getSurfaceInstance().isLampGradient && this.lampColorMap != null)
+        else if(result.getSurfaceInstance().isLampGradient)
         {
             // If surface has a lamp gradient and rendered with shading, 
             // replace white with the lamp color and black with the normal color.
             // Shading will be handled at bake via per-vertex glow.
-            int lampColor = this.lampColorMap.getColor(EnumColorMap.LAMP);
+            int lampColor = modelState.getColorMap(PaintLayer.LAMP).getColor(EnumColorMap.LAMP);
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
