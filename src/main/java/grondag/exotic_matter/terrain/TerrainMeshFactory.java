@@ -16,6 +16,8 @@ import grondag.exotic_matter.cache.LongSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
+import grondag.exotic_matter.model.painting.IQuadColorizer;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.SurfaceType;
@@ -374,6 +376,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         CSGNode.Root terrainNode;
         CSGNode.Root cubeNode;
 
+        //TODO: don't allow simple if hot
         if(flowState.isTopSimple())
         {
             terrainNode = terrainNodesSimple[getIndexForState(flowState)].clone();
@@ -426,7 +429,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
+        FaceVertex fvCenter = new FaceVertex.Colored(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), Color.WHITE, (byte) 15);
 
         /**
          * Quads on left (west) side of the top face.<br>
@@ -930,5 +933,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     public int getMetaData(ISuperModelState modelState)
     {
         return modelState.getTerrainState().getCenterHeight();
+    }
+
+    @Override
+    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, SurfaceInstance surface)
+    {
+        return TerrainColorizer.INSTANCE;
     }
 }

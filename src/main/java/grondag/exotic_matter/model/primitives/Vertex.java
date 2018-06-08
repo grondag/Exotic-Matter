@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
+import grondag.exotic_matter.varia.ColorHelper;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
@@ -105,6 +106,11 @@ public final class Vertex extends Vec3f
     public final Vertex withGlow(int glowIn)
     {
         return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, glowIn);
+    }
+    
+    public final Vertex withColorGlow(int colorIn, int glowIn)
+    {
+        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, glowIn);
     }
     
     /** returns copy of this vertex with given UV */
@@ -240,15 +246,7 @@ public final class Vertex extends Vec3f
         
         final int newGlow = (int) (this.glow + (otherVertex.glow - this.glow) * otherWeight);
         
-        final int thisRed = this.color & 0xFF;
-        final int thisGreen = this.color & 0xFF00;
-        final int thisBlue = this.color & 0xFF0000;
-        final int thisAlpha = this.color & 0xFF000000;
-
-        int newColor = (int) (thisRed + ((otherVertex.color & 0xFF) - thisRed) * otherWeight);
-        newColor |= (int) (thisGreen + ((otherVertex.color & 0xFF00) - thisGreen) * otherWeight);
-        newColor |= (int) (thisBlue + ((otherVertex.color & 0xFF0000) - thisBlue) * otherWeight);
-        newColor |= (int) (thisAlpha + ((otherVertex.color & 0xFF000000) - thisAlpha) * otherWeight);
+        int newColor = ColorHelper.interpolate(this.color, otherVertex.color, otherWeight);
         
         final Vec3f thisNormal = this.normal;
         final Vec3f otherNormal = otherVertex.normal;

@@ -8,7 +8,10 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.painting.IQuadColorizer;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -73,6 +76,15 @@ public abstract class ShapeMeshGenerator
      */
     public BlockOrientationType orientationType(ISuperModelState modelState) { return BlockOrientationType.NONE; } 
     
+    
+    /**
+     * Override if shape surfaces support/require custom colorizing logic
+     */
+    @Nonnull
+    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, SurfaceInstance surface)
+    {
+        return IQuadColorizer.DEFAULT;
+    }
     
     @Nonnull
     public abstract ICollisionHandler collisionHandler();

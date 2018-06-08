@@ -77,5 +77,19 @@ public class ColorHelper
         float y = (1 - b);
         return new CMY(c, m, y);
     }
+    
+    public static int interpolate(int from, int to, float toWeight)
+    {
+        final int r = from & 0xFF;
+        final int g = from & 0xFF00;
+        final int b = from & 0xFF0000;
+        final int a = from & 0xFF000000;
+
+        int newColor = (int) (r + ((to & 0xFF) - r) * toWeight);
+        newColor |= (int) (g + ((to & 0xFF00) - g) * toWeight);
+        newColor |= (int) (b + ((to & 0xFF0000) - b) * toWeight);
+        newColor |= (int) (a + ((to & 0xFF000000) - a) * toWeight); 
+        return newColor;
+    }
 }
     

@@ -97,7 +97,7 @@ public abstract class QuadPainter
         result.setRenderPass(modelState.getRenderPass(paintLayer));
         result.setFullBrightness(modelState.isFullBrightness(paintLayer));
 
-        recolorQuad(result);
+        modelState.getShape().meshFactory().colorizer(modelState, paintLayer, inputQuad.getSurfaceInstance()).recolorQuad(result, modelState, paintLayer);
      
         // TODO: Vary color slightly with species, as user-selected option
         
@@ -134,46 +134,6 @@ public abstract class QuadPainter
             }
         }
         target.accept(inputQuad);
-    }
-    
-    private void recolorQuad(IMutablePolygon result)
-    {
-        final boolean fullBright = modelState.isFullBrightness(paintLayer);
-        int color = modelState.getColorMap(paintLayer).getColor(fullBright ? EnumColorMap.LAMP : EnumColorMap.BASE);
-        
-        if(modelState.getRenderPass(paintLayer) == BlockRenderLayer.TRANSLUCENT)
-        {
-            color = (this.modelState.isTranslucent(paintLayer) ? modelState.getTranslucency().alphaARGB : 0xFF000000) | (color & 0x00FFFFFF);
-        }
-        
-        if(fullBright)
-        {
-            // If the surface has a lamp gradient or is otherwise pre-shaded 
-            // we don't want to see a gradient when rendering at full brightness
-            // so make all vertices same color.
-            result.replaceColor(color);
-        }
-        else if(result.getSurfaceInstance().isLampGradient)
-        {
-            // If surface has a lamp gradient and rendered with shading, 
-            // replace white with the lamp color and black with the normal color.
-            // Shading will be handled at bake via per-vertex glow.
-            int lampColor = modelState.getColorMap(PaintLayer.LAMP).getColor(EnumColorMap.LAMP);
-            for(int i = 0; i < result.vertexCount(); i++)
-            {
-                Vertex v = result.getVertex(i);
-                if(v != null)
-                {
-                    int vColor = v.color == Color.WHITE ? lampColor : color;
-                    result.setVertexColor(i, vColor);
-                }
-            }
-        }
-        else
-        {
-            // normal shaded surface - tint existing colors, usually WHITE to start with
-            result.multiplyColor(color);
-        }
     }
 
     public static QuadPainter makeNullQuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
