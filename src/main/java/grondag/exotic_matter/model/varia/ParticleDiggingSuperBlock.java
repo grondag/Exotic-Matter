@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
@@ -28,7 +27,7 @@ public class ParticleDiggingSuperBlock extends ParticleDigging
     public ParticleDiggingSuperBlock(World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn, double zSpeedIn, IBlockState state, ISuperModelState modelState)
     {
         super(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn, state);
-        int color = modelState.getColorMap(PaintLayer.BASE).getColor(EnumColorMap.BASE);
+        int color = modelState.getColorARGB(PaintLayer.BASE);
         this.particleRed = ((color >> 16) & 0xFF) / 255f;
         this.particleGreen = ((color >> 8) & 0xFF) / 255f;
         this.particleBlue = (color & 0xFF) / 255f;

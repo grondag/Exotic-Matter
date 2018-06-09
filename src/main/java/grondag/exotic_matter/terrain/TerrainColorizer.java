@@ -1,6 +1,5 @@
 package grondag.exotic_matter.terrain;
 
-import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.painting.IQuadColorizer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
@@ -17,7 +16,7 @@ public class TerrainColorizer implements IQuadColorizer
     @Override
     public void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        final int cold = modelState.getColorMap(paintLayer).getColor(EnumColorMap.BASE);
+        final int cold = modelState.getColorARGB(paintLayer);
         
         if(modelState.isFullBrightness(paintLayer))
         {

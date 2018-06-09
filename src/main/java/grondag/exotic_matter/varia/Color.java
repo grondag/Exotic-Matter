@@ -299,6 +299,14 @@ public class Color
     }
     
     /**
+     * Makes color as light as possible without reducing chroma - may return self if already at max luminance
+     */
+    public Color lumify()
+    {
+        return Color.fromHCL(this.HCL_H, this.HCL_C, Color.HCL_MAX, EnumHCLFailureMode.NORMAL);
+    }
+    
+    /**
      * Makes colors more saturated, or if negative number input desaturated
      * Range is -100 to +100, but typical values much more narrow
      */

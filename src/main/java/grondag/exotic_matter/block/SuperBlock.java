@@ -13,9 +13,6 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ConfigXM.BlockSettings.ProbeInfoLevel;
-import grondag.exotic_matter.model.color.ColorMap;
-import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -290,16 +287,16 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         if(modelState != null)
         {
             tooltip.add(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
-            tooltip.add(I18n.translateToLocal("label.base_color") + ": " + modelState.getColorMap(PaintLayer.BASE).localizedName());
+            tooltip.add(I18n.translateToLocal("label.base_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.BASE)));
             tooltip.add(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
             if(modelState.isOuterLayerEnabled())
             {
-                tooltip.add(I18n.translateToLocal("label.outer_color") + ": " + modelState.getColorMap(PaintLayer.OUTER).localizedName());
+                tooltip.add(I18n.translateToLocal("label.outer_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.OUTER)));
                 tooltip.add(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
             }
             if(modelState.isMiddleLayerEnabled())
             {
-                tooltip.add(I18n.translateToLocal("label.middle_color") + ": " + modelState.getColorMap(PaintLayer.MIDDLE).localizedName());
+                tooltip.add(I18n.translateToLocal("label.middle_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.MIDDLE)));
                 tooltip.add(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());
             }
             if(modelState.hasSpecies()) 
@@ -331,16 +328,16 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         ISuperModelState modelState = this.getModelStateAssumeStateIsStale(blockState, world, data.getPos(), true);
         
         probeInfo.text(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
-        probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + modelState.getColorMap(PaintLayer.BASE).localizedName());
+        probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.BASE)));
         probeInfo.text(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
         if(modelState.isOuterLayerEnabled())
         {
-            probeInfo.text(I18n.translateToLocal("label.outer_color") + ": " + modelState.getColorMap(PaintLayer.OUTER).localizedName());
+            probeInfo.text(I18n.translateToLocal("label.outer_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.OUTER)));
             probeInfo.text(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
         }
         if(modelState.isMiddleLayerEnabled())
         {
-            probeInfo.text(I18n.translateToLocal("label.middle_color") + ": " + modelState.getColorMap(PaintLayer.MIDDLE).localizedName());
+            probeInfo.text(I18n.translateToLocal("label.middle_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.MIDDLE)));
             probeInfo.text(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());
         }
         if(modelState.hasSpecies()) 
@@ -566,10 +563,9 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         {
             ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, world, pos, false);
             
-            ColorMap colorMap = modelState.getColorMap(PaintLayer.BASE);
-            Color lamp = Color.fromRGB(colorMap.getColor(EnumColorMap.LAMP));
-            double desaturation = lamp.HCL_C * (Translucency.STAINED.alpha - modelState.getTranslucency().alpha);
-            Color beaconLamp = Color.fromHCL(lamp.HCL_H, lamp.HCL_C - desaturation, Color.HCL_MAX, EnumHCLFailureMode.REDUCE_CHROMA);
+            Color lamp = Color.fromRGB(modelState.getColorARGB(PaintLayer.BASE)).lumify();
+            float saturation = modelState.getAlpha(PaintLayer.BASE) / 255f;
+            Color beaconLamp = Color.fromHCL(lamp.HCL_H, lamp.HCL_C * saturation, Color.HCL_MAX, EnumHCLFailureMode.REDUCE_CHROMA);
             int color = beaconLamp.RGB_int;
             
             float[] result = new float[3];

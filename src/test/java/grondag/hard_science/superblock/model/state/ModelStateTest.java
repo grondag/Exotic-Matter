@@ -4,8 +4,6 @@ import org.junit.Test;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.init.ModTextures;
-import grondag.exotic_matter.model.color.BlockColorMapProvider;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModShapes;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
@@ -45,8 +43,8 @@ public class ModelStateTest
         state.setStatic(true);
 
         state.setOuterLayerEnabled(true);
-        state.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(5));
-        state.setColorMap(PaintLayer.OUTER, BlockColorMapProvider.INSTANCE.getColorMap(7));
+        state.setColorRGB(PaintLayer.BASE, 0xFF1133);
+        state.setColorRGB(PaintLayer.OUTER, 0x11AABBCC);
         state.setFullBrightness(PaintLayer.LAMP, true);
         state.setTexture(PaintLayer.BASE, ModTextures.BLOCK_NOISE_STRONG);
         state.setTexture(PaintLayer.LAMP, ModTextures.BLOCK_COBBLE);
@@ -54,7 +52,7 @@ public class ModelStateTest
         state.setTexture(PaintLayer.OUTER, ModTextures.BIGTEX_TEST1);
         state.setAxis(EnumFacing.Axis.Z);
         state.setTranslucent(PaintLayer.MIDDLE, true);
-        state.setTranslucency(Translucency.SHADED);
+        state.setAlpha(PaintLayer.MIDDLE, 0x55);
         state.setPosX(3);
         state.setPosY(7);
         state.setPosZ(15);
@@ -75,15 +73,16 @@ public class ModelStateTest
         assert(reloadedState.isStatic());
         assert(reloadedState.isOuterLayerEnabled());
         assert(reloadedState.isMiddleLayerEnabled());
-        assert(reloadedState.getColorMap(PaintLayer.BASE) == BlockColorMapProvider.INSTANCE.getColorMap(5));
-        assert(reloadedState.getColorMap(PaintLayer.OUTER) == BlockColorMapProvider.INSTANCE.getColorMap(7));
+        assert(reloadedState.getColorARGB(PaintLayer.BASE) == 0xFFFF1133);
+        assert(reloadedState.getColorARGB(PaintLayer.OUTER) == 0xFFAABBCC);
         assert(reloadedState.isFullBrightness(PaintLayer.LAMP));
         assert(reloadedState.getTexture(PaintLayer.BASE) == ModTextures.BLOCK_NOISE_STRONG);
         assert(reloadedState.getTexture(PaintLayer.LAMP) == ModTextures.BLOCK_COBBLE);
         assert(reloadedState.getTexture(PaintLayer.MIDDLE) == ModTextures.BLOCK_NOISE_SUBTLE_ZOOM);
         assert(reloadedState.getTexture(PaintLayer.OUTER) == ModTextures.BIGTEX_TEST1);
         assert(reloadedState.getAxis()) == EnumFacing.Axis.Z;
-        assert(reloadedState.getTranslucency()) == Translucency.SHADED;
+        assert(reloadedState.getAlpha(PaintLayer.MIDDLE)) == 0x55;
+        assert(reloadedState.getColorARGB(PaintLayer.MIDDLE) == 0x55FFFFFF);
         assert(reloadedState.getPosX() == 3);
         assert(reloadedState.getPosY() == 7);
         assert(reloadedState.getPosZ() == 15);

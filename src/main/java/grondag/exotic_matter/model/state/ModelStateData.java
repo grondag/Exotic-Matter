@@ -4,7 +4,6 @@ package grondag.exotic_matter.model.state;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
@@ -47,7 +46,9 @@ public class ModelStateData
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_COLOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.BooleanElement[] IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.BooleanElement[] PAINT_IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<ModelState>.IntElement[] PAINT_ALPHA = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
     @SuppressWarnings("unchecked")
@@ -82,9 +83,11 @@ public class ModelStateData
         for(PaintLayer l : PaintLayer.values())
         {
             final int i = l.ordinal();
+            // important these two come first to allow for easy default values
+            PAINT_COLOR[i] = PACKER_LAYERS[i].createIntElement(0x1000000); 
+            PAINT_ALPHA[i] = PACKER_LAYERS[i].createIntElement(0x100);
             PAINT_TEXTURE[i] = PACKER_LAYERS[i].createIntElement(TexturePaletteRegistry.MAX_PALETTES);
-            PAINT_COLOR[i] = PACKER_LAYERS[i].createIntElement(BlockColorMapProvider.INSTANCE.getColorMapCount()); 
-            IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
+            PAINT_IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
             PAINT_LIGHT[i] = PACKER_LAYERS[i].createBooleanElement(); 
         }
         

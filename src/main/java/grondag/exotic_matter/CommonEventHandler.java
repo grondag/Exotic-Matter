@@ -10,6 +10,7 @@ import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.model.color.Chroma;
+import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.color.Hue;
 import grondag.exotic_matter.model.color.Luminance;
 import grondag.exotic_matter.model.color.Translucency;
@@ -100,14 +101,14 @@ public class CommonEventHandler
         SquareColumnMeshFactory.setCutCount(3, workingModel);
         SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
-        workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
+        workingModel.setColorRGB(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
         
         workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_SUBTLE);
-        workingModel.setColorMap(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT));
+        workingModel.setColorRGB(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
         
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.WHITE);
         workingModel.setFullBrightness(PaintLayer.LAMP, true);
-        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT));
+        workingModel.setColorRGB(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT).getColor(EnumColorMap.LAMP));
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel)
             .setCreativeTab(ExoticMatter.tabMod));
 

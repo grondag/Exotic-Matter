@@ -3,15 +3,15 @@ package grondag.exotic_matter.model.state;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS_ORIENTATION;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AXIS_ROTATION;
+import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_SOLID_RENDER;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY;
+import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_TRANSLUCENT_RENDER;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_CORNER_JOIN;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_MASONRY_JOIN;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_POS;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_SIMPLE_JOIN;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_SPECIES;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_TEXTURE_ROTATION;
-import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_SOLID_RENDER;
-import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_TRANSLUCENT_RENDER;
 import static grondag.exotic_matter.model.state.ModelStateData.TEST_GETTER_STATIC;
 
 import java.util.Arrays;
@@ -25,8 +25,6 @@ import javax.vecmath.Matrix4f;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.color.BlockColorMapProvider;
-import grondag.exotic_matter.model.color.ColorMap;
 import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
@@ -72,15 +70,17 @@ public class ModelState implements ISuperModelState
         for(PaintLayer l : PaintLayer.values()) tag.removeTag(l.tagName);
     }
     
-    private boolean isStatic;
+    private boolean isStatic = false;
     protected long coreBits;
-    protected long layerBitsBase;
-    protected long layerBitsLamp;
-    protected long layerBitsMiddle;
-    protected long layerBitsOuter;
-    protected long layerBitsCut;
     protected long shapeBits1;
     protected long shapeBits0;
+    
+    // default to white, full alpha
+    protected long layerBitsBase = 0xFFFFFFFFL;
+    protected long layerBitsLamp = 0xFFFFFFFFL;
+    protected long layerBitsMiddle = 0xFFFFFFFFL;
+    protected long layerBitsOuter = 0xFFFFFFFFL;
+    protected long layerBitsCut = 0xFFFFFFFFL;
 
     private int hashCode = -1;
 
@@ -358,18 +358,34 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public ColorMap getColorMap(PaintLayer layer)
+    public final int getColorARGB(PaintLayer layer)
     {
-        return BlockColorMapProvider.INSTANCE.getColorMap(ModelStateData.PAINT_COLOR[layer.dynamicIndex].getValue(this));
+        final int alpha = this.isTranslucent(layer)
+                ? ModelStateData.PAINT_ALPHA[layer.dynamicIndex].getValue(this)
+                : 0xFF;
+        return (alpha << 24)  | ModelStateData.PAINT_COLOR[layer.dynamicIndex].getValue(this); 
     }
 
     @Override
-    public void setColorMap(PaintLayer layer, ColorMap map)
+    public final void setColorRGB(PaintLayer layer, int rgb)
     {
-        ModelStateData.PAINT_COLOR[layer.dynamicIndex].setValue(map.ordinal, this);
+        ModelStateData.PAINT_COLOR[layer.dynamicIndex].setValue(rgb & 0xFFFFFF, this);
         invalidateHashCode();
     }
 
+    @Override
+    public final int getAlpha(PaintLayer layer)
+    {
+        return ModelStateData.PAINT_ALPHA[layer.dynamicIndex].getValue(this);
+    }
+    
+    @Override
+    public final void setAlpha(PaintLayer layer, int translucency)
+    {
+        ModelStateData.PAINT_ALPHA[layer.dynamicIndex].setValue(translucency & 0xFF, this);
+        invalidateHashCode();
+    }
+    
     @Override
     public BlockOrientationType orientationType()
     { 
@@ -399,20 +415,6 @@ public class ModelState implements ISuperModelState
     public void setAxisInverted(boolean isInverted)
     {
         ModelStateData.AXIS_INVERTED.setValue(isInverted, this);
-        invalidateHashCode();
-    }
-
-    @Override
-    public boolean isTranslucent(PaintLayer layer)
-    {
-        return ModelStateData.IS_TRANSLUCENT[layer.dynamicIndex].getValue(this);
-    }
-
-    @Override
-    public void setTranslucent(PaintLayer layer, boolean isTranslucent)
-    {
-        ModelStateData.IS_TRANSLUCENT[layer.dynamicIndex].setValue(isTranslucent, this);
-        clearStateFlags();
         invalidateHashCode();
     }
 
@@ -467,6 +469,20 @@ public class ModelState implements ISuperModelState
         invalidateHashCode();
     }
 
+    @Override
+    public boolean isTranslucent(PaintLayer layer)
+    {
+        return ModelStateData.PAINT_IS_TRANSLUCENT[layer.ordinal()].getValue(this);
+    }
+
+    @Override
+    public void setTranslucent(PaintLayer layer, boolean isTranslucent)
+    {
+        ModelStateData.PAINT_IS_TRANSLUCENT[layer.ordinal()].setValue(isTranslucent, this);
+        clearStateFlags();
+        invalidateHashCode();
+    }
+    
     ////////////////////////////////////////////////////
     //  PACKER 1 ATTRIBUTES (NOT SHAPE-DEPENDENT)
     ////////////////////////////////////////////////////

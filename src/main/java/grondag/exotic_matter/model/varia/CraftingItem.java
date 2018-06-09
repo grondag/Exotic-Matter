@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.varia;
 
 import grondag.exotic_matter.init.IItemModelRegistrant;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
+import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -21,8 +22,8 @@ public class CraftingItem extends Item implements IItemModelRegistrant
         super();
         this.modelState = modelState;
         int colorIndex = this.hashCode() % BlockColorMapProvider.INSTANCE.getColorMapCount();
-        this.modelState.setColorMap(PaintLayer.BASE, 
-                BlockColorMapProvider.INSTANCE.getColorMap(colorIndex));
+        this.modelState.setColorRGB(PaintLayer.BASE, 
+                BlockColorMapProvider.INSTANCE.getColorMap(colorIndex).getColor(EnumColorMap.BASE));
         this.setRegistryName(name);
         this.setUnlocalizedName(name);
     }

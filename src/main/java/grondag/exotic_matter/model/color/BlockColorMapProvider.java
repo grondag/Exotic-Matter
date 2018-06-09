@@ -8,14 +8,15 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.varia.Color.EnumHCLFailureMode;
 
 public class BlockColorMapProvider
 {
     public static final BlockColorMapProvider INSTANCE = new BlockColorMapProvider();
-    public static final ColorMap COLOR_BASALT = INSTANCE.getColorMap(Hue.COBALT, Chroma.NEUTRAL, Luminance.MEDIUM_DARK);
-    public static final ColorMap COLOR_LAVA = INSTANCE.getMostest(Hue.ROSE);
+    public static final int COLOR_BASALT = INSTANCE.getColorMap(Hue.COBALT, Chroma.NEUTRAL, Luminance.MEDIUM_DARK).getColor(EnumColorMap.BASE);
+    public static final int  COLOR_LAVA = INSTANCE.getMostest(Hue.ROSE).getColor(EnumColorMap.BASE);
     
     // note: can't be static because must come after Hue static initializaiton
     public final int hueCount = Hue.values().length;

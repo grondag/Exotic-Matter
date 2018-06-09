@@ -7,6 +7,7 @@ import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.color.ColorMap;
+import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
@@ -58,9 +59,21 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
      */
     void setShape(ModelShape<?> shape);
 
-    ColorMap getColorMap(PaintLayer layer);
+    int getColorARGB(PaintLayer layer);
 
-    void setColorMap(PaintLayer layer, ColorMap map);
+    void setColorRGB(PaintLayer layer, int rgb);
+    
+    /**
+     * See {@link #setAlpha(PaintLayer, int)}
+     */
+    int getAlpha(PaintLayer layer);
+    
+    /** 
+     * 255 (default) = fully opaque, 0 = invisible.
+     * Determines alpha component of {@link #getColorARGB(PaintLayer)}
+     * Only applies if {@link #isTranslucent(PaintLayer)} is true.
+     */
+    void setAlpha(PaintLayer layer, int translucency);
 
     /**
      * Used by placement logic to know if shape has any kind of orientation to it that can be selected during placement.
@@ -78,10 +91,10 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     /**
      * For base/lamp paint layers, true means should be rendered in translucent render layer.
      * (Overlay textures always render in translucent layer.)
-     * For all paint layers, true also means {@link #getTranslucency()} applies.
+     * For all paint layers, true also means {@link #getAlpha(PaintLayer)} applies.
      */
     boolean isTranslucent(PaintLayer layer);
-
+    
     /**
      * See {@link #isTranslucent(PaintLayer)}
      */
@@ -291,6 +304,15 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     default AxisAlignedBB getCollisionBoundingBox()
     {
         return this.getShape().meshFactory().collisionHandler().getCollisionBoundingBox(this);
+    }
+
+    /**
+     * For backwards compatibility with color maps
+     */
+    @Deprecated
+    public default void setColorMap(PaintLayer layer, ColorMap colorMap)
+    {
+        this.setColorRGB(layer, colorMap.getColor(EnumColorMap.BASE));
     }
 
 }
