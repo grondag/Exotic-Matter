@@ -73,10 +73,14 @@ public class ModelState implements ISuperModelState
     }
     
     private boolean isStatic;
-    protected long bits0;
-    protected long bits1;
-    protected long bits2;
-    protected long bits3;
+    protected long coreBits;
+    protected long layerBitsBase;
+    protected long layerBitsLamp;
+    protected long layerBitsMiddle;
+    protected long layerBitsOuter;
+    protected long layerBitsCut;
+    protected long shapeBits1;
+    protected long shapeBits0;
 
     private int hashCode = -1;
 
@@ -90,35 +94,60 @@ public class ModelState implements ISuperModelState
         this.deserializeFromInts(bits);
     }
     
-    public ModelState(long b0, long b1, long b2, long b3)
+    public ModelState(
+            long coreBits, 
+            long shapeBits0, 
+            long shapeBits1, 
+            long layerBitsBase,
+            long layerBitsCut,
+            long layerBitsLamp,
+            long layerBitsMiddle,
+            long layerBitsOuter)
     {
-        bits0 = b0;
-        bits1 = b1;
-        bits2 = b2;
-        bits3 = b3;
+        this.coreBits = coreBits;
+        this.shapeBits0 = shapeBits0;
+        this.shapeBits1 = shapeBits1;
+        this.layerBitsBase = layerBitsBase;
+        this.layerBitsCut = layerBitsCut;
+        this.layerBitsLamp = layerBitsLamp;
+        this.layerBitsMiddle = layerBitsMiddle;
+        this.layerBitsOuter = layerBitsOuter;
     }
 
     @Override
     public ModelState clone()
     {
-        return new ModelState(bits0, bits1, bits2, bits3);
+        return new ModelState(coreBits, shapeBits0, shapeBits1, layerBitsBase, layerBitsCut, layerBitsLamp, layerBitsMiddle, layerBitsOuter);
     }
 
     @Override
-    public int[] serializeToInts() 
+    public final int[] serializeToInts() 
     {
-        int[] result = new int[8];
-        result[0] = (int) (bits0 >> 32);
-        result[1] = (int) (bits0);
+        int[] result = new int[16];
+        result[0] = (int) (this.isStatic ? (coreBits >> 32) | Useful.INT_SIGN_BIT : (coreBits >> 32));
+        result[1] = (int) (coreBits);
 
-        result[2] = (int) (bits1 >> 32);
-        result[3] = (int) (bits1);
+        result[2] = (int) (shapeBits1 >> 32);
+        result[3] = (int) (shapeBits1);
 
-        result[4] = (int) (this.isStatic ? (bits2 >> 32) | Useful.INT_SIGN_BIT : (bits2 >> 32));
-        result[5] = (int) (bits2);
-
-        result[6] = (int) (bits3 >> 32);
-        result[7] = (int) (bits3);
+        result[4] = (int) (shapeBits0 >> 32);
+        result[5] = (int) (shapeBits0);
+        
+        result[6] = (int) (layerBitsBase >> 32);
+        result[7] = (int) (layerBitsBase);
+        
+        result[8] = (int) (layerBitsCut >> 32);
+        result[9] = (int) (layerBitsCut);
+        
+        result[10] = (int) (layerBitsLamp >> 32);
+        result[11] = (int) (layerBitsLamp);
+        
+        result[12] = (int) (layerBitsMiddle >> 32);
+        result[13] = (int) (layerBitsMiddle);
+        
+        result[14] = (int) (layerBitsOuter >> 32);
+        result[15] = (int) (layerBitsOuter);
+        
         return result;
     }
     
@@ -127,26 +156,19 @@ public class ModelState implements ISuperModelState
      */
     private void deserializeFromInts(int [] bits)
     {
-        // sign on third long word is used to store static indicator
-        this.isStatic = (Useful.INT_SIGN_BIT & bits[4]) == Useful.INT_SIGN_BIT;
+        // sign on first long word is used to store static indicator
+        this.isStatic = (Useful.INT_SIGN_BIT & bits[0]) == Useful.INT_SIGN_BIT;
 
-        this.bits0 = ((long)bits[0]) << 32 | (bits[1] & 0xffffffffL);
-        this.bits1 = ((long)bits[2]) << 32 | (bits[3] & 0xffffffffL);
-        this.bits2 = ((long)(Useful.INT_SIGN_BIT_INVERSE & bits[4])) << 32 | (bits[5] & 0xffffffffL);
-        this.bits3 = ((long)bits[6]) << 32 | (bits[7] & 0xffffffffL);    
+        this.coreBits = ((long)(Useful.INT_SIGN_BIT_INVERSE & bits[0])) << 32 | (bits[1] & 0xffffffffL);
+        this.shapeBits1 = ((long)bits[2]) << 32 | (bits[3] & 0xffffffffL);
+        this.shapeBits0 = ((long)bits[4]) << 32 | (bits[5] & 0xffffffffL);
+        
+        this.layerBitsBase = ((long)bits[6]) << 32 | (bits[7] & 0xffffffffL); 
+        this.layerBitsCut = ((long)bits[8]) << 32 | (bits[9] & 0xffffffffL); 
+        this.layerBitsLamp = ((long)bits[10]) << 32 | (bits[11] & 0xffffffffL); 
+        this.layerBitsMiddle = ((long)bits[12]) << 32 | (bits[13] & 0xffffffffL); 
+        this.layerBitsOuter = ((long)bits[14]) << 32 | (bits[15] & 0xffffffffL); 
     }
-
-    @Override
-    public long getBits0() {return this.bits0;}
-
-    @Override
-    public long getBits1() {return this.bits1;}
-
-    @Override
-    public long getBits2() {return this.bits2;}
-
-    @Override
-    public long getBits3() {return this.bits3;}
 
     private void populateStateFlagsIfNeeded()
     {
@@ -183,10 +205,14 @@ public class ModelState implements ISuperModelState
         if(obj instanceof ModelState)
         {
             ModelState other = (ModelState)obj;
-            return this.bits0 == other.bits0
-                    && this.bits1 == other.bits1
-                    && this.bits2 == other.bits2
-                    && this.bits3 == other.bits3;
+            return this.coreBits == other.coreBits
+                    && this.shapeBits0 == other.shapeBits0
+                    && this.shapeBits1 == other.shapeBits1
+                    && this.layerBitsBase == other.layerBitsBase
+                    && this.layerBitsCut == other.layerBitsCut
+                    && this.layerBitsLamp == other.layerBitsLamp
+                    && this.layerBitsMiddle == other.layerBitsMiddle
+                    && this.layerBitsOuter == other.layerBitsOuter;
         }
 
         return false;
@@ -200,13 +226,16 @@ public class ModelState implements ISuperModelState
         if(obj instanceof ModelState)
         {
             ModelState other = (ModelState)obj;
-            return this.bits0 == other.bits0
-                    && this.bits1 == other.bits1
-                    && this.bits2 == other.bits2
-                    && this.bits3 == other.bits3
-                    && this.isStatic == other.isStatic;
+            return this.isStatic == other.isStatic
+                    && this.coreBits == other.coreBits
+                    && this.shapeBits0 == other.shapeBits0
+                    && this.shapeBits1 == other.shapeBits1
+                    && this.layerBitsBase == other.layerBitsBase
+                    && this.layerBitsCut == other.layerBitsCut
+                    && this.layerBitsLamp == other.layerBitsLamp
+                    && this.layerBitsMiddle == other.layerBitsMiddle
+                    && this.layerBitsOuter == other.layerBitsOuter;
         }
-
         return false;
     }
 
@@ -220,7 +249,10 @@ public class ModelState implements ISuperModelState
     {
         if(hashCode == -1)
         {
-            hashCode = (int) Useful.longHash(this.bits0 ^ this.bits1 ^ this.bits2 ^ this.bits3);
+            hashCode = (int) Useful.longHash(
+                    this.coreBits ^ this.shapeBits0 ^ this.shapeBits1
+                    ^ this.layerBitsBase ^ this.layerBitsCut ^ this.layerBitsLamp 
+                    ^ this.layerBitsMiddle ^ this.layerBitsOuter);
         }
         return hashCode;
     }
@@ -255,20 +287,20 @@ public class ModelState implements ISuperModelState
             {
                 neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
                 NeighborBlocks.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
-                ModelStateData.P3B_BLOCK_JOIN.setValue(CornerJoinBlockStateSelector.findIndex(tests), this);
+                ModelStateData.BLOCK_JOIN.setValue(CornerJoinBlockStateSelector.findIndex(tests), this);
             }
             else if ((STATE_FLAG_NEEDS_SIMPLE_JOIN & stateFlags) == STATE_FLAG_NEEDS_SIMPLE_JOIN)
             {
                 neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
                 NeighborBlocks.NeighborTestResults tests = neighbors.getNeighborTestResults(((ISuperBlock)state.getBlock()).blockJoinTest(world, state, pos, this));
-                ModelStateData.P3B_BLOCK_JOIN.setValue(SimpleJoin.getIndex(tests), this);
+                ModelStateData.BLOCK_JOIN.setValue(SimpleJoin.getIndex(tests), this);
             }
 
             if((STATE_FLAG_NEEDS_MASONRY_JOIN & stateFlags) == STATE_FLAG_NEEDS_MASONRY_JOIN)
             {
                 if(neighbors == null) neighbors = new NeighborBlocks(world, pos, TEST_GETTER_STATIC);
                 NeighborBlocks.NeighborTestResults masonryTests = neighbors.getNeighborTestResults(new SuperBlockMasonryMatch((ISuperBlock) state.getBlock(), this.getSpecies(), pos));
-                ModelStateData.P3B_MASONRY_JOIN.setValue(SimpleJoin.getIndex(masonryTests), this);
+                ModelStateData.MASONRY_JOIN.setValue(SimpleJoin.getIndex(masonryTests), this);
             }
 
             break;
@@ -276,7 +308,7 @@ public class ModelState implements ISuperModelState
         case FLOW:
             // terrain blocks need larger position space to drive texture randomization because doesn't have per-block rotation or version
             if((stateFlags & STATE_FLAG_NEEDS_POS) == STATE_FLAG_NEEDS_POS) refreshBlockPosFromWorld(pos, 255);
-            ModelStateData.P3F_FLOW_JOIN.setValue(TerrainState.getBitsFromWorldStatically((ISuperBlock)state.getBlock(), state, world, pos), this);
+            ModelStateData.FLOW_JOIN.setValue(TerrainState.getBitsFromWorldStatically((ISuperBlock)state.getBlock(), state, world, pos), this);
             break;
 
         case MULTIBLOCK:
@@ -298,9 +330,9 @@ public class ModelState implements ISuperModelState
      */
     private void refreshBlockPosFromWorld(BlockPos pos, int mask)
     {
-        ModelStateData.P2_POS_X.setValue((pos.getX() & mask), this);
-        ModelStateData.P2_POS_Y.setValue((pos.getY() & mask), this);
-        ModelStateData.P2_POS_Z.setValue((pos.getZ() & mask), this);
+        ModelStateData.POS_X.setValue((pos.getX() & mask), this);
+        ModelStateData.POS_Y.setValue((pos.getY() & mask), this);
+        ModelStateData.POS_Z.setValue((pos.getZ() & mask), this);
     }
 
     ////////////////////////////////////////////////////
@@ -310,16 +342,16 @@ public class ModelState implements ISuperModelState
     @Override
     public ModelShape<?> getShape()
     {
-        return ModelShape.get(ModelStateData.P0_SHAPE.getValue(this));
+        return ModelShape.get(ModelStateData.SHAPE.getValue(this));
     }
 
     @Override
     public void setShape(ModelShape<?> shape)
     {
-        if(shape.ordinal() != ModelStateData.P0_SHAPE.getValue(this))
+        if(shape.ordinal() != ModelStateData.SHAPE.getValue(this))
         {
-            ModelStateData.P0_SHAPE.setValue(shape.ordinal(), this);
-            ModelStateData.P2_STATIC_SHAPE_BITS.setValue(shape.meshFactory().defaultShapeStateBits, this);
+            ModelStateData.SHAPE.setValue(shape.ordinal(), this);
+            ModelStateData.EXTRA_SHAPE_BITS.setValue(shape.meshFactory().defaultShapeStateBits, this);
             invalidateHashCode();
             clearStateFlags();
         }
@@ -328,13 +360,13 @@ public class ModelState implements ISuperModelState
     @Override
     public ColorMap getColorMap(PaintLayer layer)
     {
-        return BlockColorMapProvider.INSTANCE.getColorMap(ModelStateData.P0_PAINT_COLOR[layer.dynamicIndex].getValue(this));
+        return BlockColorMapProvider.INSTANCE.getColorMap(ModelStateData.PAINT_COLOR[layer.dynamicIndex].getValue(this));
     }
 
     @Override
     public void setColorMap(PaintLayer layer, ColorMap map)
     {
-        ModelStateData.P0_PAINT_COLOR[layer.dynamicIndex].setValue(map.ordinal, this);
+        ModelStateData.PAINT_COLOR[layer.dynamicIndex].setValue(map.ordinal, this);
         invalidateHashCode();
     }
 
@@ -347,39 +379,39 @@ public class ModelState implements ISuperModelState
     @Override
     public EnumFacing.Axis getAxis()
     {
-        return ModelStateData.P0_AXIS.getValue(this);
+        return ModelStateData.AXIS.getValue(this);
     }
 
     @Override
     public void setAxis(EnumFacing.Axis axis)
     {
-        ModelStateData.P0_AXIS.setValue(axis, this);
+        ModelStateData.AXIS.setValue(axis, this);
         invalidateHashCode();
     }
 
     @Override
     public boolean isAxisInverted()
     {
-        return ModelStateData.P0_AXIS_INVERTED.getValue(this);
+        return ModelStateData.AXIS_INVERTED.getValue(this);
     }
 
     @Override
     public void setAxisInverted(boolean isInverted)
     {
-        ModelStateData.P0_AXIS_INVERTED.setValue(isInverted, this);
+        ModelStateData.AXIS_INVERTED.setValue(isInverted, this);
         invalidateHashCode();
     }
 
     @Override
     public boolean isTranslucent(PaintLayer layer)
     {
-        return ModelStateData.P0_IS_TRANSLUCENT[layer.dynamicIndex].getValue(this);
+        return ModelStateData.IS_TRANSLUCENT[layer.dynamicIndex].getValue(this);
     }
 
     @Override
     public void setTranslucent(PaintLayer layer, boolean isTranslucent)
     {
-        ModelStateData.P0_IS_TRANSLUCENT[layer.dynamicIndex].setValue(isTranslucent, this);
+        ModelStateData.IS_TRANSLUCENT[layer.dynamicIndex].setValue(isTranslucent, this);
         clearStateFlags();
         invalidateHashCode();
     }
@@ -425,13 +457,13 @@ public class ModelState implements ISuperModelState
     @Override
     public Translucency getTranslucency()
     {
-        return ModelStateData.P0_TRANSLUCENCY.getValue(this);
+        return ModelStateData.TRANSLUCENCY.getValue(this);
     }
 
     @Override
     public void setTranslucency(Translucency translucency)
     {
-        ModelStateData.P0_TRANSLUCENCY.setValue(translucency, this);
+        ModelStateData.TRANSLUCENCY.setValue(translucency, this);
         invalidateHashCode();
     }
 
@@ -442,13 +474,13 @@ public class ModelState implements ISuperModelState
     @Override
     public ITexturePalette getTexture(PaintLayer layer)
     {
-        return TexturePaletteRegistry.get(ModelStateData.P1_PAINT_TEXTURE[layer.ordinal()].getValue(this));
+        return TexturePaletteRegistry.get(ModelStateData.PAINT_TEXTURE[layer.ordinal()].getValue(this));
     }
 
     @Override
     public void setTexture(PaintLayer layer, @Nonnull ITexturePalette tex)
     {
-        ModelStateData.P1_PAINT_TEXTURE[layer.ordinal()].setValue(tex.ordinal(), this);
+        ModelStateData.PAINT_TEXTURE[layer.ordinal()].setValue(tex.ordinal(), this);
         invalidateHashCode();
         clearStateFlags();
     }
@@ -456,13 +488,13 @@ public class ModelState implements ISuperModelState
     @Override
     public boolean isFullBrightness(PaintLayer layer)
     {
-        return ModelStateData.P1_PAINT_LIGHT[layer.dynamicIndex].getValue(this);
+        return ModelStateData.PAINT_LIGHT[layer.dynamicIndex].getValue(this);
     }
 
     @Override
     public void setFullBrightness(PaintLayer layer, boolean isFullBrightness)
     {
-        ModelStateData.P1_PAINT_LIGHT[layer.dynamicIndex].setValue(isFullBrightness, this);
+        ModelStateData.PAINT_LIGHT[layer.dynamicIndex].setValue(isFullBrightness, this);
         clearStateFlags();
         invalidateHashCode();
     }
@@ -474,52 +506,52 @@ public class ModelState implements ISuperModelState
     @Override
     public int getPosX()
     {
-        return ModelStateData.P2_POS_X.getValue(this);
+        return ModelStateData.POS_X.getValue(this);
     }
 
     @Override
     public void setPosX(int index)
     {
-        ModelStateData.P2_POS_X.setValue(index, this);
+        ModelStateData.POS_X.setValue(index, this);
         invalidateHashCode();
     }
 
     @Override
     public int getPosY()
     {
-        return ModelStateData.P2_POS_Y.getValue(this);
+        return ModelStateData.POS_Y.getValue(this);
     }
 
     @Override
     public void setPosY(int index)
     {
-        ModelStateData.P2_POS_Y.setValue(index, this);
+        ModelStateData.POS_Y.setValue(index, this);
         invalidateHashCode();
     }
 
     @Override
     public int getPosZ()
     {
-        return ModelStateData.P2_POS_Z.getValue(this);
+        return ModelStateData.POS_Z.getValue(this);
     }
 
     @Override
     public void setPosZ(int index)
     {
-        ModelStateData.P2_POS_Z.setValue(index, this);
+        ModelStateData.POS_Z.setValue(index, this);
         invalidateHashCode();
     }
 
     @Override
     public long getStaticShapeBits()
     {
-        return ModelStateData.P2_STATIC_SHAPE_BITS.getValue(this);
+        return ModelStateData.EXTRA_SHAPE_BITS.getValue(this);
     }
 
     @Override
     public void setStaticShapeBits(long bits)
     {
-        ModelStateData.P2_STATIC_SHAPE_BITS.setValue(bits, this);
+        ModelStateData.EXTRA_SHAPE_BITS.setValue(bits, this);
         invalidateHashCode();
     }
 
@@ -535,7 +567,7 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && !this.hasSpecies())
             ExoticMatter.INSTANCE.warn("getSpecies on model state does not apply for shape");
 
-        return this.hasSpecies() ? ModelStateData.P3B_SPECIES.getValue(this) : 0;
+        return this.hasSpecies() ? ModelStateData.SPECIES.getValue(this) : 0;
     }
 
     @Override
@@ -548,7 +580,7 @@ public class ModelState implements ISuperModelState
 
         if(this.hasSpecies())
         {
-            ModelStateData.P3B_SPECIES.setValue(species, this);
+            ModelStateData.SPECIES.setValue(species, this);
             invalidateHashCode();
         }
     }
@@ -563,7 +595,7 @@ public class ModelState implements ISuperModelState
                 ExoticMatter.INSTANCE.warn("getCornerJoin on model state does not apply for shape");
         }
 
-        return CornerJoinBlockStateSelector.getJoinState(MathHelper.clamp(ModelStateData.P3B_BLOCK_JOIN.getValue(this), 0, CornerJoinBlockStateSelector.BLOCK_JOIN_STATE_COUNT - 1));
+        return CornerJoinBlockStateSelector.getJoinState(MathHelper.clamp(ModelStateData.BLOCK_JOIN.getValue(this), 0, CornerJoinBlockStateSelector.BLOCK_JOIN_STATE_COUNT - 1));
     }
 
     @Override
@@ -576,7 +608,7 @@ public class ModelState implements ISuperModelState
                 ExoticMatter.INSTANCE.warn("setCornerJoin on model state does not apply for shape");
         }
 
-        ModelStateData.P3B_BLOCK_JOIN.setValue(join.getIndex(), this);
+        ModelStateData.BLOCK_JOIN.setValue(join.getIndex(), this);
         invalidateHashCode();
     }
 
@@ -591,7 +623,7 @@ public class ModelState implements ISuperModelState
         // and so need to derive simple join from the corner join
         populateStateFlagsIfNeeded();
         return ((stateFlags & STATE_FLAG_NEEDS_CORNER_JOIN) == 0)
-                ? new SimpleJoin(ModelStateData.P3B_BLOCK_JOIN.getValue(this))
+                ? new SimpleJoin(ModelStateData.BLOCK_JOIN.getValue(this))
                         : getCornerJoin().simpleJoin;
     }
 
@@ -614,7 +646,7 @@ public class ModelState implements ISuperModelState
             }
         }
 
-        ModelStateData.P3B_BLOCK_JOIN.setValue(join.getIndex(), this);
+        ModelStateData.BLOCK_JOIN.setValue(join.getIndex(), this);
         invalidateHashCode();
     }
 
@@ -625,7 +657,7 @@ public class ModelState implements ISuperModelState
             ExoticMatter.INSTANCE.warn("getMasonryJoin on model state does not apply for shape");
 
         populateStateFlagsIfNeeded();
-        return new SimpleJoin(ModelStateData.P3B_MASONRY_JOIN.getValue(this));
+        return new SimpleJoin(ModelStateData.MASONRY_JOIN.getValue(this));
     }
 
     @Override
@@ -647,14 +679,14 @@ public class ModelState implements ISuperModelState
             }
         }
 
-        ModelStateData.P3B_MASONRY_JOIN.setValue(join.getIndex(), this);
+        ModelStateData.MASONRY_JOIN.setValue(join.getIndex(), this);
         invalidateHashCode();
     }
 
     @Override
     public Rotation getAxisRotation()
     {
-        return ModelStateData.P3B_AXIS_ROTATION.getValue(this);
+        return ModelStateData.AXIS_ROTATION.getValue(this);
     }
 
     @Override
@@ -673,7 +705,7 @@ public class ModelState implements ISuperModelState
             return;
         }
 
-        ModelStateData.P3B_AXIS_ROTATION.setValue(rotation, this);
+        ModelStateData.AXIS_ROTATION.setValue(rotation, this);
         invalidateHashCode();
     }
 
@@ -687,7 +719,7 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.MULTIBLOCK)
             ExoticMatter.INSTANCE.warn("getMultiBlockBits on model state does not apply for shape");
 
-        return bits3;
+        return shapeBits0;
     }
 
     @Override
@@ -696,7 +728,7 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.MULTIBLOCK)
             ExoticMatter.INSTANCE.warn("setMultiBlockBits on model state does not apply for shape");
 
-        bits3 = bits;
+        shapeBits0 = bits;
         invalidateHashCode();
     }
 
@@ -710,13 +742,13 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
             ExoticMatter.INSTANCE.warn("getTerrainState on model state does not apply for shape");
 
-        return new TerrainState(ModelStateData.P3F_FLOW_JOIN.getValue(this));
+        return new TerrainState(ModelStateData.FLOW_JOIN.getValue(this));
     }
 
     @Override
     public long getTerrainBits()
     {
-        return ModelStateData.P3F_FLOW_JOIN.getValue(this);
+        return ModelStateData.FLOW_JOIN.getValue(this);
     }
     
     @Override
@@ -725,7 +757,7 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
             ExoticMatter.INSTANCE.warn("setTerrainState on model state does not apply for shape");
 
-        ModelStateData.P3F_FLOW_JOIN.setValue(flowState.getStateKey(), this);
+        ModelStateData.FLOW_JOIN.setValue(flowState.getStateKey(), this);
         invalidateHashCode();
     }
 
@@ -903,18 +935,27 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public boolean doShapeAndAppearanceMatch(ISuperModelState other)
+    public final boolean doShapeAndAppearanceMatch(ISuperModelState other)
     {
-        return (this.bits0 & ModelStateData.P0_APPEARANCE_COMPARISON_MASK) == (other.getBits0() & ModelStateData.P0_APPEARANCE_COMPARISON_MASK)
-                && (this.bits1 & ModelStateData.P1_APPEARANCE_COMPARISON_MASK) == (other.getBits1() & ModelStateData.P1_APPEARANCE_COMPARISON_MASK)
-                && (this.bits2 & ModelStateData.P2_APPEARANCE_COMPARISON_MASK) == (other.getBits2() & ModelStateData.P2_APPEARANCE_COMPARISON_MASK);
+        final ModelState o = (ModelState)other;
+        return (this.coreBits & ModelStateData.SHAPE_COMPARISON_MASK_0) == (o.coreBits & ModelStateData.SHAPE_COMPARISON_MASK_0)
+                && (this.shapeBits1 & ModelStateData.SHAPE_COMPARISON_MASK_1) == (o.shapeBits1 & ModelStateData.SHAPE_COMPARISON_MASK_1)
+                && this.layerBitsBase == o.layerBitsBase
+                && this.layerBitsCut == o.layerBitsCut
+                && this.layerBitsLamp == o.layerBitsLamp
+                && this.layerBitsMiddle == o.layerBitsMiddle
+                && this.layerBitsOuter == o.layerBitsOuter;
     }
 
     @Override
     public boolean doesAppearanceMatch(ISuperModelState other)
     {
-        return (this.bits0 & ModelStateData.P0_APPEARANCE_COMPARISON_MASK_NO_GEOMETRY) == (other.getBits0() & ModelStateData.P0_APPEARANCE_COMPARISON_MASK_NO_GEOMETRY)
-                && (this.bits1 & ModelStateData.P1_APPEARANCE_COMPARISON_MASK) == (other.getBits1() & ModelStateData.P1_APPEARANCE_COMPARISON_MASK);
+        final ModelState o = (ModelState)other;
+        return this.layerBitsBase == o.layerBitsBase
+                && this.layerBitsCut == o.layerBitsCut
+                && this.layerBitsLamp == o.layerBitsLamp
+                && this.layerBitsMiddle == o.layerBitsMiddle
+                && this.layerBitsOuter == o.layerBitsOuter;
     }
 
     @Override
@@ -943,7 +984,7 @@ public class ModelState implements ISuperModelState
 
         case FLOW:
         case MULTIBLOCK:
-            result.bits3 = this.bits3;
+            result.shapeBits0 = this.shapeBits0;
             break;
 
         default:
@@ -993,7 +1034,7 @@ public class ModelState implements ISuperModelState
     public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
         int[] stateBits = tag.getIntArray(NBT_MODEL_BITS);
-        if(stateBits == null || stateBits.length != 8)
+        if(stateBits == null || stateBits.length != 16)
         {
             ExoticMatter.INSTANCE.warn("Bad or missing data encounter during ModelState NBT deserialization.");
             return;
@@ -1050,18 +1091,26 @@ public class ModelState implements ISuperModelState
     @Override
     public void fromBytes(PacketBuffer pBuff)
     {
-        this.bits0 = pBuff.readLong();
-        this.bits1 = pBuff.readLong();
-        this.bits2 = pBuff.readLong();
-        this.bits3 = pBuff.readLong();
+        this.coreBits = pBuff.readLong();
+        this.shapeBits0 = pBuff.readLong();
+        this.shapeBits1 = pBuff.readVarLong();
+        this.layerBitsBase = pBuff.readVarLong();
+        this.layerBitsCut = pBuff.readVarLong();
+        this.layerBitsLamp = pBuff.readVarLong();
+        this.layerBitsMiddle = pBuff.readVarLong();
+        this.layerBitsOuter = pBuff.readVarLong();
     }
 
     @Override
     public void toBytes(PacketBuffer pBuff)
     {
-        pBuff.writeLong(this.bits0);
-        pBuff.writeLong(this.bits1);
-        pBuff.writeLong(this.bits2);
-        pBuff.writeLong(this.bits3);
+        pBuff.writeLong(this.coreBits);
+        pBuff.writeLong(this.shapeBits0);
+        pBuff.writeVarLong(this.shapeBits1);
+        pBuff.writeVarLong(this.layerBitsBase);
+        pBuff.writeVarLong(this.layerBitsCut);
+        pBuff.writeVarLong(this.layerBitsLamp);
+        pBuff.writeVarLong(this.layerBitsMiddle);
+        pBuff.writeVarLong(this.layerBitsOuter);
     }
 }

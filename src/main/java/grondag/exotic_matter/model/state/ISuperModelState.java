@@ -34,14 +34,6 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     int[] serializeToInts();
 
-    long getBits0();
-
-    long getBits1();
-
-    long getBits2();
-
-    long getBits3();
-
     /** 
      * Persisted but not part of hash nor included in equals comparison.
      * If true, refreshFromWorldState does nothing.

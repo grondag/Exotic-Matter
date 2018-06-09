@@ -24,15 +24,20 @@ public class ModelStateTest
     public void test()
     {
         ExoticMatter.INSTANCE.info("Max shapes within current format: " + ModelShape.MAX_SHAPES);
-        ExoticMatter.INSTANCE.info("bits0 length = "  + ModelStateData.PACKER_0.bitLength());
-        ExoticMatter.INSTANCE.info("bits1 length = "  + ModelStateData.PACKER_1.bitLength());
-        ExoticMatter.INSTANCE.info("bits2 length = "  + ModelStateData.PACKER_2.bitLength());
+        ExoticMatter.INSTANCE.info("core bits length = "  + ModelStateData.PACKER_CORE.bitLength());
+        ExoticMatter.INSTANCE.info("layer bits length = "  + ModelStateData.PACKER_LAYER_BASE.bitLength());
+        assert ModelStateData.PACKER_LAYER_BASE.bitLength() == ModelStateData.PACKER_LAYER_CUT.bitLength();
+        assert ModelStateData.PACKER_LAYER_BASE.bitLength() == ModelStateData.PACKER_LAYER_LAMP.bitLength();
+        assert ModelStateData.PACKER_LAYER_BASE.bitLength() == ModelStateData.PACKER_LAYER_MIDDLE.bitLength();
+        assert ModelStateData.PACKER_LAYER_BASE.bitLength() == ModelStateData.PACKER_LAYER_OUTER.bitLength();
         
-        ExoticMatter.INSTANCE.info("bits3 block length = "  + ModelStateData.PACKER_3_BLOCK.bitLength());
-        ExoticMatter.INSTANCE.info("bits3 flow length = "  + ModelStateData.PACKER_3_FLOW.bitLength());
+        ExoticMatter.INSTANCE.info("block shape bits length = "  + ModelStateData.PACKER_SHAPE_BLOCK.bitLength());
+        ExoticMatter.INSTANCE.info("flow shape bits length = "  + ModelStateData.PACKER_SHAPE_FLOW.bitLength());
+        ExoticMatter.INSTANCE.info("extra shape bits length = "  + ModelStateData.PACKER_SHAPE_EXTRA.bitLength());
+        
         
         // sign bit on third long is used to store static indicator
-        assert(ModelStateData.PACKER_2.bitLength() < 64);
+        assert(ModelStateData.PACKER_SHAPE_EXTRA.bitLength() < 64);
         
         ModelState state = new ModelState();
         

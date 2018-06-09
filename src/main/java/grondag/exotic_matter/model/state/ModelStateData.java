@@ -23,80 +23,76 @@ import net.minecraft.world.IBlockAccess;
 
 public class ModelStateData
 {
-    public static final BitPacker<ModelState> PACKER_0 = new BitPacker<ModelState>(m-> m.bits0, (m, b) -> m.bits0 = b);
-    public static final BitPacker<ModelState>.IntElement P0_SHAPE = PACKER_0.createIntElement(ModelShape.MAX_SHAPES);
+    /** note that sign bit on core packer is reserved to persist static state during serialization */ 
+    public static final BitPacker<ModelState> PACKER_CORE = new BitPacker<ModelState>(m-> m.coreBits, (m, b) -> m.coreBits = b);
+    public static final BitPacker<ModelState>.IntElement SHAPE = PACKER_CORE.createIntElement(ModelShape.MAX_SHAPES);
+    public static final BitPacker<ModelState>.IntElement POS_X = PACKER_CORE.createIntElement(256);
+    public static final BitPacker<ModelState>.IntElement POS_Y = PACKER_CORE.createIntElement(256);
+    public static final BitPacker<ModelState>.IntElement POS_Z = PACKER_CORE.createIntElement(256);
+    public static final BitPacker<ModelState>.EnumElement<EnumFacing.Axis> AXIS = PACKER_CORE.createEnumElement(EnumFacing.Axis.class);
+    public static final BitPacker<ModelState>.BooleanElement AXIS_INVERTED = PACKER_CORE.createBooleanElement();
+    public static final BitPacker<ModelState>.EnumElement<Translucency> TRANSLUCENCY = PACKER_CORE.createEnumElement(Translucency.class);
+    public static final BitPacker<ModelState>.EnumElement<Rotation> AXIS_ROTATION = PACKER_CORE.createEnumElement(Rotation.class);
+    
+    
+    public static final BitPacker<ModelState> PACKER_LAYER_BASE = new BitPacker<ModelState>(m-> m.layerBitsBase, (m, b) -> m.layerBitsBase = b);
+    public static final BitPacker<ModelState> PACKER_LAYER_LAMP = new BitPacker<ModelState>(m-> m.layerBitsLamp, (m, b) -> m.layerBitsLamp = b);
+    public static final BitPacker<ModelState> PACKER_LAYER_MIDDLE = new BitPacker<ModelState>(m-> m.layerBitsMiddle, (m, b) -> m.layerBitsMiddle = b);
+    public static final BitPacker<ModelState> PACKER_LAYER_OUTER = new BitPacker<ModelState>(m-> m.layerBitsOuter, (m, b) -> m.layerBitsOuter = b);
+    public static final BitPacker<ModelState> PACKER_LAYER_CUT = new BitPacker<ModelState>(m-> m.layerBitsCut, (m, b) -> m.layerBitsCut = b);
+    
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] P0_PAINT_COLOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.DYNAMIC_SIZE];
-    public static final BitPacker<ModelState>.BooleanElement P0_AXIS_INVERTED = PACKER_0.createBooleanElement();
-    public static final BitPacker<ModelState>.EnumElement<EnumFacing.Axis> P0_AXIS = PACKER_0.createEnumElement(EnumFacing.Axis.class);
+    public static final BitPacker<ModelState>[] PACKER_LAYERS = (BitPacker<ModelState>[]) new BitPacker<?>[PaintLayer.STATIC_SIZE];
+    
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.BooleanElement[] P0_IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.DYNAMIC_SIZE];
-    public static final BitPacker<ModelState>.EnumElement<Translucency> P0_TRANSLUCENCY = PACKER_0.createEnumElement(Translucency.class);
+    public static final BitPacker<ModelState>.IntElement[] PAINT_COLOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<ModelState>.BooleanElement[] IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<ModelState>.BooleanElement[] PAINT_LIGHT= (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
 
-    public static final BitPacker<ModelState> PACKER_1 = new BitPacker<ModelState>(m-> m.bits1, (m, b) -> m.bits1 = b);
-    @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] P1_PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
-    @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.BooleanElement[] P1_PAINT_LIGHT= (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.DYNAMIC_SIZE];
+    public static final BitPacker<ModelState> PACKER_SHAPE_BLOCK = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
+    public static final BitPacker<ModelState>.IntElement SPECIES = PACKER_SHAPE_BLOCK.createIntElement(16);
+    public static final BitPacker<ModelState>.IntElement BLOCK_JOIN = PACKER_SHAPE_BLOCK.createIntElement(CornerJoinBlockStateSelector.BLOCK_JOIN_STATE_COUNT);
+    public static final BitPacker<ModelState>.IntElement MASONRY_JOIN = PACKER_SHAPE_BLOCK.createIntElement(SimpleJoin.STATE_COUNT);
 
-    /** note that sign bit on packer 2 is reserved to persist static state during serialization */ 
-    public static final BitPacker<ModelState> PACKER_2 = new BitPacker<ModelState>(m-> m.bits2, (m, b) -> m.bits2 = b);
-    public static final BitPacker<ModelState>.IntElement P2_POS_X = PACKER_2.createIntElement(256);
-    public static final BitPacker<ModelState>.IntElement P2_POS_Y = PACKER_2.createIntElement(256);
-    public static final BitPacker<ModelState>.IntElement P2_POS_Z = PACKER_2.createIntElement(256);
+    public static final BitPacker<ModelState> PACKER_SHAPE_FLOW = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
+    public static final BitPacker<ModelState>.LongElement FLOW_JOIN = PACKER_SHAPE_FLOW.createLongElement(TerrainState.STATE_BIT_MASK + 1);
+
+    public static final BitPacker<ModelState> PACKER_SHAPE_MULTIBLOCK = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
+
+    public static final BitPacker<ModelState> PACKER_SHAPE_EXTRA = new BitPacker<ModelState>(m-> m.shapeBits1, (m, b) -> m.shapeBits1 = b);
     /** value semantics are owned by consumer - only constraints are size (39 bits) and does not update from world */
-    public static final BitPacker<ModelState>.LongElement P2_STATIC_SHAPE_BITS = PACKER_2.createLongElement(1L << 39);
-
-    public static final BitPacker<ModelState> PACKER_3_BLOCK = new BitPacker<ModelState>(m-> m.bits3, (m, b) -> m.bits3 = b);
-    public static final BitPacker<ModelState>.IntElement P3B_SPECIES = PACKER_3_BLOCK.createIntElement(16);
-    public static final BitPacker<ModelState>.IntElement P3B_BLOCK_JOIN = PACKER_3_BLOCK.createIntElement(CornerJoinBlockStateSelector.BLOCK_JOIN_STATE_COUNT);
-    public static final BitPacker<ModelState>.IntElement P3B_MASONRY_JOIN = PACKER_3_BLOCK.createIntElement(SimpleJoin.STATE_COUNT);
-    public static final BitPacker<ModelState>.EnumElement<Rotation> P3B_AXIS_ROTATION = PACKER_3_BLOCK.createEnumElement(Rotation.class);
-
-    public static final BitPacker<ModelState> PACKER_3_FLOW = new BitPacker<ModelState>(m-> m.bits3, (m, b) -> m.bits3 = b);
-    public static final BitPacker<ModelState>.LongElement P3F_FLOW_JOIN = PACKER_3_FLOW.createLongElement(TerrainState.STATE_BIT_MASK + 1);
-
-    public static final BitPacker<ModelState> PACKER_3_MULTIBLOCK = new BitPacker<ModelState>(m-> m.bits3, (m, b) -> m.bits3 = b);
-
+    public static final BitPacker<ModelState>.LongElement EXTRA_SHAPE_BITS = PACKER_SHAPE_EXTRA.createLongElement(1L << 39);
+    
     /** used to compare states quickly for border joins  */
-    public static final long P0_APPEARANCE_COMPARISON_MASK;
-    public static final long P1_APPEARANCE_COMPARISON_MASK;
-    public static final long P2_APPEARANCE_COMPARISON_MASK;   
-
-    /** used to compare states quickly for appearance match */
-    public static final long P0_APPEARANCE_COMPARISON_MASK_NO_GEOMETRY;
-
+    public static final long SHAPE_COMPARISON_MASK_0;
+    public static final long SHAPE_COMPARISON_MASK_1;   
+    
     static
     {
-        long borderMask0 = 0;
-        long borderMask1 = 0;
-        for(int i = 0; i < PaintLayer.STATIC_SIZE; i++)
+        PACKER_LAYERS[PaintLayer.BASE.ordinal()] = PACKER_LAYER_BASE;
+        PACKER_LAYERS[PaintLayer.LAMP.ordinal()] = PACKER_LAYER_LAMP;
+        PACKER_LAYERS[PaintLayer.CUT.ordinal()] = PACKER_LAYER_CUT;
+        PACKER_LAYERS[PaintLayer.MIDDLE.ordinal()] = PACKER_LAYER_MIDDLE;
+        PACKER_LAYERS[PaintLayer.OUTER.ordinal()] = PACKER_LAYER_OUTER;
+        
+        for(PaintLayer l : PaintLayer.values())
         {
-            P1_PAINT_TEXTURE[i] = PACKER_1.createIntElement(TexturePaletteRegistry.MAX_PALETTES);
+            final int i = l.ordinal();
+            PAINT_TEXTURE[i] = PACKER_LAYERS[i].createIntElement(TexturePaletteRegistry.MAX_PALETTES);
+            PAINT_COLOR[i] = PACKER_LAYERS[i].createIntElement(BlockColorMapProvider.INSTANCE.getColorMapCount()); 
+            IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
+            PAINT_LIGHT[i] = PACKER_LAYERS[i].createBooleanElement(); 
         }
+        
+        SHAPE_COMPARISON_MASK_0 = SHAPE.comparisonMask() 
+                | AXIS.comparisonMask()
+                | AXIS_INVERTED.comparisonMask();
 
-        for(int i = 0; i < PaintLayer.DYNAMIC_SIZE; i++)
-        {
-            P0_PAINT_COLOR[i] = PACKER_0.createIntElement(BlockColorMapProvider.INSTANCE.getColorMapCount()); 
-            P0_IS_TRANSLUCENT[i] = PACKER_0.createBooleanElement();
-            P1_PAINT_LIGHT[i] = PACKER_1.createBooleanElement(); 
-
-            borderMask0 |= P0_PAINT_COLOR[i].comparisonMask();
-            borderMask0 |= P0_IS_TRANSLUCENT[i].comparisonMask();
-            borderMask1 |= P1_PAINT_TEXTURE[i].comparisonMask();
-            borderMask1 |= P1_PAINT_LIGHT[i].comparisonMask();
-        }
-
-        P0_APPEARANCE_COMPARISON_MASK_NO_GEOMETRY = borderMask0
-                | P0_TRANSLUCENCY.comparisonMask();
-
-        P0_APPEARANCE_COMPARISON_MASK = P0_APPEARANCE_COMPARISON_MASK_NO_GEOMETRY
-                | P0_SHAPE.comparisonMask() 
-                | P0_AXIS.comparisonMask()
-                | P0_AXIS_INVERTED.comparisonMask();
-
-        P1_APPEARANCE_COMPARISON_MASK = borderMask1;
-        P2_APPEARANCE_COMPARISON_MASK = P2_STATIC_SHAPE_BITS.comparisonMask();
+        SHAPE_COMPARISON_MASK_1 = EXTRA_SHAPE_BITS.comparisonMask();
     }
 
     /**

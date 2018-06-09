@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.model.mesh.ModShapes;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.terrain.TerrainMeshFactory;
 
@@ -28,10 +27,11 @@ public class TerrainPerf
             bytes.flip();
             for(int i = 0; i < modelStates.length; i++)
             {
-                ModelState newState = new ModelState(bytes.getLong(), bytes.getLong(), bytes.getLong(), bytes.getLong());
-                assert newState.getShape() == ModShapes.TERRAIN_FILLER || newState.getShape() == ModShapes.TERRAIN_HEIGHT;
-                assert newState.getTerrainState() != null;
-                modelStates[i] = newState;
+                // NOT WORKING: will be have to be redone with new model state if want to use again
+//                ModelState newState = new ModelState(bytes.getLong(), bytes.getLong(), bytes.getLong(), bytes.getLong());
+//                assert newState.getShape() == ModShapes.TERRAIN_FILLER || newState.getShape() == ModShapes.TERRAIN_HEIGHT;
+//                assert newState.getTerrainState() != null;
+//                modelStates[i] = newState;
             }
           }
           catch (Exception e)
