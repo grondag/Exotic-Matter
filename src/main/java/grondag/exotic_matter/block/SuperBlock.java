@@ -725,7 +725,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     {
         if(this.getSubstance(state, world, pos).isTranslucent)
         {
-            return this.getModelStateAssumeStateIsCurrent(state, world, pos, false).getTranslucency().blockLightOpacity;
+            return WorldLightOpacity.opacityFromAlpha(this.getModelStateAssumeStateIsCurrent(state, world, pos, false).getAlpha(PaintLayer.BASE));
         }
         else
         {

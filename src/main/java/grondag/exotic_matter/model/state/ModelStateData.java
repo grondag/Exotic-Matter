@@ -4,7 +4,6 @@ package grondag.exotic_matter.model.state;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -30,7 +29,6 @@ public class ModelStateData
     public static final BitPacker<ModelState>.IntElement POS_Z = PACKER_CORE.createIntElement(256);
     public static final BitPacker<ModelState>.EnumElement<EnumFacing.Axis> AXIS = PACKER_CORE.createEnumElement(EnumFacing.Axis.class);
     public static final BitPacker<ModelState>.BooleanElement AXIS_INVERTED = PACKER_CORE.createBooleanElement();
-    public static final BitPacker<ModelState>.EnumElement<Translucency> TRANSLUCENCY = PACKER_CORE.createEnumElement(Translucency.class);
     public static final BitPacker<ModelState>.EnumElement<Rotation> AXIS_ROTATION = PACKER_CORE.createEnumElement(Rotation.class);
     
     

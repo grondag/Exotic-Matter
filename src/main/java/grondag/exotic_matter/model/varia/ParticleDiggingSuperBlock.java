@@ -33,7 +33,7 @@ public class ParticleDiggingSuperBlock extends ParticleDigging
         this.particleBlue = (color & 0xFF) / 255f;
         
         ISuperBlock block = (ISuperBlock)state.getBlock();
-        this.particleAlpha = block.isTranslucent(state) ? modelState.getTranslucency().alpha : 1f;
+        this.particleAlpha = block.isTranslucent(state) ? ((color >> 24) & 0xFF) / 255f : 1f;
         ITexturePalette tex = modelState.getTexture(PaintLayer.BASE);
         this.particleTexture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(tex.getSampleTextureName());
         this.uvScale = 1f / tex.textureScale().sliceCount;

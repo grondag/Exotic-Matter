@@ -107,19 +107,7 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     boolean isOuterLayerEnabled();
 
     void setOuterLayerEnabled(boolean isEnabled);
-
-    /**
-     * Should only be applied to rendering if {@link #isTranslucent(PaintLayer)} is true
-     * for the paint layer being rendered. 
-     */
-    Translucency getTranslucency();
-
-    /**
-     * Will be applied to rendering if {@link #isTranslucent(PaintLayer)} is true
-     * for the paint layer being rendered.
-     */
-    void setTranslucency(Translucency translucency);
-
+   
     ITexturePalette getTexture(PaintLayer layer);
 
     void setTexture(PaintLayer layer, ITexturePalette tex);

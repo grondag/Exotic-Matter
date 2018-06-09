@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.varia;
 
 import grondag.exotic_matter.block.BlockSubstance;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -34,9 +35,16 @@ public enum WorldLightOpacity
         this.opacity = opacity;
     }
     
+    /** Translates 0-255 alpha values into 0-15 opacity values */
+    public static int opacityFromAlpha(int alpha)
+    {
+        if(alpha == 255) return 255;
+        return (int) Math.round(alpha * (15f / 255f));
+    }
+    
     public static WorldLightOpacity getClosest(BlockSubstance substance, ISuperModelState modelState)
     {
-        int substanceOpacity = substance.isTranslucent ? modelState.getTranslucency().blockLightOpacity : 255;
+        int substanceOpacity = substance.isTranslucent ? opacityFromAlpha(modelState.getAlpha(PaintLayer.BASE)) : 255;
         int blockOpacity = modelState.geometricSkyOcclusion();
         int minOpacity = Math.min(substanceOpacity, blockOpacity);
         

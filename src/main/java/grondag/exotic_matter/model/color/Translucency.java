@@ -1,5 +1,9 @@
 package grondag.exotic_matter.model.color;
 
+/**
+ * TODO: Remove after translucency picker is redone.
+ */
+@Deprecated
 public enum Translucency
 {
     CLEAR(0.1F),

@@ -457,19 +457,6 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public Translucency getTranslucency()
-    {
-        return ModelStateData.TRANSLUCENCY.getValue(this);
-    }
-
-    @Override
-    public void setTranslucency(Translucency translucency)
-    {
-        ModelStateData.TRANSLUCENCY.setValue(translucency, this);
-        invalidateHashCode();
-    }
-
-    @Override
     public boolean isTranslucent(PaintLayer layer)
     {
         return ModelStateData.PAINT_IS_TRANSLUCENT[layer.ordinal()].getValue(this);
