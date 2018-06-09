@@ -1,15 +1,25 @@
 package grondag.exotic_matter.varia;
 
 import java.util.Arrays;
+import java.util.function.ObjLongConsumer;
+import java.util.function.ToLongFunction;
 
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
 
-public class BitPacker
+public class BitPacker<T>
 {
     private int totalBitLength;
     private long bitMask;
+    private final ObjLongConsumer<T> writer;
+    private final ToLongFunction<T> reader;
+    
+    public BitPacker(ToLongFunction<T> reader, ObjLongConsumer<T> writer)
+    {
+        this.reader = reader;
+        this.writer = writer;
+    }
     
     private void addElement(BitElement element)
     {
@@ -22,61 +32,61 @@ public class BitPacker
         if(totalBitLength > 64) ExoticMatter.INSTANCE.warn("BitPacker length exceeded. This is definately a bug, and should be impossible in released code. Some things probably won't work correctly.");
     }
     
-    public int bitLength() { return this.totalBitLength; }
-    public long bitMask() { return this.bitMask; }
-
-    public <T extends Enum<?>> BitElement.EnumElement<T> createEnumElement(Class<T> e)
+    public final int bitLength() { return this.totalBitLength; }
+    public final long bitMask() { return this.bitMask; }
+    
+    public <V extends Enum<?>> EnumElement<V> createEnumElement(Class<V> e)
     {
-        BitElement.EnumElement<T> result = new BitElement.EnumElement<T>(e);
+        EnumElement<V> result = new EnumElement<V>(e);
         this.addElement(result);
         return result;
     }
     
-    public <T extends Enum<?>> BitElement.NullableEnumElement<T> createNullableEnumElement(Class<T> e)
+    public <V extends Enum<?>> NullableEnumElement<V> createNullableEnumElement(Class<V> e)
     {
-        BitElement.NullableEnumElement<T> result = new BitElement.NullableEnumElement<T>(e);
+        NullableEnumElement<V> result = new NullableEnumElement<V>(e);
         this.addElement(result);
         return result;
     }
     
-    public BitElement.IntElement createIntElement(int minValue, int maxValue)
+    public IntElement createIntElement(int minValue, int maxValue)
     {
-        BitElement.IntElement result = new BitElement.IntElement(minValue, maxValue);
+        IntElement result = new IntElement(minValue, maxValue);
         this.addElement(result);
         return result;
     }
     
     /** use this when you just need zero-based positive integers. Same as createIntElement(0, count-1) */
-    public BitElement.IntElement createIntElement(int valueCount)
+    public IntElement createIntElement(int valueCount)
     {
-        BitElement.IntElement result = new BitElement.IntElement(0, valueCount - 1);
+        IntElement result = new IntElement(0, valueCount - 1);
         this.addElement(result);
         return result;
     }
     
-    public BitElement.LongElement createLongElement(long minValue, long maxValue)
+    public LongElement createLongElement(long minValue, long maxValue)
     {
-        BitElement.LongElement result = new BitElement.LongElement(minValue, maxValue);
+        LongElement result = new LongElement(minValue, maxValue);
         this.addElement(result);
         return result;
     }
     
     /** use this when you just need zero-based positive (long) integers. Same as createLongElement(0, count-1) */
-    public BitElement.LongElement createLongElement(long valueCount)
+    public LongElement createLongElement(long valueCount)
     {
-        BitElement.LongElement result = new BitElement.LongElement(0, valueCount - 1);
+        LongElement result = new LongElement(0, valueCount - 1);
         this.addElement(result);
         return result;
     }
     
-    public BitElement.BooleanElement createBooleanElement()
+    public BooleanElement createBooleanElement()
     {
-        BitElement.BooleanElement result = new BitElement.BooleanElement();
+        BooleanElement result = new BooleanElement();
         this.addElement(result);
         return result;
     }
     
-    public static abstract class BitElement
+    protected abstract class BitElement
     {
         protected final int bitLength;
         protected long mask;
@@ -94,147 +104,196 @@ public class BitPacker
          * Mask that isolates bits for this element. 
          * Useful to compare this and other elements simultaneously 
          */
-        public long comparisonMask()
+        public final long comparisonMask()
         {
             return this.shiftedMask;
         }
+    }
+    
+    public class EnumElement<V extends Enum<?>> extends BitElement
+    {
+        private V[] values;
         
-        public static class EnumElement<T extends Enum<?>> extends BitElement
+        private EnumElement(Class<V> e)
         {
-            private T[] values;
-            
-            private EnumElement(Class<T> e)
-            {
-                super(e.getEnumConstants().length);
-                this.values = e.getEnumConstants();
-            }
-            
-            public long getBits(T e)
-            {
-                return (e.ordinal() & mask) << shift; 
-            }
-            
-            public long setValue(T e, long bitsIn)
-            { 
-                return (bitsIn & this.shiftedInverseMask) | getBits(e);
-            }
-            
-            public T getValue(long bits)
-            { 
-                return values[(int) ((bits >> shift) & mask)]; 
-            }
+            super(e.getEnumConstants().length);
+            this.values = e.getEnumConstants();
         }
         
-        public static class NullableEnumElement<T extends Enum<?>> extends BitElement
+        public final long getBits(V e)
         {
-            private T[] values;
-            
-            final int nullOrdinal;
-            
-            @SuppressWarnings("null")
-            private NullableEnumElement(Class<T> e)
-            {
-                super(e.getEnumConstants().length + 1);
-                final T[] constants = e.getEnumConstants();
-                this.values = Arrays.copyOf(constants, constants.length + 1);
-                this.nullOrdinal = constants.length;
-            }
-            
-            public long getBits(@Nullable T e)
-            {
-                final int ordinal = e == null ? this.nullOrdinal : e.ordinal();
-                return (ordinal & mask) << shift; 
-            }
-            
-            public long setValue(@Nullable T e, long bitsIn)
-            { 
-                return (bitsIn & this.shiftedInverseMask) | getBits(e);
-            }
-            
-            public @Nullable T getValue(long bits)
-            { 
-                return values[(int) ((bits >> shift) & mask)]; 
-            }
+            return (e.ordinal() & mask) << shift; 
         }
         
-        /** Stores values in given range as bits.  Handles negative values */
-        public static class IntElement extends BitElement
-        {
-            private final int minValue;
-            
-            private IntElement(int minValue, int maxValue)
-            {
-                super(maxValue - minValue + 1);
-                this.minValue = minValue;
-            }
-            
-            public long getBits(int i) 
-            { 
-                return (((long)i - minValue) & mask) << shift; 
-            }
-            
-            public long setValue(int i, long bitsIn)
-            { 
-                return (bitsIn & this.shiftedInverseMask) | getBits(i);
-            }
-            
-            public int getValue(long bits)
-            { 
-                return (int) (((bits >> shift) & mask) + minValue); 
-            }
+        public final void setValue(V e, T inObject)
+        { 
+            writer.accept(inObject, setValue(e, reader.applyAsLong(inObject)));
         }
         
-        /** 
-         * Stores values in given range as bits.  Handles negative values 
-         * but if range is too large will overflow due lack of unsigned numeric types. 
-         */
-        public static class LongElement extends BitElement
+        public final long setValue(V e, long inBits)
         {
-            private final long minValue;
-            
-            private LongElement(long minValue, long maxValue)
-            {
-                super(maxValue - minValue + 1);
-                this.minValue = minValue;
-            }
-            
-            public long getBits(long i) 
-            { 
-                return ((i - minValue) & mask) << shift; 
-            }
-            
-            public long setValue(long i, long bitsIn)
-            { 
-                return (bitsIn & this.shiftedInverseMask) | getBits(i);
-            }
-            
-            public long getValue(long bits)
-            { 
-                return ((bits >> shift) & mask) + minValue; 
-            }
+            return ((inBits & this.shiftedInverseMask) | getBits(e));
         }
         
-        public static class BooleanElement extends BitElement
+        public final V getValue(T fromObject)
+        { 
+            return getValue(reader.applyAsLong(fromObject));
+        }
+        
+        public final V getValue(long fromBits)
         {
-            private BooleanElement()
-            {
-                super(2);
-            }
-            
-            public long getBits(boolean b) 
-            { 
-                return ((b ? 1 : 0) & mask) << shift; 
-            }
-            
-            public long setValue(boolean b, long bitsIn)
-            { 
-                return (bitsIn & this.shiftedInverseMask) | getBits(b);
-            }
-            
-            public boolean getValue(long bits)
-            { 
-                return ((bits >> shift) & mask) == 1; 
-            }
+            return values[(int) ((fromBits >> shift) & mask)];  
+        }
+    }
+    
+    public class NullableEnumElement<V extends Enum<?>> extends BitElement
+    {
+        private V[] values;
+        
+        final int nullOrdinal;
+        
+        private NullableEnumElement(Class<V> e)
+        {
+            super(e.getEnumConstants().length + 1);
+            final V[] constants = e.getEnumConstants();
+            this.values = Arrays.copyOf(constants, constants.length + 1);
+            this.nullOrdinal = constants.length;
+        }
+        
+        public final long getBits(@Nullable V e)
+        {
+            final int ordinal = e == null ? this.nullOrdinal : e.ordinal();
+            return (ordinal & mask) << shift; 
+        }
+        
+        public final void setValue(@Nullable V e, T inObject)
+        { 
+            writer.accept(inObject, setValue(e, reader.applyAsLong(inObject)));
+        }
+        
+        public final long setValue(@Nullable V e, long inBits)
+        {
+            return ((inBits & this.shiftedInverseMask) | getBits(e));
+        }
+        
+        public final @Nullable V getValue(T fromObject)
+        { 
+            return getValue(reader.applyAsLong(fromObject));
+        }
+        
+        public final @Nullable V getValue(long fromBits)
+        {
+            return values[(int) ((fromBits >> shift) & mask)];  
+        }
+    }
+    
+    /** Stores values in given range as bits.  Handles negative values */
+    public class IntElement extends BitElement
+    {
+        private final int minValue;
+        
+        private IntElement(int minValue, int maxValue)
+        {
+            super(maxValue - minValue + 1);
+            this.minValue = minValue;
+        }
+        
+        public final long getBits(int i) 
+        { 
+            return (((long)i - minValue) & mask) << shift; 
+        }
+        
+        public final void setValue(int i, T inObject)
+        { 
+            writer.accept(inObject, setValue(i, reader.applyAsLong(inObject)));
+        }
+        
+        public final long setValue(int i, long inBits)
+        {
+            return ((inBits & this.shiftedInverseMask) | getBits(i));
+        }
+        
+        public final int getValue(T fromObject)
+        { 
+            return getValue(reader.applyAsLong(fromObject));
+        }
+        
+        public final int getValue(long fromBits)
+        {
+            return (int) (((fromBits >> shift) & mask) + minValue); 
+        }
+    }
+    
+    /** 
+     * Stores values in given range as bits.  Handles negative values 
+     * but if range is too large will overflow due lack of unsigned numeric types. 
+     */
+    public class LongElement extends BitElement
+    {
+        private final long minValue;
+        
+        private LongElement(long minValue, long maxValue)
+        {
+            super(maxValue - minValue + 1);
+            this.minValue = minValue;
+        }
+        
+        public final long getBits(long i) 
+        { 
+            return ((i - minValue) & mask) << shift; 
+        }
+        
+        public final void setValue(long i, T inObject)
+        { 
+            writer.accept(inObject, setValue(i, reader.applyAsLong(inObject)));
+        }
+        
+        public final long setValue(long i, long inBits)
+        {
+            return ((inBits & this.shiftedInverseMask) | getBits(i));
+        }
+        
+        public final long getValue(T fromObject)
+        { 
+            return getValue(reader.applyAsLong(fromObject));
+        }
+        
+        public final long getValue(long fromBits)
+        {
+            return ((fromBits >> shift) & mask) + minValue; 
+        }
+    }
+    
+    public class BooleanElement extends BitElement
+    {
+        private BooleanElement()
+        {
+            super(2);
+        }
+        
+        public final long getBits(boolean b) 
+        { 
+            return ((b ? 1 : 0) & mask) << shift; 
+        }
+        
+        public final void setValue(boolean b, T inObject)
+        { 
+            writer.accept(inObject, setValue(b, reader.applyAsLong(inObject)));
+        }
+        
+        public final long setValue(boolean b, long inBits)
+        {
+            return ((inBits & this.shiftedInverseMask) | getBits(b));
+        }
+        
+        public final boolean getValue(T fromObject)
+        { 
+            return getValue(reader.applyAsLong(fromObject));
+        }
+        
+        public final boolean getValue(long fromBits)
+        {
+            return((fromBits >> shift) & mask) == 1; 
         }
     }
 }

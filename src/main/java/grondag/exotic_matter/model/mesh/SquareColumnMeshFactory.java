@@ -10,9 +10,9 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.SurfaceType;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -26,15 +26,12 @@ import grondag.exotic_matter.model.varia.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.model.varia.SimpleQuadBounds;
 import grondag.exotic_matter.varia.BitPacker;
-import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
-import grondag.exotic_matter.varia.BitPacker.BitElement.IntElement;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.FaceSide;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumFacing.AxisDirection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -47,9 +44,9 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
     public static final Surface SURFACE_CUT = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
     
-    private static final BitPacker STATE_PACKER = new BitPacker();
-    private static final BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
-    private static final IntElement STATE_CUT_COUNT = STATE_PACKER.createIntElement(MIN_CUTS, MAX_CUTS);
+    private static final BitPacker<SquareColumnMeshFactory> STATE_PACKER = new BitPacker<SquareColumnMeshFactory>(null, null);
+    private static final BitPacker<SquareColumnMeshFactory>.BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
+    private static final BitPacker<SquareColumnMeshFactory>.IntElement STATE_CUT_COUNT = STATE_PACKER.createIntElement(MIN_CUTS, MAX_CUTS);
 
     private static class FaceSpec
     {

@@ -3,10 +3,6 @@ package grondag.exotic_matter;
 import org.junit.Test;
 
 import grondag.exotic_matter.varia.BitPacker;
-import grondag.exotic_matter.varia.BitPacker.BitElement.BooleanElement;
-import grondag.exotic_matter.varia.BitPacker.BitElement.EnumElement;
-import grondag.exotic_matter.varia.BitPacker.BitElement.IntElement;
-import grondag.exotic_matter.varia.BitPacker.BitElement.LongElement;
 
 public class BitPackerTest
 {
@@ -15,28 +11,28 @@ public class BitPackerTest
     
     private enum Things2 {A, B, C, D, E, F, G, H, I, J, K}
     
+    private long bits;
+    
     @Test
     public void test()
     {
-        BitPacker packer = new BitPacker();
+        BitPacker<BitPackerTest> packer = new BitPacker<BitPackerTest>( v -> v.bits,  (o, v) -> o.bits = v);
         
-        BooleanElement bool1 = packer.createBooleanElement();
+        BitPacker<BitPackerTest>.BooleanElement bool1 = packer.createBooleanElement();
         
-        IntElement int1 = packer.createIntElement(0, 67);
-        EnumElement<Things1> enum1 = packer.createEnumElement(Things1.class);
+        BitPacker<BitPackerTest>.IntElement int1 = packer.createIntElement(0, 67);
+        BitPacker<BitPackerTest>.EnumElement<Things1> enum1 = packer.createEnumElement(Things1.class);
 
-        IntElement int2 = packer.createIntElement(-53555643, 185375);
-        EnumElement<Things2> enum2 = packer.createEnumElement(Things2.class);
+        BitPacker<BitPackerTest>.IntElement int2 = packer.createIntElement(-53555643, 185375);
+        BitPacker<BitPackerTest>.EnumElement<Things2> enum2 = packer.createEnumElement(Things2.class);
         
-        BooleanElement bool2 = packer.createBooleanElement();
+        BitPacker<BitPackerTest>.BooleanElement bool2 = packer.createBooleanElement();
         
-        LongElement long1 = packer.createLongElement(-1, 634235);
+        BitPacker<BitPackerTest>.LongElement long1 = packer.createLongElement(-1, 634235);
         
-        IntElement int3 = packer.createIntElement(8);
+        BitPacker<BitPackerTest>.IntElement int3 = packer.createIntElement(8);
         
         assert(packer.bitLength() == 64);
-        
-        long bits = 0;
 
         bits |= int1.getBits(42);
         bits |= enum1.getBits(Things1.THREE);
@@ -47,26 +43,26 @@ public class BitPackerTest
         bits |= long1.getBits(0);
         bits |= int3.getBits(7);
         
-        assert(enum1.getValue(bits) == Things1.THREE);
-        assert(enum2.getValue(bits) == Things2.H);
-        assert(int1.getValue(bits) == 42);
-        assert(int2.getValue(bits) == -582375);
-        assert(bool1.getValue(bits) == false);
-        assert(bool2.getValue(bits) == true);
-        assert(long1.getValue(bits) == 0);
-        assert(int3.getValue(bits) == 7);
+        assert(enum1.getValue(this) == Things1.THREE);
+        assert(enum2.getValue(this) == Things2.H);
+        assert(int1.getValue(this) == 42);
+        assert(int2.getValue(this) == -582375);
+        assert(bool1.getValue(this) == false);
+        assert(bool2.getValue(this) == true);
+        assert(long1.getValue(this) == 0);
+        assert(int3.getValue(this) == 7);
         
-        bits = int1.setValue(38, bits);
-        bits = enum1.setValue(Things1.ONE, bits);
-        bits = long1.setValue(52947, bits);
-        bits = bool1.setValue(true, bits);
-        bits = int3.setValue(0, bits);
+        int1.setValue(38, this);
+        enum1.setValue(Things1.ONE, this);
+        long1.setValue(52947, this);
+        bool1.setValue(true, this);
+        int3.setValue(0, this);
         
-        assert(enum1.getValue(bits) == Things1.ONE);
-        assert(int1.getValue(bits) == 38);
-        assert(bool1.getValue(bits) == true);
-        assert(long1.getValue(bits) == 52947);
-        assert(int3.getValue(bits) == 0);
+        assert(enum1.getValue(this) == Things1.ONE);
+        assert(int1.getValue(this) == 38);
+        assert(bool1.getValue(this) == true);
+        assert(long1.getValue(this) == 52947);
+        assert(int3.getValue(this) == 0);
     }
 
 }
