@@ -45,7 +45,7 @@ public class ModelStateTest
         state.setOuterLayerEnabled(true);
         state.setColorRGB(PaintLayer.BASE, 0xFF1133);
         state.setColorRGB(PaintLayer.OUTER, 0x11AABBCC);
-        state.setFullBrightness(PaintLayer.LAMP, true);
+        state.setBrightness(PaintLayer.LAMP, 15);
         state.setTexture(PaintLayer.BASE, ModTextures.BLOCK_NOISE_STRONG);
         state.setTexture(PaintLayer.LAMP, ModTextures.BLOCK_COBBLE);
         state.setTexture(PaintLayer.MIDDLE, ModTextures.BLOCK_NOISE_SUBTLE_ZOOM);
@@ -75,7 +75,7 @@ public class ModelStateTest
         assert(reloadedState.isMiddleLayerEnabled());
         assert(reloadedState.getColorARGB(PaintLayer.BASE) == 0xFFFF1133);
         assert(reloadedState.getColorARGB(PaintLayer.OUTER) == 0xFFAABBCC);
-        assert(reloadedState.isFullBrightness(PaintLayer.LAMP));
+        assert(reloadedState.getBrightness(PaintLayer.LAMP) == 15);
         assert(reloadedState.getTexture(PaintLayer.BASE) == ModTextures.BLOCK_NOISE_STRONG);
         assert(reloadedState.getTexture(PaintLayer.LAMP) == ModTextures.BLOCK_COBBLE);
         assert(reloadedState.getTexture(PaintLayer.MIDDLE) == ModTextures.BLOCK_NOISE_SUBTLE_ZOOM);

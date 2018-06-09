@@ -18,7 +18,7 @@ public class TerrainColorizer implements IQuadColorizer
     {
         final int cold = modelState.getColorARGB(paintLayer);
         
-        if(modelState.isFullBrightness(paintLayer))
+        if(modelState.hasBrightness(paintLayer))
         {
             final int hot = 0xffff2a24;
             for(int i = 0; i < result.vertexCount(); i++)

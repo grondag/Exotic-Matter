@@ -50,7 +50,7 @@ public class ModelStateData
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.BooleanElement[] PAINT_LIGHT= (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT= (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
 
     public static final BitPacker<ModelState> PACKER_SHAPE_BLOCK = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
     public static final BitPacker<ModelState>.IntElement SPECIES = PACKER_SHAPE_BLOCK.createIntElement(16);
@@ -86,7 +86,7 @@ public class ModelStateData
             PAINT_ALPHA[i] = PACKER_LAYERS[i].createIntElement(0x100);
             PAINT_TEXTURE[i] = PACKER_LAYERS[i].createIntElement(TexturePaletteRegistry.MAX_PALETTES);
             PAINT_IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
-            PAINT_LIGHT[i] = PACKER_LAYERS[i].createBooleanElement(); 
+            PAINT_LIGHT[i] = PACKER_LAYERS[i].createIntElement(16); 
         }
         
         SHAPE_COMPARISON_MASK_0 = SHAPE.comparisonMask() 

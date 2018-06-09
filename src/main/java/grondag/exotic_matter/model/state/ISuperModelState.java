@@ -8,7 +8,6 @@ import javax.vecmath.Matrix4f;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.color.ColorMap;
 import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
@@ -112,10 +111,19 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     void setTexture(PaintLayer layer, ITexturePalette tex);
 
-    boolean isFullBrightness(PaintLayer layer);
+    int getBrightness(PaintLayer layer);
 
-    void setFullBrightness(PaintLayer layer, boolean isFullBrightness);
+    /**
+     * 0 = ambient lighting
+     * 15 = full brightness
+     */
+    void setBrightness(PaintLayer layer, int brightness);
 
+    default boolean hasBrightness(PaintLayer layer)
+    {
+        return this.getBrightness(layer) > 0;
+    }
+    
     int getPosX();
 
     void setPosX(int index);

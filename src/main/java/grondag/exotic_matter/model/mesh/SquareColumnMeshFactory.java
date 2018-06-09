@@ -144,7 +144,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
 
         CornerJoinBlockState bjs = state.getCornerJoin();
         EnumFacing.Axis axis = state.getAxis();
-        SurfaceInstance cutSurface = SURFACE_CUT.unitInstance.withLampGradient(state.isFullBrightness(PaintLayer.LAMP)).withAllowBorders(false);
+        SurfaceInstance cutSurface = SURFACE_CUT.unitInstance.withLampGradient(state.hasBrightness(PaintLayer.LAMP)).withAllowBorders(false);
 
         List<IPolygon> retVal = null;
 

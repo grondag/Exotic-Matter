@@ -21,7 +21,7 @@ import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
  */
 public class ModelStateFlagHelper
 {
-    public static int getFlags(ISuperModelState state)
+    public static final int getFlags(ISuperModelState state)
     {
         final ModelShape<?> shape = state.getShape();
         final ShapeMeshGenerator mesh = shape.meshFactory();
@@ -34,8 +34,6 @@ public class ModelStateFlagHelper
         flags |= texBase.stateFlags();
         
         flags |= state.getTexture(PaintLayer.CUT).stateFlags();
-        
-        if(state.isFullBrightness(PaintLayer.BASE)) ;
         
         if(state.isTranslucent(PaintLayer.BASE))
             flags |= (STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY | STATE_FLAG_HAS_TRANSLUCENT_RENDER);

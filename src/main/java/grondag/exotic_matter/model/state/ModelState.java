@@ -25,7 +25,6 @@ import javax.vecmath.Matrix4f;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
@@ -489,15 +488,15 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public boolean isFullBrightness(PaintLayer layer)
+    public int getBrightness(PaintLayer layer)
     {
         return ModelStateData.PAINT_LIGHT[layer.dynamicIndex].getValue(this);
     }
 
     @Override
-    public void setFullBrightness(PaintLayer layer, boolean isFullBrightness)
+    public void setBrightness(PaintLayer layer, int brightness)
     {
-        ModelStateData.PAINT_LIGHT[layer.dynamicIndex].setValue(isFullBrightness, this);
+        ModelStateData.PAINT_LIGHT[layer.dynamicIndex].setValue(brightness, this);
         clearStateFlags();
         invalidateHashCode();
     }

@@ -7,27 +7,25 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 public class ModelStateProperty implements IUnlistedProperty<ISuperModelState> {
 
     @Override
-    public String getName() {
+    public final String getName() {
         return "ModelState";
     }
 
     @Override
-    public boolean isValid(@Nullable ISuperModelState value)
+    public final boolean isValid(@Nullable ISuperModelState value)
     {
         return true;
     }
 
     @Override
-    public String valueToString(@Nullable ISuperModelState value)
+    public final String valueToString(@Nullable ISuperModelState value)
     {
         return value.toString();
     }
 
     @Override
-    public Class<ISuperModelState> getType()
+    public final Class<ISuperModelState> getType()
     {
         return ISuperModelState.class;
     }
-    
-
 }

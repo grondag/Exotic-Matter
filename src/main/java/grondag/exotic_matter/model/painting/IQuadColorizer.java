@@ -18,7 +18,8 @@ public interface IQuadColorizer
     
     public default void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        final boolean fullBright = modelState.isFullBrightness(paintLayer);
+        //TODO: handle gradations of brightness
+        final boolean fullBright = modelState.hasBrightness(paintLayer);
         
         int color = modelState.getColorARGB(paintLayer);
         
