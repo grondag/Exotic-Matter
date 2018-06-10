@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.ColorHelper;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -267,6 +268,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     @Override
     public void multiplyColor(int color)
     {
-        this.setColor(QuadHelper.multiplyColor(this.getColor(), color));
+        this.setColor(ColorHelper.multiplyColor(this.getColor(), color));
     }
 }

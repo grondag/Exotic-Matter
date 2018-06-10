@@ -570,15 +570,13 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
 
     private void setupCutSideQuad(IMutablePolygon qi, SimpleQuadBounds qb)
     {
-        final boolean isLampGradient = qi.getSurfaceInstance().isLampGradient;
-        final int deepColor = isLampGradient ? Color.BLACK : Color.WHITE;
-        final byte glow = isLampGradient ? (byte)9 : (byte)0;
+        final int glow = qi.getSurfaceInstance().isLampGradient ? 128 : 0;
         
         qi.setupFaceQuad(qb.face,
                 new FaceVertex.Colored(qb.x0, qb.y0, qb.depth, Color.WHITE, glow),
                 new FaceVertex.Colored(qb.x1, qb.y0, qb.depth, Color.WHITE, glow),
-                new FaceVertex.Colored(qb.x1, qb.y1, qb.depth, deepColor, (byte)0),
-                new FaceVertex.Colored(qb.x0, qb.y1, qb.depth, deepColor, (byte)0), 
+                new FaceVertex.Colored(qb.x1, qb.y1, qb.depth, Color.WHITE, 0),
+                new FaceVertex.Colored(qb.x0, qb.y1, qb.depth, Color.WHITE, 0), 
                 qb.topFace);
     }
     

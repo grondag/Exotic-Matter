@@ -91,5 +91,16 @@ public class ColorHelper
         newColor |= (int) (a + ((to & 0xFF000000) - a) * toWeight); 
         return newColor;
     }
+
+    /** arguments are assumed to be ARGB */
+    public static int multiplyColor(int color1, int color2)
+    {
+        int red = ((color1 >> 16) & 0xFF) * ((color2 >> 16) & 0xFF) / 0xFF;
+        int green = ((color1 >> 8) & 0xFF) * ((color2 >> 8) & 0xFF) / 0xFF;
+        int blue = (color1 & 0xFF) * (color2 & 0xFF) / 0xFF;
+        int alpha = ((color1 >> 24) & 0xFF) * ((color2 >> 24) & 0xFF) / 0xFF;
+    
+        return (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
 }
     

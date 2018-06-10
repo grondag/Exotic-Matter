@@ -26,7 +26,7 @@ public class TerrainColorizer implements IQuadColorizer
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    int vColor = ColorHelper.interpolate(cold, hot, v.glow / 15f);
+                    int vColor = ColorHelper.interpolate(cold, hot, v.glow / 255f);
                     result.setVertex(i, v.withColor(vColor));
                 }
             }

@@ -429,7 +429,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex.Colored(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), Color.WHITE, (byte) 15);
+        FaceVertex fvCenter = new FaceVertex.Colored(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), Color.WHITE, 255);
 
         /**
          * Quads on left (west) side of the top face.<br>

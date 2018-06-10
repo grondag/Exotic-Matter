@@ -4,6 +4,7 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Color;
+import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.util.BlockRenderLayer;
 
 public interface IQuadColorizer
@@ -18,44 +19,48 @@ public interface IQuadColorizer
     
     public default void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        //TODO: handle gradations of brightness
-        final boolean fullBright = modelState.hasBrightness(paintLayer);
+        final int brightness = modelState.getBrightness(paintLayer) * 17; // x17 because glow is 0-255
         
         int color = modelState.getColorARGB(paintLayer);
-        
-        if(fullBright)
-            color = lampColor(color);
-        
         if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
             color =  0xFF000000 | color;
         
-        if(fullBright)
+        // If surface is a lamp gradient then glow bits are used 
+        // to blend the lamp color/brighness with the nominal color/brightness.
+        // This does not apply with the lamp paint layer itself (makes no sense).
+        // (Generally gradient surfaces should not be painted by lamp color)
+        if(paintLayer != PaintLayer.LAMP && result.getSurfaceInstance().isLampGradient)
         {
-            // If the surface has a lamp gradient or is otherwise pre-shaded 
-            // we don't want to see a gradient when rendering at full brightness
-            // so make all vertices same color.
-            result.replaceColor(color);
-        }
-        else if(result.getSurfaceInstance().isLampGradient)
-        {
-            // If surface has a lamp gradient and rendered with shading, 
-            // replace white with the lamp color and black with the normal color.
-            // Shading will be handled at bake via per-vertex glow.
-            int lampColor = lampColor(color);
+            int lampColor = modelState.getColorARGB(PaintLayer.LAMP);
+            int lampBrightness = modelState.getBrightness(PaintLayer.LAMP)  * 17; // x17 because glow is 0-255
+            
+            // keep target surface alpha
+            int alpha = color & 0xFF000000;
+            
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    int vColor = v.color == Color.WHITE ? lampColor : color;
-                    result.setVertexColor(i, vColor);
+                    final float w = v.glow / 255f;
+                    int b = Math.round(lampBrightness * w + brightness * (1 - w));
+                    int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
+                    result.setVertex(i, v.withColorGlow(c | alpha, b));
                 }
             }
         }
         else
         {
             // normal shaded surface - tint existing colors, usually WHITE to start with
-            result.multiplyColor(color);
+            for(int i = 0; i < result.vertexCount(); i++)
+            {
+                Vertex v = result.getVertex(i);
+                if(v != null)
+                {
+                    final int c = ColorHelper.multiplyColor(color, v.color);
+                    result.setVertex(i, v.withColorGlow(c, brightness));
+                }
+            }
         }
     }
 }

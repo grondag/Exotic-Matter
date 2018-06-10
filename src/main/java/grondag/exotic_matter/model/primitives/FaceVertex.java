@@ -17,7 +17,7 @@ public class FaceVertex
         this.depth = depth;
     }
 
-    public byte glow()
+    public int glow()
     {
         return 0;
     }
@@ -38,7 +38,7 @@ public class FaceVertex
         return new FaceVertex(this.x, this.y, depth);
     }
     
-    public FaceVertex withColor(int color, byte glow)
+    public FaceVertex withColor(int color, int glow)
     {
         return new FaceVertex.Colored(this.x, this.y, depth, color, glow);
     }
@@ -78,20 +78,20 @@ public class FaceVertex
     public static class Colored extends FaceVertex
     {
         private final int color;
-        private final byte glow;
+        private final short glow;
 
-        public Colored(float x, float y, float depth, int color, byte glow)
+        public Colored(float x, float y, float depth, int color, int glow)
         {
             super(x, y, depth);
             this.color = color;
-            this.glow = glow;
+            this.glow = (short) (glow & 0xFF);
         }
 
-        public Colored(float x, float y, float depth, float u, float v, int color, byte glow)
+        public Colored(float x, float y, float depth, float u, float v, int color, int glow)
         {
             super(x, y, depth);
             this.color = color;
-            this.glow = glow;
+            this.glow = (short) (glow & 0xFF);
         }
 
         @Override
@@ -107,7 +107,7 @@ public class FaceVertex
         }
         
         @Override
-        public byte glow()
+        public int glow()
         {
             return this.glow;
         }
@@ -125,7 +125,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withColor(int color, byte glow)
+        public FaceVertex withColor(int color, int glow)
         {
             return new FaceVertex.Colored(this.x, this.y, depth, color, glow);
         }
@@ -180,7 +180,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withColor(int color, byte glow)
+        public FaceVertex withColor(int color, int glow)
         {
             return new FaceVertex.UVColored(this.x, this.y, depth, this.u, this.v, color, glow);
         }
@@ -197,15 +197,15 @@ public class FaceVertex
         private final float u;
         private final float v;
         private final int color;
-        private final byte glow;
+        private final short glow;
         
-        public UVColored(float x, float y, float depth, float u, float v, int color, byte glow)
+        public UVColored(float x, float y, float depth, float u, float v, int color, int glow)
         {
             super(x, y, depth);
             this.u = u;
             this.v = v;
             this.color = color;
-            this.glow = glow;
+            this.glow = (short) (glow & 0xFF);
         }
         
         @Override
@@ -215,7 +215,7 @@ public class FaceVertex
         }
         
         @Override
-        public byte glow()
+        public int glow()
         {
             return this.glow();
         }
@@ -251,7 +251,7 @@ public class FaceVertex
         }
         
         @Override
-        public FaceVertex withColor(int color, byte glow)
+        public FaceVertex withColor(int color, int glow)
         {
             return new FaceVertex.UVColored(this.x, this.y, this.depth, this.u, this.v, color, glow);
         }

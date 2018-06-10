@@ -16,7 +16,7 @@ public final class Vertex extends Vec3f
     public final float v;
     public final int color;
     public final @Nullable Vec3f normal;
-    public final byte glow;
+    public final short glow;
     
     public Vertex(Vec3f point, float u, float v, int color, Vec3f normal)
     {
@@ -51,7 +51,7 @@ public final class Vertex extends Vec3f
         this.v = v;
         this.color = color;
         this.normal = normal;
-        this.glow = (byte) (glow & 0xF);
+        this.glow = (short) (glow & 0xFF);
     }
     
     public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
@@ -102,7 +102,7 @@ public final class Vertex extends Vec3f
         return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, this.glow);
     }
 
-    /** returns copy of this vertex with given glow (0-15) */
+    /** returns copy of this vertex with given glow (0-255) */
     public final Vertex withGlow(int glowIn)
     {
         return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, glowIn);

@@ -8,6 +8,7 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
 import grondag.exotic_matter.model.CSG.CSGNode.Root;
+import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
@@ -290,7 +291,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             Vertex v = (Vertex)this.getVertex(i);
             if(v != null)
             {
-                int vColor = QuadHelper.multiplyColor(color, v.color);
+                int vColor = ColorHelper.multiplyColor(color, v.color);
                 this.setVertex(i, v.withColor(vColor));
             }
         }

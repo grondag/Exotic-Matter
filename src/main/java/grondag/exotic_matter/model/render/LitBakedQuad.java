@@ -47,7 +47,8 @@ public class LitBakedQuad extends BakedQuad
     private static class Wrapper
     {
         private LitBakedQuad quad;
-        private int vertexIndex = 0;
+        private int ligherVertex = 0;
+        private int bufferVertex = 0;
         
         protected final ForwardingVertexConsumer buffer = new ForwardingVertexConsumer()
         {
@@ -58,13 +59,11 @@ public class LitBakedQuad extends BakedQuad
                 
                 if(e.getUsage() == EnumUsage.COLOR)
                 {
-                    quad.interpolateVertexColors(vertexIndex++, data);
+                    quad.interpolateVertexColors(ligherVertex++, data);
                 }                    
                 wrapped.put(element, data);
             }
         };
-        
-        private static final float[] EMPTY_DATA = new float[4];
         
         protected final ForwardingVertexConsumer lighter = new ForwardingVertexConsumer()
         {
@@ -75,8 +74,7 @@ public class LitBakedQuad extends BakedQuad
                 
                 if(e.getUsage() == EnumUsage.NORMAL)
                 {
-                    // force recalc - workaround for Forge #4916 until patched
-                    wrapped.put(element, EMPTY_DATA);
+                    wrapped.put(element, quad.normals[bufferVertex++]);
                 }
                 else
                     wrapped.put(element, data);
@@ -85,7 +83,8 @@ public class LitBakedQuad extends BakedQuad
         
         public final void wrap(IVertexConsumer lighter, LitBakedQuad quad) throws IllegalArgumentException, IllegalAccessException
         {
-            this.vertexIndex = 0;
+            this.ligherVertex = 0;
+            this.bufferVertex = 0;
             this.buffer.wrapped = (IVertexConsumer) parentField.get(lighter);
             this.lighter.wrapped = lighter;
             this.quad = quad;
@@ -106,12 +105,14 @@ public class LitBakedQuad extends BakedQuad
     }
     
     private final int glowBits;
+    private final float[][] normals;
     
-    public LitBakedQuad(int[] vertexDataIn, int tintIndexIn, @Nullable EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format, int glowBits)
+    public LitBakedQuad(int[] vertexDataIn, float[][] normals, int tintIndexIn, @Nullable EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format, int glowBits)
     {
         super(vertexDataIn, tintIndexIn, faceIn, spriteIn, applyDiffuseLighting, format);
         assert format == DefaultVertexFormats.BLOCK : "unsupported format for pre-lit quad";
         this.glowBits = glowBits;
+        this.normals = normals;
     }
 
     private static boolean wrapError = false;

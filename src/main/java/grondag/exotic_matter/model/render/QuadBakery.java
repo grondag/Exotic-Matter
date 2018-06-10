@@ -24,13 +24,16 @@ public class QuadBakery
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
      * Use this for item models.  Doing so will disable pre-baked lighting
-     * and cause the quad to include normals.
+     * and cause the quad to include normals.<p>
+     * 
+     * Expects that lightmaps are represented by vertex glow bits.
+     * For example, if the quad is full brightness, then glow should be 255 for all vertices.
+     * Any transformation to alpha or lightmap that uses glow bits should already
+     * be applied by painer before this is called.
      */
     @SuppressWarnings("null")
     public static BakedQuad createBakedQuad(IPolygon raw, boolean forceItemFormat)
     {
-        int glowBits = raw.isFullBrightness() ? 0xFFFF : 0;
-        
         final float spanU = raw.getMaxU() - raw.getMinU();
         final float spanV = raw.getMaxV() - raw.getMinV();
         
@@ -38,14 +41,26 @@ public class QuadBakery
         
         //Dimensions are vertex 0-4 and u/v 0-1.
         float[][] uvData = new float[4][2];
+        float[][] normalData = new float[4][3];
+        float[] faceNormal = raw.getFaceNormalArray();   
+        
+        int glowBits =  0;
         for(int v = 0; v < 4; v++)
         {
             final Vertex vertex = raw.getVertex(v);
             if(vertex.glow != 0)
-                glowBits |= (0xF << (v * 4));
+            { 
+                // round to nearest 0-15
+                int g = (vertex.glow  + 9) / 17;
+                glowBits |= (g << (v * 4));
+            }
             
             uvData[v][0] = vertex.u;
             uvData[v][1] = vertex.v;
+            
+            normalData[v] = vertex.normal == null
+                    ? faceNormal
+                    : vertex.normal.toArray();
         }
         
         // apply texture rotation
@@ -77,8 +92,6 @@ public class QuadBakery
                 ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM
                 : net.minecraft.client.renderer.vertex.DefaultVertexFormats.BLOCK;
         
-        float[] faceNormal = raw.getFaceNormalArray();          
-        
         final float spriteMinU = textureSprite.getMinU();
         final float spriteSpanU = textureSprite.getMaxU() - spriteMinU;
         final float spriteMinV = textureSprite.getMinV();
@@ -96,8 +109,7 @@ public class QuadBakery
 
                 case NORMAL: 
                 {
-                    final Vertex vertex = raw.getVertex(v);
-                    LightUtil.pack(vertex.normal == null ? faceNormal : vertex.normal.toArray(), vertexData, format, v, e);
+                    LightUtil.pack(normalData[v], vertexData, format, v, e);
                     break;
                 }
                 case COLOR:
@@ -126,14 +138,14 @@ public class QuadBakery
                     {
                         // There are 2 UV elements when we are using a BLOCK vertex format
                         // The 2nd accepts pre-baked lightmaps.  
-                        float[] fullBright = new float[2];
+                        float[] lightMap = new float[2];
 
                         final float glow = (float)(((glowBits >> (v * 4)) & 0xF) * 0x20) / 0xFFFF;
                                 
-                        fullBright[0] = glow;
-                        fullBright[1] = glow;
+                        lightMap[0] = glow;
+                        lightMap[1] = glow;
 
-                        LightUtil.pack(fullBright, vertexData, format, v, e);
+                        LightUtil.pack(lightMap, vertexData, format, v, e);
                     }
                     break;
 
@@ -142,12 +154,10 @@ public class QuadBakery
                 }
             }
         }
-
-        boolean applyDiffuseLighting = !raw.isFullBrightness();
         
         return format == DefaultVertexFormats.ITEM
-                ? new BakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, applyDiffuseLighting, format)
-                : new LitBakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, applyDiffuseLighting, format, glowBits);
+                ? new BakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, true, format)
+                : new LitBakedQuad(vertexData, normalData, -1, raw.getActualFace(), textureSprite, true, format, glowBits);
         
                 //TODO: restore quad caching
 //        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.getNominalFace(), textureSprite, applyDiffuseLighting, 
