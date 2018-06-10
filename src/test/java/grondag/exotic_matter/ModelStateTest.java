@@ -1,4 +1,4 @@
-package grondag.hard_science.superblock.model.state;
+package grondag.exotic_matter;
 
 import org.junit.Test;
 

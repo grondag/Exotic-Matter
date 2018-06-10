@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 
-public class TerrainCubicBlock extends SuperSimpleBlock
+public class TerrainCubicBlock extends SuperSimpleBlock implements IHotBlock
 {
 
     public TerrainCubicBlock(String blockName, BlockSubstance substance, ISuperModelState defaultModelState)

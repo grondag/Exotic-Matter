@@ -13,7 +13,6 @@ import grondag.exotic_matter.model.color.Chroma;
 import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.color.Hue;
 import grondag.exotic_matter.model.color.Luminance;
-import grondag.exotic_matter.model.color.Translucency;
 import grondag.exotic_matter.model.mesh.ModShapes;
 import grondag.exotic_matter.model.mesh.SquareColumnMeshFactory;
 import grondag.exotic_matter.model.painting.PaintLayer;

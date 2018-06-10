@@ -1,7 +1,10 @@
 package grondag.exotic_matter.terrain;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
 import net.minecraft.block.state.IBlockState;
@@ -16,7 +19,7 @@ public class TerrainState
     public final static long FULL_BLOCK_STATE_KEY = TerrainState.computeStateKey(12, new int[] {12, 12, 12,12}, new int[] {12, 12, 12, 12}, 0 );
     public final static long EMPTY_BLOCK_STATE_KEY = TerrainState.computeStateKey(1, new int[] {1, 1, 1,1}, new int[] {1, 1, 1, 1}, 1 );
 
-    public final static TerrainState EMPTY_STATE = new TerrainState(EMPTY_BLOCK_STATE_KEY);
+    public final static TerrainState EMPTY_STATE = new TerrainState(EMPTY_BLOCK_STATE_KEY, 0);
     
     /** Eight 6-bit blocks that store a corner and side value,
      * plus 4 bits for center height and 3 bits for offset */
@@ -31,6 +34,7 @@ public class TerrainState
     public final static int NO_BLOCK = MIN_HEIGHT - 1;
     public final static int MAX_HEIGHT = 36;
     
+    public final static ITerrainBitConsumer<TerrainState> FACTORY = (t, h) -> new TerrainState(t, h);
     /**
      * Want to avoid the synchronization penalty of pooled block pos.
      */
@@ -83,6 +87,7 @@ public class TerrainState
     private final byte cornerHeight[] = new byte[4];
     private final byte yOffset;
     private final long stateKey;
+    private final int hotness;
     
     private static final byte SIMPLE_FLAG[] = new byte[4];
     private static final byte SIMPLE_FLAG_TOP = 16;
@@ -112,11 +117,36 @@ public class TerrainState
     
     private byte simpleFlags = 0;
     
-    public long getStateKey()
+    public final long getStateKey()
     {
         return stateKey;
     }
     
+    public final int getHotness()
+    {
+        return this.hotness;
+    }
+    
+    @Override
+    public final int hashCode()
+    {
+        return (int) Useful.longHash(this.stateKey ^ this.hotness);
+    }
+
+    @Override
+    public final boolean equals(@Nullable Object obj)
+    {
+        if(this == obj) return true;
+        if(obj == null) return false;
+        if(obj instanceof TerrainState)
+        {
+            final TerrainState other = (TerrainState)obj;
+            return other.stateKey == this.stateKey
+                    && other.hotness == this.hotness;
+        }
+        return false;
+    }
+
     public static long computeStateKey(int centerHeightIn, int[] sideHeightIn, int[] cornerHeightIn, int yOffsetIn)
     {
         long stateKey = (centerHeightIn - 1) | getTriadWithYOffset(yOffsetIn) << 4;
@@ -134,12 +164,13 @@ public class TerrainState
     
     public TerrainState(int centerHeightIn, int[] sideHeightIn, int[] cornerHeightIn, int yOffsetIn)
     {
-        this(computeStateKey(centerHeightIn, sideHeightIn, cornerHeightIn, yOffsetIn));
+        this(computeStateKey(centerHeightIn, sideHeightIn, cornerHeightIn, yOffsetIn), 0);
     }
 
-    public TerrainState(long stateKey)
+    public TerrainState(long stateKey, int hotness)
     {
         this.stateKey = stateKey;
+        this.hotness = hotness;
         centerHeight = (byte)((stateKey & 0xF) + 1);
         yOffset = (byte) getYOffsetFromTriad((int) ((stateKey >> 4) & 0x7));
 
@@ -531,12 +562,12 @@ public class TerrainState
         return div;
     }
     
-    public static long getBitsFromWorldStatically(ISuperBlock block, IBlockState state, IBlockAccess world, BlockPos pos)
+    public static <T> T produceBitsFromWorldStatically(ISuperBlock block, IBlockState state, IBlockAccess world, BlockPos pos, ITerrainBitConsumer<T> consumer)
     {
-        return getBitsFromWorldStatically(block.isFlowFiller(), state, world, pos);
+        return produceBitsFromWorldStatically(block.isFlowFiller(), state, world, pos, consumer);
     }
    
-    private static long getBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos)
+    private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)
     {
         int centerHeight;
         int sideHeight[] = new int[4];
@@ -549,7 +580,6 @@ public class TerrainState
     
         int yOrigin = pos.getY();
         IBlockState originState = state;
-    
         if(isFlowFiller)
         {
             int offset = TerrainBlockHelper.getYOffsetFromState(state);
@@ -560,7 +590,7 @@ public class TerrainState
             originState = world.getBlockState(mPos);
             if(!TerrainBlockHelper.isFlowHeight(originState.getBlock()))
             {
-                return EMPTY_BLOCK_STATE_KEY;
+                return consumer.apply(EMPTY_BLOCK_STATE_KEY, 0);
             }
         }
         else
@@ -625,7 +655,7 @@ public class TerrainState
             cornerHeight[corner.ordinal()] = neighborHeight[corner.directionVector.getX() + 1][corner.directionVector.getZ() + 1];
         }
     
-        return computeStateKey(centerHeight, sideHeight, cornerHeight, yOffset);
+        return consumer.apply(computeStateKey(centerHeight, sideHeight, cornerHeight, yOffset), 0);
     
     }
 

@@ -11,17 +11,17 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.cache.LongSimpleCacheLoader;
-import grondag.exotic_matter.cache.LongSimpleLoadingCache;
+import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
+import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
 import grondag.exotic_matter.model.painting.IQuadColorizer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.painting.SurfaceType;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -84,7 +84,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
-    private final LongSimpleLoadingCache<Collection<IPolygon>> modelCache = new LongSimpleLoadingCache<>(new TerrainCacheLoader(),  0xFFFF);
+    private final ObjectSimpleLoadingCache<TerrainState, Collection<IPolygon>> modelCache = new ObjectSimpleLoadingCache<TerrainState, Collection<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
 
 //    private final AtomicInteger cacheAttempts = new AtomicInteger(0);
 //    private final AtomicInteger cacheMisses = new AtomicInteger(0);
@@ -99,13 +99,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        cacheAttempts.set(0);
 //    }
     
-    private class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPolygon>>
+    private class TerrainCacheLoader implements ObjectSimpleCacheLoader<TerrainState, Collection<IPolygon>>
     {
         @Override
-        public Collection<IPolygon> load(long key)
+        public Collection<IPolygon> load(TerrainState key)
         {
 //            cacheMisses.incrementAndGet();
-            return createShapeQuads(new TerrainState(key));
+            return createShapeQuads(key);
         }
     }
     
@@ -209,7 +209,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         else
         {
 //            cacheAttempts.incrementAndGet();
-            mesh = this.modelCache.get(flowState.getStateKey());
+            mesh = this.modelCache.get(flowState);
         }
         
         assert mesh != null : "Model cache returned null mesh";

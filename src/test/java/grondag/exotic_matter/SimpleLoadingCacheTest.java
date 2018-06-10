@@ -99,7 +99,7 @@ public class SimpleLoadingCacheTest
         }
         
         @Override
-        public Void call()
+        public @Nullable Void call()
         {
             try
             {
@@ -171,6 +171,7 @@ public class SimpleLoadingCacheTest
 
     private class GoogleAdapter implements CacheAdapter
     {    
+        @SuppressWarnings("null")
         private LoadingCache<Long, Long> cache;
      
         @Override
@@ -195,6 +196,7 @@ public class SimpleLoadingCacheTest
 
     private class LongAtomicAdapter implements CacheAdapter
     {    
+        @SuppressWarnings("null")
         private LongAtomicLoadingCache<Long> cache;
         
         @Override
@@ -217,6 +219,7 @@ public class SimpleLoadingCacheTest
     
     private class LongSimpleAdapter implements CacheAdapter
     {    
+        @SuppressWarnings("null")
         private LongSimpleLoadingCache<Long> cache;
         
         @Override
@@ -239,6 +242,7 @@ public class SimpleLoadingCacheTest
     
     private class ObjectSimpleAdapter implements CacheAdapter
     {    
+        @SuppressWarnings("null")
         private ObjectSimpleLoadingCache<Long, Long> cache;
         
         @Override
@@ -261,6 +265,7 @@ public class SimpleLoadingCacheTest
     
     private class WideSimpleAdapter implements CacheAdapter
     {    
+        @SuppressWarnings("null")
         private WideSimpleLoadingCache<Long> cache;
         
         @Override

@@ -256,6 +256,7 @@ public class ModelState implements ISuperModelState
         return hashCode;
     }
 
+    @SuppressWarnings("null")
     @Override
     public ISuperModelState refreshFromWorld(IBlockState state, IBlockAccess world, BlockPos pos)
     {
@@ -307,7 +308,13 @@ public class ModelState implements ISuperModelState
         case FLOW:
             // terrain blocks need larger position space to drive texture randomization because doesn't have per-block rotation or version
             if((stateFlags & STATE_FLAG_NEEDS_POS) == STATE_FLAG_NEEDS_POS) refreshBlockPosFromWorld(pos, 255);
-            ModelStateData.FLOW_JOIN.setValue(TerrainState.getBitsFromWorldStatically((ISuperBlock)state.getBlock(), state, world, pos), this);
+            TerrainState.produceBitsFromWorldStatically((ISuperBlock)state.getBlock(), state, world, pos, (t, h) ->
+            { 
+                ModelStateData.FLOW_JOIN.setValue(t, this);
+                ModelStateData.EXTRA_SHAPE_BITS.setValue(h, this);
+                return null;
+            });
+            
             break;
 
         case MULTIBLOCK:
@@ -744,15 +751,9 @@ public class ModelState implements ISuperModelState
         if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
             ExoticMatter.INSTANCE.warn("getTerrainState on model state does not apply for shape");
 
-        return new TerrainState(ModelStateData.FLOW_JOIN.getValue(this));
+        return new TerrainState(ModelStateData.FLOW_JOIN.getValue(this), (int)ModelStateData.EXTRA_SHAPE_BITS.getValue(this));
     }
-
-    @Override
-    public long getTerrainBits()
-    {
-        return ModelStateData.FLOW_JOIN.getValue(this);
-    }
-    
+   
     @Override
     public void setTerrainState(TerrainState flowState)
     {
@@ -760,6 +761,7 @@ public class ModelState implements ISuperModelState
             ExoticMatter.INSTANCE.warn("setTerrainState on model state does not apply for shape");
 
         ModelStateData.FLOW_JOIN.setValue(flowState.getStateKey(), this);
+        ModelStateData.EXTRA_SHAPE_BITS.setValue(flowState.getHotness(), this);
         invalidateHashCode();
     }
 

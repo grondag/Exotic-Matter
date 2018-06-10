@@ -20,14 +20,14 @@ public class TerrainColorizer implements IQuadColorizer
         
         if(modelState.hasBrightness(paintLayer))
         {
-            final int hot = 0xffff2a24;
+            final int hot = 0xffff4A24;
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
                     int vColor = ColorHelper.interpolate(cold, hot, v.glow / 255f);
-                    result.setVertex(i, v.withColor(vColor));
+                    result.setVertex(i, v.withColorGlow(vColor, v.glow));
                 }
             }
         }
@@ -38,7 +38,7 @@ public class TerrainColorizer implements IQuadColorizer
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    result.setVertex(i, v.withColorGlow(cold, 0));
+                    result.setVertex(i, v.withColorGlow((cold & 0xFFFFFF) | (v.glow << 24), 0));
                 }
             }
         }

@@ -180,8 +180,6 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     void setMultiBlockBits(long bits);
 
     TerrainState getTerrainState();
-
-    long getTerrainBits();
     
     void setTerrainState(TerrainState flowState);
 
