@@ -375,8 +375,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
         CSGNode.Root terrainNode;
         CSGNode.Root cubeNode;
+        
 
-        //TODO: don't allow simple if hot
         if(flowState.isTopSimple())
         {
             terrainNode = terrainNodesSimple[getIndexForState(flowState)].clone();
@@ -429,7 +429,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex.Colored(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), Color.WHITE, 255);
+        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), flowState.getCenterHotness() * 51);
 
         /**
          * Quads on left (west) side of the top face.<br>
@@ -472,10 +472,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Initialized to a height of one and changed based on world state.
          */
         FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1);
-        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1);
-        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1);
-        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1);
+        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_EAST) * 51);
+        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_WEST) * 51);
+        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_EAST) * 51);
+        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_WEST) * 51);
 
         /**
          * Top face vertex positions for centers of the block at the four corners.  
@@ -502,10 +502,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // Coordinates assume quad will be set up with North=top orientation
         // Depth will be set separately.
         FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f);
-        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f);
-        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f);
-        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f);
+        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f, flowState.midSideHotness(HorizontalFace.NORTH) * 51);
+        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f, flowState.midSideHotness(HorizontalFace.SOUTH) * 51);
+        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.EAST) * 51);
+        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.WEST) * 51);
 
         FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
         fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);
@@ -720,6 +720,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 IMutablePolygon qSide = Poly.mutable(template);
 //                qSide.setTag("side-simple-" + side.toString());
                 
+                final HorizontalCorner cornerLeft = HorizontalCorner.find(side, side.getLeft());
+                final HorizontalCorner cornerRight = HorizontalCorner.find(side, side.getRight());
+                
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 setupUVForSide(qSide, side.face);
@@ -727,8 +730,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 qSide.setupFaceQuad(
                         new FaceVertex(0, bottom, 0),
                         new FaceVertex(1, bottom, 0),
-                        new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
-                        new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
+                        new FaceVertex(1, flowState.getMidCornerVertexHeight(cornerLeft) - flowState.getYOffset(), 0),
+                        new FaceVertex(0, flowState.getMidCornerVertexHeight(cornerRight) - flowState.getYOffset(), 0),
                         EnumFacing.UP);
                 terrainQuads.addPolygon(qSide);
                 
@@ -740,13 +743,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //                    qi.setTag("top-simpleside-" + side.toString());
                     
                     qi.setupFaceQuad(
-                            fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
+                            fvMidCorner[cornerLeft.ordinal()],
                             fvCenter,
-                            fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
+                            fvMidCorner[cornerRight.ordinal()],
                             EnumFacing.NORTH);   
-                    qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
+                    qi.setVertexNormal(0, normCorner[cornerLeft.ordinal()]);
                     qi.setVertexNormal(1, normCenter);
-                    qi.setVertexNormal(2, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);                    
+                    qi.setVertexNormal(2, normCorner[cornerRight.ordinal()]);                    
                     terrainQuads.addPolygon(qi);    
                 }
 

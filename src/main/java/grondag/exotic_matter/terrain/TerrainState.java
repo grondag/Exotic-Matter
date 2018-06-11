@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
@@ -189,11 +190,16 @@ public class TerrainState
      * Rendering height of center block ranges from 1 to 12
      * and is stored in state key as values 0-11.
      */
-    public int getCenterHeight()
+    public final int getCenterHeight()
     {
         return this.centerHeight;
     }
 
+    public final int getCenterHotness()
+    {
+        return CENTER_HOTNESS.getValue(this.hotness);
+    }
+    
     public int getYOffset()
     {
         return this.yOffset;
@@ -259,6 +265,8 @@ public class TerrainState
     
     /**
      * True if top can be simplified to no more than two tris.  Is true implies all sides are simple.
+     * Exception: top is not allowed to be simple if this block is hot, 
+     * because that would defeat per-vertex lighting.
      */
     public boolean isTopSimple()
     {
@@ -268,6 +276,8 @@ public class TerrainState
     
     /**
      * True if at least two sides are simple.
+     * Exception: sides are not allowed to be simple if this block is hot, 
+     * because that would defeat per-vertex lighting.
      */
     public boolean areMostSidesSimple()
     {
@@ -413,35 +423,38 @@ public class TerrainState
         this.averageVertexHeightIncludingCenter = total / 9;
         
         //determine if sides and top geometry can be simplified
-        boolean topIsSimple = true;
-        int simpleSideCount = 0;
-        
-        for(HorizontalFace side: HorizontalFace.values())
+        //simplification not possible if block is hot - to preserve per-vertex lighting
+        if(this.getCenterHotness() == 0)
         {
-            float avg = midCornerHeight[HorizontalCorner.find(side, side.getLeft()).ordinal()];
-            avg += midCornerHeight[HorizontalCorner.find(side, side.getRight()).ordinal()];
-            avg /= 2;
-            boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < QuadHelper.EPSILON;
-            if(sideIsSimple)
+            boolean topIsSimple = true;
+            int simpleSideCount = 0;
+            
+            for(HorizontalFace side: HorizontalFace.values())
             {
-                this.simpleFlags |= SIMPLE_FLAG[side.ordinal()];
-                simpleSideCount++;
+                float avg = midCornerHeight[HorizontalCorner.find(side, side.getLeft()).ordinal()];
+                avg += midCornerHeight[HorizontalCorner.find(side, side.getRight()).ordinal()];
+                avg /= 2;
+                boolean sideIsSimple = Math.abs(avg - midSideHeight[side.ordinal()]) < QuadHelper.EPSILON;
+                if(sideIsSimple)
+                {
+                    this.simpleFlags |= SIMPLE_FLAG[side.ordinal()];
+                    simpleSideCount++;
+                }
+                else
+                {
+                    topIsSimple = false;
+                }
             }
-            else
+    
+            if(simpleSideCount > 1) this.simpleFlags |= SIMPLE_FLAG_MOST_SIDES;
+            
+            if(topIsSimple)
             {
-                topIsSimple = false;
+                float cross1 = (midCornerHeight[HorizontalCorner.NORTH_EAST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_WEST.ordinal()]) / 2.0f;
+                float cross2 = (midCornerHeight[HorizontalCorner.NORTH_WEST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_EAST.ordinal()]) / 2.0f;
+                if(Math.abs(cross1 - cross2) < 1.0f) this.simpleFlags |= SIMPLE_FLAG_TOP;
             }
         }
-
-        if(simpleSideCount > 1) this.simpleFlags |= SIMPLE_FLAG_MOST_SIDES;
-        
-        if(topIsSimple)
-        {
-            float cross1 = (midCornerHeight[HorizontalCorner.NORTH_EAST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_WEST.ordinal()]) / 2.0f;
-            float cross2 = (midCornerHeight[HorizontalCorner.NORTH_WEST.ordinal()] + midCornerHeight[HorizontalCorner.SOUTH_EAST.ordinal()]) / 2.0f;
-            if(Math.abs(cross1 - cross2) < 1.0f) this.simpleFlags |= SIMPLE_FLAG_TOP;
-        }
-        
         vertexCalcsDone = true;
 
     }
@@ -476,6 +489,60 @@ public class TerrainState
        
         return numerator / (BLOCK_LEVELS_FLOAT * 4F);
         
+    }
+    
+    /**
+     * If at least 3 block touching corner are hot, returns average heat.
+     * Returns 0 if 2 or fewer.  This block must be hot to be non-zero.
+     */
+    public final int midCornerHotness(HorizontalCorner corner)
+    {
+        final int centerHeat = this.getCenterHotness();
+        if(centerHeat == 0) return 0;
+        
+        final int heatSide1 = SIDE_HOTNESS[corner.face1.ordinal()].getValue(this.hotness);
+        final int heatSide2 = SIDE_HOTNESS[corner.face2.ordinal()].getValue(this.hotness);
+        final int heatCorner = CORNER_HOTNESS[corner.ordinal()].getValue(this.hotness);
+        
+        if(heatSide1 == 0)
+        {
+            if(heatSide2 == 0)
+                return 0;
+            else
+                return heatCorner == 0
+                    ? 0
+                    : (centerHeat + heatSide2 + heatCorner + 1) / 3; // + 1 to round up
+        }
+        else if(heatSide2 == 0)
+        {
+            // heatside1 is known to be hot at this point
+            return heatCorner == 0
+                    ? 0
+                    : (centerHeat + heatSide1 + heatCorner + 1) / 3; // + 1 to round up 
+        }
+        else
+        {
+            // both sides are hot
+            return heatCorner == 0
+                    ? (centerHeat + heatSide1 + heatSide2 + 1) / 3 // + 1 to round up 
+                    : (centerHeat + heatSide1 + heatSide2 + heatCorner + 1) / 4; // + 1 to round up 
+        }
+    }
+    
+    /**
+     * If both this block and side block are hot, is average heat, rounded up. 
+     * Zero otherwise.
+     */
+    public final int midSideHotness(HorizontalFace face)
+    {
+        final int centerHeat = this.getCenterHotness();
+        if(centerHeat == 0) return 0;
+        
+        final int heatSide = SIDE_HOTNESS[face.ordinal()].getValue(this.hotness);
+        
+        return heatSide == 0
+                ? 0
+                : (heatSide + centerHeat + 1) / 2;
     }
     
     private float calcFarSideVertexHeight(HorizontalFace face)
@@ -566,13 +633,35 @@ public class TerrainState
     {
         return produceBitsFromWorldStatically(block.isFlowFiller(), state, world, pos, consumer);
     }
+    
+    @SuppressWarnings("null")
+    public static final BitPacker<Void> HOTNESS_PACKER = new BitPacker<Void>(null, null);
+    public static final BitPacker<Void>.IntElement CENTER_HOTNESS = HOTNESS_PACKER.createIntElement(6); 
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<Void>.IntElement[] CORNER_HOTNESS = (BitPacker<Void>.IntElement[]) new BitPacker<?>.IntElement[4];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<Void>.IntElement[] SIDE_HOTNESS = (BitPacker<Void>.IntElement[]) new BitPacker<?>.IntElement[4];
    
+    static
+    {
+        SIDE_HOTNESS[HorizontalFace.NORTH.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        SIDE_HOTNESS[HorizontalFace.EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        SIDE_HOTNESS[HorizontalFace.SOUTH.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        SIDE_HOTNESS[HorizontalFace.WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        
+        CORNER_HOTNESS[HorizontalCorner.NORTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        CORNER_HOTNESS[HorizontalCorner.NORTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        CORNER_HOTNESS[HorizontalCorner.SOUTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        CORNER_HOTNESS[HorizontalCorner.SOUTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6);
+    }
+    
     private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)
     {
-        int centerHeight;
         int sideHeight[] = new int[4];
         int cornerHeight[] = new int[4];
         int yOffset = 0;
+        
+        long hotness = 0;
     
         BlockPos.MutableBlockPos mPos = mutablePos.get();
         
@@ -629,7 +718,14 @@ public class TerrainState
     
         int[][] neighborHeight = new int[3][3];
         neighborHeight[1][1] = TerrainBlockHelper.getFlowHeightFromState(originState);
-    
+        final int centerHeight = neighborHeight[1][1];
+
+        if(centerHeight > 0)
+        {
+            hotness = CENTER_HOTNESS.setValue(TerrainBlockHelper.getHotness(originState.getBlock()), hotness);
+        }
+        final boolean hasHotness = hotness != 0;
+        
         for(int x = 0; x < 3; x++)
         {
             for(int z = 0; z < 3; z++)
@@ -643,19 +739,43 @@ public class TerrainState
             }
         }
     
-        centerHeight = neighborHeight[1][1];
     
         for(HorizontalFace side : HorizontalFace.values())
         {
-            sideHeight[side.ordinal()] = neighborHeight[side.directionVector.getX() + 1][side.directionVector.getZ() + 1];
+            final int x = side.directionVector.getX();
+            final int z = side.directionVector.getZ();
+            final int h = neighborHeight[x + 1][z + 1];
+            sideHeight[side.ordinal()] = h;
+            if(h != TerrainState.NO_BLOCK && hasHotness)
+            {
+                final int y = yOrigin -2 + (h - TerrainState.MIN_HEIGHT) / TerrainState.BLOCK_LEVELS_INT;
+                mPos.setPos(pos.getX() + x, y, pos.getZ() + z);
+                IBlockState hotState = world.getBlockState(mPos);
+                final int heat = TerrainBlockHelper.getHotness(hotState.getBlock());
+                if(heat != 0)
+                    hotness = SIDE_HOTNESS[side.ordinal()].setValue(heat, hotness);
+            }
         }
     
         for(HorizontalCorner corner : HorizontalCorner.values())
         {
-            cornerHeight[corner.ordinal()] = neighborHeight[corner.directionVector.getX() + 1][corner.directionVector.getZ() + 1];
+            final int x = corner.directionVector.getX();
+            final int z = corner.directionVector.getZ();
+            final int h = neighborHeight[x + 1][z + 1];
+            cornerHeight[corner.ordinal()] = h;
+            
+            if(h != TerrainState.NO_BLOCK && hasHotness)
+            {
+                final int y = yOrigin -2 + (h - TerrainState.MIN_HEIGHT) / TerrainState.BLOCK_LEVELS_INT;
+                mPos.setPos(pos.getX() + x, y, pos.getZ() + z);
+                IBlockState hotState = world.getBlockState(mPos);
+                final int heat = TerrainBlockHelper.getHotness(hotState.getBlock());
+                if(heat != 0)
+                    hotness = CORNER_HOTNESS[corner.ordinal()].setValue(heat, hotness);
+            }
         }
     
-        return consumer.apply(computeStateKey(centerHeight, sideHeight, cornerHeight, yOffset), 0);
+        return consumer.apply(computeStateKey(centerHeight, sideHeight, cornerHeight, yOffset), (int)hotness);
     
     }
 

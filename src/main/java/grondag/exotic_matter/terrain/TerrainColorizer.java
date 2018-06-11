@@ -9,9 +9,20 @@ import grondag.exotic_matter.varia.ColorHelper;
 
 public class TerrainColorizer implements IQuadColorizer
 {
+    private static final int[] GRADIENT = { 0xffc00000, 0xfff30000, 0xfffa3754, 0xfffb9b39, 0xfffdda0f, 0xfffffba3};
+    
+
     public final static TerrainColorizer INSTANCE = new TerrainColorizer() {};
     
     private TerrainColorizer() {};
+    
+    private static int glowColor(int glow)
+    {
+        int lowIndex = glow / 51;
+        int highIndex = (glow + 50) / 51;
+        if(lowIndex == highIndex) return GRADIENT[lowIndex];
+        return ColorHelper.interpolate(GRADIENT[lowIndex], GRADIENT[highIndex], glow - lowIndex * 51);  
+    }
     
     @Override
     public void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
@@ -20,14 +31,16 @@ public class TerrainColorizer implements IQuadColorizer
         
         if(modelState.hasBrightness(paintLayer))
         {
-            final int hot = 0xffff4A24;
+            
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    int vColor = ColorHelper.interpolate(cold, hot, v.glow / 255f);
-                    result.setVertex(i, v.withColorGlow(vColor, v.glow));
+                    if(v.glow == 0)
+                        result.setVertex(i, v.withColorGlow(cold, 0));
+                    else
+                        result.setVertex(i, v.withColorGlow(glowColor(v.glow), 128 + v.glow / 2 ));
                 }
             }
         }

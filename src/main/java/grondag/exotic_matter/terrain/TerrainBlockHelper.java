@@ -73,6 +73,13 @@ public class TerrainBlockHelper
         return block.isAssociatedBlock(FLOW_BLOCK_INDICATOR) && ((ISuperBlock)block).isFlowHeight();
     }
     
+    public static int getHotness(Block block)
+    {
+        return block.isAssociatedBlock(FLOW_BLOCK_INDICATOR)
+                ? ((IHotBlock)block).heatLevel()
+                : 0;
+    }
+    
     /**
      * Use for height blocks.
      * Returns a value from 1 to 12 to indicate the center height of this block.
