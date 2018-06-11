@@ -59,8 +59,6 @@ public interface IMutablePolygon extends IPolygon
 
     public void setRenderPass(BlockRenderLayer renderPass);
 
-    public void setFullBrightness(boolean isFullBrightnessIntended);
-
     /**
      * Assigns UV coordinates to each vertex by projecting vertex
      * onto plane of the quad's face. If the quad is not rotated,

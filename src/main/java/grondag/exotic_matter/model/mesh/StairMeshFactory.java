@@ -28,7 +28,6 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         IMutablePolygon template = Poly.mutable(4);
         template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
-        template.setFullBrightness(false);
         template.setLockUV(true);
 
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();

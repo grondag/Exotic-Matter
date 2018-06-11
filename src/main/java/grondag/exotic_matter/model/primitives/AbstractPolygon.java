@@ -21,7 +21,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected static final BitPacker<AbstractPolygon>.NullableEnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createNullableEnumElement(EnumFacing.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
-    protected static final BitPacker<AbstractPolygon>.BooleanElement FULLBRIGHT_BITS = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
 
@@ -32,7 +31,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
         defaultBits |= NOMINAL_FACE_BITS.getBits(null);
         defaultBits |= ROTATION_BITS.getBits(Rotation.ROTATE_NONE);
         defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
-        defaultBits |= FULLBRIGHT_BITS.getBits(false);
         defaultBits |= LOCKUV_BITS.getBits(false);
         defaultBits |= CONTRACTUV_BITS.getBits(true);
         DEFAULT_BITS = defaultBits;
@@ -97,18 +95,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     public void setColor(int color)
     {
         this.stateBits = (color & 0xFFFFFFFFL) | (this.stateBits & 0xFFFFFFFF00000000L);
-    }
-
-    @Override
-    public boolean isFullBrightness()
-    {
-        return FULLBRIGHT_BITS.getValue(this);
-    }
-
-    @Override
-    public void setFullBrightness(boolean isFullBrightness)
-    {
-        FULLBRIGHT_BITS.setValue(isFullBrightness, this);
     }
 
     @Override

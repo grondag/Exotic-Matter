@@ -60,8 +60,6 @@ public interface IPolygon
 
     public int getColor();
 
-    public boolean isFullBrightness();
-
     /** 
      * If true then quad painters will ignore UV coordinates and instead set
      * based on projection of vertices onto the given nominal face.

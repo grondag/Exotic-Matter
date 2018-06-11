@@ -25,14 +25,12 @@ public class PolyTest
         
         // basic properties
         assert quad.getColor() == 0xFFFFFFFF;
-        assert !quad.isFullBrightness();
         assert !quad.isLockUV();
         assert quad.shouldContractUVs();
         assert quad.getNominalFace() == EnumFacing.UP;
         assert quad.getRotation() == Rotation.ROTATE_NONE;
         assert quad.getRenderPass() == BlockRenderLayer.SOLID;
         
-        quad.setFullBrightness(true);
         quad.setLockUV(true);
         quad.setShouldContractUVs(false);
         quad.setNominalFace(null);
@@ -40,7 +38,6 @@ public class PolyTest
         quad.setRenderPass(BlockRenderLayer.TRANSLUCENT);
         quad.setColor(0xFA123456);
         
-        assert quad.isFullBrightness();
         assert quad.isLockUV();
         assert !quad.shouldContractUVs();
         assert quad.getNominalFace() == null;

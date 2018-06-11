@@ -31,7 +31,6 @@ public class TerrainColorizer implements IQuadColorizer
         
         if(modelState.hasBrightness(paintLayer))
         {
-            
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 Vertex v = result.getVertex(i);

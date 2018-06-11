@@ -96,9 +96,6 @@ public abstract class QuadPainter
         IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
         result.setRenderPass(modelState.getRenderPass(paintLayer));
         
-        //TODO: probably not the correct result for less than full brightness value
-        result.setFullBrightness(modelState.hasBrightness(paintLayer));
-
         modelState.getShape().meshFactory().colorizer(modelState, paintLayer, inputQuad.getSurfaceInstance()).recolorQuad(result, modelState, paintLayer);
      
         // TODO: Vary color slightly with species, as user-selected option

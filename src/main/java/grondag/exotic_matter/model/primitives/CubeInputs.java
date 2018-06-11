@@ -48,7 +48,6 @@ public class CubeInputs{
         qi.setColor(this.color);
         
         qi.setLockUV(true);
-        qi.setFullBrightness(this.isFullBrightness);
         qi.setRotation((rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
         qi.setTextureName(this.textureName);
         qi.setSurfaceInstance(this.surfaceInstance);
