@@ -197,7 +197,7 @@ public class TerrainState
 
     public final int getCenterHotness()
     {
-        return CENTER_HOTNESS.getValue(this.hotness);
+        return CENTER_HOTNESS.getValue(this.hotness) > 0 ? 255 : 0;
     }
     
     public int getYOffset()
@@ -511,21 +511,21 @@ public class TerrainState
             else
                 return heatCorner == 0
                     ? 0
-                    : (centerHeat + heatSide2 + heatCorner + 1) / 3; // + 1 to round up
+                    : 70; //(centerHeat + heatSide2 + heatCorner + 1) / 3; // + 1 to round up
         }
         else if(heatSide2 == 0)
         {
             // heatside1 is known to be hot at this point
             return heatCorner == 0
                     ? 0
-                    : (centerHeat + heatSide1 + heatCorner + 1) / 3; // + 1 to round up 
+                    : 70; //(centerHeat + heatSide1 + heatCorner + 1) / 3; // + 1 to round up 
         }
         else
         {
             // both sides are hot
             return heatCorner == 0
-                    ? (centerHeat + heatSide1 + heatSide2 + 1) / 3 // + 1 to round up 
-                    : (centerHeat + heatSide1 + heatSide2 + heatCorner + 1) / 4; // + 1 to round up 
+                    ? 70 //(centerHeat + heatSide1 + heatSide2 + 1) / 3 // + 1 to round up 
+                    : 255; //(centerHeat + heatSide1 + heatSide2 + heatCorner + 1) / 4; // + 1 to round up 
         }
     }
     
@@ -540,9 +540,13 @@ public class TerrainState
         
         final int heatSide = SIDE_HOTNESS[face.ordinal()].getValue(this.hotness);
         
+//        return heatSide == 0
+//                ? 0
+//                : (heatSide + centerHeat + 1) / 2;
+        
         return heatSide == 0
-                ? 0
-                : (heatSide + centerHeat + 1) / 2;
+                ? 70
+                : 255;
     }
     
     private float calcFarSideVertexHeight(HorizontalFace face)

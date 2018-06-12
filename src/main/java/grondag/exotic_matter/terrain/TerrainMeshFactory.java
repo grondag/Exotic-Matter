@@ -429,7 +429,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), flowState.getCenterHotness() * 51);
+        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), flowState.getCenterHotness());
 
         /**
          * Quads on left (west) side of the top face.<br>
@@ -472,10 +472,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Initialized to a height of one and changed based on world state.
          */
         FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_EAST) * 51);
-        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_WEST) * 51);
-        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_EAST) * 51);
-        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_WEST) * 51);
+        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_EAST));
+        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_WEST));
+        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_EAST));
+        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_WEST));
 
         /**
          * Top face vertex positions for centers of the block at the four corners.  
@@ -502,10 +502,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // Coordinates assume quad will be set up with North=top orientation
         // Depth will be set separately.
         FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f, flowState.midSideHotness(HorizontalFace.NORTH) * 51);
-        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f, flowState.midSideHotness(HorizontalFace.SOUTH) * 51);
-        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.EAST) * 51);
-        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.WEST) * 51);
+        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f, flowState.midSideHotness(HorizontalFace.NORTH));
+        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f, flowState.midSideHotness(HorizontalFace.SOUTH));
+        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.EAST));
+        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.WEST));
 
         FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
         fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);

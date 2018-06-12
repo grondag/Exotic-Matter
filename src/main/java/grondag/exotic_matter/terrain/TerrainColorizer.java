@@ -36,10 +36,15 @@ public class TerrainColorizer implements IQuadColorizer
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    if(v.glow == 0)
-                        result.setVertex(i, v.withColorGlow(cold, 0));
-                    else
-                        result.setVertex(i, v.withColorGlow(glowColor(v.glow), 128 + v.glow / 2 ));
+//                    if(v.glow == 0)
+//                        result.setVertex(i, v.withColorGlow(cold, 0));
+//                    else
+//                    {
+//                        final float w = v.glow / 255f;
+//                        int b = Math.round(modelState.getBrightness(paintLayer) * v.glow / 255f);
+//                        result.setVertex(i, v.withColorGlow(glowColor(v.glow), b));
+//                    }
+                    result.setVertex(i, v.withColorGlow(0xfffa3754, 255));
                 }
             }
         }
@@ -50,7 +55,11 @@ public class TerrainColorizer implements IQuadColorizer
                 Vertex v = result.getVertex(i);
                 if(v != null)
                 {
-                    result.setVertex(i, v.withColorGlow((cold & 0xFFFFFF) | (v.glow << 24), 0));
+                    if(v.glow > 0)
+                        result.setVertex(i, v.withColorGlow((cold & 0xFFFFFF) | ((255 - v.glow) << 24), 0));
+                    else
+                        result.setVertex(i, v.withColorGlow(cold, 0));
+                        
                 }
             }
         }
