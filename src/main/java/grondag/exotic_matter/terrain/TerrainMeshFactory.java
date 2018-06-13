@@ -126,8 +126,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     public TerrainMeshFactory()
     {
         super(  StateFormat.FLOW, 
-                ModelStateData.STATE_FLAG_NEEDS_POS, 
-                SURFACE_TOP.surface(), SURFACE_SIDE.surface());
+                ModelStateData.STATE_FLAG_NEEDS_POS);
 
         IMutablePolygon templateBuilder = Poly.mutable(4);
 
@@ -942,5 +941,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, SurfaceInstance surface)
     {
         return TerrainColorizer.INSTANCE;
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return false;
     }
 }

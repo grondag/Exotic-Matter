@@ -83,4 +83,10 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         
         return builder.build();
     }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return false;
+    }
 }

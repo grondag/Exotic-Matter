@@ -425,41 +425,15 @@ public class ModelState implements ISuperModelState
     }
 
     @Override
-    public boolean isMiddleLayerEnabled()
+    public boolean isLayerEnabled(PaintLayer layer)
     {
-        return this.getTexture(PaintLayer.MIDDLE) != TexturePaletteRegistry.NONE;
+        return this.getTexture(layer) != TexturePaletteRegistry.NONE;
     }
 
     @Override
-    public void setMiddleLayerEnabled(boolean isEnabled)
+    public void disableLayer(PaintLayer layer)
     {
-        if(isEnabled && this.getTexture(PaintLayer.MIDDLE) == TexturePaletteRegistry.NONE)
-        {
-            this.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_STRONG);
-        }
-        else if(!isEnabled && this.getTexture(PaintLayer.MIDDLE) != TexturePaletteRegistry.NONE)
-        {
-            this.setTexture(PaintLayer.MIDDLE, TexturePaletteRegistry.NONE);
-        }
-    }
-
-    @Override
-    public boolean isOuterLayerEnabled()
-    {
-        return this.getTexture(PaintLayer.OUTER) != TexturePaletteRegistry.NONE;
-    }
-
-    @Override
-    public void setOuterLayerEnabled(boolean isEnabled)
-    {
-        if(isEnabled && this.getTexture(PaintLayer.OUTER) == TexturePaletteRegistry.NONE)
-        {
-            this.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_STRONG);
-        }
-        else if(!isEnabled && this.getTexture(PaintLayer.OUTER) != TexturePaletteRegistry.NONE)
-        {
-            this.setTexture(PaintLayer.OUTER, TexturePaletteRegistry.NONE);
-        }
+        this.setTexture(layer, TexturePaletteRegistry.NONE);
     }
 
     @Override

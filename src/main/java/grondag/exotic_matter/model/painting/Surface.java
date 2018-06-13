@@ -143,28 +143,26 @@ public class Surface
         public final boolean isLampGradient;
         
         /**
-         * If true, base layer painting will be disabled.
+         * Bits here indicate a layer is <em>disabled</em>
          */
-        public final boolean disableBase;
+        private final int layerDisabledFlags;
         
-        /**
-         * If true, middle layer painting (if applicable) will be disabled.
-         */
-        public final boolean disableMiddle;
+        public final boolean isLayerDisabled(PaintLayer layer)
+        {
+            return PaintLayer.BENUMSET.isFlagSetForValue(layer, layerDisabledFlags);
+        }
         
-        /**
-         * If true, outer layer painting (if applicable) will be disabled.
-         */
-        public final boolean disableOuter;
         
         private SurfaceInstance(
                 float uvWrapDistance, 
                 boolean ignoreDepthForRandomization, 
                 boolean allowBorders, 
                 int textureSalt, 
-                boolean isLampGradient)
+                boolean isLampGradient,
+                PaintLayer... disabledLayers)
         {
-            this(uvWrapDistance, ignoreDepthForRandomization, allowBorders, textureSalt, isLampGradient, false, false, false);
+            this(uvWrapDistance, ignoreDepthForRandomization, allowBorders, textureSalt, isLampGradient,
+                    PaintLayer.BENUMSET.getFlagsForIncludedValues(disabledLayers));
         }
         
         private SurfaceInstance(
@@ -173,30 +171,19 @@ public class Surface
                 boolean allowBorders, 
                 int textureSalt, 
                 boolean isLampGradient,
-                boolean disableBase,
-                boolean disableMiddle,
-                boolean disableOuter)
+                int layerDisabledFlags)
         {
             this.uvWrapDistance = uvWrapDistance;
             this.ignoreDepthForRandomization = ignoreDepthForRandomization;
             this.allowBorders = allowBorders;
             this.textureSalt = textureSalt;
             this.isLampGradient = isLampGradient;
-            this.disableBase = disableBase;
-            this.disableMiddle = disableMiddle;
-            this.disableOuter = disableOuter;
+            this.layerDisabledFlags = layerDisabledFlags;
         }
         
-        public SurfaceInstance()
+        public SurfaceInstance(PaintLayer... disabledLayers)
         {
-            this.uvWrapDistance = 0;
-            this.ignoreDepthForRandomization = false;
-            this.allowBorders = false;
-            this.textureSalt = 0;
-            this.isLampGradient = false;
-            this.disableBase = false;
-            this.disableMiddle = false;
-            this.disableOuter = false;
+            this(0, false, false, 0, false, disabledLayers);
         }
         
         /**
@@ -205,49 +192,50 @@ public class Surface
         public SurfaceInstance withWrap(float uvWrapDistance)
         {
             return new SurfaceInstance(uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
-                    this.disableBase, this.disableMiddle, this.disableOuter);
+                    this.layerDisabledFlags);
         }
         
         public SurfaceInstance withIgnoreDepthForRandomization(boolean ignoreDepthForRandomization)
         {
             return new SurfaceInstance(this.uvWrapDistance, ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
-                    this.disableBase, this.disableMiddle, this.disableOuter);
+                    this.layerDisabledFlags);
         }
         
         public SurfaceInstance withAllowBorders(boolean allowBorders)
         {
             return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, allowBorders, this.textureSalt, this.isLampGradient,
-                    this.disableBase, this.disableMiddle, this.disableOuter);
+                    this.layerDisabledFlags);
         }
         
         public SurfaceInstance withTextureSalt(int textureSalt)
         {
             return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, textureSalt, this.isLampGradient,
-                    this.disableBase, this.disableMiddle, this.disableOuter);
+                    this.layerDisabledFlags);
         }
         
         public SurfaceInstance withLampGradient(boolean isLampGradient)
         {
             return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, isLampGradient,
-                    this.disableBase, this.disableMiddle, this.disableOuter);
+                    this.layerDisabledFlags);
         }
         
-        public SurfaceInstance withDisableBase(boolean disableBase)
+        /**
+         * Note the new list <em>replaces</em> the existing list of disabled layers.
+         */
+        public SurfaceInstance withDisabledLayers(PaintLayer... disabledLayers)
         {
             return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
-                    disableBase, this.disableMiddle, this.disableOuter);
-        }
-
-        public SurfaceInstance withDisableMiddle(boolean disableMiddle)
-        {
-            return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
-                    this.disableBase, disableMiddle, this.disableOuter);
+                    PaintLayer.BENUMSET.getFlagsForIncludedValues(disabledLayers));
         }
         
-        public SurfaceInstance withDisableOuter(boolean disableOuter)
+        /**
+         * Convenient when only one or two layers are enabled.
+         * Note the new list <em>replaces</em> the existing list of disabled layers.
+         */
+        public SurfaceInstance withEnabledLayers(PaintLayer... enabledLayers)
         {
             return new SurfaceInstance(this.uvWrapDistance, this.ignoreDepthForRandomization, this.allowBorders, this.textureSalt, this.isLampGradient,
-                    this.disableBase, this.disableMiddle, disableOuter);
+                    ~PaintLayer.BENUMSET.getFlagsForIncludedValues(enabledLayers));
         }
         
         public Surface surface()

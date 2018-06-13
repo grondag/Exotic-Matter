@@ -42,7 +42,6 @@ public class ModelStateTest
         state.setShape(ModShapes.COLUMN_SQUARE);
         state.setStatic(true);
 
-        state.setOuterLayerEnabled(true);
         state.setColorRGB(PaintLayer.BASE, 0xFF1133);
         state.setColorRGB(PaintLayer.OUTER, 0x11AABBCC);
         state.setBrightness(PaintLayer.LAMP, 15);
@@ -71,8 +70,8 @@ public class ModelStateTest
         
         assert(reloadedState.getShape() == ModShapes.COLUMN_SQUARE);
         assert(reloadedState.isStatic());
-        assert(reloadedState.isOuterLayerEnabled());
-        assert(reloadedState.isMiddleLayerEnabled());
+        assert(reloadedState.isLayerEnabled(PaintLayer.OUTER));
+        assert(reloadedState.isLayerEnabled(PaintLayer.MIDDLE));
         assert(reloadedState.getColorARGB(PaintLayer.BASE) == 0xFFFF1133);
         assert(reloadedState.getColorARGB(PaintLayer.OUTER) == 0xFFAABBCC);
         assert(reloadedState.getBrightness(PaintLayer.LAMP) == 15);

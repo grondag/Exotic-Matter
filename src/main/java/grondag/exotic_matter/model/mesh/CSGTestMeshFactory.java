@@ -32,12 +32,13 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
     
+    
     /** never changes so may as well save it */
     private final Collection<IPolygon> cachedQuads;
     
     public CSGTestMeshFactory()
     {
-        super(StateFormat.BLOCK, STATE_FLAG_NONE, SURFACE_MAIN, SURFACE_LAMP);
+        super(StateFormat.BLOCK, STATE_FLAG_NONE);
         this.cachedQuads = getTestQuads();
     }
 
@@ -145,5 +146,11 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     public AxisAlignedBB getCollisionBoundingBox(ISuperModelState modelState)
     {
         return Block.FULL_BLOCK_AABB;
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return false;
     }
 }

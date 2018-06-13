@@ -79,6 +79,7 @@ public class CommonEventHandler
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.CSGTEST);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
 //        workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(56));
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
 //        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(4));

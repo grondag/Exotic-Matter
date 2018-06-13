@@ -34,7 +34,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     
     public CubeMeshFactory()
     {
-        super(StateFormat.BLOCK, STATE_FLAG_NONE, SURFACE_MAIN);
+        super(StateFormat.BLOCK, STATE_FLAG_NONE);
         this.cachedQuads = getCubeQuads();
     }
 
@@ -98,5 +98,11 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     public SideShape sideShape(ISuperModelState modelState, EnumFacing side)
     {
         return SideShape.SOLID;
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return true;
     }
 }

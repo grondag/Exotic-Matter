@@ -14,7 +14,6 @@ import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
-import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
@@ -37,7 +36,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     
     public SphereMeshFactory()
     {
-        super(StateFormat.BLOCK, STATE_FLAG_NONE, SURFACE_MAIN);
+        super(StateFormat.BLOCK, STATE_FLAG_NONE);
         this.cachedQuads = generateQuads();
     }
 
@@ -99,5 +98,11 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     public AxisAlignedBB getCollisionBoundingBox(ISuperModelState modelState)
     {
         return Block.FULL_BLOCK_AABB;
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return false;
     }
 }

@@ -29,23 +29,22 @@ import net.minecraft.world.World;
 public abstract class AbstractWedgeMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
 
-    private static Surface BACK_AND_BOTTOM = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static Surface SIDES = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static Surface TOP = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    private static final Surface BACK_AND_BOTTOM = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    private static final Surface SIDES = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    private static final Surface TOP = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
     
-    protected static SurfaceInstance BACK_AND_BOTTOM_INSTANCE = BACK_AND_BOTTOM.unitInstance;
-    protected static SurfaceInstance SIDE_INSTANCE = SIDES.unitInstance.withAllowBorders(false);
+    protected static final SurfaceInstance BACK_AND_BOTTOM_INSTANCE = BACK_AND_BOTTOM.unitInstance;
+    protected static final SurfaceInstance SIDE_INSTANCE = SIDES.unitInstance.withAllowBorders(false);
     
     // salt is for stairs, so cuts appear different from top/front face
     // wedges can't connect textures with adjacent flat blocks consistently anyway, so doesn't hurt them
-    protected static SurfaceInstance TOP_INSTANCE = TOP.unitInstance.withIgnoreDepthForRandomization(true).withAllowBorders(false).withTextureSalt(1);
+    protected static final SurfaceInstance TOP_INSTANCE = TOP.unitInstance.withIgnoreDepthForRandomization(true).withAllowBorders(false).withTextureSalt(1);
     
 
     public AbstractWedgeMeshFactory()
     {
         super(StateFormat.BLOCK, 
-                STATE_FLAG_NEEDS_SPECIES | STATE_FLAG_HAS_AXIS | STATE_FLAG_HAS_AXIS_ROTATION,
-                BACK_AND_BOTTOM, SIDES, TOP);
+                STATE_FLAG_NEEDS_SPECIES | STATE_FLAG_HAS_AXIS | STATE_FLAG_HAS_AXIS_ROTATION);
     }
 
     @Override

@@ -289,12 +289,12 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
             tooltip.add(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
             tooltip.add(I18n.translateToLocal("label.base_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.BASE)));
             tooltip.add(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
-            if(modelState.isOuterLayerEnabled())
+            if(modelState.isLayerEnabled(PaintLayer.OUTER))
             {
                 tooltip.add(I18n.translateToLocal("label.outer_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.OUTER)));
                 tooltip.add(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
             }
-            if(modelState.isMiddleLayerEnabled())
+            if(modelState.isLayerEnabled(PaintLayer.MIDDLE))
             {
                 tooltip.add(I18n.translateToLocal("label.middle_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.MIDDLE)));
                 tooltip.add(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());
@@ -330,12 +330,12 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         probeInfo.text(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
         probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.BASE)));
         probeInfo.text(I18n.translateToLocal("label.base_texture") + ": " + modelState.getTexture(PaintLayer.BASE).displayName());
-        if(modelState.isOuterLayerEnabled())
+        if(modelState.isLayerEnabled(PaintLayer.OUTER))
         {
             probeInfo.text(I18n.translateToLocal("label.outer_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.OUTER)));
             probeInfo.text(I18n.translateToLocal("label.outer_texture") + ": " + modelState.getTexture(PaintLayer.OUTER).displayName());
         }
-        if(modelState.isMiddleLayerEnabled())
+        if(modelState.isLayerEnabled(PaintLayer.MIDDLE))
         {
             probeInfo.text(I18n.translateToLocal("label.middle_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.MIDDLE)));
             probeInfo.text(I18n.translateToLocal("label.middle_texture") + ": " + modelState.getTexture(PaintLayer.MIDDLE).displayName());

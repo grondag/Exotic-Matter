@@ -16,11 +16,6 @@ import grondag.exotic_matter.block.SuperBlockStackHelper;
 import grondag.exotic_matter.block.SuperModelItemOverrideList;
 import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
 import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
-import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
-import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.painting.QuadPainter;
-import grondag.exotic_matter.model.painting.QuadPainterFactory;
-import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -31,7 +26,6 @@ import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.SparseLayerMapBuilder.SparseLayerMap;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -184,50 +178,8 @@ public class SuperDispatcher
     
     private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
-        ShapeMeshGenerator mesher = modelState.getShape().meshFactory();
-                
-        SimpleUnorderedArrayList<QuadPainter> painters = new SimpleUnorderedArrayList<QuadPainter>();
-        for(Surface surface : mesher.getSurfaces(modelState))
-        {
-            switch(surface.surfaceType)
-            {
-            case CUT:
-                painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.CUT));
-                if(modelState.isMiddleLayerEnabled())
-                {
-                    painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.MIDDLE));
-                }
-                break;
-            
-            case LAMP:
-                painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.LAMP));
-                break;
-
-            case MAIN:
-                painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.BASE));
-                if(modelState.isMiddleLayerEnabled())
-                {
-                    painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.MIDDLE));
-                }
-                if(modelState.isOuterLayerEnabled())
-                {
-                    painters.add(QuadPainterFactory.getPainterForSurface(modelState, surface, PaintLayer.OUTER));
-                }
-                break;
-
-            default:
-                break;
-            }
-        }
-        
-        for(IPolygon shapeQuad : modelState.getShape().meshFactory().getShapeQuads(modelState))
-        {
-            Surface qSurface = shapeQuad.getSurfaceInstance().surface();
-            for(QuadPainter p : painters)
-            {
-                if(qSurface == p.surface) p.addPaintedQuadToList(shapeQuad, target, isItem);
-            }
-        }
+        final Consumer<IPolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
+        modelState.getShape().meshFactory().getShapeQuads(modelState).forEach(manager);
     }
     
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack)

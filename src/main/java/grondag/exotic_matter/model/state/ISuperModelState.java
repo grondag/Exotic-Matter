@@ -14,6 +14,7 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.texture.ITexturePalette;
+import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.serialization.IMessagePlus;
 import grondag.exotic_matter.serialization.IReadWriteNBT;
@@ -99,14 +100,16 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
      */
     void setTranslucent(PaintLayer layer, boolean isTranslucent);
 
-    boolean isMiddleLayerEnabled();
+    /**
+     * Will be true if layer is assigned a texture.
+     */
+    boolean isLayerEnabled(PaintLayer l);
+    
+    /**
+     * Equivalent to setting the texture for the layer to {@link TexturePaletteRegistry#NONE}
+     */
+    void disableLayer(PaintLayer l);
 
-    void setMiddleLayerEnabled(boolean isEnabled);
-
-    boolean isOuterLayerEnabled();
-
-    void setOuterLayerEnabled(boolean isEnabled);
-   
     ITexturePalette getTexture(PaintLayer layer);
 
     void setTexture(PaintLayer layer, ITexturePalette tex);
@@ -308,5 +311,4 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     {
         this.setColorRGB(layer, colorMap.getColor(EnumColorMap.BASE));
     }
-
 }

@@ -38,8 +38,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     public StackedPlatesMeshFactory()
     {
         super(StateFormat.BLOCK, 
-                STATE_FLAG_NEEDS_SPECIES | STATE_FLAG_HAS_AXIS | STATE_FLAG_HAS_AXIS_ORIENTATION,
-                TOP_AND_BOTTOM, SIDES);
+                STATE_FLAG_NEEDS_SPECIES | STATE_FLAG_HAS_AXIS | STATE_FLAG_HAS_AXIS_ORIENTATION);
     }
  
     private List<IPolygon> makeQuads(int meta, Matrix4f matrix)
@@ -166,6 +165,12 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     public void setMetaData(ISuperModelState modelState, int meta)
     {
         modelState.setStaticShapeBits(meta);
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return false;
     }
     
 }

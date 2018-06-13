@@ -3,18 +3,14 @@ package grondag.exotic_matter.model.painting;
 import java.util.List;
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
-import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.texture.TextureScale;
-import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.Rotation;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 
@@ -58,38 +54,14 @@ public abstract class QuadPainter
 
     protected boolean isQuadValidForPainting(IPolygon inputQuad)
     {
-        if(inputQuad.getSurfaceInstance().surface() != this.surface) return false;
-
-        switch(this.paintLayer)
-        {
-        case BASE:
-            if(inputQuad.getSurfaceInstance().disableBase) return false;
-            break;
-
-        case MIDDLE:
-            if(inputQuad.getSurfaceInstance().disableMiddle) return false;
-            break;
-
-        case OUTER:
-            if(inputQuad.getSurfaceInstance().disableOuter) return false;
-            break;
-
-        case CUT:
-        case LAMP:
-        default:
-            break;
-
-        }
-
-        return true;
+        return !inputQuad.getSurfaceInstance().isLayerDisabled(this.paintLayer);
     }
-    
     
     /**
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void addPaintedQuadToList(IPolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
+    public final void producePaintedQuad(IPolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     

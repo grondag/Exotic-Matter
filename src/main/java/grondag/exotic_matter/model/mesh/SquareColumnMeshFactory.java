@@ -42,8 +42,22 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     
     private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
     private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
-    public static final Surface SURFACE_CUT = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
+    private static final Surface SURFACE_CUT = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
+
+    // FIXME: not going to work - only need one surface at a time, and will be different depending on model state
+    // don't want to pass both to the painter 
+    private static final SurfaceInstance INSTANCE_CUT = SURFACE_CUT.unitInstance.withAllowBorders(false)
+            .withEnabledLayers(PaintLayer.CUT);
+    private static final SurfaceInstance INSTANCE_CUT_LAMP = INSTANCE_CUT.withLampGradient(true)
+            .withEnabledLayers(PaintLayer.CUT);
     
+    private static final SurfaceInstance INSTANCE_MAIN = SURFACE_MAIN.unitInstance
+            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP);
+    
+    private static final SurfaceInstance INSTANCE_LAMP = SURFACE_LAMP.unitInstance
+            .withEnabledLayers(PaintLayer.LAMP);
+    
+    @SuppressWarnings("null")
     private static final BitPacker<SquareColumnMeshFactory> STATE_PACKER = new BitPacker<SquareColumnMeshFactory>(null, null);
     private static final BitPacker<SquareColumnMeshFactory>.BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
     private static final BitPacker<SquareColumnMeshFactory>.IntElement STATE_CUT_COUNT = STATE_PACKER.createIntElement(MIN_CUTS, MAX_CUTS);
@@ -84,8 +98,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         super(
                 StateFormat.BLOCK, 
                 ModelStateData.STATE_FLAG_NEEDS_CORNER_JOIN | ModelStateData.STATE_FLAG_HAS_AXIS, 
-                STATE_CUT_COUNT.setValue(3, STATE_ARE_CUTS_ON_EDGE.setValue(true, 0)), 
-                SURFACE_MAIN, SURFACE_LAMP, SURFACE_CUT
+                STATE_CUT_COUNT.setValue(3, STATE_ARE_CUTS_ON_EDGE.setValue(true, 0))
         );
     }
 
@@ -144,7 +157,6 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
 
         CornerJoinBlockState bjs = state.getCornerJoin();
         EnumFacing.Axis axis = state.getAxis();
-        SurfaceInstance cutSurface = SURFACE_CUT.unitInstance.withLampGradient(state.hasBrightness(PaintLayer.LAMP)).withAllowBorders(false);
 
         List<IPolygon> retVal = null;
 
@@ -153,6 +165,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         quadInputs.setColor(Color.WHITE);
         quadInputs.setLockUV(true);
 
+        SurfaceInstance cutSurface = state.hasBrightness(PaintLayer.LAMP) ? INSTANCE_CUT_LAMP : INSTANCE_CUT;
 
         if(face.getAxis() == axis)
         {
@@ -359,7 +372,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         // inner lamp surface can be a single poly
         {
             IMutablePolygon quad = Poly.mutable(template);
-            quad.setSurfaceInstance(SURFACE_LAMP.unitInstance);
+            quad.setSurfaceInstance(INSTANCE_LAMP);
             quad.setupFaceQuad(face, Math.max(0, leftMarginWidth), bottomCapHeight, Math.min(1, 1 - rightMarginWidth), 1 - topCapHeight, spec.cutDepth, topFace);
             builder.add(quad);
         }
@@ -379,7 +392,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         // lamp bottom can be a single poly
         {
             IMutablePolygon quad = Poly.mutable(template);
-            quad.setSurfaceInstance(SURFACE_LAMP.unitInstance);
+            quad.setSurfaceInstance(INSTANCE_LAMP);
             quad.setupFaceQuad(face, 
                     fjs.isJoined(FaceSide.LEFT) ? 0 : spec.baseMarginWidth, 
                             fjs.isJoined(FaceSide.BOTTOM) ? 0 : spec.baseMarginWidth, 
@@ -407,7 +420,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                 // margin corner faces
                 {
                     IMutablePolygon tri = Poly.mutable(template, 3);
-                    tri.setSurfaceInstance(SURFACE_MAIN.unitInstance);
+                    tri.setSurfaceInstance(INSTANCE_MAIN);
                     tri.setupFaceQuad(face, 
                             new FaceVertex(spec.baseMarginWidth, 1 - spec.baseMarginWidth, 0),
                             new FaceVertex(spec.baseMarginWidth, 1, 0),
@@ -417,7 +430,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                 }
                 {
                     IMutablePolygon tri = Poly.mutable(template, 3);
-                    tri.setSurfaceInstance(SURFACE_MAIN.unitInstance);
+                    tri.setSurfaceInstance(INSTANCE_MAIN);
                     tri.setupFaceQuad(face, 
                             new FaceVertex(1 - spec.baseMarginWidth, 1, 0),  
                             new FaceVertex(1 - spec.baseMarginWidth, 1 - spec.baseMarginWidth, 0), 
@@ -614,6 +627,12 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     public static void setCutCount(int cutCount, ISuperModelState modelState)
     {
         modelState.setStaticShapeBits(STATE_CUT_COUNT.setValue(cutCount, modelState.getStaticShapeBits()));
+    }
+
+    @Override
+    public boolean hasLampSurface(ISuperModelState modelState)
+    {
+        return true;
     }
  
 }

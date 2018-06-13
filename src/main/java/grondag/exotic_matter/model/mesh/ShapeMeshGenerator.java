@@ -1,18 +1,13 @@
 package grondag.exotic_matter.model.mesh;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.painting.IQuadColorizer;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -32,43 +27,22 @@ public abstract class ShapeMeshGenerator
     /** bits flags used by ModelState to know which optional state elements are needed by this shape */
     private final int stateFlags;
     
-    /** Surfaces that compose the model. */
-    private final List<Surface> surfaces;
-    
     /**
      * When shape is changed on ModelState, the per-shape bits will be
      * set to this value.  Only need to change if shape needs some preset state.
      */
     public final long defaultShapeStateBits;
     
-    /**
-     * True if it is possible for this generator to output a lamp surface.
-     */
-    protected final boolean hasAnyLampSurface;
-    
-    protected ShapeMeshGenerator(StateFormat stateFormat, int stateFlags, Surface... surfaces)
+    protected ShapeMeshGenerator(StateFormat stateFormat, int stateFlags)
     {
-        this(stateFormat, stateFlags, 0L, surfaces);
+        this(stateFormat, stateFlags, 0L);
     }
     
-    protected ShapeMeshGenerator(StateFormat stateFormat, int stateFlags, long defaultShapeStateBits, Surface... surfaces)
+    protected ShapeMeshGenerator(StateFormat stateFormat, int stateFlags, long defaultShapeStateBits)
     {
         this.stateFormat = stateFormat;
         this.stateFlags = stateFlags;
-        this.surfaces = new ImmutableList.Builder<Surface>()
-                .add(surfaces).build();
         this.defaultShapeStateBits = defaultShapeStateBits;
-        
-        boolean hasLamp = false;
-        for(Surface s : surfaces)
-        {
-            if(s.surfaceType == SurfaceType.LAMP)
-            {
-                hasLamp = true;
-                break;
-            }
-        }
-        this.hasAnyLampSurface = hasLamp;
     }
     
     /**
@@ -131,13 +105,11 @@ public abstract class ShapeMeshGenerator
     
     /**
      * True if shape mesh generator will output lamp surface quads
-     * with the given model state. Default implementation
-     * simply looks for presence of any lamp surface.
+     * with the given model state. Used by model state to detect
+     * if model has translucent geometry and possibly other qualitative 
+     * attributes without generating a mesh.
      */
-    public boolean hasLampSurface(ISuperModelState modelState)
-    {
-        return this.hasAnyLampSurface;
-    }
+    public abstract boolean hasLampSurface(ISuperModelState modelState);
     
     /**
      * Override to true for blocks like stairs and wedges.
@@ -153,10 +125,5 @@ public abstract class ShapeMeshGenerator
     public int getStateFlags(ISuperModelState modelState)
     {
         return stateFlags;
-    }
-
-    public List<Surface> getSurfaces(ISuperModelState modelState)
-    {
-        return surfaces;
     }
 }
