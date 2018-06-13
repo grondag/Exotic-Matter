@@ -35,12 +35,9 @@ public abstract class AbstractWedgeMeshFactory extends ShapeMeshGenerator implem
     protected static final Surface SIDE_SURFACE = Surface.builder(BACK_AND_BOTTOM_SURFACE)
             .withAllowBorders(false)
             .build();
-    
-    // salt is for stairs, so cuts appear different from top/front face
-    // wedges can't connect textures with adjacent flat blocks consistently anyway, so doesn't hurt them
+
     protected static final Surface TOP_SURFACE = Surface.builder(SIDE_SURFACE)
             .withIgnoreDepthForRandomization(true)
-            .withTextureSalt(1)
             .build();
 
     public AbstractWedgeMeshFactory()

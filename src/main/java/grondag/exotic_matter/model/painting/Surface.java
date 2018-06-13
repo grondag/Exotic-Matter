@@ -10,7 +10,6 @@ public class Surface
         private float uvWrapDistance;
         private boolean ignoreDepthForRandomization;
         private boolean allowBorders;
-        private int textureSalt;
         private boolean isLampGradient;
         private int layerDisabledFlags;
         
@@ -27,7 +26,6 @@ public class Surface
             this.uvWrapDistance = template.uvWrapDistance;
             this.ignoreDepthForRandomization = template.ignoreDepthForRandomization;
             this.allowBorders = template.allowBorders;
-            this.textureSalt = template.textureSalt;
             this.isLampGradient = template.isLampGradient;
             this.layerDisabledFlags = template.layerDisabledFlags;
         }
@@ -38,7 +36,6 @@ public class Surface
             this.uvWrapDistance = template.uvWrapDistance;
             this.ignoreDepthForRandomization = template.ignoreDepthForRandomization;
             this.allowBorders = template.allowBorders;
-            this.textureSalt = template.textureSalt;
             this.isLampGradient = template.isLampGradient;
             this.layerDisabledFlags = template.layerDisabledFlags;
         };
@@ -73,12 +70,6 @@ public class Surface
             return this;
         }
         
-        public final Builder withTextureSalt(int textureSalt)
-        {
-            this.textureSalt = textureSalt;
-            return this;
-        }
-        
         public final Builder withLampGradient(boolean isLampGradient)
         {
             this.isLampGradient = isLampGradient;
@@ -107,7 +98,7 @@ public class Surface
         public final Surface build()
         {
             return new Surface(topology, uvWrapDistance, ignoreDepthForRandomization, 
-                    allowBorders, textureSalt, isLampGradient, this.layerDisabledFlags);
+                    allowBorders, isLampGradient, this.layerDisabledFlags);
         }
         
         @Override
@@ -120,7 +111,6 @@ public class Surface
         public final float uvWrapDistance() { return this.uvWrapDistance; }
         public final boolean ignoreDepthForRandomization() { return this.ignoreDepthForRandomization; }
         public final boolean allowBorders() { return this.allowBorders; }
-        public final int textureSalt() { return this.textureSalt; }
         public final boolean isLampGradient() { return this.isLampGradient; }
         public final int layerDisabledFlags() { return this.layerDisabledFlags; }
     }
@@ -196,13 +186,6 @@ public class Surface
      */
     public final boolean allowBorders;
     
-    /**
-     * If non-zero, signals painter to randomize texture on this surface
-     * to be different from and not join with adjacent textures.
-     * Use to make cuts into the surface visually distance from adjacent surfaces. 
-     */
-    public final int textureSalt;
-    
     /** 
      * If true, generator will assign colors to vertexes to indicate proximity to lamp surface.
      * Vertices next to lamp have color WHITE and those away have color BLACK.
@@ -228,7 +211,6 @@ public class Surface
             float uvWrapDistance, 
             boolean ignoreDepthForRandomization, 
             boolean allowBorders, 
-            int textureSalt, 
             boolean isLampGradient,
             int layerDisabledFlags)
     {
@@ -236,7 +218,6 @@ public class Surface
         this.uvWrapDistance = uvWrapDistance;
         this.ignoreDepthForRandomization = ignoreDepthForRandomization;
         this.allowBorders = allowBorders;
-        this.textureSalt = textureSalt;
         this.isLampGradient = isLampGradient;
         this.layerDisabledFlags = layerDisabledFlags;
     }

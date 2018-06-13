@@ -180,6 +180,8 @@ public interface IMutablePolygon extends IPolygon
 
     void setShouldContractUVs(boolean shouldContractUVs);
 
+    void setTextureSalt(int textureSalt);
+    
     /**
      * Sets the face to be used for setupFace semantics
      */

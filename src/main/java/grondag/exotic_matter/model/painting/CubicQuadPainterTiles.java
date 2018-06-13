@@ -24,9 +24,9 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
         Rotation rotation = this.textureRotationForFace(quad.getNominalFace());
         int textureVersion = this.textureVersionForFace(quad.getNominalFace());
         
-        if(quad.getSurfaceInstance().textureSalt != 0)
+        if(quad.textureSalt() != 0)
         {
-            int saltHash = MathHelper.hash(quad.getSurfaceInstance().textureSalt);
+            int saltHash = MathHelper.hash(quad.textureSalt());
             rotation = Useful.offsetEnumValue(rotation, saltHash & 3);
             textureVersion = (textureVersion + (saltHash >> 2)) & this.texture.textureVersionMask();
         }

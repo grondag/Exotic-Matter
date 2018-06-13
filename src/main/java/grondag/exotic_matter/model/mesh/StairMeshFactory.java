@@ -100,6 +100,9 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_SURFACE);
+        // salt is so cuts appear different from top/front face
+        // wedges can't connect textures with adjacent flat blocks consistently anyway, so doesn't hurt them
+        quad.setTextureSalt(1);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.0, 0.0, 0.5, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
@@ -112,6 +115,7 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_SURFACE);
+        quad.setTextureSalt(1);
         quad.setupFaceQuad(EnumFacing.WEST, 0.5, 0.0, 1.0, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);

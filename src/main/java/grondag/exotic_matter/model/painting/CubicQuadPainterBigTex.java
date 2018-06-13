@@ -52,8 +52,8 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
             int depthAndSpeciesHash = quad.getSurfaceInstance().ignoreDepthForRandomization
-                    ? quad.getSurfaceInstance().textureSalt 
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.getSurfaceInstance().textureSalt << 12));
+                    ? quad.textureSalt()
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.textureSalt() << 12));
             
 
             
@@ -96,9 +96,9 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             
          // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
-            int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.getSurfaceInstance().textureSalt == 0
+            int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.textureSalt() == 0
                     ? 0 
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.getSurfaceInstance().textureSalt << 8));
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.textureSalt() << 8));
 
             quad.setTextureName(this.texture.getTextureName((this.textureVersionForFace(quad.getNominalFace()) + depthHash) & this.texture.textureVersionMask()));
             

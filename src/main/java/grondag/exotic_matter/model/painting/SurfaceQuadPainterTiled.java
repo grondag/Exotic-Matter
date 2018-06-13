@@ -36,7 +36,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         
         final Surface surfIn = quad.getSurfaceInstance();
         final EnumFacing face = quad.getNominalFace();
-        final int salt = (surfIn.textureSalt << 3) + (face == null ? 0 : face.ordinal());
+        final int salt = (quad.textureSalt() << 3) + (face == null ? 0 : face.ordinal());
         
         /**
          * The smallest UV distance that can be tiled with single texture.

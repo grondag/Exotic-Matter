@@ -40,6 +40,15 @@ public interface IPolygon
     public @Nullable String getTextureName();
 
     /**
+     * If non-zero, signals painter to randomize texture on this surface
+     * to be different from and not join with adjacent textures.<p>
+     * 
+     * Enables texture randomization on painted surfaces that don't have position information.
+     * Populated by mesh generator if applicable.  Supports values 0-255.
+     */
+    public int textureSalt();
+    
+    /**
      * Gets the face to be used for setupFace semantics.  
      * Is a general facing but does NOT mean poly is actually on that face.
      */

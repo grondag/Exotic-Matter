@@ -23,7 +23,8 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
     protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
-
+    protected static final BitPacker<AbstractPolygon>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
+    
     protected static final long DEFAULT_BITS;
     static
     {
@@ -73,6 +74,18 @@ public abstract class AbstractPolygon implements IMutablePolygon
         this.textureName = textureName;
     }
 
+    @Override
+    public int textureSalt()
+    {
+        return SALT_BITS.getValue(this);
+    }
+
+    @Override
+    public void setTextureSalt(int textureSalt)
+    {
+        SALT_BITS.setValue(textureSalt, this);
+    }
+    
     @Override
     public Rotation getRotation()
     {
