@@ -9,9 +9,9 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.CubeInputs;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -27,7 +27,9 @@ import net.minecraft.world.World;
 
 public class CubeMeshFactory extends ShapeMeshGenerator
 {
-    private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    private static final Surface SURFACE_MAIN = Surface.builder(SurfaceTopology.CUBIC)
+            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
+            .build();
     
     /** never changes so may as well save it */
     private final List<IPolygon> cachedQuads;
@@ -55,7 +57,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         result.u1 = 1;
         result.v1 = 1;
         result.isOverlay = false;
-        result.surfaceInstance = SURFACE_MAIN.unitInstance;
+        result.surfaceInstance = SURFACE_MAIN;
         
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
        

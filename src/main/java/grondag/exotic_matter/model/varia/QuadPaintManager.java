@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.painting.QuadPainterFactory;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
@@ -44,7 +44,7 @@ public class QuadPaintManager
              = new ArrayDeque<SimpleUnorderedArrayList<QuadPainter>>(8);
         
         
-        private final IdentityHashMap<SurfaceInstance, SimpleUnorderedArrayList<QuadPainter>> surfaces
+        private final IdentityHashMap<Surface, SimpleUnorderedArrayList<QuadPainter>> surfaces
             = new IdentityHashMap<>();
         
         private void clear()
@@ -57,7 +57,7 @@ public class QuadPaintManager
             surfaces.clear();
         }
         
-        private SimpleUnorderedArrayList<QuadPainter> paintersForSurface(SurfaceInstance surface)
+        private SimpleUnorderedArrayList<QuadPainter> paintersForSurface(Surface surface)
         {
             SimpleUnorderedArrayList<QuadPainter> result = surfaces.get(surface);
             if(result == null)

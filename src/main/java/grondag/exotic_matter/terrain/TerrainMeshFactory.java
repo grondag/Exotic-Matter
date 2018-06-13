@@ -19,9 +19,7 @@ import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
 import grondag.exotic_matter.model.painting.IQuadColorizer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -46,8 +44,14 @@ import net.minecraft.world.World;
 
 public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
-    private static final SurfaceInstance SURFACE_TOP = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance.withAllowBorders(false).withIgnoreDepthForRandomization(true);
-    private static final SurfaceInstance SURFACE_SIDE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance.withAllowBorders(false);
+    private static final Surface SURFACE_TOP = Surface.builder(SurfaceTopology.CUBIC)
+            .withAllowBorders(false)
+            .withIgnoreDepthForRandomization(true)
+            .build();
+    
+    private static final Surface SURFACE_SIDE = Surface.builder(SurfaceTopology.CUBIC)
+            .withAllowBorders(false)
+            .build();
 
     private static final AxisAlignedBB[] COLLISION_BOUNDS =
         {
@@ -938,7 +942,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, SurfaceInstance surface)
+    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
     {
         return TerrainColorizer.INSTANCE;
     }

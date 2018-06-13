@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.primitives.FaceQuadInputs;

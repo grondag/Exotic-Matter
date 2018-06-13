@@ -13,9 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -37,7 +35,7 @@ import net.minecraft.util.math.MathHelper;
 
 public interface IPolygon
 {
-    SurfaceInstance NO_SURFACE = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC).unitInstance;
+    Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
     public @Nullable String getTextureName();
 
@@ -139,7 +137,7 @@ public interface IPolygon
 
     public BlockRenderLayer getRenderPass();
 
-    public SurfaceInstance getSurfaceInstance();
+    public Surface getSurfaceInstance();
 
     public int vertexCount();
     

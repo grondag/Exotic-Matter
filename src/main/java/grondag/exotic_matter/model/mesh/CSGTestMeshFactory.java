@@ -9,9 +9,9 @@ import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.CSG.CSGMesh;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
@@ -29,8 +29,12 @@ import net.minecraft.world.World;
 
 public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
-    private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static final Surface SURFACE_LAMP = new Surface(SurfaceType.LAMP, SurfaceTopology.CUBIC);
+    private static final Surface SURFACE_MAIN = Surface.builder(SurfaceTopology.CUBIC)
+            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
+            .build();
+    private static final Surface SURFACE_LAMP = Surface.builder(SurfaceTopology.CUBIC)
+            .withEnabledLayers(PaintLayer.LAMP)
+            .build();
     
     
     /** never changes so may as well save it */
@@ -52,7 +56,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     {
         IMutablePolygon template = Poly.mutable(4);
         template.setLockUV(true);
-        template.setSurfaceInstance(SURFACE_MAIN.unitInstance);
+        template.setSurfaceInstance(SURFACE_MAIN);
   
       
       //union opposite overlapping coplanar faces
@@ -75,7 +79,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 
       
       Collection<IPolygon> quadsA = MeshHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
-      template.setSurfaceInstance(SURFACE_LAMP.unitInstance);
+      template.setSurfaceInstance(SURFACE_LAMP);
       Collection<IPolygon> quadsB = MeshHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));

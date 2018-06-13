@@ -9,10 +9,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
@@ -29,17 +28,20 @@ import net.minecraft.world.World;
 public abstract class AbstractWedgeMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
 
-    private static final Surface BACK_AND_BOTTOM = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static final Surface SIDES = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static final Surface TOP = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
+    protected static final Surface BACK_AND_BOTTOM_SURFACE = Surface.builder(SurfaceTopology.CUBIC)
+            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
+            .build();
     
-    protected static final SurfaceInstance BACK_AND_BOTTOM_INSTANCE = BACK_AND_BOTTOM.unitInstance;
-    protected static final SurfaceInstance SIDE_INSTANCE = SIDES.unitInstance.withAllowBorders(false);
+    protected static final Surface SIDE_SURFACE = Surface.builder(BACK_AND_BOTTOM_SURFACE)
+            .withAllowBorders(false)
+            .build();
     
     // salt is for stairs, so cuts appear different from top/front face
     // wedges can't connect textures with adjacent flat blocks consistently anyway, so doesn't hurt them
-    protected static final SurfaceInstance TOP_INSTANCE = TOP.unitInstance.withIgnoreDepthForRandomization(true).withAllowBorders(false).withTextureSalt(1);
-    
+    protected static final Surface TOP_SURFACE = Surface.builder(SIDE_SURFACE)
+            .withIgnoreDepthForRandomization(true)
+            .withTextureSalt(1)
+            .build();
 
     public AbstractWedgeMeshFactory()
     {

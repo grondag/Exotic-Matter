@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.painting.IQuadColorizer;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -55,7 +55,7 @@ public abstract class ShapeMeshGenerator
      * Override if shape surfaces support/require custom colorizing logic
      */
     @Nonnull
-    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, SurfaceInstance surface)
+    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
     {
         return IQuadColorizer.DEFAULT;
     }

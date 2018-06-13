@@ -33,14 +33,14 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         IMutablePolygon quad = Poly.mutable(template);
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
       
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
@@ -51,19 +51,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         // a T-junction tends to mess about with the results.
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.0, 1.0, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
@@ -73,19 +73,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         // a T-junction tends to mess about with the results.
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.0, 0.5, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
         builder.add(quad);
@@ -93,25 +93,25 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.5, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(TOP_INSTANCE);
+        quad.setSurfaceInstance(TOP_SURFACE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.0, 0.0, 0.5, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.0, 0.0, 0.5, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(TOP_INSTANCE);
+        quad.setSurfaceInstance(TOP_SURFACE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.5, 0.0, 1.0, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);

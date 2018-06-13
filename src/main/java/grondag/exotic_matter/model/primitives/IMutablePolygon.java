@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -144,7 +144,7 @@ public interface IMutablePolygon extends IPolygon
     IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
     /** sets surface value and returns self for convenience */
-    IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance);
+    IMutablePolygon setSurfaceInstance(Surface surfaceInstance);
     
     /**
      * Enforces immutability of vertex geometry once a vertex is added

@@ -122,7 +122,7 @@ public class SuperDispatcher
                 // Need to scale UV on non-cubic surfaces to be within a 1 block boundary.
                 // This causes breaking textures to be scaled to normal size.
                 // If we didn't do this, bigtex block break textures would appear abnormal.
-                if(mutable.getSurfaceInstance().topology() == SurfaceTopology.TILED)
+                if(mutable.getSurfaceInstance().topology == SurfaceTopology.TILED)
                 {
                     // This is simple for tiled surface because UV scale is always 1.0
                     mutable.setMinU(0);

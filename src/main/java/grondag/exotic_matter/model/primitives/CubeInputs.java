@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
@@ -18,7 +18,7 @@ public class CubeInputs{
     public boolean isOverlay = false;
     public boolean isItem = false;
     public boolean isFullBrightness = false;
-    public SurfaceInstance surfaceInstance;
+    public Surface surfaceInstance;
     
     public CubeInputs()
     {

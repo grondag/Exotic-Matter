@@ -8,9 +8,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
@@ -29,7 +29,10 @@ import net.minecraft.world.World;
 
 public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
-    private static final Surface SURFACE_MAIN = new Surface(SurfaceType.MAIN, SurfaceTopology.TILED);
+    private static final Surface SURFACE_MAIN = Surface.builder(SurfaceTopology.TILED)
+            .withAllowBorders(false)
+            .withDisabledLayers(PaintLayer.LAMP, PaintLayer.CUT)
+            .build();
     
     /** never changes so may as well save it */
     private final Collection<IPolygon> cachedQuads;
@@ -50,7 +53,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     {
         IMutablePolygon template = Poly.mutable(4);
         template.setLockUV(false);
-        template.setSurfaceInstance(SURFACE_MAIN.unitInstance);
+        template.setSurfaceInstance(SURFACE_MAIN);
   
         Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
       

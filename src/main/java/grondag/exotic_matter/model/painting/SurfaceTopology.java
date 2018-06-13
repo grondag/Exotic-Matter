@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 /**
  * Used by painters to know how to UV map a surface for painting.
  */

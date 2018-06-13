@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
@@ -35,7 +34,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         final boolean uFlipped = quad.getMaxU() < quad.getMinU();
         final boolean vFlipped = quad.getMaxV() < quad.getMinV();
         
-        final SurfaceInstance surfIn = quad.getSurfaceInstance();
+        final Surface surfIn = quad.getSurfaceInstance();
         final EnumFacing face = quad.getNominalFace();
         final int salt = (surfIn.textureSalt << 3) + (face == null ? 0 : face.ordinal());
         

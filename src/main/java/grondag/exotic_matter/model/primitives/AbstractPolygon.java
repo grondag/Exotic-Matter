@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.painting.Surface.SurfaceInstance;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.ColorHelper;
 import grondag.exotic_matter.world.Rotation;
@@ -45,7 +45,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
 
     protected @Nullable Vec3f faceNormal;
     protected @Nullable String textureName;
-    protected SurfaceInstance surfaceInstance = IPolygon.NO_SURFACE;
+    protected Surface surfaceInstance = IPolygon.NO_SURFACE;
     
     protected void copyProperties(IPolygon fromObject)
     {
@@ -148,7 +148,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
     
     @Override
-    public SurfaceInstance getSurfaceInstance()
+    public Surface getSurfaceInstance()
     {
         return surfaceInstance;
     }
@@ -245,7 +245,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
     
     @Override
-    public IMutablePolygon setSurfaceInstance(SurfaceInstance surfaceInstance)
+    public IMutablePolygon setSurfaceInstance(Surface surfaceInstance)
     {
         this.surfaceInstance = surfaceInstance;
         return this;

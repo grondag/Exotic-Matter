@@ -12,9 +12,9 @@ import javax.vecmath.Matrix4f;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.painting.SurfaceType;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
@@ -32,8 +32,16 @@ import net.minecraft.world.World;
 
 public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
-    private static Surface TOP_AND_BOTTOM = new Surface(SurfaceType.MAIN, SurfaceTopology.CUBIC);
-    private static Surface SIDES = new Surface(SurfaceType.CUT, SurfaceTopology.CUBIC);
+    // This may not be the right setup - refactored surfaces at a time this wasn't being actively used.
+    protected static Surface TOP_AND_BOTTOM_SURFACE = Surface.builder(SurfaceTopology.CUBIC)
+            .withEnabledLayers(PaintLayer.BASE, PaintLayer.MIDDLE, PaintLayer.OUTER)
+            .withAllowBorders(false)
+            .build();
+    
+    protected static Surface SIDE_SURFACE = Surface.builder(SurfaceTopology.CUBIC)
+            .withEnabledLayers(PaintLayer.CUT)
+            .withAllowBorders(false)
+            .build();
     
     public StackedPlatesMeshFactory()
     {
@@ -53,7 +61,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         IMutablePolygon quad = Poly.mutable(template);
-        quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
+        quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         quad.transform(matrix);
@@ -62,7 +70,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
             quad = Poly.mutable(template);
-            quad.setSurfaceInstance(SIDES.unitInstance);
+            quad.setSurfaceInstance(SIDE_SURFACE);
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             quad.transform(matrix);
@@ -70,7 +78,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         }
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(TOP_AND_BOTTOM.unitInstance);
+        quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         quad.transform(matrix);

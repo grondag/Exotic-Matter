@@ -34,21 +34,21 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         IMutablePolygon quad = Poly.mutable(template);
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
       
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_INSTANCE);
+        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 1, 0),
@@ -59,7 +59,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(SIDE_INSTANCE);
+        quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(EnumFacing.DOWN,
                 new FaceVertex(0, 0, 0),
@@ -70,7 +70,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         builder.add(quad);
         
         quad = Poly.mutable(template);
-        quad.setSurfaceInstance(TOP_INSTANCE);
+        quad.setSurfaceInstance(TOP_SURFACE);
         quad.setNominalFace(EnumFacing.SOUTH);
         quad.setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 1),
