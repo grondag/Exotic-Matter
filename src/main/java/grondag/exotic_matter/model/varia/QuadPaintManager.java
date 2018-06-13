@@ -69,7 +69,11 @@ public class QuadPaintManager
                 for(PaintLayer l : PaintLayer.VALUES)
                 {
                     if(modelState.isLayerEnabled(l) && !surface.isLayerDisabled(l))
-                        result.add(QuadPainterFactory.getPainterForSurface(modelState, surface, l));
+                    {
+                        QuadPainter p = QuadPainterFactory.getPainterForSurface(modelState, surface, l);
+                        if(p != null)
+                            result.add(p);
+                    }
                 }
                         
                 surfaces.put(surface, result);

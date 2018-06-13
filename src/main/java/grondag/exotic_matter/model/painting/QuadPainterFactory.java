@@ -1,12 +1,14 @@
 package grondag.exotic_matter.model.painting;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TextureScale;
 
 public class QuadPainterFactory
 {
-    public static QuadPainter getPainterForSurface(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+    public static @Nullable QuadPainter getPainterForSurface(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         ITexturePalette texture = modelState.getTexture(paintLayer);
         
@@ -22,13 +24,13 @@ public class QuadPainterFactory
                 return new SurfaceQuadPainterTiled(modelState, surface, paintLayer);
                 
             case BORDER_13:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
+                return null;
                 
             case MASONRY_5:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
+                return null;
                 
             default:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
+                return null;
             }
             
         case CUBIC:
@@ -48,11 +50,11 @@ public class QuadPainterFactory
                 return new CubicQuadPainterMasonry(modelState, surface, paintLayer);  
                 
             default:
-                return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
+                return null;
             }
 
         default:
-            return QuadPainter.makeNullQuadPainter(modelState, surface, paintLayer);
+            return null;
         }
     }
 }

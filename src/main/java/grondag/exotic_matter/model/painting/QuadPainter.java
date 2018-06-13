@@ -42,16 +42,6 @@ public abstract class QuadPainter
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
     
-    /** for null painter only */
-    @SuppressWarnings("null")
-    private QuadPainter()
-    {
-        this.modelState = null;
-        this.surface = null;
-        this.paintLayer = null;
-        this.texture = null;
-    }
-
     protected boolean isQuadValidForPainting(IPolygon inputQuad)
     {
         return !inputQuad.getSurfaceInstance().isLayerDisabled(this.paintLayer);
@@ -105,34 +95,6 @@ public abstract class QuadPainter
             }
         }
         target.accept(inputQuad);
-    }
-
-    public static QuadPainter makeNullQuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
-    {
-        return NullQuadPainter.INSTANCE;
-    }
-    
-    public static class NullQuadPainter extends QuadPainter
-    {
-
-        private static final NullQuadPainter INSTANCE = new NullQuadPainter();
-        
-        private NullQuadPainter()
-        {
-            super();
-        };
-        
-        @Override
-        protected boolean isQuadValidForPainting(IPolygon inputQuad)
-        {
-            return false;
-        }
-        
-        @Override
-        protected void paintQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
-        {
-        }
-        
     }
     
     /** 
