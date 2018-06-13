@@ -5,12 +5,11 @@ import net.minecraft.util.text.translation.I18n;
 
 public enum PaintLayer
 {
-    
     /** 
      * Textures the MAIN surface.  
      * Must always be present.
      */
-    BASE(0, SurfaceType.MAIN),
+    BASE(SurfaceType.MAIN),
     
     /**
      * Textures the MAIN and CUT surfaces.  
@@ -21,7 +20,7 @@ public enum PaintLayer
      * Individual quads can be solid or translucent, shaded or lit.
      * Has separate color.
      */
-    MIDDLE(1, SurfaceType.MAIN),
+    MIDDLE(SurfaceType.MAIN),
     
     /**
       * Textures the MAIN surface only.  
@@ -32,7 +31,7 @@ public enum PaintLayer
      * Individual quads can be solid or translucent, shaded or lit.
      * Has separate color.
      */
-    OUTER(2, SurfaceType.MAIN),
+    OUTER(SurfaceType.MAIN),
     
     /**
      * Textures the LAMP surface.  
@@ -40,7 +39,7 @@ public enum PaintLayer
      * Middle z-position.
      * Has separate color.
      */
-    LAMP(3, SurfaceType.LAMP),
+    LAMP(SurfaceType.LAMP),
     
     /**
      * Textures the CUT surface. 
@@ -48,39 +47,19 @@ public enum PaintLayer
      * Use static index (ordinal) for texture and dyamic index for color, lighting.
      * Must always be present.
      */
-    CUT(0, SurfaceType.CUT);
+    CUT(SurfaceType.CUT);
     
-    /** see {@link #dynamicIndex} */
-    public static final int DYNAMIC_SIZE = 4;
 
-    /** Does not include the CUT layer */
-    public static final PaintLayer DYNAMIC_VALUES[];
-//    public 
-    
     /** slightly more convenient than values().length, also more clear - includes CUT in addition to dynamic values*/
-    public static final int STATIC_SIZE;
+    public static final int SIZE;
     
     /** Does include the CUT layer. Sane as values(), but more clear. */
-    public static final PaintLayer STATIC_VALUES[];
+    public static final PaintLayer VALUES[];
     static
     {
-        STATIC_SIZE = values().length;
-        
-        DYNAMIC_VALUES = new PaintLayer[DYNAMIC_SIZE];
-        DYNAMIC_VALUES[BASE.ordinal()] = BASE;
-        DYNAMIC_VALUES[MIDDLE.ordinal()] = MIDDLE;
-        DYNAMIC_VALUES[OUTER.ordinal()] = OUTER;
-        DYNAMIC_VALUES[LAMP.ordinal()] = LAMP;
-        
-        STATIC_VALUES = values();
+        SIZE = values().length;
+        VALUES = values();
     }
-    
-    /** 
-     * There are five layers, but BOTTOM and CUT share the same color, lighting etc.
-     * So when enumerating those attributes we only have four.
-     * Use this to index which of those four apply to this value.
-     */
-    public final int dynamicIndex;
     
     public final SurfaceType surfaceType;
     
@@ -89,9 +68,8 @@ public enum PaintLayer
      */
     public final String tagName;
     
-    private PaintLayer(int colorIndex, SurfaceType surfaceType)
+    private PaintLayer(SurfaceType surfaceType)
     {
-        this.dynamicIndex = colorIndex;
         this.surfaceType = surfaceType;
         this.tagName = NBTDictionary.claim("tex_" + this.name().toLowerCase());
     }

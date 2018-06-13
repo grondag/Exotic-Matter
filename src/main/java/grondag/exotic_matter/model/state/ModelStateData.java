@@ -39,18 +39,18 @@ public class ModelStateData
     public static final BitPacker<ModelState> PACKER_LAYER_CUT = new BitPacker<ModelState>(m-> m.layerBitsCut, (m, b) -> m.layerBitsCut = b);
     
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>[] PACKER_LAYERS = (BitPacker<ModelState>[]) new BitPacker<?>[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>[] PACKER_LAYERS = (BitPacker<ModelState>[]) new BitPacker<?>[PaintLayer.SIZE];
     
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_COLOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_COLOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.BooleanElement[] PAINT_IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.BooleanElement[] PAINT_IS_TRANSLUCENT = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_ALPHA = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_ALPHA = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT= (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.STATIC_SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT= (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
 
     public static final BitPacker<ModelState> PACKER_SHAPE_BLOCK = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
     public static final BitPacker<ModelState>.IntElement SPECIES = PACKER_SHAPE_BLOCK.createIntElement(16);

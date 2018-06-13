@@ -367,28 +367,28 @@ public class ModelState implements ISuperModelState
     public final int getColorARGB(PaintLayer layer)
     {
         final int alpha = this.isTranslucent(layer)
-                ? ModelStateData.PAINT_ALPHA[layer.dynamicIndex].getValue(this)
+                ? ModelStateData.PAINT_ALPHA[layer.ordinal()].getValue(this)
                 : 0xFF;
-        return (alpha << 24)  | ModelStateData.PAINT_COLOR[layer.dynamicIndex].getValue(this); 
+        return (alpha << 24)  | ModelStateData.PAINT_COLOR[layer.ordinal()].getValue(this); 
     }
 
     @Override
     public final void setColorRGB(PaintLayer layer, int rgb)
     {
-        ModelStateData.PAINT_COLOR[layer.dynamicIndex].setValue(rgb & 0xFFFFFF, this);
+        ModelStateData.PAINT_COLOR[layer.ordinal()].setValue(rgb & 0xFFFFFF, this);
         invalidateHashCode();
     }
 
     @Override
     public final int getAlpha(PaintLayer layer)
     {
-        return ModelStateData.PAINT_ALPHA[layer.dynamicIndex].getValue(this);
+        return ModelStateData.PAINT_ALPHA[layer.ordinal()].getValue(this);
     }
     
     @Override
     public final void setAlpha(PaintLayer layer, int translucency)
     {
-        ModelStateData.PAINT_ALPHA[layer.dynamicIndex].setValue(translucency & 0xFF, this);
+        ModelStateData.PAINT_ALPHA[layer.ordinal()].setValue(translucency & 0xFF, this);
         invalidateHashCode();
     }
     
@@ -497,13 +497,13 @@ public class ModelState implements ISuperModelState
     @Override
     public int getBrightness(PaintLayer layer)
     {
-        return ModelStateData.PAINT_LIGHT[layer.dynamicIndex].getValue(this);
+        return ModelStateData.PAINT_LIGHT[layer.ordinal()].getValue(this);
     }
 
     @Override
     public void setBrightness(PaintLayer layer, int brightness)
     {
-        ModelStateData.PAINT_LIGHT[layer.dynamicIndex].setValue(brightness, this);
+        ModelStateData.PAINT_LIGHT[layer.ordinal()].setValue(brightness, this);
         clearStateFlags();
         invalidateHashCode();
     }
