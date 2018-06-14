@@ -22,6 +22,10 @@ public abstract class QuadPainter
     protected final ITexturePalette texture;
     
     /**
+     * Assigns specific texture and texture rotation based on model state and information
+     * in the polygon and assigned surface. Also handles UV mapping for the assigned texture.
+     * Does <em>not</em> handle UV locking. (Done later.)<p>
+     * 
      * At this point {@link #isQuadValidForPainting(IPolygon)} has been checked and is true. 
      * Input quad will already be a clone and can be modified directly if expedient.
      * RenderLayer, lighting mode and color will already be set.<p>
@@ -30,7 +34,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void paintQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem);
+    protected abstract void textureQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem);
     
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
@@ -57,12 +61,10 @@ public abstract class QuadPainter
     
         IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
         result.setRenderPass(modelState.getRenderPass(paintLayer));
-        
-        modelState.getShape().meshFactory().colorizer(modelState, paintLayer, inputQuad.getSurfaceInstance()).recolorQuad(result, modelState, paintLayer);
      
         // TODO: Vary color slightly with species, as user-selected option
         
-        this.paintQuad(result, target, isItem);
+        this.textureQuad(result, target, isItem);
     }
     
     /**
@@ -94,6 +96,9 @@ public abstract class QuadPainter
                 break;
             }
         }
+        
+        modelState.getShape().meshFactory().colorizer(modelState, paintLayer, inputQuad.getSurfaceInstance()).process(inputQuad, modelState, paintLayer);
+
         target.accept(inputQuad);
     }
     

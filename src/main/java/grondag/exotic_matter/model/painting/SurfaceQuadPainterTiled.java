@@ -27,7 +27,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     }
 
     @Override
-    public void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
+    public void textureQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         

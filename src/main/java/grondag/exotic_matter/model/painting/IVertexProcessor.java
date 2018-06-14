@@ -3,21 +3,22 @@ package grondag.exotic_matter.model.painting;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
-import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.util.BlockRenderLayer;
 
-public interface IQuadColorizer
+/**
+ * Logic to apply color, brightness, glow and other attributes that depend
+ * on quad, surface, or model state to each vertex in the quad. 
+ * Applied after UV coordinates have been assigned. <p>
+ * 
+ * While intended to assign color values, could also be used to transform
+ * UV, normal or other vertex attributes.
+ */
+public interface IVertexProcessor
 {
-    public final static IQuadColorizer DEFAULT = new IQuadColorizer() {};
+    public final static IVertexProcessor DEFAULT = new IVertexProcessor() {};
     
-    public static int lampColor(int baseColor)
-    {
-        final int alpha = baseColor & 0xFF000000;
-        return Color.fromRGB(baseColor).lumify().RGB_int | alpha;
-    }
-    
-    public default void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
+    public default void process(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
     {
         final int brightness = modelState.getBrightness(paintLayer) * 17; // x17 because glow is 0-255
         

@@ -33,7 +33,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     }
     
     @Override
-    public final void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
+    public final void textureQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         assert quad.isLockUV() : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
         

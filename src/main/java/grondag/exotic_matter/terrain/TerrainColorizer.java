@@ -1,13 +1,13 @@
 package grondag.exotic_matter.terrain;
 
-import grondag.exotic_matter.model.painting.IQuadColorizer;
+import grondag.exotic_matter.model.painting.IVertexProcessor;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 
-public class TerrainColorizer implements IQuadColorizer
+public class TerrainColorizer implements IVertexProcessor
 {
     private static final int[] GRADIENT = { 0xffc00000, 0xfff30000, 0xfffa3754, 0xfffb9b39, 0xfffdda0f, 0xfffffba3};
     
@@ -25,7 +25,7 @@ public class TerrainColorizer implements IQuadColorizer
     }
     
     @Override
-    public void recolorQuad(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
+    public void process(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
     {
         final int cold = modelState.getColorARGB(paintLayer);
         

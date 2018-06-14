@@ -17,7 +17,7 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
-import grondag.exotic_matter.model.painting.IQuadColorizer;
+import grondag.exotic_matter.model.painting.IVertexProcessor;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
@@ -938,7 +938,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public IQuadColorizer colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
+    public IVertexProcessor colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
     {
         return TerrainColorizer.INSTANCE;
     }

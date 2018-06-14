@@ -102,5 +102,11 @@ public class ColorHelper
     
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
+
+    public static int lampColor(int baseColor)
+    {
+        final int alpha = baseColor & 0xFF000000;
+        return Color.fromRGB(baseColor).lumify().RGB_int | alpha;
+    }
 }
     

@@ -23,7 +23,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public void paintQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
+    public void textureQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.
