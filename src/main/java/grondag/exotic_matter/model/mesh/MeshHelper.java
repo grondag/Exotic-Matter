@@ -1,7 +1,9 @@
 package grondag.exotic_matter.model.mesh;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -13,6 +15,7 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.Vec3f;
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -246,42 +249,50 @@ public class MeshHelper
     }
 
     /**
+     * Collection version of {@link #makeBox(AxisAlignedBB, IPolygon, Consumer)}
+     */
+    @Deprecated // use the consumer version
+    public static Collection<IPolygon> makeBox(AxisAlignedBB box, IPolygon template)
+    {
+        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>(6);
+        makeBox(box, template, result);
+        return result;
+    }
+    
+    /**
      * This method is intended for boxes that fit within a single world block.
      * Typically used with locked UV coordinates.
      */
-    public static List<IPolygon> makeBox(AxisAlignedBB box, IPolygon template)
+    @SuppressWarnings("deprecation")
+    public static void makeBox(AxisAlignedBB box, IPolygon template, Consumer<IPolygon> target)
     {
-        List<IPolygon> retVal = new ArrayList<>(6);
-        
         IMutablePolygon quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
-        retVal.add(quad);
+        target.accept(quad);
     
         quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
-        retVal.add(quad);
+        target.accept(quad);
     
         //-X
         quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
-        retVal.add(quad);
+        target.accept(quad);
         
         //+X
         quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
-        retVal.add(quad);
+        target.accept(quad);
         
         //-Z
         quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
-        retVal.add(quad);
+        target.accept(quad);
         
         //+Z
         quad = Poly.mutable(template);
         quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
-        retVal.add(quad);
-        
-        return retVal;
+        target.accept(quad);
     }
     
     /**

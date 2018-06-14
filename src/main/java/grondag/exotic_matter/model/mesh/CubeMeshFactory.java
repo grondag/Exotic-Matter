@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.mesh;
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NONE;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -41,9 +42,10 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
-        return cachedQuads;
+        cachedQuads.forEach(target);
+        
     }
     
     private List<IPolygon> getCubeQuads()

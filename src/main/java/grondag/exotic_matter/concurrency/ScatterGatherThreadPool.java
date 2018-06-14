@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import grondag.exotic_matter.varia.AbstractUnorderedArrayList;
 import sun.misc.Unsafe;
 
 /**
@@ -500,7 +500,7 @@ public class ScatterGatherThreadPool
     public static class ArrayMappingConsumer<T,V>
     {
         private final BiConsumer<T, Consumer<V>> operation;
-        private final Consumer<SimpleUnorderedArrayList<V>> collector;
+        private final Consumer<AbstractUnorderedArrayList<V>> collector;
         
         protected final ThreadLocal<WorkerState> workerStates = new ThreadLocal<WorkerState>()
         {
@@ -517,7 +517,7 @@ public class ScatterGatherThreadPool
          * 
          * The collector MUST be thread safe.
          */
-        public ArrayMappingConsumer(BiConsumer<T, Consumer<V>> operation, Consumer<SimpleUnorderedArrayList<V>> collector)
+        public ArrayMappingConsumer(BiConsumer<T, Consumer<V>> operation, Consumer<AbstractUnorderedArrayList<V>> collector)
         {
             this.operation = operation;
             this.collector = collector;
@@ -537,7 +537,7 @@ public class ScatterGatherThreadPool
         /**
          * Holds the per-thread results and provides access to the mapping function.
          */
-        private class WorkerState extends SimpleUnorderedArrayList<V> implements Consumer<T>
+        private class WorkerState extends AbstractUnorderedArrayList<V> implements Consumer<T>
         {
             @Override
             public final void accept(@SuppressWarnings("null") T t)

@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.varia;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -109,10 +108,8 @@ public class SuperDispatcher
         @Override
         public QuadContainer load(ISuperModelState key) 
         {
-            Collection<IPolygon> quads = key.getShape().meshFactory().getShapeQuads(key);
-            if(quads.isEmpty()) return QuadContainer.EMPTY_CONTAINER;
             QuadContainer.Builder builder = new QuadContainer.Builder();
-            for(IPolygon q : quads)
+            key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
                 IMutablePolygon mutable = Poly.mutableCopyOf(q);
                 
@@ -132,7 +129,7 @@ public class SuperDispatcher
                 }
                 
                 builder.accept(mutable);
-            }
+            });
             return builder.build();
         }       
     }
@@ -179,7 +176,7 @@ public class SuperDispatcher
     private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
         final Consumer<IPolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
-        modelState.getShape().meshFactory().getShapeQuads(modelState).forEach(manager);
+        modelState.getShape().meshFactory().produceShapeQuads(modelState, manager);
     }
     
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack)

@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import grondag.exotic_matter.varia.AbstractUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
 
 
@@ -111,7 +111,7 @@ public class SimpleConcurrentList<T> implements Iterable<T>
      * Safe for concurrent use with other adds.
      * Not safe for concurrent use with other operations.
      */
-    public void addAll(SimpleUnorderedArrayList<T> items)
+    public void addAll(AbstractUnorderedArrayList<T> items)
     {
         int endExclusive = this.size.addAndGet(items.size());
         if(endExclusive > this.items.length)

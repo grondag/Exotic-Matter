@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.mesh;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -13,6 +14,7 @@ import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
+import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -72,9 +74,19 @@ public abstract class ShapeMeshGenerator
      */
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
-    @Nonnull
-    public abstract Collection<IPolygon> getShapeQuads(ISuperModelState modelState);
+    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target);
 
+    /**
+     * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible
+     */
+    @Deprecated
+    public final Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
+    {
+        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<IPolygon>();
+        this.produceShapeQuads(modelState, result);
+        return result;
+    }
+    
     /** Returns true if geometry is a full 1x1x1 cube. */
     public abstract boolean isCube(ISuperModelState modelState);
     

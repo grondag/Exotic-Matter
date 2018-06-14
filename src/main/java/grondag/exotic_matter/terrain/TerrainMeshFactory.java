@@ -3,6 +3,7 @@ package grondag.exotic_matter.terrain;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -199,8 +200,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
    
     @Override
-    public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
+        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) 
+            target = IPolygon.makeRecoloring(target);
+        
         TerrainState flowState = modelState.getTerrainState();
         
         Collection<IPolygon> mesh;
@@ -216,8 +220,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         }
         
         assert mesh != null : "Model cache returned null mesh";
-        
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         // scale all quads UVs according to position to match what surface painter expects
         // Any quads with a null face are assumed to be part of the top face
@@ -297,14 +299,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             // now expected to be 0-1, so scale to that standard
             mutableQuad.scaleQuadUV(1f/16f, 1f/16f);
             
-            builder.add(mutableQuad);
+            target.accept(mutableQuad);
         }
-
-        Collection<IPolygon> result = builder.build();
-        
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) IPolygon.recolor(result);
-
-        return result;
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];

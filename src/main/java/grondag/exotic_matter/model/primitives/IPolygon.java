@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.primitives;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -596,6 +597,12 @@ public interface IPolygon
         }
     
         quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+    }
+    
+    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
+    {
+        final Random r = ThreadLocalRandom.current();
+        return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
     }
     
 //    /**

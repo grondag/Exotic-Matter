@@ -1,11 +1,8 @@
 package grondag.exotic_matter.model.mesh;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.vecmath.Matrix4f;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
@@ -18,7 +15,7 @@ import net.minecraft.util.EnumFacing;
 public class WedgeMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.
@@ -31,21 +28,19 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-        
         IMutablePolygon quad = Poly.mutable(template);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
       
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
@@ -56,7 +51,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(1, 1, 0), 
                 EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
@@ -67,7 +62,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(0, 1, 0), 
                 EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_SURFACE);
@@ -79,9 +74,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(0, 1, 1), 
                 EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
-        
-        return builder.build();
+        target.accept(quad);
     }
 
     @Override

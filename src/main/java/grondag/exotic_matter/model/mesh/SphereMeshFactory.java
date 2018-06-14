@@ -4,6 +4,7 @@ import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NONE;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -44,9 +45,9 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     }
 
     @Override
-    public @Nonnull Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
-        return cachedQuads;
+        cachedQuads.forEach(target);
     }
     
     private Collection<IPolygon> generateQuads()

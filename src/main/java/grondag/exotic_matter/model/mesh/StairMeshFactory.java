@@ -1,11 +1,8 @@
 package grondag.exotic_matter.model.mesh;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.vecmath.Matrix4f;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -17,7 +14,7 @@ import net.minecraft.util.EnumFacing;
 public class StairMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.
@@ -30,21 +27,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-        
         IMutablePolygon quad = Poly.mutable(template);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
       
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         // Splitting sides into three quadrants vs one long strip plus one long quadrant
         // is necessary to avoid AO lighting artifacts.  AO is done by vertex, and having
@@ -54,19 +49,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.0, 1.0, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         // Splitting sides into three quadrants vs one long strip plus one long quadrant
         // is necessary to avoid AO lighting artifacts.  AO is done by vertex, and having
@@ -76,19 +71,19 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.0, 0.5, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         
         
@@ -96,7 +91,7 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.5, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_SURFACE);
@@ -105,22 +100,20 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
         quad.setTextureSalt(1);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.0, 0.0, 0.5, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.0, 0.0, 0.5, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
         
         quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_SURFACE);
         quad.setTextureSalt(1);
         quad.setupFaceQuad(EnumFacing.WEST, 0.5, 0.0, 1.0, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
-        builder.add(quad);
-        
-        return builder.build();
+        target.accept(quad);
     }
 
     @Override

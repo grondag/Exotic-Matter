@@ -1,12 +1,16 @@
 package grondag.exotic_matter.varia;
 
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 /**
  * Lightweight, non-concurrent collection-like class for managing small unordered lists.
  * Uses = for comparison.
  * @author grondag
  *
  */
-public class SimpleUnorderedArrayList<T> extends AbstractUnorderedArrayList<T>
+public class SimpleUnorderedArrayList<T> extends AbstractUnorderedArrayList<T> implements Consumer<T>
 {
     public SimpleUnorderedArrayList()
     {
@@ -34,6 +38,12 @@ public class SimpleUnorderedArrayList<T> extends AbstractUnorderedArrayList<T>
     public void removeIfPresent(T target)
     {
         super.remove(target);
+    }
+
+    @Override
+    public void accept(@Nullable T t)
+    {
+        this.add(t);
     }
 
 }

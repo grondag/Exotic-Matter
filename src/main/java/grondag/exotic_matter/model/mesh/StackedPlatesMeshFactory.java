@@ -5,6 +5,7 @@ import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_HAS_AX
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_SPECIES;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 import javax.vecmath.Matrix4f;
@@ -49,23 +50,24 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
                 STATE_FLAG_NEEDS_SPECIES | STATE_FLAG_HAS_AXIS | STATE_FLAG_HAS_AXIS_ORIENTATION);
     }
  
-    private List<IPolygon> makeQuads(int meta, Matrix4f matrix)
+    @Override
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
-        float height = (meta + 1) / 16;
+        final int meta = modelState.getMetaData();
+        final Matrix4f matrix = modelState.getMatrix4f();
+        final float height = (meta + 1) / 16;
         
         IMutablePolygon template = Poly.mutable(4);
         template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-        
         IMutablePolygon quad = Poly.mutable(template);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
+        target.accept(quad);
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
@@ -74,7 +76,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             quad.transform(matrix);
-            builder.add(quad);
+            target.accept(quad);
         }
         
         quad = Poly.mutable(template);
@@ -82,21 +84,13 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         quad.transform(matrix);
-        builder.add(quad);
-        
-        return builder.build();
+        target.accept(quad);
     }
     
     @Override
     public boolean isAdditive()
     {
         return true;
-    }
-
-    @Override
-    public @Nonnull List<IPolygon> getShapeQuads(ISuperModelState modelState)
-    {
-        return this.makeQuads(modelState.getMetaData(), modelState.getMatrix4f());
     }
 
     @Override
