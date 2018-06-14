@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.mesh.ModShapes;
+import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelState;

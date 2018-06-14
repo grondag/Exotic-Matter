@@ -4,7 +4,7 @@ package grondag.exotic_matter.model.state;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.mesh.ModelShape;
+import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.terrain.TerrainState;
@@ -23,7 +23,7 @@ public class ModelStateData
 {
     /** note that sign bit on core packer is reserved to persist static state during serialization */ 
     public static final BitPacker<ModelState> PACKER_CORE = new BitPacker<ModelState>(m-> m.coreBits, (m, b) -> m.coreBits = b);
-    public static final BitPacker<ModelState>.IntElement SHAPE = PACKER_CORE.createIntElement(ModelShape.MAX_SHAPES);
+    public static final BitPacker<ModelState>.IntElement SHAPE = PACKER_CORE.createIntElement(ModelShapes.MAX_SHAPES);
     public static final BitPacker<ModelState>.IntElement POS_X = PACKER_CORE.createIntElement(256);
     public static final BitPacker<ModelState>.IntElement POS_Y = PACKER_CORE.createIntElement(256);
     public static final BitPacker<ModelState>.IntElement POS_Z = PACKER_CORE.createIntElement(256);

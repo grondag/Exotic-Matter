@@ -3,9 +3,9 @@ package grondag.exotic_matter;
 import org.junit.Test;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.init.ModTextures;
-import grondag.exotic_matter.model.mesh.ModShapes;
-import grondag.exotic_matter.model.mesh.ModelShape;
+import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ModelState;
@@ -21,7 +21,7 @@ public class ModelStateTest
     @Test
     public void test()
     {
-        ExoticMatter.INSTANCE.info("Max shapes within current format: " + ModelShape.MAX_SHAPES);
+        ExoticMatter.INSTANCE.info("Max shapes within current format: " + ModelShapes.MAX_SHAPES);
         ExoticMatter.INSTANCE.info("core bits length = "  + ModelStateData.PACKER_CORE.bitLength());
         ExoticMatter.INSTANCE.info("layer bits length = "  + ModelStateData.PACKER_LAYER_BASE.bitLength());
         assert ModelStateData.PACKER_LAYER_BASE.bitLength() == ModelStateData.PACKER_LAYER_CUT.bitLength();

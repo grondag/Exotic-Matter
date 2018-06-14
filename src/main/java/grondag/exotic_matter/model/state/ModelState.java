@@ -27,6 +27,7 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
+import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
@@ -348,7 +349,7 @@ public class ModelState implements ISuperModelState
     @Override
     public ModelShape<?> getShape()
     {
-        return ModelShape.get(ModelStateData.SHAPE.getValue(this));
+        return ModelShapes.get(ModelStateData.SHAPE.getValue(this));
     }
 
     @Override
@@ -1020,7 +1021,7 @@ public class ModelState implements ISuperModelState
         this.deserializeFromInts(stateBits);
         
         // shape is serialized by name because registered shapes can change if mods/config change
-        ModelShape<?> shape = ModelShape.get(tag.getString(NBT_SHAPE));
+        ModelShape<?> shape = ModelShapes.get(tag.getString(NBT_SHAPE));
         if(shape != null) this.setShape(shape);
         
         // textures serialized by name because registered textures can change if mods/config change

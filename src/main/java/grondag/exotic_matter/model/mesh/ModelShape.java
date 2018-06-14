@@ -1,12 +1,6 @@
 package grondag.exotic_matter.model.mesh;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.state.MetaUsage;
@@ -14,80 +8,35 @@ import net.minecraft.util.text.translation.I18n;
 
 public class ModelShape<T extends ShapeMeshGenerator>
 {
-    public static final int MAX_SHAPES = 128;
-    
-    private static final HashMap<String, ModelShape<?>> allByName = new HashMap<>();
-    private static final ArrayList<ModelShape<?>> allByOrdinal = new ArrayList<>();
-    
     private static int nextOrdinal = 0;
-
+    
     private final Class<T> meshFactoryClass;
     private final boolean isAvailableInGui;
     private final MetaUsage metaUsage;
     private final String systemName;
     private final int ordinal;
+    private boolean factoryNeedLoad = true;
+    private @Nullable T factory = null;
     
-    public static <V extends ShapeMeshGenerator> ModelShape<V> create(String systemName, Class<V> meshFactoryClass, MetaUsage metaUsage, boolean isAvailableInGui)
-    {
-        return new ModelShape<V>(systemName, meshFactoryClass, metaUsage, isAvailableInGui);
-    }
-    
-    public static <V extends ShapeMeshGenerator> ModelShape<V> create(String systemName, Class<V> meshFactoryClass, MetaUsage metaUsage)
-    {
-        return new ModelShape<V>(systemName, meshFactoryClass, metaUsage);
-    }
-    
-    private ModelShape(String systemName, Class<T> meshFactoryClass, MetaUsage metaUsage, boolean isAvailableInGui)
+    ModelShape(String systemName, Class<T> meshFactoryClass, MetaUsage metaUsage, boolean isAvailableInGui)
     {
         this.meshFactoryClass = meshFactoryClass;
         this.ordinal = nextOrdinal++;
         this.systemName = systemName;
         this.metaUsage = metaUsage;
         this.isAvailableInGui = isAvailableInGui;
-        allByName.put(systemName, this);
-        if(this.ordinal < MAX_SHAPES)
-            allByOrdinal.add(this);
+        ModelShapes.allByName.put(systemName, this);
+        if(this.ordinal < ModelShapes.MAX_SHAPES)
+            ModelShapes.allByOrdinal.add(this);
         else
-            ExoticMatter.INSTANCE.warn("Model shape limit of %d exceeded.  Shape %s added but will not be rendered.", MAX_SHAPES, systemName);
-        
+            ExoticMatter.INSTANCE.warn("Model shape limit of %d exceeded.  Shape %s added but will not be rendered.", ModelShapes.MAX_SHAPES, systemName);
     }
     
-    private ModelShape(String systemName, Class<T> meshFactoryClass, MetaUsage metaUsage)
+    ModelShape(String systemName, Class<T> meshFactoryClass, MetaUsage metaUsage)
     {
         this(systemName, meshFactoryClass, metaUsage, true);
     }
-    
-    
-    @Nullable
-    public static ModelShape<?> get(String systemName)
-    {
-        return allByName.get(systemName);
-    }
-    
-    public static ModelShape<?> get(int ordinal)
-    {
-        return allByOrdinal.get(ordinal);
-    }
-    
-    private static List<ModelShape<?>> guiAvailableShapes = ImmutableList.of();
-    
-    public static List<ModelShape<?>> guiAvailableShapes()
-    {
-        if(guiAvailableShapes.isEmpty())
-        {
-            ImmutableList.Builder<ModelShape<?>> builder = ImmutableList.builder();
-            for(ModelShape<?> shape : allByOrdinal)
-            {
-                if(shape.isAvailableInGui) builder.add(shape);
-            }
-            guiAvailableShapes = builder.build();
-        }
-        return guiAvailableShapes;
-    }
-    
-    private boolean factoryNeedLoad = true;
-    private @Nullable T factory = null;
-    
+
     @SuppressWarnings("null")
     public T meshFactory()
     {

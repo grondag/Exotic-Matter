@@ -9,7 +9,7 @@ import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
 import grondag.exotic_matter.block.SuperSimpleBlock;
-import grondag.exotic_matter.model.mesh.ModShapes;
+import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.WorldLightOpacity;
 import grondag.exotic_matter.varia.Useful;
