@@ -14,7 +14,6 @@ import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NEEDS_TEXTURE_ROTATION;
 import static grondag.exotic_matter.model.state.ModelStateData.TEST_GETTER_STATIC;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -29,6 +28,8 @@ import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.painting.VertexProcessor;
+import grondag.exotic_matter.model.painting.VertexProcessors;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.texture.ITexturePalette;
@@ -58,6 +59,10 @@ public class ModelState implements ISuperModelState
 {
     private static final String NBT_MODEL_BITS = NBTDictionary.claim("modelState");
     private static final String NBT_SHAPE = NBTDictionary.claim("shape");
+    /**
+     * Stores string containing registry names of textures, vertex processors
+     */
+    private static final String NBT_LAYERS = NBTDictionary.claim("layers");
     
     /**
      * Removes model state from the tag if present.
@@ -67,7 +72,7 @@ public class ModelState implements ISuperModelState
         if(tag == null) return;
         tag.removeTag(NBT_MODEL_BITS);
         tag.removeTag(NBT_SHAPE);
-        for(PaintLayer l : PaintLayer.values()) tag.removeTag(l.tagName);
+        tag.removeTag(NBT_LAYERS);
     }
     
     private boolean isStatic = false;
@@ -469,6 +474,19 @@ public class ModelState implements ISuperModelState
         clearStateFlags();
     }
 
+    @Override
+    public void setVertexProcessor(PaintLayer layer, VertexProcessor vp)
+    {
+        ModelStateData.PAINT_VERTEX_PROCESSOR[layer.ordinal()].setValue(vp.ordinal, this);
+        invalidateHashCode();        
+    }
+    
+    @Override
+    public VertexProcessor getVertexProcessor(PaintLayer layer)
+    {
+        return VertexProcessors.get(ModelStateData.PAINT_VERTEX_PROCESSOR[layer.ordinal()].getValue(this));
+    }
+    
     @Override
     public int getBrightness(PaintLayer layer)
     {
@@ -1008,7 +1026,6 @@ public class ModelState implements ISuperModelState
         return new Matrix4d(this.getMatrix4f());
     }
     
-    
     @Override
     public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
@@ -1022,24 +1039,36 @@ public class ModelState implements ISuperModelState
         
         // shape is serialized by name because registered shapes can change if mods/config change
         ModelShape<?> shape = ModelShapes.get(tag.getString(NBT_SHAPE));
-        if(shape != null) this.setShape(shape);
+        if(shape != null)
+            ModelStateData.SHAPE.setValue(shape.ordinal(), this);
         
-        // textures serialized by name because registered textures can change if mods/config change
-        Arrays.stream(PaintLayer.values()).forEach(l -> deserializeTexture(tag, l));
-        
-        this.clearStateFlags();
-    }
-
-    /**
-     * Reads tag and applies to this model state if present.
-     * If no tag, does nothing, leaving this instance unchanged.
-     */
-    private void deserializeTexture(NBTTagCompound tag, PaintLayer layer)
-    {
-        if(tag.hasKey(layer.tagName))
+        // textures and vertex processors serialized by name because registered can change if mods/config change
+        String layers = tag.getString(NBT_LAYERS);
+        if(!(layers == null || layers.isEmpty()))
         {
-            this.setTexture(layer, TexturePaletteRegistry.get(tag.getString(layer.tagName)));
+            String[] names = layers.split(",");
+            if(names.length != 0)
+            {
+                int i = 0;
+                for(PaintLayer l : PaintLayer.VALUES)
+                {
+                    if(ModelStateData.PAINT_TEXTURE[l.ordinal()].getValue(this) != 0)
+                    {
+                        ITexturePalette tex = TexturePaletteRegistry.get(names[i++]);
+                        ModelStateData.PAINT_TEXTURE[l.ordinal()].setValue(tex.ordinal(), this);
+                        if(i == names.length) break;
+                    }
+                    
+                    if(ModelStateData.PAINT_VERTEX_PROCESSOR[l.ordinal()].getValue(this) != 0)
+                    {
+                        VertexProcessor vp = VertexProcessors.get(names[i++]);
+                        ModelStateData.PAINT_VERTEX_PROCESSOR[l.ordinal()].setValue(vp.ordinal, this);
+                        if(i == names.length) break;
+                    }
+                }
+            }
         }
+        this.clearStateFlags();
     }
 
     @Override
@@ -1050,21 +1079,26 @@ public class ModelState implements ISuperModelState
         // shape is serialized by name because registered shapes can change if mods/config change
         tag.setString(NBT_SHAPE, this.getShape().systemName());
         
-        // textures serialized by name because registered textures can change if mods/config change
-        for(PaintLayer l : PaintLayer.values()) serializeTexture(tag, l);
-    }
-    
-    /**
-     * Saves tag if this model state has a non-zero texture in the given layer.
-     * Otherwise does nothing.
-     */
-    private void serializeTexture(NBTTagCompound tag, PaintLayer layer)
-    {
-        ITexturePalette tex = this.getTexture(layer);
-        if(tex != TexturePaletteRegistry.NONE)
+        // textures and vertex processors serialized by name because registered can change if mods/config change
+        StringBuilder layers = new StringBuilder();
+        for(PaintLayer l : PaintLayer.VALUES)
         {
-            tag.setString(layer.tagName, tex.systemName());
+            if(ModelStateData.PAINT_TEXTURE[l.ordinal()].getValue(this) != 0)
+            {
+                if(layers.length() != 0)
+                    layers.append(",");
+                layers.append(this.getTexture(l).systemName());
+            }
+            
+            if(ModelStateData.PAINT_VERTEX_PROCESSOR[l.ordinal()].getValue(this) != 0)
+            {
+                if(layers.length() != 0)
+                    layers.append(",");
+                layers.append(this.getVertexProcessor(l).registryName);
+            }
         }
+        if(layers.length() != 0)
+            tag.setString(NBT_LAYERS, layers.toString());
     }
 
     @Override

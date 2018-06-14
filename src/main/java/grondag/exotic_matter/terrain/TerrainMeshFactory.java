@@ -17,8 +17,6 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
-import grondag.exotic_matter.model.painting.IVertexProcessor;
-import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.FaceVertex;
@@ -935,12 +933,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     public int getMetaData(ISuperModelState modelState)
     {
         return modelState.getTerrainState().getCenterHeight();
-    }
-
-    @Override
-    public IVertexProcessor colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
-    {
-        return TerrainColorizer.INSTANCE;
     }
 
     @Override

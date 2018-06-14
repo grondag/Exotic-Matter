@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.BinaryEnumSet;
 import net.minecraft.util.text.translation.I18n;
 
@@ -63,15 +62,6 @@ public enum PaintLayer
     
     public static BinaryEnumSet<PaintLayer> BENUMSET = new BinaryEnumSet<>(PaintLayer.class);
     
-    /**
-     * NBT Tag name used to save textures for this paint layer.
-     */
-    public final String tagName;
-    
-    private PaintLayer()
-    {
-        this.tagName = NBTDictionary.claim("tex_" + this.name().toLowerCase());
-    }
     
     public String localizedName()
     {

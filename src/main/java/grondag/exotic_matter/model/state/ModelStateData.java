@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.painting.VertexProcessors;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.terrain.TerrainState;
 import grondag.exotic_matter.varia.BitPacker;
@@ -50,7 +51,9 @@ public class ModelStateData
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT= (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
+    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
+    @SuppressWarnings("unchecked")
+    public static final BitPacker<ModelState>.IntElement[] PAINT_VERTEX_PROCESSOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
 
     public static final BitPacker<ModelState> PACKER_SHAPE_BLOCK = new BitPacker<ModelState>(m-> m.shapeBits0, (m, b) -> m.shapeBits0 = b);
     public static final BitPacker<ModelState>.IntElement SPECIES = PACKER_SHAPE_BLOCK.createIntElement(16);
@@ -87,6 +90,7 @@ public class ModelStateData
             PAINT_TEXTURE[i] = PACKER_LAYERS[i].createIntElement(TexturePaletteRegistry.MAX_PALETTES);
             PAINT_IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
             PAINT_LIGHT[i] = PACKER_LAYERS[i].createIntElement(16); 
+            PAINT_VERTEX_PROCESSOR[i] = PACKER_LAYERS[i].createIntElement(VertexProcessors.MAX_PROCESSORS); 
         }
         
         SHAPE_COMPARISON_MASK_0 = SHAPE.comparisonMask() 

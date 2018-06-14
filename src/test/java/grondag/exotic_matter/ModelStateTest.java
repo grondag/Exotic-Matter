@@ -10,6 +10,7 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
+import grondag.exotic_matter.terrain.VertexProcessorLava;
 import grondag.exotic_matter.world.CornerJoinBlockStateSelector;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockRenderLayer;
@@ -59,14 +60,12 @@ public class ModelStateTest
         state.setCornerJoin(CornerJoinBlockStateSelector.getJoinState(69));
         state.setAxisInverted(true);
         state.setStaticShapeBits(879579585L);
+        state.setVertexProcessor(PaintLayer.BASE, VertexProcessorLava.INSTANCE);
         
         NBTTagCompound persistedState = state.serializeNBT();
         
         ModelState reloadedState = new ModelState();
         reloadedState.deserializeNBT(persistedState);
-        
-        assert(state.equals(reloadedState));
-        assert(state.hashCode() == reloadedState.hashCode());
         
         assert(reloadedState.getShape() == ModShapes.COLUMN_SQUARE);
         assert(reloadedState.isStatic());
@@ -90,11 +89,15 @@ public class ModelStateTest
         assert(reloadedState.getSimpleJoin().getIndex() == CornerJoinBlockStateSelector.getJoinState(69).simpleJoin.getIndex());
         assert(reloadedState.isAxisInverted());
         assert(reloadedState.getStaticShapeBits() == 879579585L);
+        assert(reloadedState.getVertexProcessor(PaintLayer.BASE) == VertexProcessorLava.INSTANCE);
         RenderLayout rps = reloadedState.getRenderLayout();
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.SOLID) == true);
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.CUTOUT) == false);
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.CUTOUT_MIPPED) == false);
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.TRANSLUCENT) == true);
+        
+        assert(state.equals(reloadedState));
+        assert(state.hashCode() == reloadedState.hashCode());
     }
 
 }

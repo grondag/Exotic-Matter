@@ -11,6 +11,7 @@ import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.painting.VertexProcessor;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.texture.ITexturePalette;
@@ -311,4 +312,9 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     {
         this.setColorRGB(layer, colorMap.getColor(EnumColorMap.BASE));
     }
+
+    public void setVertexProcessor(PaintLayer layer, VertexProcessor vp);
+    
+    public VertexProcessor getVertexProcessor(PaintLayer layer);
+    
 }

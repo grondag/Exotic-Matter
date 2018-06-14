@@ -1,20 +1,28 @@
 package grondag.exotic_matter.terrain;
 
-import grondag.exotic_matter.model.painting.IVertexProcessor;
 import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.painting.VertexProcessor;
+import grondag.exotic_matter.model.painting.VertexProcessors;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 
-public class TerrainColorizer implements IVertexProcessor
+public class VertexProcessorLava extends VertexProcessor
 {
     private static final int[] GRADIENT = { 0xffc00000, 0xfff30000, 0xfffa3754, 0xfffb9b39, 0xfffdda0f, 0xfffffba3};
-    
 
-    public final static TerrainColorizer INSTANCE = new TerrainColorizer() {};
+    public final static VertexProcessorLava INSTANCE = new VertexProcessorLava() {};
     
-    private TerrainColorizer() {};
+    static
+    {
+        VertexProcessors.register(INSTANCE);
+    }
+    
+    private VertexProcessorLava()
+    {
+        super("lava");
+    }
     
     private static int glowColor(int glow)
     {

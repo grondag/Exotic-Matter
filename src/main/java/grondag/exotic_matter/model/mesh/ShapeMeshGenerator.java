@@ -6,9 +6,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.painting.IVertexProcessor;
-import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -51,16 +48,6 @@ public abstract class ShapeMeshGenerator
      * Override if shape has any kind of orientation to it that can be selected during placement.
      */
     public BlockOrientationType orientationType(ISuperModelState modelState) { return BlockOrientationType.NONE; } 
-    
-    
-    /**
-     * Override if shape surfaces support/require custom colorizing logic
-     */
-    @Nonnull
-    public IVertexProcessor colorizer(ISuperModelState modelState, PaintLayer layer, Surface surface)
-    {
-        return IVertexProcessor.DEFAULT;
-    }
     
     @Nonnull
     public abstract ICollisionHandler collisionHandler();

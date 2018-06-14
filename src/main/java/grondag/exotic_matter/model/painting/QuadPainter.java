@@ -97,7 +97,7 @@ public abstract class QuadPainter
             }
         }
         
-        modelState.getShape().meshFactory().colorizer(modelState, paintLayer, inputQuad.getSurfaceInstance()).process(inputQuad, modelState, paintLayer);
+        modelState.getVertexProcessor(this.paintLayer).process(inputQuad, modelState, paintLayer);
 
         target.accept(inputQuad);
     }
