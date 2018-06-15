@@ -2,9 +2,6 @@ package grondag.exotic_matter.world;
 
 import net.minecraft.util.EnumFacing;
 
-/**
- * Corner bits indicate that a corner is needed, not that the corner is present. (These are normally inverse.)
- */
 public enum SimpleJoinFaceState
 {
     NO_FACE(0),
