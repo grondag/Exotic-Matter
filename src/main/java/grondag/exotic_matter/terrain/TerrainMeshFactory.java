@@ -48,7 +48,6 @@ import net.minecraft.world.World;
 public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
     private static final Surface SURFACE_TOP = Surface.builder(SurfaceTopology.CUBIC)
-            .withAllowBorders(false)
             .withIgnoreDepthForRandomization(true)
             .withDisabledLayers(PaintLayer.CUT)
             .build();

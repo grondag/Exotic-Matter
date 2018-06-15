@@ -114,14 +114,22 @@ public enum TextureLayout
     BIGTEX_ANIMATED (STATE_FLAG_NONE),
     
     /**
-     * Created for lava, consists a single texture, typically with multiple variants.
+     * Compact border texture on format, typically with multiple variants.
      * Each quadrant of the texture represents one quadrant of a face that can be connected.
      * All are present on same image. Each quadrant must be able to connect
      * with other quadrants in any (connecting) rotation or texture variation.<p>
      * 
      * Follows same naming convention as {@link #SIMPLE}.
      */
-    QUADRANT_CONNECTED (STATE_FLAG_NEEDS_CORNER_JOIN | STATE_FLAG_NEEDS_SPECIES);
+    QUADRANT_CONNECTED (STATE_FLAG_NEEDS_CORNER_JOIN | STATE_FLAG_NEEDS_SPECIES),
+    
+    /**
+     * Identical to {@link #QUADRANT_CONNECTED} but without the state flags that
+     * trigger corner join and species lookup in model state. Lava doesn't use
+     * these and needs a special quad painter that uses terrain state. Having a 
+     * separate is a simple way to select the specialized painter for lava.   
+     */
+    LAVA_CONNECTED (STATE_FLAG_NONE);
     
     private static String buildTextureName_X_8(TexturePallette texture, int offset)
     {
