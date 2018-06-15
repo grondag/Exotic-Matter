@@ -10,6 +10,8 @@ public class QuadPainterFactory
 {
     public static @Nullable QuadPainter getPainterForSurface(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
+        if(surface.isLayerDisabled(paintLayer)) return null;
+        
         ITexturePalette texture = modelState.getTexture(paintLayer);
         
         switch(surface.topology)
@@ -44,13 +46,22 @@ public class QuadPainterFactory
                         : new CubicQuadPainterBigTex(modelState, surface, paintLayer);
                 
             case BORDER_13:
-                 return new CubicQuadPainterBorders(modelState, surface, paintLayer);
+                 return surface.allowBorders
+                         ? new CubicQuadPainterBorders(modelState, surface, paintLayer)
+                         : null;
                 
             case MASONRY_5:
-                return new CubicQuadPainterMasonry(modelState, surface, paintLayer);
+                return surface.allowBorders
+                        ? new CubicQuadPainterMasonry(modelState, surface, paintLayer)
+                        : null;
             
             case QUADRANT_CONNECTED:
-                return new CubicQuadPainterQuadrants(modelState, surface, paintLayer);
+                return surface.allowBorders
+                        ? new CubicQuadPainterQuadrants(modelState, surface, paintLayer)
+                        : null;
+                
+            case LAVA_CONNECTED:
+                return new CubicQuadPainterLava(modelState, surface, paintLayer);
                 
             default:
                 return null;

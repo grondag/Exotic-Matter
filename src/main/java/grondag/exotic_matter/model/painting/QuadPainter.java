@@ -23,8 +23,10 @@ public abstract class QuadPainter
     
     /**
      * Assigns specific texture and texture rotation based on model state and information
-     * in the polygon and assigned surface. Also handles UV mapping for the assigned texture.
-     * Does <em>not</em> handle UV locking. (Done later.)<p>
+     * in the polygon and assigned surface. Also handles UV mapping for the assigned texture.<p>
+     * 
+     * Implementations can and should assume locked UV coordinates are assigned before 
+     * this is called if UV locking is enabled for the quad<p>
      * 
      * At this point {@link #isQuadValidForPainting(IPolygon)} has been checked and is true. 
      * Input quad will already be a clone and can be modified directly if expedient.
@@ -36,6 +38,19 @@ public abstract class QuadPainter
      */
     protected abstract void textureQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem);
     
+    /**
+     * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
+     * order to apply quandrant-style textures.  If true, quads will be split into quadrants 
+     * (if not already generated that way) before being passed to <em>all</em> painters.<p>
+     * 
+     * Must be done for all painters (not just quadrant painters) to prevent z-fighting during
+     * render caused by differences in FP rounding between to similar but not identical surfaces.<p>
+     */
+    public boolean requiresQuadrants()
+    {
+        return false;
+    }
+    
     public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         this.modelState = modelState;
@@ -46,10 +61,7 @@ public abstract class QuadPainter
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
     
-    protected boolean isQuadValidForPainting(IPolygon inputQuad)
-    {
-        return !inputQuad.getSurfaceInstance().isLayerDisabled(this.paintLayer);
-    }
+    protected abstract boolean isQuadValidForPainting(IPolygon inputQuad);
     
     /**
      * If isItem = true will bump out quads from block center to provide
@@ -60,6 +72,7 @@ public abstract class QuadPainter
         if(!isQuadValidForPainting(inputQuad)) return;
     
         IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
+        
         result.setRenderPass(modelState.getRenderPass(paintLayer));
      
         // TODO: Vary color slightly with species, as user-selected option
@@ -69,17 +82,10 @@ public abstract class QuadPainter
     
     /**
      * Call from paint quad in sub classes to return results.
-     * Handles UV Lock and item scaling, then adds to the output list.
+     * Handles item scaling, then adds to the output list.
      */
     protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
     {
-        if(inputQuad.isLockUV())
-        {
-            // if lockUV is on, derive UV coords by projection
-            // of vertex coordinates on the plane of the quad's face
-            inputQuad.assignLockedUVCoordinates();;
-        }
-
         if(isItem)
         {
             switch(this.paintLayer)

@@ -238,7 +238,7 @@ public class NeighborBlocks
     /**
      * Convenient data structure for returning test results.
      */
-    public class NeighborTestResults  
+    public class NeighborTestResults implements ICornerJoinTestProvider
     {
         private int completionFlags = 0;
         private int resultFlags = 0;
@@ -305,6 +305,7 @@ public class NeighborBlocks
             }
         }
         
+        @Override
         public boolean result(EnumFacing face)
         {
             int bitFlag = FACE_FLAGS[face.ordinal()];
@@ -353,12 +354,6 @@ public class NeighborBlocks
             return  result(face) ? 1 : 0;
         }
 
-        public boolean result(EnumFacing face1, EnumFacing face2)
-        {
-            BlockCorner corner = BlockCorner.find(face1, face2);
-            return result(corner);
-        }
-
         public boolean result(HorizontalCorner corner)
         {
             return result(corner.face1.face, corner.face2.face);
@@ -374,6 +369,7 @@ public class NeighborBlocks
             return result(corner.face1.face, corner.face2.face, EnumFacing.DOWN);
         }
 
+        @Override
         public boolean result(BlockCorner corner)
         {
             if((completionFlags & corner.bitFlag) != corner.bitFlag) {
@@ -396,12 +392,7 @@ public class NeighborBlocks
             return  result(corner) ? 1 : 0;
         }
 
-        public boolean result(EnumFacing face1, EnumFacing face2, EnumFacing face3)
-        {
-            FarCorner corner = FarCorner.find(face1, face2, face3);
-            return result(corner);
-        }
-
+        @Override
         public boolean result(FarCorner corner)
         {
             if((completionFlags & corner.bitFlag) != corner.bitFlag) {

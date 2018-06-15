@@ -445,6 +445,11 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     {
         return MathHelper.hash((textureSalt << 16) | (uIndex << 8) | vIndex);
     }
-    
+
+    @Override
+    protected boolean isQuadValidForPainting(IPolygon inputQuad)
+    {
+        return !inputQuad.isLockUV();
+    }
    
 }

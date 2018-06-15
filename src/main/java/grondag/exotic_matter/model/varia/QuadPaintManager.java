@@ -7,8 +7,11 @@ import java.util.function.Consumer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.painting.QuadPainterFactory;
+import grondag.exotic_matter.model.painting.QuadQuadrantSplitter;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
@@ -40,16 +43,21 @@ public class QuadPaintManager
         @SuppressWarnings("null")
         private Consumer<IPolygon> target;
         
-        private ArrayDeque<SimpleUnorderedArrayList<QuadPainter>> emptyLists
-             = new ArrayDeque<SimpleUnorderedArrayList<QuadPainter>>(8);
+        private ArrayDeque<PainterList> emptyLists
+             = new ArrayDeque<PainterList>(8);
         
         
-        private final IdentityHashMap<Surface, SimpleUnorderedArrayList<QuadPainter>> surfaces
+        private final IdentityHashMap<Surface, PainterList> surfaces
             = new IdentityHashMap<>();
+        
+        private static class PainterList extends SimpleUnorderedArrayList<QuadPainter>
+        {
+            private boolean needsQuadrants = false;
+        }
         
         private void clear()
         {
-            for(SimpleUnorderedArrayList<QuadPainter> list : surfaces.values())
+            for(PainterList list : surfaces.values())
             {
                 list.clear();
                 emptyLists.add(list);
@@ -57,22 +65,28 @@ public class QuadPaintManager
             surfaces.clear();
         }
         
-        private SimpleUnorderedArrayList<QuadPainter> paintersForSurface(Surface surface)
+        private PainterList paintersForSurface(Surface surface)
         {
-            SimpleUnorderedArrayList<QuadPainter> result = surfaces.get(surface);
+            PainterList result = surfaces.get(surface);
             if(result == null)
             {
                 result =  emptyLists.isEmpty() 
-                        ? new SimpleUnorderedArrayList<QuadPainter>()
+                        ? new PainterList()
                         : emptyLists.pop();
                         
+                result.needsQuadrants = false;
+                
                 for(PaintLayer l : PaintLayer.VALUES)
                 {
                     if(modelState.isLayerEnabled(l) && !surface.isLayerDisabled(l))
                     {
                         QuadPainter p = QuadPainterFactory.getPainterForSurface(modelState, surface, l);
                         if(p != null)
+                        {
                             result.add(p);
+                            if(p.requiresQuadrants())
+                                result.needsQuadrants = true;
+                        }
                     }
                 }
                         
@@ -82,11 +96,33 @@ public class QuadPaintManager
         }
         
         @Override
-        public void accept(@SuppressWarnings("null") IPolygon t)
+        public void accept(@SuppressWarnings("null") IPolygon poly)
         {
-            SimpleUnorderedArrayList<QuadPainter> painters = paintersForSurface(t.getSurfaceInstance());
-            if(!painters.isEmpty())
-                painters.forEach(p -> p.producePaintedQuad(t, target, isItem));
+            PainterList painters = paintersForSurface(poly.getSurfaceInstance());
+            if(painters.isEmpty()) return;
+            
+            // if lockUV is on, derive UV coords by projection
+            // of vertex coordinates on the plane of the quad's face
+            
+            // do this here to avoid doing it for all painters
+            // and because the quadrant split test requires it.
+            if(poly.isLockUV())
+            {
+                IMutablePolygon q = Poly.mutableCopyOf(poly);
+                q.assignLockedUVCoordinates();
+                poly = q;
+            }
+            
+            if(painters.needsQuadrants && QuadQuadrantSplitter.uvQuadrant(poly) == null)
+            {
+                QuadQuadrantSplitter.splitAndPaint(poly, 
+                        q -> painters.forEach(p -> p.producePaintedQuad(q, target, isItem)));
+            }
+            else
+            {
+                final IPolygon pFinal = poly; // make final for lambda
+                painters.forEach(p -> p.producePaintedQuad(pFinal, target, isItem));
+            }
         }
       
     }

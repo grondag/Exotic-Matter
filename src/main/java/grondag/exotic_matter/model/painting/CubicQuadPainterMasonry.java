@@ -23,14 +23,6 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
         super(modelState, surface, paintLayer);
         this.bjs = modelState.getMasonryJoin();
     }
-
-    @Override
-    protected final boolean isQuadValidForPainting(IPolygon inputQuad)
-    {
-        return super.isQuadValidForPainting(inputQuad)
-                && inputQuad.getSurfaceInstance().allowBorders
-                && inputQuad.getNominalFace() != null;
-    }
     
     @Override
     public final void textureQuad(IMutablePolygon quad, Consumer<IPolygon> target, boolean isItem)

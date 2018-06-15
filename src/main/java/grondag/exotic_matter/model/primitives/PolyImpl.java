@@ -366,37 +366,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            Vertex v = (Vertex)getVertex(i);
-            
-            switch(face)
-            {
-            case EAST:
-                this.setVertex(i, v.withUV((1 - v.z), (1 - v.y)));
-                break;
-                
-            case WEST:
-                this.setVertex(i, v.withUV(v.z, (1 - v.y)));
-                break;
-                
-            case NORTH:
-                this.setVertex(i, v.withUV((1 - v.x), (1 - v.y)));
-                break;
-                
-            case SOUTH:
-                this.setVertex(i, v.withUV(v.x, (1 - v.y)));
-                break;
-                
-            case DOWN:
-                this.setVertex(i, v.withUV(v.x, (1 - v.z)));
-                break;
-                
-            case UP:
-                // our default semantic for UP is different than MC
-                // "top" is north instead of south
-                this.setVertex(i, v.withUV(v.x, v.z));
-                break;
-            
-            }
+            this.setVertex(i, this.getVertex(i).uvLocked(face));
         }
     }
     

@@ -119,6 +119,4 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
         }
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
-    
-
 }

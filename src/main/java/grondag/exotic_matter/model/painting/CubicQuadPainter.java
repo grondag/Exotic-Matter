@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
+import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -11,11 +12,11 @@ public abstract class CubicQuadPainter extends QuadPainter
 {
 
     /** use for texture version & rotation alternation. Lower 8 bits for version, upper for rotation */
-    private final int variationHashX;
+    protected final int variationHashX;
     /** use for texture version & rotation alternation. Lower 8 bits for version, upper for rotation */
-    private final int variationHashY;
+    protected final int variationHashY;
     /** use for texture version & rotation alternation. Lower 8 bits for version, upper for rotation */
-    private final int variationHashZ;
+    protected final int variationHashZ;
     
     protected final int species;
     
@@ -46,23 +47,34 @@ public abstract class CubicQuadPainter extends QuadPainter
     }
     
     
-    protected int textureVersionForFace(EnumFacing face)
+    protected final int textureVersionForFace(EnumFacing face)
     {
         if(this.texture.textureVersionCount() == 0) return 0;
         
+        return this.textureHashForFace(face) & this.texture.textureVersionMask();
+    }
+    
+    @Override
+    protected final boolean isQuadValidForPainting(IPolygon inputQuad)
+    {
+        return inputQuad.isLockUV() == true && inputQuad.getNominalFace() != null;
+    }
+    
+    protected final int textureHashForFace(EnumFacing face)
+    {
         switch(face)
         {
         case DOWN:
         case UP:
-            return this.variationHashY & this.texture.textureVersionMask();
+            return this.variationHashY;
 
         case EAST:
         case WEST:
-            return this.variationHashX & this.texture.textureVersionMask();
+            return this.variationHashX;
 
         case NORTH:
         case SOUTH:
-            return this.variationHashZ & this.texture.textureVersionMask();
+            return this.variationHashZ;
             
         default:
             return 0;

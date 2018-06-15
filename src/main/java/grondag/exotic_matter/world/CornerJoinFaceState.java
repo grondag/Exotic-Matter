@@ -149,7 +149,7 @@ public enum CornerJoinFaceState
         return fjs;
     }
     
-    public static CornerJoinFaceState find(EnumFacing face, NeighborBlocks.NeighborTestResults tests)
+    public static CornerJoinFaceState find(EnumFacing face, ICornerJoinTestProvider tests)
     {
         int faceFlags = 0;
         int cornerFlags = 0;
@@ -189,39 +189,6 @@ public enum CornerJoinFaceState
         }
         return fjs;
     }
-
-
-//    /** 
-//     * Finds the face that should be used if blocks that are "true"
-//     * in the given join state should not have a border. 
-//     * Used to render mortar-style borders where border is not displayed
-//     * for side adjacent to air or other non-solid blocks.
-//     * 
-//     * Must know what side of block this face is on - in face paramter.
-//     * 
-//     * Removed: unfortunately doesn't work well unless blocks are all placed in 
-//     * a very simple pattern. Get strange corners and border misalingment.
-//     */
-//    public CornerJoinFaceState mortarfy(EnumFacing face, SimpleJoin mortarJoin)
-//    {
-//        int faceFlags = this.getFaceBits();
-//        int cornerFlags = this.getCornerBits();
-//        
-//        for(FaceSide fside : FaceSide.values())
-//        {
-//            EnumFacing joinFace = fside.getRelativeFace(face);
-//            if(mortarJoin.isJoined(joinFace))
-//            {
-//                /** setting to true means side is joined and no border should be displayed */
-//                faceFlags |= fside.bitFlag;
-//                
-//                cornerFlags &= ~(FaceCorner.find(fside.getClockwise(), fside).bitFlag);
-//                cornerFlags &= ~(FaceCorner.find(fside.getCounterClockwise(), fside).bitFlag);
-//            }
-//        }
-//        
-//        return find(faceFlags, cornerFlags);
-//    }
     
     private boolean hasCornerTests()
     {

@@ -265,5 +265,34 @@ public final class Vertex extends Vec3f
             return new Vertex(newX, newY, newZ, newU, newV, newColor, normX * normScale, normY * normScale, normZ * normScale, newGlow);
         }
     }
-  
+    
+    /**
+     * Returns copy of this vertex with UV coordinates locked to the given face.
+     */
+    public final Vertex uvLocked(EnumFacing face)
+    {
+        switch(face)
+        {
+            case EAST:
+                return this.withUV((1 - this.z), (1 - this.y));
+                
+            case WEST:
+                return this.withUV(this.z, (1 - this.y));
+                
+            case NORTH:
+                return this.withUV((1 - this.x), (1 - this.y));
+                
+            case SOUTH:
+                return this.withUV(this.x, (1 - this.y));
+                
+            case DOWN:
+                return this.withUV(this.x, (1 - this.z));
+                
+            case UP:
+            default:
+                // our default semantic for UP is different than MC
+                // "top" is north instead of south
+                return this.withUV(this.x, this.z);
+        }
+    }
 }

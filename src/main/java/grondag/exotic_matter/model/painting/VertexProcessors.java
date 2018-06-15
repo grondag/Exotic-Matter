@@ -15,6 +15,13 @@ public class VertexProcessors
     private static final HashMap<String, VertexProcessor> allByName = new HashMap<>();
     private static final VertexProcessor[] allByOrdinal = new VertexProcessor[MAX_PROCESSORS];
     
+    // putting this here ensures the default processor is always first, 
+    // so that ordinal == 0, which makes it the default value in model state.
+    static
+    {
+        VertexProcessors.register(VertexProcessorDefault.INSTANCE);
+    }
+    
     public static void register(VertexProcessor vp)
     {
         if(allByName.containsKey(vp.registryName))
@@ -31,12 +38,12 @@ public class VertexProcessors
     
     public static VertexProcessor get(String systemName)
     {
-        return NullHandler.defaultIfNull(allByName.get(systemName), VertexProcessor.DEFAULT);
+        return NullHandler.defaultIfNull(allByName.get(systemName), VertexProcessorDefault.INSTANCE);
     }
     
     public static VertexProcessor get(int ordinal)
     {
-        return NullHandler.defaultIfNull(allByOrdinal[ordinal], VertexProcessor.DEFAULT);
+        return NullHandler.defaultIfNull(allByOrdinal[ordinal], VertexProcessorDefault.INSTANCE);
     }
 
 }

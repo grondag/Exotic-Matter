@@ -8,7 +8,6 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleDigging;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
