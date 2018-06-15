@@ -39,20 +39,20 @@ public class ModTextures
     public static final ITexturePalette BIGTEX_TEST5 = TexturePaletteRegistry.addTexturePallette("big_tex_test5", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.GIANT));
 
-    public static final ITexturePalette TEST = TexturePaletteRegistry.addTexturePallette("test", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0_0", 
-            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SIMPLE)
-            .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
+    public static final ITexturePalette TEST = TexturePaletteRegistry.addTexturePallette("test", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0", 
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(2).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SIMPLE)
+            .withRotation(RANDOM.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     public static final ITexturePalette TEST_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST);
     
-    public static final ITexturePalette TEST_90 = TexturePaletteRegistry.addTexturePallette("test_90", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0_0", 
+    public static final ITexturePalette TEST_90 = TexturePaletteRegistry.addTexturePallette("test_90", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0", 
             new TexturePaletteSpec(TEST).withRotation(FIXED.with(ROTATE_90)));
     public static final ITexturePalette TEST_90_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST_90);
     
-    public static final ITexturePalette TEST_180 = TexturePaletteRegistry.addTexturePallette("test_180", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0_0", 
+    public static final ITexturePalette TEST_180 = TexturePaletteRegistry.addTexturePallette("test_180", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0", 
             new TexturePaletteSpec(TEST).withRotation(FIXED.with(ROTATE_180)));
     public static final ITexturePalette TEST_180_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST_180);
     
-    public static final ITexturePalette TEST_270 = TexturePaletteRegistry.addTexturePallette("test_270", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0_0", 
+    public static final ITexturePalette TEST_270 = TexturePaletteRegistry.addTexturePallette("test_270", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0", 
             new TexturePaletteSpec(TEST).withRotation(FIXED.with(ROTATE_270)));
     public static final ITexturePalette TEST_270_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST_270);
     

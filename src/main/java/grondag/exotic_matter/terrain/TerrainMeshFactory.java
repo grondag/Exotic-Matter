@@ -39,7 +39,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 /**
@@ -205,107 +204,18 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
    
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPolygon> target)
     {
-        if(ConfigXM.BLOCKS.enableTerrainQuadDebugRender) 
-            target = IPolygon.makeRecoloring(target);
+        final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
+            ? IPolygon.makeRecoloring(target) : target;
         
-        TerrainState flowState = modelState.getTerrainState();
+        final TerrainState flowState = modelState.getTerrainState();
         
-        Collection<IPolygon> mesh;
-        
-        if(flowState.isFullCube())
-        {
-            mesh = cubeQuads();
-        }
-        else
-        {
+        // NB: was checking flowState.isFullCube() and returning cubeQuads() in
+        // that case but can produce incorrect normals in rare cases that will cause
+        // shading on top face to be visibly mismatched to neighbors.
 //            cacheAttempts.incrementAndGet();
-            mesh = this.modelCache.get(flowState);
-        }
-        
-        assert mesh != null : "Model cache returned null mesh";
-        
-        // scale all quads UVs according to position to match what surface painter expects
-        // Any quads with a null face are assumed to be part of the top face
-
-        // We want top face textures to always join irrespective of Y.
-        // Other face can vary based on orthogonal dimension to break up appearance of layers.
-        for(IPolygon quad : mesh)
-        {
-            EnumFacing face = quad.getNominalFace();
-            if(face == null)
-            {
-                assert false : "Terrain Mesh Generator is outputting quad with null nominal face.";
-                face = EnumFacing.UP;
-            }
-
-            IMutablePolygon mutableQuad = Poly.mutableCopyOf(quad);
-
-            switch(face)
-            {
-            case NORTH:
-            {
-                int zHash = MathHelper.hash(modelState.getPosZ());
-                mutableQuad.setMinU(255 - ((modelState.getPosX() + (zHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case SOUTH:
-            {
-                int zHash = MathHelper.hash(modelState.getPosZ());
-                mutableQuad.setMinU((modelState.getPosX() + (zHash >> 16)) & 0xFF);
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + zHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case EAST:
-            {
-                int xHash = MathHelper.hash(modelState.getPosX());
-                mutableQuad.setMinU(255 - ((modelState.getPosZ() + (xHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case WEST:
-            {
-                int xHash = MathHelper.hash(modelState.getPosX());
-                mutableQuad.setMinU((modelState.getPosZ() + (xHash >> 16)) & 0xFF);
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(255 - ((modelState.getPosY() + xHash) & 0xFF));
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            } 
-            case DOWN:
-            {
-                int yHash = MathHelper.hash(modelState.getPosY());
-                mutableQuad.setMinU(255 - ((modelState.getPosX() + (yHash >> 16)) & 0xFF));
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV((modelState.getPosZ() + (yHash >> 16)) & 0xFF);
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            case UP:
-            default:
-            {
-                mutableQuad.setMinU(modelState.getPosX());
-                mutableQuad.setMaxU(quad.getMinU() +  1);
-                mutableQuad.setMinV(modelState.getPosZ());
-                mutableQuad.setMaxV(quad.getMinV() + 1);
-                break;
-            }
-            }
-            
-            // when above was written, quad UVs were normally in 0-16 range, 
-            // now expected to be 0-1, so scale to that standard
-            mutableQuad.scaleQuadUV(1f/16f, 1f/16f);
-            
-            target.accept(mutableQuad);
-        }
+            this.modelCache.get(flowState).forEach(wrapped);
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
