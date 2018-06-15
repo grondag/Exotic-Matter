@@ -13,19 +13,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.MemoryCacheImageInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.opengl.GLContext;
+
 import com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.concurrency.PerformanceCollector;
 import grondag.exotic_matter.concurrency.PerformanceCounter;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.opengl.GLContext;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureUtil;
@@ -40,27 +41,33 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class CompressedAnimatedSprite extends EnhancedSprite
 {
     /** DO NOT ACCESS DIRECTLY.  Use {@link #getLoaderPool()} */
+    @Nullable
     private static volatile ThreadPoolExecutor loaderThreadPool;
     
     private static synchronized ThreadPoolExecutor getLoaderPool()
     {
-        if(loaderThreadPool == null)
+        ThreadPoolExecutor result = loaderThreadPool;
+        if(result == null)
         {
-            loaderThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            result = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            loaderThreadPool = result;
         }
-        return loaderThreadPool;
+        return result;
     }
     
     /** DO NOT ACCESS DIRECTLY!    */
+    @Nullable
     private static volatile JPEGImageReaderSpi jpegReader;
     
     private static synchronized JPEGImageReaderSpi getJpegReader()
     {
-        if(jpegReader == null)
+        JPEGImageReaderSpi result = jpegReader;
+        if(result == null)
         {
-            jpegReader = new JPEGImageReaderSpi();
+            result = new JPEGImageReaderSpi();
+            jpegReader = result;
         }
-        return jpegReader;
+        return result;
     }
     
     /**
@@ -97,9 +104,11 @@ public class CompressedAnimatedSprite extends EnhancedSprite
      * Used when texture compression is disabled.
      * Dimensions are frame, mipmap level 
      */
+    @Nullable
     private ByteBuffer[][] rawImageData;
     
     /** handles to compressed textures if texture compression is enabled */
+    @Nullable
     private int glCompressedTextureID[];
 
     /** set to false if error in encountered to stop future processing */
@@ -126,6 +135,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
         return true;
     }
 
+    @SuppressWarnings("null")
     @Override
     public boolean load(@Nonnull IResourceManager manager, @Nonnull ResourceLocation location, @Nonnull Function<ResourceLocation, TextureAtlasSprite> textureGetter)
     {
@@ -284,6 +294,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
         }
         
         @Override
+        @Nullable
         public Pair<Integer, int[][]> call() throws Exception
         {
             try
@@ -368,6 +379,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
        return ConfigXM.RENDER.enableAnimatedTextures;
     }
 
+    @SuppressWarnings("null")
     @Override
     public void updateAnimation()
     {

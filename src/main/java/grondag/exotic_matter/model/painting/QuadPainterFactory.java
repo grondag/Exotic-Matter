@@ -18,7 +18,7 @@ public class QuadPainterFactory
         case TILED:
             switch(texture.textureLayout())
             {
-            case BIGTEX:
+            case SIMPLE:
             case BIGTEX_ANIMATED:
             case SPLIT_X_8:
                 return new SurfaceQuadPainterTiled(modelState, surface, paintLayer);
@@ -36,7 +36,7 @@ public class QuadPainterFactory
         case CUBIC:
             switch(texture.textureLayout())
             {
-            case BIGTEX:
+            case SIMPLE:
             case BIGTEX_ANIMATED:
             case SPLIT_X_8:
                 return(texture.textureScale() == TextureScale.SINGLE)

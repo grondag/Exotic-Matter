@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.texture;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.model.texture.TextureRotationType.TextureRotationSetting;
@@ -16,13 +16,13 @@ public interface ITexturePalette
     String systemName();
     
     /**
-     * Identifies all textures needed for texture stitch.
+     * Passes strings to consumer for all textures to be included in texture stitch.
      */
-    List<String> getTexturesForPrestich();
+    public void prestitch(Consumer<String> stitcher);
 
     /** 
-     * Used by dispatcher as nominal particle texture.
-     * More important usage is by GUI texture picker.
+     * Use {@link #getSampleSprite()} when possible, not all texture
+     * formats work well without specific UV mapping.
      */
     String getSampleTextureName();
 

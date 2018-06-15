@@ -1,5 +1,7 @@
 package grondag.exotic_matter.statecache;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.block.state.IBlockState;
@@ -29,5 +31,5 @@ public interface IWorldStateCache
 
     default void markBlockRangeForRenderUpdate(int xStart, int i, int zStart, int xEnd, int j, int zEnd) {}
 
-    default void setWorld(World world) {}
+    default void setWorld(@Nullable World world) {}
 }

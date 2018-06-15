@@ -13,7 +13,6 @@ import grondag.exotic_matter.model.render.BlockModelDebugHighlighter;
 import grondag.exotic_matter.model.render.QuadCache;
 import grondag.exotic_matter.model.texture.CompressedAnimatedSprite;
 import grondag.exotic_matter.model.texture.EnhancedSprite;
-import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TextureHelper;
 import grondag.exotic_matter.model.texture.TextureLayout;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -80,6 +79,7 @@ public class ClientEventHandler
             ClientProxy.worldStateCache.markBlockRangeForRenderUpdate(pos.getXStart(), 0, pos.getZStart(), pos.getXEnd(), 255, pos.getZEnd());
     }
     
+    @SuppressWarnings("null")
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent event) 
     {
@@ -138,29 +138,26 @@ public class ClientEventHandler
     {
         TextureMap map = event.getMap();
         
-        for(ITexturePalette p : TexturePaletteRegistry.all())
+        TexturePaletteRegistry.all().forEach(p -> p.prestitch(s -> 
         {
-            for(String s : p.getTexturesForPrestich())
+            ResourceLocation loc = new ResourceLocation(s);
+            
+            if(p.textureLayout() == TextureLayout.BIGTEX_ANIMATED)
             {
-                ResourceLocation loc = new ResourceLocation(s);
-                
-                if(p.textureLayout() == TextureLayout.BIGTEX_ANIMATED)
+                if(map.getTextureExtry(loc.toString()) == null)
                 {
-                    if(map.getTextureExtry(loc.toString()) == null)
-                    {
-                        map.setTextureEntry(new CompressedAnimatedSprite(loc, p.ticksPerFrame()));
-                    }
-                }
-                else
-                {
-                    if(map.getTextureExtry(loc.toString()) == null)
-                    {
-                        map.setTextureEntry(new EnhancedSprite(loc.toString()));
-                    }
-                    map.registerSprite(loc);
+                    map.setTextureEntry(new CompressedAnimatedSprite(loc, p.ticksPerFrame()));
                 }
             }
-        }
+            else
+            {
+                if(map.getTextureExtry(loc.toString()) == null)
+                {
+                    map.setTextureEntry(new EnhancedSprite(loc.toString()));
+                }
+                map.registerSprite(loc);
+            }
+        }));
         
         FontHolder.preStitch(event);
     }

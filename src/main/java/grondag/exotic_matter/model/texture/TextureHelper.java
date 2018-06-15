@@ -35,7 +35,8 @@ public class TextureHelper
         return blockGlTextureId;
     }
     
-    private static ITextureObject blockGlTextureObject;
+    @SuppressWarnings("null")
+    private static ITextureObject blockGlTextureObject = null;
     
     public static ITextureObject blockGlTextureObject()
     {

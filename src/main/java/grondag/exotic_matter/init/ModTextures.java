@@ -23,11 +23,11 @@ public class ModTextures
     // blocks if test textures are temporarily disabled
     
     public static final ITexturePalette BIGTEX_TEST_SINGLE = TexturePaletteRegistry.addTexturePallette("bigtex_test_single", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex_single" : "noise_moderate_0_0",
-            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SMALL).withLayout(TextureLayout.BIGTEX)
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SMALL).withLayout(TextureLayout.SIMPLE)
             .withRotation(CONSISTENT.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     
     public static final ITexturePalette BIGTEX_TEST1  = TexturePaletteRegistry.addTexturePallette("big_tex_test1", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
-            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(4).withScale(TextureScale.TINY).withLayout(TextureLayout.SPLIT_X_8)
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(4).withScale(TextureScale.TINY).withLayout(TextureLayout.SIMPLE)
             .withRotation(RANDOM.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     
     public static final ITexturePalette BIGTEX_TEST2 = TexturePaletteRegistry.addTexturePallette("big_tex_test2", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
@@ -40,7 +40,7 @@ public class ModTextures
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.GIANT));
 
     public static final ITexturePalette TEST = TexturePaletteRegistry.addTexturePallette("test", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0_0", 
-            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BIGTEX)
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SIMPLE)
             .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     public static final ITexturePalette TEST_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST);
     
@@ -57,7 +57,7 @@ public class ModTextures
     public static final ITexturePalette TEST_270_ZOOM = TexturePaletteRegistry.addZoomedPallete(TEST_270);
     
     public static final ITexturePalette TEST_4X4 = TexturePaletteRegistry.addTexturePallette("test4x4", ConfigXM.BLOCKS.showHiddenTextures ? "test4x4" : "noise_moderate_0_0", 
-            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SMALL).withLayout(TextureLayout.BIGTEX)
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SMALL).withLayout(TextureLayout.SIMPLE)
             .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     
     public static final ITexturePalette TEST_4x4_90 = TexturePaletteRegistry.addTexturePallette("test4x4_90", ConfigXM.BLOCKS.showHiddenTextures ? "test4x4" : "noise_moderate_0_0", 
@@ -96,7 +96,7 @@ public class ModTextures
             .withRotation(FIXED.with(ROTATE_NONE)).withGroups(TextureGroup.STATIC_TILES));
 
     public static final ITexturePalette BIGTEX_MARBLE = TexturePaletteRegistry.addTexturePallette("marble", "marble", new TexturePaletteSpec(ExoticMatter.INSTANCE)
-            .withVersionCount(1).withScale(TextureScale.MEDIUM).withLayout(TextureLayout.BIGTEX)
+            .withVersionCount(1).withScale(TextureScale.MEDIUM).withLayout(TextureLayout.SIMPLE)
             .withRotation(CONSISTENT.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.STATIC_TILES));
     public static final ITexturePalette BIGTEX_MARBLE_ZOOM = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE);
     public static final ITexturePalette BIGTEX_MARBLE_ZOOM_X2 = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE_ZOOM);

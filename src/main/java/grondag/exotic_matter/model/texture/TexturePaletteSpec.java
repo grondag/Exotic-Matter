@@ -14,7 +14,7 @@ public class TexturePaletteSpec
     public IGrondagMod mod;
     public int textureVersionCount = 1;
     public TextureScale textureScale = TextureScale.SINGLE; 
-    public TextureLayout layout = TextureLayout.BIGTEX; 
+    public TextureLayout layout = TextureLayout.SIMPLE; 
     public TextureRotationSetting rotation = TextureRotationType.CONSISTENT.with(Rotation.ROTATE_NONE);
     public TextureRenderIntent renderIntent = TextureRenderIntent.BASE_ONLY; 
     public int textureGroupFlags = TextureGroup.ALWAYS_HIDDEN.bitFlag;
