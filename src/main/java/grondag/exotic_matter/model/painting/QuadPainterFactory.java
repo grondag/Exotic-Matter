@@ -47,7 +47,10 @@ public class QuadPainterFactory
                  return new CubicQuadPainterBorders(modelState, surface, paintLayer);
                 
             case MASONRY_5:
-                return new CubicQuadPainterMasonry(modelState, surface, paintLayer);  
+                return new CubicQuadPainterMasonry(modelState, surface, paintLayer);
+            
+            case QUADRANT_CONNECTED:
+                return new CubicQuadPainterQuadrants(modelState, surface, paintLayer);
                 
             default:
                 return null;

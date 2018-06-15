@@ -418,7 +418,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             boolean isItem,
             int salt)
     {
-        // note that we could do some randomization via texture offset, but that would
+        // Note that we could do some randomization via texture offset, but that would
         // be more complicated and might force us to do additional splits on some models (would it?)
         // For now, always use uv 0,0 as tiling origin.
         

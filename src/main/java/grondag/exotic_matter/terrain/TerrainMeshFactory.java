@@ -17,6 +17,7 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
+import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.FaceVertex;
@@ -41,14 +42,20 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
+/**
+ * Mesh generator for flowing terrain. Currently used for lava and basalt.
+ * Makes no effort to set useful UV values because all quads are expected to be UV locked.
+ */
 public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollisionHandler
 {
     private static final Surface SURFACE_TOP = Surface.builder(SurfaceTopology.CUBIC)
             .withAllowBorders(false)
             .withIgnoreDepthForRandomization(true)
+            .withDisabledLayers(PaintLayer.CUT)
             .build();
     
     private static final Surface SURFACE_SIDE = Surface.builder(SurfaceTopology.CUBIC)
+            .withEnabledLayers(PaintLayer.CUT)
             .withAllowBorders(false)
             .build();
 
@@ -722,7 +729,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
-                setupUVForSide(qSide, side.face);
 
                 qSide.setupFaceQuad(
                         new FaceVertex(0, bottom, 0),
@@ -759,7 +765,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //                qSide.setTag("side-complex-1-" + side.toString());
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
-                setupUVForSide(qSide, side.face);
 
                 qSide.setupFaceQuad(
                         new FaceVertex(0, bottom, 0),
@@ -844,10 +849,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
         //most important thing seems to be that sides come first
-        cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(template), EnumFacing.NORTH).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(template), EnumFacing.EAST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(template), EnumFacing.SOUTH).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(setupUVForSide(Poly.mutableCopyOf(template), EnumFacing.WEST).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
         cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         cubeQuads.add(Poly.mutableCopyOf(template).setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH));
         return cubeQuads;
@@ -860,27 +865,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private FaceVertex midPoint(FaceVertex first, FaceVertex second)
     {
         return new FaceVertex((first.x + second.x) / 2, (first.y + second.y) / 2, (first.depth + second.depth) / 2);
-    }
-
-    private IMutablePolygon setupUVForSide(IMutablePolygon quad, EnumFacing face)
-    {
-
-        //        quad.minU = (face.getAxis() == Axis.X ? flowTex.getZ() : flowTex.getX()) * 2;
-        // need to flip U on these side faces so that textures align properly
-        if(face == EnumFacing.EAST || face == EnumFacing.NORTH) 
-        {
-            quad.setMinU(16);
-            quad.setMaxU(0);
-        }
-        else
-        {
-            quad.setMinU(0);
-            quad.setMaxU(16);
-        }
-        return quad;
-        //         quad.maxU = quad.minU + 2;
-        //        quad.minV = 14 - flowTex.getY() * 2;
-        //        quad.maxV = quad.minV + 2;
     }
 
     @Override

@@ -22,7 +22,9 @@ public enum TextureScale
     /** 32x32 */
     GIANT(5, STATE_FLAG_NEEDS_POS);
     
-    /** UV length for each subdivision of the texture */
+    /** UV length for each subdivision of the texture. 
+     * Used by BigTex painter.
+     * Is simply 1/{@link #sliceCount}. */
     public final float sliceIncrement;
     
     /** 

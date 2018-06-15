@@ -52,7 +52,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
             int depthAndSpeciesHash = quad.getSurfaceInstance().ignoreDepthForRandomization
-                    ? quad.textureSalt()
+                    ? MathHelper.hash((this.species << 8) | quad.textureSalt())
                     : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.textureSalt() << 12));
             
 
@@ -67,20 +67,20 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
 
             quad.setTextureName(this.texture.getTextureName(0));
             
-            int xOffset = (depthAndSpeciesHash >> 2) & scale.sliceCountMask; 
-            int yOffset = (depthAndSpeciesHash >> 8) & scale.sliceCountMask; 
+            final int xOffset = (depthAndSpeciesHash >> 2) & scale.sliceCountMask; 
+            final int yOffset = (depthAndSpeciesHash >> 8) & scale.sliceCountMask; 
             
-            int newX = (surfaceVec.getX() + xOffset) & scale.sliceCountMask;
-            int newY = (surfaceVec.getY() + yOffset) & scale.sliceCountMask;
+            final int newX = (surfaceVec.getX() + xOffset) & scale.sliceCountMask;
+            final int newY = (surfaceVec.getY() + yOffset) & scale.sliceCountMask;
             surfaceVec = new Vec3i(newX, newY, surfaceVec.getZ());
             
-            boolean flipU = this.allowTexRotation && (depthAndSpeciesHash & 256) == 0;
-            boolean flipV = this.allowTexRotation && (depthAndSpeciesHash & 512) == 0;
+            final boolean flipU = this.allowTexRotation && (depthAndSpeciesHash & 256) == 0;
+            final boolean flipV = this.allowTexRotation && (depthAndSpeciesHash & 512) == 0;
 
-            float sliceIncrement = scale.sliceIncrement;
+            final float sliceIncrement = scale.sliceIncrement;
             
-            int x = flipU ? scale.sliceCount - surfaceVec.getX() : surfaceVec.getX();
-            int y = flipV ? scale.sliceCount - surfaceVec.getY() : surfaceVec.getY();
+            final int x = flipU ? scale.sliceCount - surfaceVec.getX() : surfaceVec.getX();
+            final int y = flipV ? scale.sliceCount - surfaceVec.getY() : surfaceVec.getY();
             
             quad.setMinU(x * sliceIncrement);
             quad.setMaxU(quad.getMinU() + (flipU ? -sliceIncrement : sliceIncrement));
@@ -96,7 +96,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             
          // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
-            int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.textureSalt() == 0
+            final int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.textureSalt() == 0
                     ? 0 
                     : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.textureSalt() << 8));
 
@@ -108,7 +108,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
                     
             surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(), scale);
 
-            float sliceIncrement = scale.sliceIncrement;
+            final float sliceIncrement = scale.sliceIncrement;
             
             quad.setMinU(surfaceVec.getX() * sliceIncrement);
             quad.setMaxU(quad.getMinU() + sliceIncrement);
