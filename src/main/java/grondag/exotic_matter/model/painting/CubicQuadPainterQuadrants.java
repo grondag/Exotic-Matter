@@ -16,7 +16,59 @@ import net.minecraft.util.EnumFacing;
  */
 public class CubicQuadPainterQuadrants extends CubicQuadPainter
 {
-
+    private static final TextureQuadrant[][] TEXTURE_MAP = new TextureQuadrant[FaceCorner.values().length][CornerJoinFaceState.values().length];
+    
+    static
+    {
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BL_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_RIGHT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.LEFT.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.LEFT_RIGHT.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.NONE.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.NO_FACE.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.RIGHT.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_TL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_TL_BL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_TR_BR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TL_TR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_TL.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_RIGHT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
+        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
+    }
     public CubicQuadPainterQuadrants(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         super(modelState, surface, paintLayer);
@@ -32,20 +84,7 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
     {
         assert quad.isLockUV() : "Quadrant cubic quad painter received quad without lockUV semantics.  Not expected";
     
-//        FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][ bjs.getFaceJoinState(face).ordinal()];
-//
-//        if(inputs == null) return;
-//        
-//        // don't render the "no border" texture unless this is a tile of some kind
-//        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile()) return;
-//        
-//        quad.setRotation(inputs.rotation);
-////        cubeInputs.rotateBottom = false;
-//        quad.setMinU(inputs.flipU ? 1 : 0);
-//        quad.setMinV(inputs.flipV ? 1 : 0);
-//        quad.setMaxU(inputs.flipU ? 0 : 1);
-//        quad.setMaxV(inputs.flipV ? 0 : 1);
-        final FaceCorner quadrant = QuadQuadrantSplitter.uvQuadrant(quad);
+        final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(quad);
         if(quadrant == null) 
             return;
         
@@ -54,6 +93,10 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
                 & (this.textureHashForFace(quad.getNominalFace()) >> (quadrant.ordinal() * 4));
         
         quad.setTextureName(this.texture.getTextureName(textureVersion));
+        
+        CornerJoinFaceState faceState = this.faceState(quad.getNominalFace());
+        
+        TextureQuadrant.SIDE_LEFT.applyForQuadrant(quad, quadrant);
         
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }

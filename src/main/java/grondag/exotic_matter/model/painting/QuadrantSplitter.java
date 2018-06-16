@@ -11,20 +11,27 @@ import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.world.FaceCorner;
 
-public class QuadQuadrantSplitter
+/**
+ * Helper class to splits UV-locked quads into four quadrants at the u,v = 0.5, 0.5
+ * point (if needed) and to test if quads are already within a single quadrant.
+ */
+public class QuadrantSplitter
 {
     @Nullable
     public final static FaceCorner uvQuadrant(IPolygon quad)
     {
         final int vCount = quad.vertexCount();
-        float uMin = Float.MAX_VALUE;
-        float uMax = Float.MIN_VALUE;
-        float vMin = Float.MAX_VALUE;
-        float vMax = Float.MIN_VALUE;
         
-        for(int i = 0; i < vCount; i++)
+        Vertex v = quad.getVertex(0);
+        
+        float uMin = v.u;
+        float uMax = v.u;
+        float vMin = v.v;
+        float vMax = v.v;
+        
+        for(int i = 1; i < vCount; i++)
         {
-            Vertex v = quad.getVertex(i);
+            v = quad.getVertex(i);
             if(v.u < uMin) 
                 uMin = v.u;
             else if(v.u > uMax)
@@ -36,7 +43,8 @@ public class QuadQuadrantSplitter
                 vMax = v.v;
         }
         
-        
+        // note that v is inverted from FaceCorner semantics.
+        // (high v = bottom, low v = top)
         if(vertexType(uMin) == LOW)
         {
             // u is left 
@@ -52,11 +60,11 @@ public class QuadQuadrantSplitter
                     // spanning
                     return null;
                 else
-                    return FaceCorner.BOTTOM_LEFT;
+                    return FaceCorner.TOP_LEFT;
             }
             else
                 // v is high
-                return FaceCorner.TOP_LEFT;
+                return FaceCorner.BOTTOM_LEFT;
         }
         else
         {
@@ -69,11 +77,11 @@ public class QuadQuadrantSplitter
                     // spanning
                     return null;
                 else
-                    return FaceCorner.BOTTOM_RIGHT;
+                    return FaceCorner.TOP_RIGHT;
             }
             else
                 // v is high
-                return FaceCorner.TOP_RIGHT;
+                return FaceCorner.BOTTOM_RIGHT;
         }
     }
     

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.painting.QuadPainterFactory;
-import grondag.exotic_matter.model.painting.QuadQuadrantSplitter;
+import grondag.exotic_matter.model.painting.QuadrantSplitter;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -113,9 +113,9 @@ public class QuadPaintManager
                 poly = q;
             }
             
-            if(painters.needsQuadrants && QuadQuadrantSplitter.uvQuadrant(poly) == null)
+            if(painters.needsQuadrants && QuadrantSplitter.uvQuadrant(poly) == null)
             {
-                QuadQuadrantSplitter.splitAndPaint(poly, 
+                QuadrantSplitter.splitAndPaint(poly, 
                         q -> painters.forEach(p -> p.producePaintedQuad(q, target, isItem)));
             }
             else

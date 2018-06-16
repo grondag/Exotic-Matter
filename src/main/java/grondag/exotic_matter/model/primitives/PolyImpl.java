@@ -514,6 +514,16 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             }
         }
     }
+
+    @Override
+    public final void offsetVertexUV(float uShift, float vShift)
+    {
+        for(int i = 0; i < this.vertexCount; i++)
+        {
+            Vertex v = this.vertices[i];
+            this.vertices[i] = v.withUV(v.u + uShift, v.v + vShift);
+        }
+    }
     
 //    private String tag;
 //

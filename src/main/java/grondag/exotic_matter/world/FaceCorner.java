@@ -2,30 +2,38 @@ package grondag.exotic_matter.world;
 
 public enum FaceCorner
 {
-    TOP_LEFT(FaceSide.TOP, FaceSide.LEFT),
+    TOP_LEFT(FaceSide.LEFT, FaceSide.TOP),
     TOP_RIGHT(FaceSide.TOP, FaceSide.RIGHT),
     BOTTOM_LEFT(FaceSide.BOTTOM, FaceSide.LEFT),
-    BOTTOM_RIGHT(FaceSide.BOTTOM, FaceSide.RIGHT);
+    BOTTOM_RIGHT(FaceSide.RIGHT, FaceSide.BOTTOM);
     
     private static FaceCorner[][]LOOKUP = new FaceCorner[4][4];
 
-    public final FaceSide side1;
-    public final FaceSide side2;
+    /**
+     * Side that is counterclockwise from the other side.
+     */
+    public final FaceSide leftSide;
+    
+    /**
+     * Side that is clockwise from the other side.
+     */
+    public final FaceSide rightSide;
+    
     public final int bitFlag;
     
     static
     {
         for(FaceCorner corner : FaceCorner.values())
         {
-            LOOKUP[corner.side1.ordinal()][corner.side2.ordinal()]=corner;
-            LOOKUP[corner.side2.ordinal()][corner.side1.ordinal()]=corner;
+            LOOKUP[corner.leftSide.ordinal()][corner.rightSide.ordinal()]=corner;
+            LOOKUP[corner.rightSide.ordinal()][corner.leftSide.ordinal()]=corner;
         }
     }
     
-    private FaceCorner(FaceSide side1, FaceSide side2)
+    private FaceCorner(FaceSide leftSide, FaceSide rightSide)
     {
-        this.side1 = side1;
-        this.side2 = side2;
+        this.leftSide = leftSide;
+        this.rightSide = rightSide;
         this.bitFlag = 1 << this.ordinal();
     }
     

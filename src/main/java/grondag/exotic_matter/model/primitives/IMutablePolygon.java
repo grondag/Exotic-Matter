@@ -214,4 +214,9 @@ public interface IMutablePolygon extends IPolygon
 
     void invertFaceNormal();
 
+    /**
+     * Adds given offsets to u,v values of each vertex.
+     */
+    public void offsetVertexUV(float uShift, float vShift);
+
 }

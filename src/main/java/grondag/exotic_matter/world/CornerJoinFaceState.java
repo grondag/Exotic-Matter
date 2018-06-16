@@ -177,8 +177,8 @@ public enum CornerJoinFaceState
             {
                 for(FaceCorner corner : fjs.getCornerTests())
                 {
-                    if(!tests.result(corner.side1.getRelativeFace(face), corner.side2.getRelativeFace(face))
-                            || tests.result(corner.side1.getRelativeFace(face), corner.side2.getRelativeFace(face), face))
+                    if(!tests.result(corner.leftSide.getRelativeFace(face), corner.rightSide.getRelativeFace(face))
+                            || tests.result(corner.leftSide.getRelativeFace(face), corner.rightSide.getRelativeFace(face), face))
                     {
                         cornerFlags |= corner.bitFlag;
                     }
