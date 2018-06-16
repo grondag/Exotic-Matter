@@ -18,57 +18,32 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
 {
     private static final TextureQuadrant[][] TEXTURE_MAP = new TextureQuadrant[FaceCorner.values().length][CornerJoinFaceState.values().length];
     
+    private static TextureQuadrant textureMap(FaceCorner corner, CornerJoinFaceState faceState)
+    {
+        if(faceState.isJoined(corner.leftSide))
+        {
+            if(faceState.isJoined(corner.rightSide))
+                return faceState.needsCorner(corner) ? TextureQuadrant.CORNER : TextureQuadrant.FULL;
+            else 
+                return TextureQuadrant.SIDE_RIGHT;
+        }
+        else if(faceState.isJoined(corner.rightSide))
+            return TextureQuadrant.SIDE_LEFT;
+        else 
+            return TextureQuadrant.ROUND;
+    }
+    
     static
     {
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TL_TR_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.ALL_TR_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BL_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_LEFT_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.BOTTOM_RIGHT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.LEFT.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.LEFT_RIGHT.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.NONE.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.NO_FACE.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.RIGHT.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_TL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_LEFT_TL_BL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_BOTTOM_RIGHT_TR_BR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_NO_CORNERS.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TL_TR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_LEFT_TL.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_RIGHT_NO_CORNER.ordinal()] = TextureQuadrant.FULL;
-        TEXTURE_MAP[FaceCorner.TOP_LEFT.ordinal()][CornerJoinFaceState.TOP_RIGHT_TR.ordinal()] = TextureQuadrant.FULL;
+        for(FaceCorner corner : FaceCorner.values())
+        {
+            for(CornerJoinFaceState faceState : CornerJoinFaceState.values())
+            {
+                TEXTURE_MAP[corner.ordinal()][faceState.ordinal()] = textureMap(corner, faceState);
+            }
+        }
     }
+    
     public CubicQuadPainterQuadrants(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         super(modelState, surface, paintLayer);
@@ -88,15 +63,17 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
         if(quadrant == null) 
             return;
         
-        @SuppressWarnings("null")
+        final EnumFacing nominalFace = quad.getNominalFace();
+        if(nominalFace == null) return;
+        
         final int textureVersion = this.texture.textureVersionMask() 
-                & (this.textureHashForFace(quad.getNominalFace()) >> (quadrant.ordinal() * 4));
+                & (this.textureHashForFace(nominalFace) >> (quadrant.ordinal() * 4));
         
         quad.setTextureName(this.texture.getTextureName(textureVersion));
         
-        CornerJoinFaceState faceState = this.faceState(quad.getNominalFace());
+        final CornerJoinFaceState faceState = this.faceState(nominalFace);
         
-        TextureQuadrant.SIDE_LEFT.applyForQuadrant(quad, quadrant);
+        TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(quad, quadrant);
         
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }
