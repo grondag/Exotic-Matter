@@ -80,10 +80,10 @@ public enum TextureQuadrant
         FACE_CORNER_ROTATION_MAP[FaceCorner.BOTTOM_RIGHT.ordinal()] = Rotation.ROTATE_180.ordinal();
         FACE_CORNER_ROTATION_MAP[FaceCorner.BOTTOM_LEFT.ordinal()] = Rotation.ROTATE_270.ordinal();
         
-        RIGHT_SIDE_U_SHIFT[FaceSide.BOTTOM.ordinal()] = 0.5f;
-        RIGHT_SIDE_U_SHIFT[FaceSide.TOP.ordinal()] = -0.5f;
-        RIGHT_SIDE_V_SHIFT[FaceSide.LEFT.ordinal()] = 0.5f;
-        RIGHT_SIDE_V_SHIFT[FaceSide.RIGHT.ordinal()] = -0.5f;
+        RIGHT_SIDE_U_SHIFT[FaceSide.BOTTOM.ordinal()] = -0.5f;
+        RIGHT_SIDE_U_SHIFT[FaceSide.TOP.ordinal()] = 0.5f;
+        RIGHT_SIDE_V_SHIFT[FaceSide.LEFT.ordinal()] = -0.5f;
+        RIGHT_SIDE_V_SHIFT[FaceSide.RIGHT.ordinal()] = 0.5f;
     }
     
     /**

@@ -521,7 +521,14 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount; i++)
         {
             Vertex v = this.vertices[i];
-            this.vertices[i] = v.withUV(v.u + uShift, v.v + vShift);
+            v = v.withUV(v.u + uShift, v.v + vShift);
+            
+            assert v.u > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.u < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.v > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.v < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds";
+
+            this.vertices[i] = v;
         }
     }
     

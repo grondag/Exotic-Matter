@@ -10,9 +10,14 @@ public class VertexProcessorDefault extends VertexProcessor
 {
     public final static VertexProcessor INSTANCE = new VertexProcessorDefault();
     
+    static
+    {
+        VertexProcessors.register(VertexProcessorDefault.INSTANCE);
+    }
+    
     VertexProcessorDefault()
     {
-        super("default");
+        super("default", 0);
     }
     
     @Override

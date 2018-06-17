@@ -185,8 +185,12 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     TerrainState getTerrainState();
     
+    long getTerrainStateKey();
+    
     void setTerrainState(TerrainState flowState);
 
+    void setTerrainStateKey(long terrainStateKey);
+    
     /**
      * Determines what rendering path should apply for the given paint layer
      * based on user choices and the constraints imposed by MC rendering.  

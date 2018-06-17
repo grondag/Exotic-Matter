@@ -13,16 +13,25 @@ import grondag.exotic_matter.model.state.ISuperModelState;
  */
 public abstract class VertexProcessor
 {
-    private static int nextOrdinal = 0;
+    // 0 is reserved for default instance because model state default ordinal value is zero
+    private static int nextOrdinal = 1;
     
     public final String registryName;
     public final int ordinal;
     
     protected VertexProcessor(String registryName)
     {
-        this.ordinal = nextOrdinal++;
-        this.registryName = registryName;
+        this(registryName, nextOrdinal++);
     }
     
+    /**
+     * For default instance only
+     */
+    protected VertexProcessor(String registryName, int ordinal)
+    {
+        this.ordinal = ordinal;
+        this.registryName = registryName;
+    }
+
     public abstract void process(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer);
 }

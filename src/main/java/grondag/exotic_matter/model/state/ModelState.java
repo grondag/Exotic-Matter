@@ -738,21 +738,32 @@ public class ModelState implements ISuperModelState
     //  PACKER 3 ATTRIBUTES  (FLOWING TERRAIN FORMAT)
     ////////////////////////////////////////////////////
 
+
+    @Override
+    public long getTerrainStateKey()
+    {
+        assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
+        return ModelStateData.FLOW_JOIN.getValue(this);
+    }
+
+    @Override
+    public void setTerrainStateKey(long terrainStateKey)
+    {
+        assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
+        ModelStateData.FLOW_JOIN.setValue(terrainStateKey, this);
+    }
+
     @Override
     public TerrainState getTerrainState()
     {
-        if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
-            ExoticMatter.INSTANCE.warn("getTerrainState on model state does not apply for shape");
-
+        assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
         return new TerrainState(ModelStateData.FLOW_JOIN.getValue(this), (int)ModelStateData.EXTRA_SHAPE_BITS.getValue(this));
     }
    
     @Override
     public void setTerrainState(TerrainState flowState)
     {
-        if(ConfigXM.BLOCKS.debugModelState && this.getShape().meshFactory().stateFormat != StateFormat.FLOW)
-            ExoticMatter.INSTANCE.warn("setTerrainState on model state does not apply for shape");
-
+        assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
         ModelStateData.FLOW_JOIN.setValue(flowState.getStateKey(), this);
         ModelStateData.EXTRA_SHAPE_BITS.setValue(flowState.getHotness(), this);
         invalidateHashCode();

@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
-import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
+import grondag.exotic_matter.cache.LongSimpleCacheLoader;
+import grondag.exotic_matter.cache.LongSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
@@ -49,11 +49,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 {
     private static final Surface SURFACE_TOP = Surface.builder(SurfaceTopology.CUBIC)
             .withIgnoreDepthForRandomization(true)
-            .withDisabledLayers(PaintLayer.CUT)
+            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
             .build();
     
     private static final Surface SURFACE_SIDE = Surface.builder(SurfaceTopology.CUBIC)
-            .withEnabledLayers(PaintLayer.CUT)
+            .withEnabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
             .withAllowBorders(false)
             .build();
 
@@ -92,7 +92,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
-    private final ObjectSimpleLoadingCache<TerrainState, Collection<IPolygon>> modelCache = new ObjectSimpleLoadingCache<TerrainState, Collection<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
+    private final LongSimpleLoadingCache<Collection<IPolygon>> modelCache = new LongSimpleLoadingCache<Collection<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
 
 //    private final AtomicInteger cacheAttempts = new AtomicInteger(0);
 //    private final AtomicInteger cacheMisses = new AtomicInteger(0);
@@ -107,13 +107,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        cacheAttempts.set(0);
 //    }
     
-    private class TerrainCacheLoader implements ObjectSimpleCacheLoader<TerrainState, Collection<IPolygon>>
+    private class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPolygon>>
     {
         @Override
-        public Collection<IPolygon> load(TerrainState key)
+        public Collection<IPolygon> load(long key)
         {
 //            cacheMisses.incrementAndGet();
-            return createShapeQuads(key);
+            return createShapeQuads(new TerrainState(key, 0));
         }
     }
     
@@ -208,13 +208,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
             ? IPolygon.makeRecoloring(target) : target;
         
-        final TerrainState flowState = modelState.getTerrainState();
-        
         // NB: was checking flowState.isFullCube() and returning cubeQuads() in
         // that case but can produce incorrect normals in rare cases that will cause
         // shading on top face to be visibly mismatched to neighbors.
 //            cacheAttempts.incrementAndGet();
-            this.modelCache.get(flowState).forEach(wrapped);
+            this.modelCache.get(modelState.getTerrainStateKey()).forEach(wrapped);
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
@@ -342,7 +340,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
         
         // center vertex setup
-        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset(), flowState.getCenterHotness());
+        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
 
         /**
          * Quads on left (west) side of the top face.<br>
@@ -385,10 +383,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Initialized to a height of one and changed based on world state.
          */
         FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_EAST));
-        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1, flowState.midCornerHotness(HorizontalCorner.NORTH_WEST));
-        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_EAST));
-        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1, flowState.midCornerHotness(HorizontalCorner.SOUTH_WEST));
+        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1);
+        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1);
 
         /**
          * Top face vertex positions for centers of the block at the four corners.  
@@ -415,10 +413,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // Coordinates assume quad will be set up with North=top orientation
         // Depth will be set separately.
         FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
-        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f, flowState.midSideHotness(HorizontalFace.NORTH));
-        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f, flowState.midSideHotness(HorizontalFace.SOUTH));
-        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.EAST));
-        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f, flowState.midSideHotness(HorizontalFace.WEST));
+        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f);
+        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f);
+        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f);
+        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f);
 
         FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
         fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);

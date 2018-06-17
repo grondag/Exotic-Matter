@@ -197,7 +197,68 @@ public class TerrainState
 
     public final int getCenterHotness()
     {
-        return CENTER_HOTNESS.getValue(this.hotness) > 0 ? 255 : 0;
+        return CENTER_HOTNESS.getValue(this.hotness);
+    }
+    
+    /**
+     * Returns heat value using relative x, z coordinate. 
+     * 0,0 represents center. Values outside the range -1, 1 return 0;
+     */
+    public final int getHotness(final int xMin, final int zMin)
+    {
+        switch(xMin + 1)
+        {
+            case 0:
+                // west
+                switch(zMin + 1)
+                {
+                    case 0:
+                        // north
+                        return this.neighborHotness(HorizontalCorner.NORTH_WEST);
+                    case 1:
+                        // center (n-s)
+                        return this.neighborHotness(HorizontalFace.WEST);
+                    case 2:
+                        // south
+                        return this.neighborHotness(HorizontalCorner.SOUTH_WEST);
+                    default:
+                        return 0;
+                }
+            case 1:
+                // center (e-w)
+                switch(zMin + 1)
+                {
+                case 0:
+                    // north
+                    return this.neighborHotness(HorizontalFace.NORTH);
+                case 1:
+                    // center (n-s)
+                    return getCenterHotness();
+                case 2:
+                    // south
+                    return this.neighborHotness(HorizontalFace.SOUTH);
+                default:
+                    return 0;
+                }
+            case 2:
+                // east
+                switch(zMin + 1)
+                {
+                    case 0:
+                        // north
+                        return this.neighborHotness(HorizontalCorner.NORTH_EAST);
+                    case 1:
+                        // center (n-s)
+                        return this.neighborHotness(HorizontalFace.EAST);
+                    case 2:
+                        // south
+                        return this.neighborHotness(HorizontalCorner.SOUTH_EAST);
+                    default:
+                        return 0;
+                }
+            default:
+                return 0;
+        }
     }
     
     public int getYOffset()
@@ -491,62 +552,14 @@ public class TerrainState
         
     }
     
-    /**
-     * If at least 3 block touching corner are hot, returns average heat.
-     * Returns 0 if 2 or fewer.  This block must be hot to be non-zero.
-     */
-    public final int midCornerHotness(HorizontalCorner corner)
+    public final int neighborHotness(HorizontalCorner corner)
     {
-        final int centerHeat = this.getCenterHotness();
-        if(centerHeat == 0) return 0;
-        
-        final int heatSide1 = SIDE_HOTNESS[corner.face1.ordinal()].getValue(this.hotness);
-        final int heatSide2 = SIDE_HOTNESS[corner.face2.ordinal()].getValue(this.hotness);
-        final int heatCorner = CORNER_HOTNESS[corner.ordinal()].getValue(this.hotness);
-        
-        if(heatSide1 == 0)
-        {
-            if(heatSide2 == 0)
-                return 0;
-            else
-                return heatCorner == 0
-                    ? 0
-                    : 70; //(centerHeat + heatSide2 + heatCorner + 1) / 3; // + 1 to round up
-        }
-        else if(heatSide2 == 0)
-        {
-            // heatside1 is known to be hot at this point
-            return heatCorner == 0
-                    ? 0
-                    : 70; //(centerHeat + heatSide1 + heatCorner + 1) / 3; // + 1 to round up 
-        }
-        else
-        {
-            // both sides are hot
-            return heatCorner == 0
-                    ? 70 //(centerHeat + heatSide1 + heatSide2 + 1) / 3 // + 1 to round up 
-                    : 255; //(centerHeat + heatSide1 + heatSide2 + heatCorner + 1) / 4; // + 1 to round up 
-        }
+        return CORNER_HOTNESS[corner.ordinal()].getValue(this.hotness);
     }
     
-    /**
-     * If both this block and side block are hot, is average heat, rounded up. 
-     * Zero otherwise.
-     */
-    public final int midSideHotness(HorizontalFace face)
+    public final int neighborHotness(HorizontalFace face)
     {
-        final int centerHeat = this.getCenterHotness();
-        if(centerHeat == 0) return 0;
-        
-        final int heatSide = SIDE_HOTNESS[face.ordinal()].getValue(this.hotness);
-        
-//        return heatSide == 0
-//                ? 0
-//                : (heatSide + centerHeat + 1) / 2;
-        
-        return heatSide == 0
-                ? 70
-                : 255;
+        return SIDE_HOTNESS[face.ordinal()].getValue(this.hotness);
     }
     
     private float calcFarSideVertexHeight(HorizontalFace face)
@@ -648,15 +661,15 @@ public class TerrainState
    
     static
     {
-        SIDE_HOTNESS[HorizontalFace.NORTH.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        SIDE_HOTNESS[HorizontalFace.EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        SIDE_HOTNESS[HorizontalFace.SOUTH.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        SIDE_HOTNESS[HorizontalFace.WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
+        SIDE_HOTNESS[HorizontalFace.NORTH.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        SIDE_HOTNESS[HorizontalFace.EAST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        SIDE_HOTNESS[HorizontalFace.SOUTH.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        SIDE_HOTNESS[HorizontalFace.WEST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
         
-        CORNER_HOTNESS[HorizontalCorner.NORTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        CORNER_HOTNESS[HorizontalCorner.NORTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        CORNER_HOTNESS[HorizontalCorner.SOUTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(6); 
-        CORNER_HOTNESS[HorizontalCorner.SOUTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(6);
+        CORNER_HOTNESS[HorizontalCorner.NORTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        CORNER_HOTNESS[HorizontalCorner.NORTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        CORNER_HOTNESS[HorizontalCorner.SOUTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
+        CORNER_HOTNESS[HorizontalCorner.SOUTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT);
     }
     
     private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)

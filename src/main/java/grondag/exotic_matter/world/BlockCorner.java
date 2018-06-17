@@ -1,6 +1,9 @@
 package grondag.exotic_matter.world;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.math.Vec3i;
 
 public enum BlockCorner
@@ -43,6 +46,12 @@ public enum BlockCorner
      */
     public final int superOrdinal;
     
+   
+    /**
+     * Will be null if not a horizontal corner.
+     */
+    public final @Nullable HorizontalCorner horizonal;
+    
     private static final BlockCorner[][] CORNER_LOOKUP = new BlockCorner[6][6];
     
     /** used to look up by axis and rotation */
@@ -72,6 +81,11 @@ public enum BlockCorner
         Vec3i v1 = face1.getDirectionVec();
         Vec3i v2 = face2.getDirectionVec();
         this.directionVector = new Vec3i(v1.getX() + v2.getX(), v1.getY() + v2.getY(), v1.getZ() + v2.getZ());
+        
+        if(face1.getAxis() == Axis.Y || face2.getAxis() == Axis.Y)
+            this.horizonal = null;
+        else
+            this.horizonal = HorizontalCorner.find(HorizontalFace.find(face1), HorizontalFace.find(face2));
 
     }
 
