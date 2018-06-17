@@ -13,6 +13,8 @@ import net.minecraft.util.text.translation.I18n;
  * they can be used for anything, provided the mesh generator
  * and the model state agree on which surfaces should get which paint.<p>
  * 
+ * z-position of layers is per enum order.
+ * 
  */
 @SuppressWarnings("deprecation")
 public enum PaintLayer
@@ -24,28 +26,25 @@ public enum PaintLayer
     BASE,
     
     /**
+     * Typically used to render sides or bottoms, or the cut surfaces
+     * of CSG outputs.
+     */
+    CUT,
+    
+    /**
+     * Typically used to render a secondary surface within a model.
+     */
+    LAMP,
+    
+    /**
      * Typically used to decorate the primary surface.
-     * Middle z-position when other layers are present.
      */
     MIDDLE,
     
     /**
      * Typically used to decorate the primary surface.
-     * Outer z-position when other layers are present.
      */
-    OUTER,
-    
-    /**
-     * Typically used to render a secondary surface within a model.
-     * Middle z-position.
-     */
-    LAMP,
-    
-    /**
-     * Typically used to render sides or bottoms, or the cut surfaces
-     * of CSG outputs.
-     */
-    CUT;
+    OUTER;
     
 
     /** Convenience for values().length */

@@ -49,11 +49,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 {
     private static final Surface SURFACE_TOP = Surface.builder(SurfaceTopology.CUBIC)
             .withIgnoreDepthForRandomization(true)
-            .withDisabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
+            .withEnabledLayers(PaintLayer.BASE, PaintLayer.LAMP, PaintLayer.MIDDLE)
             .build();
     
     private static final Surface SURFACE_SIDE = Surface.builder(SurfaceTopology.CUBIC)
-            .withEnabledLayers(PaintLayer.CUT, PaintLayer.LAMP)
+            .withEnabledLayers(PaintLayer.CUT, PaintLayer.LAMP, PaintLayer.OUTER)
             .withAllowBorders(false)
             .build();
 
@@ -306,9 +306,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         addTerrainQuads(flowState, terrainNode);
         
+        // order here is important
+        // terrain has to come first in order to preserve normals when 
+        // top terrain face quads are co-planar with cube quads
        return CSGMesh.intersect(
-                cubeNode,
-                terrainNode
+                terrainNode,
+                cubeNode
                 );
     }
 

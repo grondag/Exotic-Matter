@@ -80,16 +80,22 @@ public class ColorHelper
     
     public static int interpolate(int from, int to, float toWeight)
     {
-        final int r = from & 0xFF;
-        final int g = from & 0xFF00;
-        final int b = from & 0xFF0000;
-        final int a = from & 0xFF000000;
+        final int a1 = (from >> 24) & 0xFF;
+        final int r1 = (from >> 16) & 0xFF;
+        final int g1 = (from >> 8) & 0xFF;
+        final int b1 = from & 0xFF;
 
-        int newColor = (int) (r + ((to & 0xFF) - r) * toWeight);
-        newColor |= (int) (g + ((to & 0xFF00) - g) * toWeight);
-        newColor |= (int) (b + ((to & 0xFF0000) - b) * toWeight);
-        newColor |= (int) (a + ((to & 0xFF000000) - a) * toWeight); 
-        return newColor;
+        final int a2 = (to >> 24) & 0xFF;
+        final int r2 = (to >> 16) & 0xFF;
+        final int g2 = (to >> 8) & 0xFF;
+        final int b2 = to & 0xFF;
+        
+        final int a = (int)(a1 + 0.49f + (a2 - a1) * toWeight) & 0xFF;
+        final int r = (int)(r1 + 0.49f + (r2 - r1) * toWeight) & 0xFF;
+        final int g = (int)(g1 + 0.49f + (g2 - g1) * toWeight) & 0xFF;
+        final int b = (int)(b1 + 0.49f + (b2 - b1) * toWeight) & 0xFF;
+        
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     /** arguments are assumed to be ARGB */
