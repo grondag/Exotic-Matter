@@ -114,5 +114,65 @@ public class ColorHelper
         final int alpha = baseColor & 0xFF000000;
         return Color.fromRGB(baseColor).lumify().RGB_int | alpha;
     }
+    
+    /**
+     * Based on following sources, with much appreciation:
+     * 
+     * Tanner Helland: How to Convert Temperature (K) to RGB: Algorithm and Sample Code<br>
+     * http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
+     * 
+     * Neil Bartlett: COLOR TEMPERATURE CONVERSION OF HOMESTAR.IO<br>
+     * http://www.zombieprototypes.com/?p=210<p>
+     */
+    public static int colorForTemperature(int kelvin)
+    {
+        if(kelvin < 1000) return 0;
+        
+        int red;
+        if(kelvin < 6600)
+            red = 255;
+        else
+        {
+            final float a = 351.97690566805693f;
+            final float b = -0.114206453784165f;
+            final float c = -40.25366309332127f;
+            final float x = (kelvin / 100f) - 55;
+            red = (int) Math.round(a + b * x + c * Math.log(x));
+        }
+        
+        int green;
+        if(kelvin < 6600)
+        {
+            final float a = -155.25485562709179f;
+            final float b = -0.44596950469579133f;
+            final float c = 104.49216199393888f;
+            final float x = (kelvin / 100f) - 2;
+            green = (int) Math.round(a + b * x + c * Math.log(x)); 
+        }
+        else
+        {
+            final float a = 325.4494125711974f;
+            final float b = 0.07943456536662342f;
+            final float c = -28.0852963507957f;
+            final float x = (kelvin / 100f) - 50;
+            green = (int) Math.round(a + b * x + c * Math.log(x)); 
+        }
+        
+        int blue;
+        if(kelvin < 2000)
+        {
+            blue = 0; 
+        }
+        else
+        {
+            final float a = -254.76935184120902f;
+            final float b = 0.8274096064007395f;
+            final float c = 115.67994401066147f;
+            final float x = (kelvin / 100f) - 10;
+            blue = (int) Math.round(a + b * x + c * Math.log(x)); 
+        }
+        
+        return (red << 16) | (green << 8) | blue;
+    }
 }
     
