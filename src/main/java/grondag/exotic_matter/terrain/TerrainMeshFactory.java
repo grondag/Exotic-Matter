@@ -25,6 +25,7 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.Vec3f;
+import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -113,7 +114,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         public Collection<IPolygon> load(long key)
         {
 //            cacheMisses.incrementAndGet();
-            return createShapeQuads(new TerrainState(key, 0));
+            return createShapeQuads(new TerrainState(key < 0 ? -key : key, 0), key < 0);
         }
     }
     
@@ -208,16 +209,26 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
             ? IPolygon.makeRecoloring(target) : target;
         
+        // Hot terrain blocks that border non-hot blocks need a subdivided mesh
+        // for smooth vertex shading. So that we can still use a long key and avoid
+        // instantiating a terrain state for cached meshes, we use the sign bit on 
+        // the key to indicate that subdivision is needed.
+        // Subdivision isn't always strictly necessary for all quadrant of an edge block
+        // but subdividing all enables potentially more cache hits at the cost of a few extra polygons
+        final int hotness = modelState.getTerrainHotness();
+        final boolean needsSubdivision = !(hotness == 0 || hotness == TerrainState.ALL_HOT);
+        final long key = needsSubdivision ? -modelState.getTerrainStateKey() : modelState.getTerrainStateKey();
+        
         // NB: was checking flowState.isFullCube() and returning cubeQuads() in
         // that case but can produce incorrect normals in rare cases that will cause
         // shading on top face to be visibly mismatched to neighbors.
 //            cacheAttempts.incrementAndGet();
-            this.modelCache.get(modelState.getTerrainStateKey()).forEach(wrapped);
+        this.modelCache.get(key).forEach(wrapped);
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
-    private @Nonnull Collection<IPolygon> createShapeQuads(TerrainState flowState)
+    private @Nonnull Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);
@@ -304,7 +315,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //                cubeNode = this.cubeNodeComplex.clone();
         //            }
         
-        addTerrainQuads(flowState, terrainNode);
+        addTerrainQuads(flowState, terrainNode, needsSubdivision);
         
         // order here is important
         // terrain has to come first in order to preserve normals when 
@@ -331,7 +342,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 //        }
 //    }
     
-    private void addTerrainQuads(TerrainState flowState, CSGNode.Root terrainQuads)
+    private void addTerrainQuads(TerrainState flowState, CSGNode.Root terrainQuads, boolean needsSubdivision)
     {
 //        tryCount.incrementAndGet();
 //        synchronized(hitMap)
@@ -458,7 +469,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             quadInputsSide.get(side.ordinal()).add(qiWork);
             quadInputsCorner.get(HorizontalCorner.find(side, side.getRight()).ordinal()).add(qiWork);
 
-            final boolean isSidePresent = flowState.getSideHeight(side) != TerrainState.NO_BLOCK;
+            final boolean isSidePresent = flowState.height(side) != TerrainState.NO_BLOCK;
 
             // add side block tri that borders this block if it is there
             if(isSidePresent)
@@ -496,10 +507,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             // the height of center of the block that is present (see TerrainState.calcMidSideVertexHeight)
 
             final HorizontalCorner leftCorner = HorizontalCorner.find(side, side.getLeft());
-            final boolean isLeftCornerPresent = flowState.getCornerHeight(leftCorner) != TerrainState.NO_BLOCK;
+            final boolean isLeftCornerPresent = flowState.height(leftCorner) != TerrainState.NO_BLOCK;
 
             final HorizontalCorner rightCorner = HorizontalCorner.find(side, side.getRight());
-            final boolean isRightCornerPresent = flowState.getCornerHeight(rightCorner) != TerrainState.NO_BLOCK;
+            final boolean isRightCornerPresent = flowState.height(rightCorner) != TerrainState.NO_BLOCK;
 
             if(isSidePresent)
             {
@@ -620,14 +631,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             normCorner[corner.ordinal()] = shadowEnhance(normTemp);
         }
 
-        final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple();
+        final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple() && !needsSubdivision;
 
         // note that outputting sides first seems to work best for CSG intersect performance
         // with convex polyhedra tend to get an unbalanced BSP tree - not much can do about it without creating unwanted splits
         for(HorizontalFace side: HorizontalFace.values())
         {
             // don't use middle vertex if it is close to being in line with corners
-            if(ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isSideSimple(side))
+            if(ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isSideSimple(side) && !needsSubdivision)
             {
 
                 // side
@@ -667,7 +678,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 }
 
             }
-            else
+            else // side and top not simple
             {
 
                 //Sides
@@ -696,21 +707,72 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         EnumFacing.UP);
                 terrainQuads.addPolygon(qSide);
                 
-                //side is not simple so have to output tops
-                IMutablePolygon qi = quadInputsCenterLeft[side.ordinal()];
-//                qi.setTag("side-complex-1-top-" + side.toString());
+                // Side is not simple so have to output tops.
+                // If this quadrant touches an empty block (side or corner)
+                // then subdivide into four tris to allow for smoother vertex colors
+                // along terrain edges (especially lava).
                 
-                qi.setVertexNormal(0, normSide[side.ordinal()]);
-                qi.setVertexNormal(1, normCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()]);
-                qi.setVertexNormal(2, normCenter);
-                terrainQuads.addPolygon(qi);
+                // left
+                {
+                    final HorizontalCorner corner = HorizontalCorner.find(side, side.getLeft());
+                    IMutablePolygon qi = quadInputsCenterLeft[side.ordinal()];
+                    qi.setVertexNormal(0, normSide[side.ordinal()]);
+                    qi.setVertexNormal(1, normCorner[corner.ordinal()]);
+                    qi.setVertexNormal(2, normCenter);
+                    
+                    if(needsSubdivision)
+                    {
+                        // find vertex at midpoint of corner and center
+                        Vertex vMid = qi.getVertex(1).interpolate(qi.getVertex(2), 0.5f);
 
-                qi = quadInputsCenterRight[side.ordinal()];
-//                qi.setTag("side-complex-2-top-" + side.toString());
-                qi.setVertexNormal(0, normCorner[HorizontalCorner.find(side, side.getRight()).ordinal()]);
-                qi.setVertexNormal(1, normSide[side.ordinal()]);
-                qi.setVertexNormal(2, normCenter);     
-                terrainQuads.addPolygon(qi);
+                        IMutablePolygon qHalf = Poly.mutable(qi);
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, vMid);
+                        terrainQuads.addPolygon(qHalf);
+                        
+                        qHalf = Poly.mutable(qi);
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, vMid);
+                        qHalf.addVertex(2, qi.getVertex(2));
+                        terrainQuads.addPolygon(qHalf);
+                    }
+                    else
+                    {
+                        terrainQuads.addPolygon(qi);
+                    }
+                }
+                
+                // right
+                {
+                    final HorizontalCorner corner = HorizontalCorner.find(side, side.getRight());
+                    IMutablePolygon qi = quadInputsCenterRight[side.ordinal()];
+                    qi.setVertexNormal(0, normCorner[corner.ordinal()]);
+                    qi.setVertexNormal(1, normSide[side.ordinal()]);
+                    qi.setVertexNormal(2, normCenter);     
+                    
+                    if(needsSubdivision)
+                    {
+                        // find vertex at midpoint of corner and center
+                        Vertex vMid = qi.getVertex(0).interpolate(qi.getVertex(2), 0.5f);
+
+                        IMutablePolygon qHalf = Poly.mutable(qi);
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, vMid);
+                        terrainQuads.addPolygon(qHalf);
+                        
+                        qHalf = Poly.mutable(qi);
+                        qHalf.addVertex(0, vMid);
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, qi.getVertex(2));
+                        terrainQuads.addPolygon(qHalf);
+                    }
+                    else
+                    {
+                        terrainQuads.addPolygon(qi);
+                    }
+                }
             }
         }   
         
@@ -808,7 +870,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     {
         try
         {
-            return COLLISION_BOUNDS[modelState.getTerrainState().getCenterHeight() - 1];
+            return COLLISION_BOUNDS[modelState.getTerrainState().centerHeight() - 1];
         }
         catch (Exception ex)
         {
@@ -826,7 +888,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     @Override
     public int getMetaData(ISuperModelState modelState)
     {
-        return modelState.getTerrainState().getCenterHeight();
+        return modelState.getTerrainState().centerHeight();
     }
 
     @Override

@@ -190,11 +190,80 @@ public class TerrainState
      * Rendering height of center block ranges from 1 to 12
      * and is stored in state key as values 0-11.
      */
-    public final int getCenterHeight()
+    public final int centerHeight()
     {
         return this.centerHeight;
     }
 
+    // Rendering height of corner and side neighbors ranges 
+    // from -24 to 36. 
+    public final int height(HorizontalFace side)
+    {
+        return this.sideHeight[side.ordinal()];
+    }
+
+    public final int height(HorizontalCorner corner)
+    {
+        return this.cornerHeight[corner.ordinal()];
+    }
+    
+    public final int height(final int x, final int z)
+    {
+        switch(x + 1)
+        {
+            case 0:
+                // west
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.height(HorizontalCorner.NORTH_WEST);
+                    case 1:
+                        // center (n-s)
+                        return this.height(HorizontalFace.WEST);
+                    case 2:
+                        // south
+                        return this.height(HorizontalCorner.SOUTH_WEST);
+                    default:
+                        return 0;
+                }
+            case 1:
+                // center (e-w)
+                switch(z + 1)
+                {
+                case 0:
+                    // north
+                    return this.height(HorizontalFace.NORTH);
+                case 1:
+                    // center (n-s)
+                    return centerHeight();
+                case 2:
+                    // south
+                    return this.height(HorizontalFace.SOUTH);
+                default:
+                    return 0;
+                }
+            case 2:
+                // east
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.height(HorizontalCorner.NORTH_EAST);
+                    case 1:
+                        // center (n-s)
+                        return this.height(HorizontalFace.EAST);
+                    case 2:
+                        // south
+                        return this.height(HorizontalCorner.SOUTH_EAST);
+                    default:
+                        return 0;
+                }
+            default:
+                return 0;
+        }
+    }
+    
     public final int getCenterHotness()
     {
         return CENTER_HOTNESS.getValue(this.hotness);
@@ -204,13 +273,13 @@ public class TerrainState
      * Returns heat value using relative x, z coordinate. 
      * 0,0 represents center. Values outside the range -1, 1 return 0;
      */
-    public final int neighborHotness(final int xMin, final int zMin)
+    public final int neighborHotness(final int x, final int z)
     {
-        switch(xMin + 1)
+        switch(x + 1)
         {
             case 0:
                 // west
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                     case 0:
                         // north
@@ -226,7 +295,7 @@ public class TerrainState
                 }
             case 1:
                 // center (e-w)
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                 case 0:
                     // north
@@ -242,7 +311,7 @@ public class TerrainState
                 }
             case 2:
                 // east
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                     case 0:
                         // north
@@ -265,20 +334,6 @@ public class TerrainState
     {
         return this.yOffset;
     }
-
-    // Rendering height of corner and side neighbors ranges 
-    // from -24 to 36. 
-    public int getSideHeight(HorizontalFace side)
-    {
-        return this.sideHeight[side.ordinal()];
-    }
-
-    public int getCornerHeight(HorizontalCorner corner)
-    {
-        return this.cornerHeight[corner.ordinal()];
-    }
-
-
     
     /**
      * Returns how many filler blocks are needed on top to cover a cut surface.
@@ -418,7 +473,7 @@ public class TerrainState
     
     public float getCenterVertexHeight()
     {
-        return (float) getCenterHeight() / BLOCK_LEVELS_FLOAT;
+        return (float) centerHeight() / BLOCK_LEVELS_FLOAT;
     }
 
     public float getFarCornerVertexHeight(HorizontalCorner corner)
@@ -522,11 +577,11 @@ public class TerrainState
    
     private float calcFarCornerVertexHeight(HorizontalCorner corner)
     {
-        int heightCorner = getCornerHeight(corner);
+        int heightCorner = height(corner);
         
         if(heightCorner == TerrainState.NO_BLOCK)
         {
-            int max = Math.max(Math.max(getSideHeight(corner.face1), getSideHeight(corner.face2)), getCenterHeight());
+            int max = Math.max(Math.max(height(corner.face1), height(corner.face2)), centerHeight());
             heightCorner = max - BLOCK_LEVELS_INT;
         }
        
@@ -536,17 +591,17 @@ public class TerrainState
     
     private float calcMidCornerVertexHeight(HorizontalCorner corner)
     {
-        int heightSide1 = getSideHeight(corner.face1);
-        int heightSide2 = getSideHeight(corner.face2);
-        int heightCorner = getCornerHeight(corner);
+        int heightSide1 = height(corner.face1);
+        int heightSide2 = height(corner.face2);
+        int heightCorner = height(corner);
         
-        int max = Math.max(Math.max(heightSide1, heightSide2), Math.max(heightCorner, getCenterHeight())) - BLOCK_LEVELS_INT;
+        int max = Math.max(Math.max(heightSide1, heightSide2), Math.max(heightCorner, centerHeight())) - BLOCK_LEVELS_INT;
                 
         if(heightSide1 == TerrainState.NO_BLOCK) heightSide1 = max;
         if(heightSide2 == TerrainState.NO_BLOCK) heightSide2 = max;
         if(heightCorner == TerrainState.NO_BLOCK) heightCorner = max;
         
-        float numerator = getCenterHeight() + heightSide1 + heightSide2 + heightCorner;
+        float numerator = centerHeight() + heightSide1 + heightSide2 + heightCorner;
        
         return numerator / (BLOCK_LEVELS_FLOAT * 4F);
         
@@ -566,13 +621,13 @@ public class TerrainState
      * Returns heat value using relative x, z coordinate for the corners of this block.
      * 0,0 represents center. Values outside the range -1, 1 return 0;
      */
-    public final float midHotness(final int xMin, final int zMin)
+    public final float midHotness(final int x, final int z)
     {
-        switch(xMin + 1)
+        switch(x + 1)
         {
             case 0:
                 // west
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                     case 0:
                         // north
@@ -588,7 +643,7 @@ public class TerrainState
                 }
             case 1:
                 // center (e-w)
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                 case 0:
                     // north
@@ -604,7 +659,7 @@ public class TerrainState
                 }
             case 2:
                 // east
-                switch(zMin + 1)
+                switch(z + 1)
                 {
                     case 0:
                         // north
@@ -678,28 +733,213 @@ public class TerrainState
         
     }
     
+    public float lavaAlpha(int x, int z)
+    {
+        switch(x + 1)
+        {
+            case 0:
+                // west
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.lavaAlpha(HorizontalCorner.NORTH_WEST);
+                    case 1:
+                        // center (n-s)
+                        return this.lavaAlpha(HorizontalFace.WEST);
+                    case 2:
+                        // south
+                        return this.lavaAlpha(HorizontalCorner.SOUTH_WEST);
+                    default:
+                        return 0;
+                }
+            case 1:
+                // center (e-w)
+                switch(z + 1)
+                {
+                case 0:
+                    // north
+                    return this.lavaAlpha(HorizontalFace.NORTH);
+                case 1:
+                    // center (n-s)
+                    return getCenterHotness() == 0 ? 0 : 1;
+                case 2:
+                    // south
+                    return this.lavaAlpha(HorizontalFace.SOUTH);
+                default:
+                    return 0;
+                }
+            case 2:
+                // east
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.lavaAlpha(HorizontalCorner.NORTH_EAST);
+                    case 1:
+                        // center (n-s)
+                        return this.lavaAlpha(HorizontalFace.EAST);
+                    case 2:
+                        // south
+                        return this.lavaAlpha(HorizontalCorner.SOUTH_EAST);
+                    default:
+                        return 0;
+                }
+            default:
+                return 0;
+        }
+    }
+    
+    private final float lavaAlpha(HorizontalCorner corner)
+    {
+        if(this.getCenterHotness() == 0) return 0;
+        if(this.neighborHotness(corner) == 0 && this.height(corner) != NO_BLOCK) return 0;
+        if(this.neighborHotness(corner.face1) == 0 && this.height(corner.face1) != NO_BLOCK) return 0;
+        if(this.neighborHotness(corner.face2) == 0 && this.height(corner.face2) != NO_BLOCK) return 0;
+
+        return 1;
+    }
+    
+    private final float lavaAlpha(HorizontalFace face)
+    {
+        if(this.getCenterHotness() == 0) return 0;
+        if(this.neighborHotness(face) == 0 && this.height(face) != NO_BLOCK) return 0;
+        
+        return 1;
+    }
+    
+    public float crustAlpha(int x, int z)
+    {
+        switch(x + 1)
+        {
+            case 0:
+                // west
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.crustAlpha(HorizontalCorner.NORTH_WEST);
+                    case 1:
+                        // center (n-s)
+                        return this.crustAlpha(HorizontalFace.WEST);
+                    case 2:
+                        // south
+                        return this.crustAlpha(HorizontalCorner.SOUTH_WEST);
+                    default:
+                        return 0;
+                }
+            case 1:
+                // center (e-w)
+                switch(z + 1)
+                {
+                case 0:
+                    // north
+                    return this.crustAlpha(HorizontalFace.NORTH);
+                case 1:
+                    // center (n-s)
+                    return crustAlphaCenter();
+                case 2:
+                    // south
+                    return this.crustAlpha(HorizontalFace.SOUTH);
+                default:
+                    return 0;
+                }
+            case 2:
+                // east
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.crustAlpha(HorizontalCorner.NORTH_EAST);
+                    case 1:
+                        // center (n-s)
+                        return this.crustAlpha(HorizontalFace.EAST);
+                    case 2:
+                        // south
+                        return this.crustAlpha(HorizontalCorner.SOUTH_EAST);
+                    default:
+                        return 0;
+                }
+            default:
+                return 0;
+        }
+    }
+    
+    private final float crustAlphaCenter()
+    {
+        if(this.getCenterHotness() == IHotBlock.MAX_HEAT)
+        {
+            // this is a lava block
+            if(this.neighborHotness(HorizontalFace.EAST) < IHotBlock.MAX_HEAT && this.height(HorizontalFace.EAST) != NO_BLOCK) return 0.5f;
+            if(this.neighborHotness(HorizontalFace.WEST) < IHotBlock.MAX_HEAT && this.height(HorizontalFace.WEST) != NO_BLOCK) return 0.5f;
+            if(this.neighborHotness(HorizontalFace.NORTH) < IHotBlock.MAX_HEAT && this.height(HorizontalFace.NORTH) != NO_BLOCK) return 0.5f;
+            if(this.neighborHotness(HorizontalFace.SOUTH) < IHotBlock.MAX_HEAT && this.height(HorizontalFace.SOUTH) != NO_BLOCK) return 0.5f;
+            return 0;
+        }
+        
+        return 1;
+    }
+    
+    private final float crustAlpha(HorizontalCorner corner)
+    {
+        final int ch = this.getCenterHotness();
+        if(ch == 0) return 1;
+        if(ch == IHotBlock.MAX_HEAT)
+        {
+            // this is a lava block
+            if(this.neighborHotness(corner) < IHotBlock.MAX_HEAT && this.height(corner) != NO_BLOCK) return 0.5f;
+            if(this.neighborHotness(corner.face1) < IHotBlock.MAX_HEAT && this.height(corner.face1) != NO_BLOCK) return 0.5f;
+            if(this.neighborHotness(corner.face2) < IHotBlock.MAX_HEAT && this.height(corner.face2) != NO_BLOCK) return 0.5f;
+            return 0;
+        }
+        else // hot basalt
+        {
+            if(this.neighborHotness(corner) == IHotBlock.MAX_HEAT) return 0.5f;
+            if(this.neighborHotness(corner.face1) == IHotBlock.MAX_HEAT) return 0.5f;
+            if(this.neighborHotness(corner.face2) == IHotBlock.MAX_HEAT) return 0.5f;
+            return 1;
+        }
+    }
+    
+    private final float crustAlpha(HorizontalFace face)
+    {
+        final int ch = this.getCenterHotness();
+        if(ch == 0) return 1;
+        if(ch == IHotBlock.MAX_HEAT)
+        {
+            // this is a lava block
+            if(this.neighborHotness(face) < IHotBlock.MAX_HEAT && this.height(face) != NO_BLOCK) return 0.5f;
+            return 0;
+        }
+        else // hot basalt
+        {
+            if(this.neighborHotness(face)  == IHotBlock.MAX_HEAT) return 0.5f;
+            return 1;
+        }
+    }
+    
     private float calcFarSideVertexHeight(HorizontalFace face)
     {
-        return (getSideHeight(face) == TerrainState.NO_BLOCK ? getCenterHeight() - BLOCK_LEVELS_INT: ((float)getSideHeight(face)) / BLOCK_LEVELS_FLOAT);
+        return (height(face) == TerrainState.NO_BLOCK ? centerHeight() - BLOCK_LEVELS_INT: ((float)height(face)) / BLOCK_LEVELS_FLOAT);
     }
 
     private float calcMidSideVertexHeight(HorizontalFace face)
     {
-        float sideHeight = getSideHeight(face) == TerrainState.NO_BLOCK ? getCenterHeight() - BLOCK_LEVELS_INT : (float)getSideHeight(face);
-        return (sideHeight + (float) getCenterHeight()) / (BLOCK_LEVELS_FLOAT * 2F);
+        float sideHeight = height(face) == TerrainState.NO_BLOCK ? centerHeight() - BLOCK_LEVELS_INT : (float)height(face);
+        return (sideHeight + (float) centerHeight()) / (BLOCK_LEVELS_FLOAT * 2F);
     }
 
     @Override
     public String toString()
     {
-        String retval = "CENTER=" + this.getCenterHeight();
+        String retval = "CENTER=" + this.centerHeight();
         for(HorizontalFace side: HorizontalFace.values())
         {
-            retval += " " + side.name() + "=" + this.getSideHeight(side);
+            retval += " " + side.name() + "=" + this.height(side);
         }
         for(HorizontalCorner corner: HorizontalCorner.values())
         {
-            retval += " " + corner.name() + "=" + this.getCornerHeight(corner);
+            retval += " " + corner.name() + "=" + this.height(corner);
         }
         retval += " Y-OFFSET=" + yOffset;
         return retval;
@@ -709,14 +949,14 @@ public class TerrainState
     {
         int count = 0;
         
-        final int center = this.getCenterHeight();
+        final int center = this.centerHeight();
         for(HorizontalFace side: HorizontalFace.values())
         {
-            count += Math.max(0, this.getSideHeight(side) - center) / 12;
+            count += Math.max(0, this.height(side) - center) / 12;
         }
         for(HorizontalCorner corner: HorizontalCorner.values())
         {
-            count += Math.max(0, this.getCornerHeight(corner) - center) / 12;
+            count += Math.max(0, this.height(corner) - center) / 12;
         }
         return count;
     }
@@ -724,12 +964,12 @@ public class TerrainState
     public int spread()
     {
         
-        final int center = this.getCenterHeight();
+        final int center = this.centerHeight();
         int min = center;
         int max = center;
         for(HorizontalFace side: HorizontalFace.values())
         {
-            int h = this.getSideHeight(side);
+            int h = this.height(side);
             if(h > max)
                 max = h;
             else if(h < min)
@@ -737,7 +977,7 @@ public class TerrainState
         }
         for(HorizontalCorner corner: HorizontalCorner.values())
         {
-            int h = this.getCornerHeight(corner);
+            int h = this.height(corner);
             if(h > max)
                 max = h;
             else if(h < min)
@@ -749,15 +989,15 @@ public class TerrainState
     public int divergence()
     {
         
-        final int center = this.getCenterHeight();
+        final int center = this.centerHeight();
         int div = 0;
         for(HorizontalFace side: HorizontalFace.values())
         {
-            div += Math.abs(this.getSideHeight(side) - center);
+            div += Math.abs(this.height(side) - center);
         }
         for(HorizontalCorner corner: HorizontalCorner.values())
         {
-            div += Math.abs(this.getCornerHeight(corner) - center);
+            div += Math.abs(this.height(corner) - center);
         }
         return div;
     }
@@ -775,6 +1015,7 @@ public class TerrainState
     @SuppressWarnings("unchecked")
     public static final BitPacker<Void>.IntElement[] SIDE_HOTNESS = (BitPacker<Void>.IntElement[]) new BitPacker<?>.IntElement[4];
    
+    public static final int ALL_HOT;
     static
     {
         SIDE_HOTNESS[HorizontalFace.NORTH.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
@@ -786,6 +1027,8 @@ public class TerrainState
         CORNER_HOTNESS[HorizontalCorner.NORTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
         CORNER_HOTNESS[HorizontalCorner.SOUTH_EAST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT); 
         CORNER_HOTNESS[HorizontalCorner.SOUTH_WEST.ordinal()] = HOTNESS_PACKER.createIntElement(IHotBlock.HEAT_LEVEL_COUNT);
+        ALL_HOT = (int) HOTNESS_PACKER.bitMask();
+        
     }
     
     private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)

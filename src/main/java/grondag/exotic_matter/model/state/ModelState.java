@@ -745,6 +745,13 @@ public class ModelState implements ISuperModelState
         assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
         return ModelStateData.FLOW_JOIN.getValue(this);
     }
+    
+    @Override
+    public int getTerrainHotness()
+    {
+        assert this.getShape().meshFactory().stateFormat == StateFormat.FLOW : "getTerrainState on model state does not apply for shape";
+        return (int)ModelStateData.EXTRA_SHAPE_BITS.getValue(this);
+    }
 
     @Override
     public void setTerrainStateKey(long terrainStateKey)

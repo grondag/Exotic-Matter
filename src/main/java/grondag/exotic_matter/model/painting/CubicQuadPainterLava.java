@@ -36,7 +36,7 @@ public class CubicQuadPainterLava extends CubicQuadPainterQuadrants
 
                 final HorizontalFace hFace = HorizontalFace.find(face);
                 return flowState.neighborHotness(hFace) != 0
-                        || flowState.getSideHeight(hFace) == TerrainState.NO_BLOCK;
+                        || flowState.height(hFace) == TerrainState.NO_BLOCK;
             }
         
             @Override
@@ -46,7 +46,7 @@ public class CubicQuadPainterLava extends CubicQuadPainterQuadrants
                 if(hCorner == null) return false;
                 
                 return flowState.neighborHotness(hCorner) != 0
-                        || flowState.getCornerHeight(hCorner) == TerrainState.NO_BLOCK;
+                        || flowState.height(hCorner) == TerrainState.NO_BLOCK;
             }
         
             @Override
