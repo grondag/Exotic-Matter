@@ -60,9 +60,6 @@ public class QuadPainterFactory
                         ? new CubicQuadPainterQuadrants(modelState, surface, paintLayer)
                         : null;
                 
-            case LAVA_CONNECTED:
-                return new CubicQuadPainterLava(modelState, surface, paintLayer);
-                
             default:
                 return null;
             }

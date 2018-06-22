@@ -121,15 +121,7 @@ public enum TextureLayout
      * 
      * Follows same naming convention as {@link #SIMPLE}.
      */
-    QUADRANT_CONNECTED (STATE_FLAG_NEEDS_CORNER_JOIN | STATE_FLAG_NEEDS_SPECIES),
-    
-    /**
-     * Identical to {@link #QUADRANT_CONNECTED} but without the state flags that
-     * trigger corner join and species lookup in model state. Lava doesn't use
-     * these and needs a special quad painter that uses terrain state. Having a 
-     * separate is a simple way to select the specialized painter for lava.   
-     */
-    LAVA_CONNECTED (STATE_FLAG_NONE);
+    QUADRANT_CONNECTED (STATE_FLAG_NEEDS_CORNER_JOIN | STATE_FLAG_NEEDS_SPECIES);
     
     private static String buildTextureName_X_8(TexturePallette texture, int offset)
     {
