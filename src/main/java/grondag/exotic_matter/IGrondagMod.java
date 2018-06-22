@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -30,7 +31,7 @@ public interface IGrondagMod
         return new ResourceLocation(prefixResource(name));
     }
     
-    public default void addRecipe(String itemName, int index, String recipe, String... inputs)
+    public default void addRecipe(ItemStack output, int index, String recipe, String... inputs)
     {
         String[] lines = new String[3];
         lines[0] = recipe.substring(0, 3);
@@ -51,9 +52,9 @@ public interface IGrondagMod
         }
         
         GameRegistry.addShapedRecipe(
-                resource(itemName + index), 
+                resource(output.getItem().getRegistryName().toString() + index), 
                 resource(this.modID()),
-                ForgeRegistries.ITEMS.getValue(resource(itemName)).getDefaultInstance(),
+                output,
                 params.toArray());
     }
     
