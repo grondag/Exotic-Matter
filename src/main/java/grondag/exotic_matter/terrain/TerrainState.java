@@ -918,6 +918,85 @@ public class TerrainState
         }
     }
     
+    /**
+     * How opaque/cool crust should appear. <br>
+     * 1 = look like cool basalt. 0 = look like normal hot surface.<br>
+     * Will be 1 for corners and sides that border cool basalt.<br>
+     * Will be 0 for corners and sides that border a non-flow block or a hot block.
+     */
+    public float edgeAlpha(int x, int z)
+    {
+        switch(x + 1)
+        {
+            case 0:
+                // west
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.edgeAlpha(HorizontalCorner.NORTH_WEST);
+                    case 1:
+                        // center (n-s)
+                        return this.edgeAlpha(HorizontalFace.WEST);
+                    case 2:
+                        // south
+                        return this.edgeAlpha(HorizontalCorner.SOUTH_WEST);
+                    default:
+                        return 0;
+                }
+            case 1:
+                // center (e-w)
+                switch(z + 1)
+                {
+                case 0:
+                    // north
+                    return this.edgeAlpha(HorizontalFace.NORTH);
+                case 1:
+                    // center (n-s)
+                    return 0;
+                case 2:
+                    // south
+                    return this.edgeAlpha(HorizontalFace.SOUTH);
+                default:
+                    return 0;
+                }
+            case 2:
+                // east
+                switch(z + 1)
+                {
+                    case 0:
+                        // north
+                        return this.edgeAlpha(HorizontalCorner.NORTH_EAST);
+                    case 1:
+                        // center (n-s)
+                        return this.edgeAlpha(HorizontalFace.EAST);
+                    case 2:
+                        // south
+                        return this.edgeAlpha(HorizontalCorner.SOUTH_EAST);
+                    default:
+                        return 0;
+                }
+            default:
+                return 0;
+        }
+    }
+    
+    private final float edgeAlpha(HorizontalCorner corner)
+    {
+        if(this.height(corner) != NO_BLOCK && this.neighborHotness(corner) == 0) return 1;
+        if(this.height(corner.face1) != NO_BLOCK && this.neighborHotness(corner.face1) == 0) return 1;
+        if(this.height(corner.face2) != NO_BLOCK && this.neighborHotness(corner.face2) == 0) return 1;
+        return 0;
+    }
+    
+    private final float edgeAlpha(HorizontalFace face)
+    {
+        if(this.height(face) != NO_BLOCK && this.neighborHotness(face) == 0) 
+            return 1;
+        else
+            return 0;
+    }
+    
     private float calcFarSideVertexHeight(HorizontalFace face)
     {
         return (height(face) == TerrainState.NO_BLOCK ? centerHeight() - BLOCK_LEVELS_INT: ((float)height(face)) / BLOCK_LEVELS_FLOAT);

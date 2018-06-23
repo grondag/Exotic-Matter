@@ -10,12 +10,14 @@ import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
+import grondag.exotic_matter.model.render.Shaders;
 import grondag.exotic_matter.statecache.IWorldStateCache;
 import grondag.exotic_matter.statecache.WorldStateCache;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -122,6 +124,11 @@ public class ClientProxy extends CommonProxy
     {
         super.postInit(event);
         SuperTileEntity.updateRenderDistance();
+        
+        Shaders.loadShaders();
+        if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager)
+            ((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(r ->Shaders.loadShaders());
+
     }
     
     static final IWorldStateCache worldStateCache = new WorldStateCache();
