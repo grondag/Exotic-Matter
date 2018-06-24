@@ -7,10 +7,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.lwjgl.opengl.ARBFragmentShader;
-import org.lwjgl.opengl.ARBShaderObjects;
-import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
@@ -23,6 +21,8 @@ public final class Shaders
 {
     public static final class Shader
     {
+        // TODO: remove
+        private int tick = 0;
         private int glID = 0;
         public final @Nullable String fragmentFileName;
         public final @Nullable String vertexFileName;
@@ -43,35 +43,45 @@ public final class Shaders
         private void release()
         {
             if(glID == 0) return;
-            ARBShaderObjects.glDeleteObjectARB(glID);
+            GL20.glDeleteProgram(glID);
             glID = 0;
         }
         
         public void activate()
         {
+            int magic = 0;
+            if(tick != magic)
+            {
+                tick = magic;
+                this.load();
+            }
+            
             if(glID != 0)
-                ARBShaderObjects.glUseProgramObjectARB(glID);
+                GL20.glUseProgram(glID);
         }
 
         public void deactivate()
         {
-            ARBShaderObjects.glUseProgramObjectARB(0);
+            GL20.glUseProgram(0);
         }
         
         // TODO: if going to call these frequently may need to retain location reference
         public void setUniform(String name, int value)
         {
             if(glID == 0) return;
-            int uid = ARBShaderObjects.glGetUniformLocationARB(glID, name);
-            ARBShaderObjects.glUniform1iARB(uid, value);
+            final int uid = GL20.glGetUniformLocation(glID, name);
+            if(uid != -1)
+                GL20.glUniform1i(uid, value);
         }
+      
         
      // TODO: if going to call these frequently may need to retain location reference
         public void setUniform(String name, float value)
         {
             if(glID == 0) return;
-            int uid = ARBShaderObjects.glGetUniformLocationARB(glID, name);
-            ARBShaderObjects.glUniform1fARB(uid, value);
+            final int uid =  GL20.glGetUniformLocation(glID, name);
+            if(uid != -1)
+                GL20.glUniform1f(uid, value);
         }
     }
     
@@ -96,28 +106,28 @@ public final class Shaders
     {
         int vertId = 0, fragId = 0, programID;
         if(vert != null)
-            vertId = createShader(vert, ARBVertexShader.GL_VERTEX_SHADER_ARB);
+            vertId = createShader(vert, GL20.GL_VERTEX_SHADER);
         if(frag != null)
-            fragId = createShader(frag, ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
+            fragId = createShader(frag, GL20.GL_FRAGMENT_SHADER);
 
-        programID = ARBShaderObjects.glCreateProgramObjectARB();
+        programID = GL20.glCreateProgram();
         if(programID == 0)
             return 0;
 
         if(vert != null)
-            ARBShaderObjects.glAttachObjectARB(programID, vertId);
+            GL20.glAttachShader(programID, vertId);
         if(frag != null)
-            ARBShaderObjects.glAttachObjectARB(programID, fragId);
+            GL20.glAttachShader(programID, fragId);
 
-        ARBShaderObjects.glLinkProgramARB(programID);
-        if(ARBShaderObjects.glGetObjectParameteriARB(programID, ARBShaderObjects.GL_OBJECT_LINK_STATUS_ARB) == GL11.GL_FALSE)
+        GL20.glLinkProgram(programID);
+        if(GL20.glGetProgrami(programID, GL20.GL_LINK_STATUS) == GL11.GL_FALSE)
         {
             ExoticMatter.INSTANCE.error(getLogInfo(programID));
             return 0;
         }
 
-        ARBShaderObjects.glValidateProgramARB(programID);
-        if (ARBShaderObjects.glGetObjectParameteriARB(programID, ARBShaderObjects.GL_OBJECT_VALIDATE_STATUS_ARB) == GL11.GL_FALSE)
+        GL20.glValidateProgram(programID);
+        if (GL20.glGetProgrami(programID, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE)
         {
             ExoticMatter.INSTANCE.error(getLogInfo(programID));
             return 0;
@@ -126,27 +136,28 @@ public final class Shaders
         return programID;
     }
 
+    // TODO: use OpenGL helper to use appropriate methods
     private static int createShader(String filename, int shaderType)
     {
         int shader = 0;
         try
         {
-            shader = ARBShaderObjects.glCreateShaderObjectARB(shaderType);
+            shader = GL20.glCreateShader(shaderType);
 
             if(shader == 0)
                 return 0;
 
-            ARBShaderObjects.glShaderSourceARB(shader, readFileAsString(filename));
-            ARBShaderObjects.glCompileShaderARB(shader);
+            GL20.glShaderSource(shader, readFileAsString(filename));
+            GL20.glCompileShader(shader);
 
-            if (ARBShaderObjects.glGetObjectParameteriARB(shader, ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB) == GL11.GL_FALSE)
+            if (GL20.glGetProgrami(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE)
                 throw new RuntimeException("Error creating shader: " + getLogInfo(shader));
 
             return shader;
         }
         catch(Exception e)
         {
-            ARBShaderObjects.glDeleteObjectARB(shader);
+            GL20.glDeleteShader(shader);
             ExoticMatter.INSTANCE.error("Unable to create shader", e);
             return -1;
         }
@@ -154,7 +165,7 @@ public final class Shaders
 
     private static String getLogInfo(int obj)
     {
-        return ARBShaderObjects.glGetInfoLogARB(obj, ARBShaderObjects.glGetObjectParameteriARB(obj, ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB));
+        return GL20.glGetProgramInfoLog(obj, GL20.glGetProgrami(obj, GL20.GL_INFO_LOG_LENGTH));
     }
 
     private static String readFileAsString(String filename) throws Exception
