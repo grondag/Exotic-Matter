@@ -42,12 +42,13 @@ public class ClientProxy extends CommonProxy
     private static double cameraX;
     private static double cameraY;
     private static double cameraZ;
+    
+    private static float worldTime;
 
     private static void refreshCamera()
     {
         Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
         if(entity == null) return;
-
         float partialTicks = Animation.getPartialTickTime();
         
         ICamera newCam = new Frustum();
@@ -64,6 +65,13 @@ public class ClientProxy extends CommonProxy
     public static void updateCamera()
     {
         camera = null;
+        
+        Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
+        if(entity == null) return;
+
+        float partialTicks = Animation.getPartialTickTime();
+        if(entity.world != null)
+            worldTime = Animation.getWorldTime(entity.world, partialTicks);
     }
 
     @Nullable
@@ -139,4 +147,8 @@ public class ClientProxy extends CommonProxy
         return worldStateCache;
     }
 
+    public static float getWorldTime()
+    {
+        return worldTime;
+    }
 }
