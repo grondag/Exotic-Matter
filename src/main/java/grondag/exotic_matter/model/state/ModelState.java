@@ -32,6 +32,7 @@ import grondag.exotic_matter.model.painting.VertexProcessor;
 import grondag.exotic_matter.model.painting.VertexProcessors;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -800,18 +801,32 @@ public class ModelState implements ISuperModelState
     }
     
     @Override
-    public RenderLayout getRenderLayout()
+    public final RenderLayout getRenderLayout()
+    {
+        return getRenderLayoutProducer().renderLayout();
+    }
+    
+    @Override
+    public final RenderLayoutProducer getRenderLayoutProducer()
     {
         this.populateStateFlagsIfNeeded();
         
         if((this.stateFlags & STATE_FLAG_HAS_SOLID_RENDER) == STATE_FLAG_HAS_SOLID_RENDER)
-            return ((this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_RENDER) == STATE_FLAG_HAS_TRANSLUCENT_RENDER)
-                ? RenderLayout.SOLID_AND_TRANSLUCENT 
-                : RenderLayout.SOLID_ONLY;
+        {
+            if((this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_RENDER) == STATE_FLAG_HAS_TRANSLUCENT_RENDER)
+            {
+                // models with solid base textures can render in solid layer if Acuity is enabled
+                return (this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY) == 0
+                        ? RenderLayoutProducer.ALWAYS_BOTH
+                        : RenderLayoutProducer.DEPENDS;
+            }
+            else 
+                return RenderLayoutProducer.ALWAYS_SOLID;
+        }
         else 
             return ((this.stateFlags & STATE_FLAG_HAS_TRANSLUCENT_RENDER) == STATE_FLAG_HAS_TRANSLUCENT_RENDER)
-                ? RenderLayout.TRANSLUCENT_ONLY
-                : RenderLayout.NONE;
+                ? RenderLayoutProducer.ALWAYS_TRANSLUCENT
+                : RenderLayoutProducer.ALWAYS_NONE;
     }
     
     @Override

@@ -88,6 +88,12 @@ public class CommonEventHandler
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.CUBE);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.TEST_4X4);
+        workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.TILE_DOTS);
+        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFF0000FF);
+        workingModel.setTranslucent(PaintLayer.MIDDLE, true);
+        workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_SMOOTH_BLEND);
+        workingModel.setColorRGB(PaintLayer.OUTER, 0xFF104010);
+        workingModel.setTranslucent(PaintLayer.OUTER, true);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("blocktest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();

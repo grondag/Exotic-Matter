@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.varia.ItemHelper;
@@ -27,7 +28,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
      */
     private static final Object TILE_ENTITY_AD_HOCK_CREATION_LOCK = new Object();
     
-    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayout renderLayout)
+    public SuperBlockPlus(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayoutProducer renderLayout)
     {
         super(blockName, defaultMaterial, defaultModelState, renderLayout);
     }

@@ -14,6 +14,7 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.VertexProcessor;
 import grondag.exotic_matter.model.primitives.Transform;
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -322,5 +323,7 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     public void setVertexProcessor(PaintLayer layer, VertexProcessor vp);
     
     public VertexProcessor getVertexProcessor(PaintLayer layer);
+
+    public RenderLayoutProducer getRenderLayoutProducer();
     
 }

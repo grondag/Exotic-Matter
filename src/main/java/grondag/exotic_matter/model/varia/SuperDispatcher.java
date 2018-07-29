@@ -77,7 +77,7 @@ public class SuperDispatcher
 		    provideFormattedQuads(key, false, p ->
 		        containers[p.getRenderPass().ordinal()].accept(p));
 			
-			SparseLayerMap result = layerMapBuilders[renderLayout.blockLayerFlags].makeNewMap();
+			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
 
 			for(BlockRenderLayer layer : BlockRenderLayer.values())
 			{
@@ -136,18 +136,18 @@ public class SuperDispatcher
     
     private SuperDispatcher()
     {
-        this.layerMapBuilders = new SparseLayerMapBuilder[RenderLayout.BENUMSET_BLOCK_RENDER_LAYER.combinationCount()];
+        this.layerMapBuilders = new SparseLayerMapBuilder[RenderLayout.COMBINATION_COUNT];
 
-        for(int i = 0; i < RenderLayout.BENUMSET_BLOCK_RENDER_LAYER.combinationCount(); i++)
+        for(int i = 0; i < RenderLayout.COMBINATION_COUNT; i++)
         {
-            this.layerMapBuilders[i] = new SparseLayerMapBuilder(RenderLayout.BENUMSET_BLOCK_RENDER_LAYER.getValuesForSetFlags(i));
+            this.layerMapBuilders[i] = new SparseLayerMapBuilder(RenderLayout.ALL_LAYOUTS.get(i).blockLayerList);
         }
         
         this.delegates = new DispatchDelegate[RenderLayout.ALL_LAYOUTS.size()];
         for(RenderLayout layout : RenderLayout.ALL_LAYOUTS)
         {
             DispatchDelegate newDelegate = new DispatchDelegate(layout);
-            this.delegates[layout.blockLayerFlags] = newDelegate;
+            this.delegates[layout.ordinal] = newDelegate;
         }
     }
     
@@ -190,7 +190,7 @@ public class SuperDispatcher
   
     public DispatchDelegate getDelegate(ISuperBlock block)
     {
-        return this.delegates[block.renderLayout().blockLayerFlags];
+        return this.delegates[block.renderLayout().ordinal];
     }
     
     /**
@@ -217,7 +217,7 @@ public class SuperDispatcher
      */
     public DispatchDelegate getItemDelegate()
     {
-        return this.delegates[RenderLayout.TRANSLUCENT_ONLY.blockLayerFlags];
+        return this.delegates[RenderLayout.TRANSLUCENT_ONLY.ordinal];
     }
     
     public class DispatchDelegate implements IBakedModel, IModel
@@ -226,7 +226,7 @@ public class SuperDispatcher
         
         private DispatchDelegate(RenderLayout blockRenderLayout)
         {
-            this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderLayout.blockLayerFlags);
+            this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderLayout.ordinal);
         }
 
         /** only used for block layer version */

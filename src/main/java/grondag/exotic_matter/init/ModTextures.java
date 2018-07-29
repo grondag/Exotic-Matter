@@ -26,17 +26,17 @@ public class ModTextures
             new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SMALL).withLayout(TextureLayout.SIMPLE)
             .withRotation(CONSISTENT.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     
-    public static final ITexturePalette BIGTEX_TEST1  = TexturePaletteRegistry.addTexturePallette("big_tex_test1", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
+    public static final ITexturePalette BIGTEX_TEST1  = TexturePaletteRegistry.addTexturePallette("big_tex_test1", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate_0",
             new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(4).withScale(TextureScale.TINY).withLayout(TextureLayout.SIMPLE)
             .withRotation(RANDOM.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.HIDDEN_TILES));
     
-    public static final ITexturePalette BIGTEX_TEST2 = TexturePaletteRegistry.addTexturePallette("big_tex_test2", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
+    public static final ITexturePalette BIGTEX_TEST2 = TexturePaletteRegistry.addTexturePallette("big_tex_test2", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate_0",
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.SMALL));
-    public static final ITexturePalette BIGTEX_TEST3 = TexturePaletteRegistry.addTexturePallette("big_tex_test3", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
+    public static final ITexturePalette BIGTEX_TEST3 = TexturePaletteRegistry.addTexturePallette("big_tex_test3", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate_0",
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.MEDIUM));
-    public static final ITexturePalette BIGTEX_TEST4 = TexturePaletteRegistry.addTexturePallette("big_tex_test4", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
+    public static final ITexturePalette BIGTEX_TEST4 = TexturePaletteRegistry.addTexturePallette("big_tex_test4", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate_0",
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.LARGE));
-    public static final ITexturePalette BIGTEX_TEST5 = TexturePaletteRegistry.addTexturePallette("big_tex_test5", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate",
+    public static final ITexturePalette BIGTEX_TEST5 = TexturePaletteRegistry.addTexturePallette("big_tex_test5", ConfigXM.BLOCKS.showHiddenTextures ? "bigtex" : "noise_moderate_0",
             new TexturePaletteSpec(BIGTEX_TEST1).withScale(TextureScale.GIANT));
 
     public static final ITexturePalette TEST = TexturePaletteRegistry.addTexturePallette("test", ConfigXM.BLOCKS.showHiddenTextures ? "test" : "noise_moderate_0", 
@@ -100,5 +100,13 @@ public class ModTextures
             .withRotation(CONSISTENT.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_ONLY).withGroups(TextureGroup.STATIC_TILES));
     public static final ITexturePalette BIGTEX_MARBLE_ZOOM = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE);
     public static final ITexturePalette BIGTEX_MARBLE_ZOOM_X2 = TexturePaletteRegistry.addZoomedPallete(BIGTEX_MARBLE_ZOOM);
+    
+    public static final ITexturePalette BORDER_SMOOTH_BLEND = TexturePaletteRegistry.addTexturePallette("border_smooth_blended", "border_smooth_blended", 
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(1).withScale(TextureScale.SINGLE).withLayout(TextureLayout.BORDER_13)
+            .withRotation(FIXED.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.OVERLAY_ONLY).withGroups(TextureGroup.STATIC_BORDERS));
+
+    public static final ITexturePalette TILE_DOTS = TexturePaletteRegistry.addTexturePallette("dots", "dots", 
+            new TexturePaletteSpec(ExoticMatter.INSTANCE).withVersionCount(4).withScale(TextureScale.SINGLE).withLayout(TextureLayout.SPLIT_X_8)
+            .withRotation(RANDOM.with(ROTATE_NONE)).withRenderIntent(TextureRenderIntent.BASE_OR_OVERLAY_NO_CUTOUT).withGroups(TextureGroup.STATIC_TILES, TextureGroup.STATIC_DETAILS));
 
 }

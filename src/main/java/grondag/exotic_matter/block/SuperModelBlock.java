@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.model.varia.WorldLightOpacity;
@@ -71,48 +72,48 @@ public class SuperModelBlock extends SuperBlockPlus
     public static final PropertyInteger HARVEST_LEVEL = PropertyInteger.create("harvest_level", 0, MAX_HARVEST_LEVEL);
     
     /** dimensions are BlockRenderMode, worldOpacity, hypermatter (y = 1 /n = 0), cube (y = 1 /n = 0) */
-    public static final SuperModelBlock[][][][] superModelBlocks = new SuperModelBlock[RenderLayout.ALL_LAYOUTS.size()][WorldLightOpacity.values().length][2][2];
+    public static final SuperModelBlock[][][][] superModelBlocks = new SuperModelBlock[RenderLayoutProducer.VALUE_COUNT][WorldLightOpacity.values().length][2][2];
     
     public static SuperModelBlock findAppropriateSuperModelBlock(BlockSubstance substance, ISuperModelState modelState)
     {
         WorldLightOpacity opacity = WorldLightOpacity.getClosest(substance, modelState);
-        RenderLayout renderLayout = modelState.getRenderLayout();
+        RenderLayoutProducer renderLayout = modelState.getRenderLayoutProducer();
         int hypermaterIndex = substance.isHyperMaterial ? 1 : 0;
         int cubeIndex = modelState.isCube() ? 1 : 0;
-        return superModelBlocks[renderLayout.blockLayerFlags][opacity.ordinal()][hypermaterIndex][cubeIndex];
+        return superModelBlocks[renderLayout.ordinal][opacity.ordinal()][hypermaterIndex][cubeIndex];
     }
 
     public static void registerSuperModelBlocks(Register<Block> event)
     {
         int superModelIndex = 0;
         
-        for(RenderLayout blockRenderMode : RenderLayout.ALL_LAYOUTS)
+        for(RenderLayoutProducer blockRenderMode : RenderLayoutProducer.VALUES)
         {
             for(WorldLightOpacity opacity : WorldLightOpacity.values())
             {
                 // mundane non-cube
-                SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][0][0]
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][0]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, false)
                             .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
-                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][0][0]);
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][0]);
                 
                 // mundane cube
-                SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][0][1]
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][1]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, true)
                             .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
-                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][0][1]);
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][1]);
                 
                 // hypermatter non-cube
-                SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][1][0]
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][0]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, false)
                             .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
-                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][1][0]);
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][0]);
                 
                 // hypermatter cube
-                SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][1][1]
+                SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][1]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, true)
                             .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
-                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.blockLayerFlags][opacity.ordinal()][1][1]);
+                event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][1]);
                 
             }
         }
@@ -131,7 +132,7 @@ public class SuperModelBlock extends SuperBlockPlus
      * @param isHyperMatter
      * @param isGeometryFullCube        If true, blocks with this instance are expected to have a full block geometry
      */
-    public SuperModelBlock(String blockName, Material defaultMaterial, RenderLayout renderLayout, WorldLightOpacity worldLightOpacity, 
+    public SuperModelBlock(String blockName, Material defaultMaterial, RenderLayoutProducer renderLayout, WorldLightOpacity worldLightOpacity, 
                 boolean isHyperMatter, boolean isGeometryFullCube)
     {
         super(blockName, defaultMaterial, DEFAULT_MODEL_STATE.clone(), renderLayout);

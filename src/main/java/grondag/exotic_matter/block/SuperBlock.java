@@ -15,6 +15,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ConfigXM.BlockSettings.ProbeInfoLevel;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.model.state.ModelState;
@@ -104,14 +105,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     /** see {@link #isAssociatedBlock(Block)} */
     protected Block associatedBlock;
     
-    private final RenderLayout renderLayout;
+    private final RenderLayoutProducer renderLayoutProducer;
     
     /**
      * Sub-items for the block. Initialized in {@link #createSubItems()}
      */
     private @Nullable List<ItemStack> subItems;
     
-    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayout renderLayout)
+    public SuperBlock(String blockName, Material defaultMaterial, ISuperModelState defaultModelState, @Nullable RenderLayoutProducer renderLayout)
     {
         super(defaultMaterial);
         
@@ -129,8 +130,8 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
 
         this.defaultModelStateBits = defaultModelState.serializeToInts();
         
-        this.renderLayout = renderLayout == null
-                ? defaultModelState.getRenderLayout()
+        this.renderLayoutProducer = renderLayout == null
+                ? defaultModelState.getRenderLayoutProducer()
                 : renderLayout;
     }   
 
@@ -486,7 +487,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean canRenderInLayer(@Nonnull IBlockState state, @Nonnull BlockRenderLayer layer)
     {
-        return this.renderLayout.containsBlockRenderLayer(layer);
+        return this.renderLayoutProducer.renderLayout().containsBlockRenderLayer(layer);
     }
    
     @Override
@@ -1294,6 +1295,6 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public final RenderLayout renderLayout()
     {
-        return renderLayout;
+        return renderLayoutProducer.renderLayout();
     }
 }

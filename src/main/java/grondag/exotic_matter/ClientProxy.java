@@ -2,15 +2,19 @@ package grondag.exotic_matter;
 
 
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import grondag.acuity.api.IAcuityListener;
+import grondag.acuity.api.IAcuityRuntime;
 import grondag.exotic_matter.block.DummyColorHandler;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.model.render.Shaders;
+import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.statecache.IWorldStateCache;
 import grondag.exotic_matter.statecache.WorldStateCache;
 import net.minecraft.block.Block;
@@ -23,6 +27,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.animation.Animation;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -31,7 +36,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @SideOnly(Side.CLIENT)
-public class ClientProxy extends CommonProxy
+public class ClientProxy extends CommonProxy implements IAcuityListener
 {
     /**
      * Nulled out at start of each render and then initialized if needed.
@@ -44,6 +49,8 @@ public class ClientProxy extends CommonProxy
     private static double cameraZ;
     
     private static float worldTime;
+    
+    private static @Nullable IAcuityRuntime acuity;
 
     private static void refreshCamera()
     {
@@ -99,6 +106,17 @@ public class ClientProxy extends CommonProxy
         return cameraZ;
     }
 
+    public static @Nullable IAcuityRuntime acuity()
+    {
+        return acuity;
+    }
+    
+    @SuppressWarnings("null")
+    public static boolean isAcuityEnabled()
+    {
+        return acuity != null && acuity.isAcuityEnabled();
+    }
+    
     @Override
     public void preInit(FMLPreInitializationEvent event)
     {
@@ -107,6 +125,20 @@ public class ClientProxy extends CommonProxy
         if(ConfigXM.RENDER.debugOutputColorAtlas)
         {
             BlockColorMapProvider.writeColorAtlas(event.getModConfigurationDirectory());
+        }
+        
+        FMLInterModComms.sendFunctionMessage("acuity", "getAcuityRuntime", "grondag.exotic_matter.ClientProxy$AcuityRuntimeConsumer");
+
+    }
+    
+    public static class AcuityRuntimeConsumer implements Function<IAcuityRuntime, Void>
+    {
+        @Override
+        public @Nullable Void apply(@Nullable IAcuityRuntime runtime)
+        {
+            acuity = runtime;
+            runtime.registerListener((ClientProxy)ExoticMatter.proxy);
+            return null;
         }
     }
     
@@ -150,5 +182,12 @@ public class ClientProxy extends CommonProxy
     public static float getWorldTime()
     {
         return worldTime;
+    }
+
+    @Override
+    public void onAcuityStatusChange(boolean newEnabledStatus)
+    {
+        // force rebuild of containers because renderlayouts may change
+        SuperDispatcher.INSTANCE.clear();
     }
 }

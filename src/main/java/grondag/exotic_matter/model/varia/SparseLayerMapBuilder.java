@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.varia;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.render.QuadContainer;
@@ -15,10 +17,10 @@ public class SparseLayerMapBuilder
     private final int size;
     public final BlockRenderLayer[] layers;
     
-    public SparseLayerMapBuilder(BlockRenderLayer... layers)
+    public SparseLayerMapBuilder(List<BlockRenderLayer> layers)
     {
-        this.size = layers.length;
-        this.layers = layers;
+        this.size = layers.size();
+        this.layers = layers.toArray(new BlockRenderLayer[layers.size()]);
         int counter = 0;
         
         for(BlockRenderLayer l: layers)
