@@ -7,10 +7,18 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
+import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.CSG.CSGNode.Root;
+import grondag.exotic_matter.model.render.LitBakedQuad;
 import grondag.exotic_matter.varia.ColorHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 
 @Deprecated
 public class PolyImpl extends AbstractPolygon implements IMutablePolygon
@@ -529,6 +537,15 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             assert v.v < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds";
 
             this.vertices[i] = v;
+        }
+    }
+    
+    @Override
+    public void forEachVertex(Consumer<Vertex> consumer)
+    {
+        for(int i = 0; i < this.vertexCount; i++)
+        {
+            consumer.accept(this.vertices[i]);
         }
     }
     

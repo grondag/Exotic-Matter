@@ -64,6 +64,26 @@ public abstract class QuadPainter
     protected abstract boolean isQuadValidForPainting(IPolygon inputQuad);
     
     /**
+     * True if painter will render a solid surface. When Acuity API is enabled
+     * this signals that overlay textures can be packed into single quad.
+     */
+    public boolean isSolid()
+    {
+        switch(this.paintLayer)
+        {
+        case BASE:
+        case CUT:
+        case LAMP:
+            return !this.modelState.isTranslucent(this.paintLayer);
+            
+        case MIDDLE:
+        case OUTER:
+        default:
+            return false;
+        }
+    }
+    
+    /**
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */

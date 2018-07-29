@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 import grondag.acuity.api.IAcuityListener;
 import grondag.acuity.api.IAcuityRuntime;
+import grondag.acuity.api.IPipelineManager;
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.block.DummyColorHandler;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
@@ -51,6 +53,7 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     private static float worldTime;
     
     private static @Nullable IAcuityRuntime acuity;
+    private static @Nullable IPipelineManager pipelineManager;
 
     private static void refreshCamera()
     {
@@ -137,6 +140,7 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
         public @Nullable Void apply(@Nullable IAcuityRuntime runtime)
         {
             acuity = runtime;
+            pipelineManager = runtime.getPipelineManager();
             runtime.registerListener((ClientProxy)ExoticMatter.proxy);
             return null;
         }
@@ -189,5 +193,14 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     {
         // force rebuild of containers because renderlayouts may change
         SuperDispatcher.INSTANCE.clear();
+    }
+
+    /**
+     * Handles null checking and shortens pointer chase
+     */
+    public static @Nullable IRenderPipeline acuityPipeline(int value)
+    {
+        final IPipelineManager p = pipelineManager;
+        return p == null ? null : p.getPipelineByIndex(value);
     }
 }

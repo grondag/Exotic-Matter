@@ -5,7 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.painting.QuadPainterFactory;
 import grondag.exotic_matter.model.painting.QuadrantSplitter;
 import grondag.exotic_matter.model.painting.Surface;
@@ -13,7 +12,6 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.state.ISuperModelState;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 
 /**
  * Low-garbage consumer for quads from mesh generators that
@@ -50,11 +48,6 @@ public class QuadPaintManager
         private final IdentityHashMap<Surface, PainterList> surfaces
             = new IdentityHashMap<>();
         
-        private static class PainterList extends SimpleUnorderedArrayList<QuadPainter>
-        {
-            private boolean needsQuadrants = false;
-        }
-        
         private void clear()
         {
             for(PainterList list : surfaces.values())
@@ -74,19 +67,11 @@ public class QuadPaintManager
                         ? new PainterList()
                         : emptyLists.pop();
                         
-                result.needsQuadrants = false;
-                
                 for(PaintLayer l : PaintLayer.VALUES)
                 {
                     if(modelState.isLayerEnabled(l) && !surface.isLayerDisabled(l))
                     {
-                        QuadPainter p = QuadPainterFactory.getPainterForSurface(modelState, surface, l);
-                        if(p != null)
-                        {
-                            result.add(p);
-                            if(p.requiresQuadrants())
-                                result.needsQuadrants = true;
-                        }
+                        result.add(QuadPainterFactory.getPainterForSurface(modelState, surface, l));
                     }
                 }
                         
@@ -113,15 +98,14 @@ public class QuadPaintManager
                 poly = q;
             }
             
-            if(painters.needsQuadrants && QuadrantSplitter.uvQuadrant(poly) == null)
+            if(painters.needsQuadrants() && QuadrantSplitter.uvQuadrant(poly) == null)
             {
                 QuadrantSplitter.splitAndPaint(poly, 
-                        q -> painters.forEach(p -> p.producePaintedQuad(q, target, isItem)));
+                        q -> painters.producePaintedQuads(q, target, isItem));
             }
             else
             {
-                final IPolygon pFinal = poly; // make final for lambda
-                painters.forEach(p -> p.producePaintedQuad(pFinal, target, isItem));
+                painters.producePaintedQuads(poly, target, isItem);
             }
         }
       

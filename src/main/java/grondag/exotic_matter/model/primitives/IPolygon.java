@@ -11,15 +11,23 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
+import grondag.acuity.api.IPipelinedQuad;
+import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.world.Rotation;
-import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Immutable base interface for classes used to create and transform meshes before baking into MC quads.<p>
@@ -34,7 +42,7 @@ import net.minecraft.util.math.MathHelper;
  * 
  */
 
-public interface IPolygon
+public interface IPolygon extends IPipelinedQuad
 {
     Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
@@ -68,6 +76,12 @@ public interface IPolygon
 
     public int getColor();
 
+    /**
+     * If true and Acuity API is enabled, will signal API that surface is emissive.
+     * Per-vertex glow will still be passed as lightmap values.
+     */
+    public boolean isEmissive();
+    
     /** 
      * If true then quad painters will ignore UV coordinates and instead set
      * based on projection of vertices onto the given nominal face.
@@ -145,22 +159,13 @@ public interface IPolygon
      */
     public float getMaxV();
 
-    public BlockRenderLayer getRenderPass();
-
     public Surface getSurfaceInstance();
 
     public int vertexCount();
     
     public Vertex getVertex(int index);
     
-    public default void forEachVertex(Consumer<Vertex> consumer)
-    {
-        final int vertexCount = this.vertexCount();
-        for(int i = 0; i < vertexCount; i++)
-        {
-            consumer.accept(this.getVertex(i));
-        }
-    }
+    public void forEachVertex(Consumer<Vertex> consumer);
     
     /**
      * Splits into quads if higher vertex count than four, otherwise returns self.
@@ -234,14 +239,13 @@ public interface IPolygon
      * Direction provided MUST BE NORMALIZED.
      * 
      */
-    public default Vec3f intersectionOfRayWithPlane(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
+    public default @Nullable Vec3f intersectionOfRayWithPlane(float originX, float originY, float originZ, float directionX, float directionY, float directionZ)
     {
         Vec3f normal = this.getFaceNormal();
         
-        // TODO: remove when normal switched to float
-        float normX = (float) normal.x;
-        float normY = (float) normal.y;
-        float normZ = (float) normal.z;
+        final float normX = normal.x;
+        final float normY = normal.y;
+        final float normZ = normal.z;
 
         float directionDotNormal = directionX * normX + directionY * normY + directionZ * normZ;
         if (Math.abs(directionDotNormal) < QuadHelper.EPSILON) 
@@ -428,7 +432,6 @@ public interface IPolygon
         if(this.vertexCount() == 3) return true;
 
         Vec3f fn = this.getFaceNormal();
-        if(fn == null) return false;
 
         float faceX = fn.x;
         float faceY = fn.y;
@@ -439,7 +442,6 @@ public interface IPolygon
         for(int i = 3; i < this.vertexCount(); i++)
         {
             Vertex v = this.getVertex(i);
-            if(v == null) return false;
             
             float dx = v.x - first.x;
             float dy = v.y - first.y;
@@ -451,7 +453,7 @@ public interface IPolygon
         return true;
     }
 
-    public default boolean isOnFace(EnumFacing face, float tolerance)
+    public default boolean isOnFace(@Nullable EnumFacing face, float tolerance)
     {
         if(face == null) return false;
         boolean retVal = true;
@@ -603,6 +605,102 @@ public interface IPolygon
     {
         final Random r = ThreadLocalRandom.current();
         return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
+    }
+    
+    public default void addBakedItemQuadsToBuilder(Builder<BakedQuad> builder)
+    {
+        builder.add(QuadBakery.createBakedQuad(this, true));
+        //TODO: handle multiple layers
+    }
+
+    public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
+    {
+        this.forEachVertex(v -> consumer.acceptVertex(v.x, v.y, v.z));
+    }
+    
+    @SuppressWarnings("null")
+    public default void produceNormalVertices(INormalVertexConsumer consumer)
+    {
+        Vec3f faceNorm = this.getFaceNormal();
+        
+        this.forEachVertex(v -> 
+        {
+            if(v.normal == null)
+                consumer.acceptVertex(v.x, v.y, v.z, faceNorm.x, faceNorm.y, faceNorm.z);
+            else
+                consumer.acceptVertex(v.x, v.y, v.z, v.normal.x, v.normal.y, v.normal.z);
+        });
+    }
+    
+    @SideOnly(value = Side.CLIENT)
+    @Override
+    public default void produceVertices(IPipelinedVertexConsumer vertexLighter)
+    {
+        final float minU = this.getMinU();
+        final float minV = this.getMinV();
+        
+        final float spanU = this.getMaxU() - minU;
+        final float spanV = this.getMaxV() - minV;
+        
+        @SuppressWarnings("null")
+        final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(this.getTextureName());
+        
+        float[][] uvData = new float[4][2];
+        
+        for(int i = 0; i < 4; i++)
+        {
+            Vertex v = this.getVertex(i);
+            uvData[i][0] = v.u;
+            uvData[i][1] = v.v;
+        }
+        
+        // apply texture rotation
+        QuadBakery.applyTextureRotation(this, uvData);
+        
+        // scale UV coordinates to size of texture sub-region
+        for(int v = 0; v < 4; v++)
+        {
+            uvData[v][0] = minU + spanU * uvData[v][0];
+            uvData[v][1] = minV + spanV * uvData[v][1];
+        }
+
+        if(this.shouldContractUVs())
+        {
+            QuadBakery.contractUVs(textureSprite, uvData);
+        }
+        
+        Vec3f fn = this.getFaceNormal();
+        final float spriteMinU = textureSprite.getMinU();
+        final float spriteSpanU = textureSprite.getMaxU() - spriteMinU;
+        final float spriteMinV = textureSprite.getMinV();
+        final float spriteSpanV = textureSprite.getMaxV() - spriteMinV;
+        
+        int glow = 0;
+        
+        vertexLighter.setEmissive(0, this.isEmissive());
+        
+        for(int i = 0; i < 4; i++)
+        {
+            // doing interpolation here vs using sprite methods to avoid wasteful multiply and divide by 16
+            final float uCoord = spriteMinU + uvData[i][0] * spriteSpanU;
+            final float vCoord = spriteMinV + uvData[i][1] * spriteSpanV;
+            
+            Vertex v = this.getVertex(i);
+            Vec3f n = v.normal;
+            if(n == null)
+                n =  fn;
+            
+            if(v.glow != glow)
+            {
+                final int g = v.glow * 17;
+                vertexLighter.setBlockLightMap(g, g, g, 255);
+                glow = v.glow;
+            }
+            
+            vertexLighter.acceptVertex(v.x, v.y, v.z, n.x, n.y, n.z, v.color, uCoord, vCoord);
+        }
+        
+
     }
     
 //    /**

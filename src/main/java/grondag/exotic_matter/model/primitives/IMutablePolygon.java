@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
@@ -146,6 +147,9 @@ public interface IMutablePolygon extends IPolygon
     /** sets surface value and returns self for convenience */
     IMutablePolygon setSurfaceInstance(Surface surfaceInstance);
     
+    /** sets acuity render pipeline and returns self for convenience */
+    IMutablePolygon setPipeline(IRenderPipeline pipeline);
+    
     /**
      * Enforces immutability of vertex geometry once a vertex is added
      * by rejecting any attempt to set a vertex that already exists.
@@ -176,6 +180,8 @@ public interface IMutablePolygon extends IPolygon
     
     void setColor(int color);
 
+    void setEmissive(boolean isEmissive);
+    
     void setLockUV(boolean isLockUV);
 
     void setShouldContractUVs(boolean shouldContractUVs);
@@ -185,7 +191,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Sets the face to be used for setupFace semantics
      */
-    EnumFacing setNominalFace(@Nullable EnumFacing face);
+    void setNominalFace(@Nullable EnumFacing face);
 
     /** 
      * applies the given transformation to this polygon

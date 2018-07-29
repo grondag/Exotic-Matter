@@ -1,54 +1,91 @@
 package grondag.exotic_matter.model.render;
 
-import static net.minecraft.util.EnumFacing.DOWN;
-import static net.minecraft.util.EnumFacing.EAST;
-import static net.minecraft.util.EnumFacing.NORTH;
-import static net.minecraft.util.EnumFacing.SOUTH;
-import static net.minecraft.util.EnumFacing.UP;
-import static net.minecraft.util.EnumFacing.WEST;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.client.model.pipeline.IVertexConsumer;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 
 public class QuadContainer
 {
-    public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(Collections.emptyList());
+    private static IPolygon[] EMPTY_LIST = {};
+    private static int[] EMPTY_COUNTS = {0, 0, 0, 0, 0, 0};
+    public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(EMPTY_LIST, EMPTY_COUNTS) ;
 
     // Heavy usage, many instances, so using sublists of a single immutable list to improve LOR
-    // and using instance variables to avoid memory overhead of another array. 
     // I didn't profile this to make sure it's worthwhile - don't tell Knuth.
-     
-    protected final List<BakedQuad> general;
+    // Only populated if baked quads are requested
+    protected @Nullable ImmutableList<BakedQuad>[] faceLists = null;
     
-    private @Nullable int[] occlusionHash;
+    private @Nullable int[] occlusionHash = null;
     
-    protected QuadContainer(List<BakedQuad> general)
+    private int[] paintedFaceIndex = new int[EnumFacing.VALUES.length];
+    
+    private final IPolygon[] paintedQuads;
+    
+    protected QuadContainer(IPolygon[] paintedQuads, int[] paintedFaceIndex)
     {
-        this.general = general;
+        this.paintedQuads = paintedQuads;
+        this.paintedFaceIndex = paintedFaceIndex;
     }
     
-    public List<BakedQuad> getQuads(@Nullable EnumFacing face)
+    @SuppressWarnings({ "unchecked", "null" })
+    public List<BakedQuad> getBakedQuads(@Nullable EnumFacing face)
     {
-        return face == null ? this.general: QuadHelper.EMPTY_QUAD_LIST;
+        if(faceLists == null)
+        {
+            faceLists = new ImmutableList[7];
+            
+            {
+                final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
+                this.forEachPaintedQuad(null, q -> q.addBakedItemQuadsToBuilder(builder));
+                faceLists[6] = builder.build();
+            }
+            
+            for(EnumFacing f : EnumFacing.VALUES)
+            {
+                final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
+                this.forEachPaintedQuad(f, q -> q.addBakedItemQuadsToBuilder(builder));
+                faceLists[f.ordinal()] = builder.build();
+            }
+        }
+ 
+        return face == null ? faceLists[6] : faceLists[face.ordinal()];
+    }
+    
+    public void forEachPaintedQuad(Consumer<IPolygon> consumer)
+    {
+        for(IPolygon q : this.paintedQuads)
+            consumer.accept(q);
+    }
+    
+    public void forEachPaintedQuad(@Nullable EnumFacing face, Consumer<IPolygon> consumer)
+    {
+        int start, end;
+        if(face == null)
+        {
+            start = 0;
+            end = this.paintedFaceIndex[0];
+        }
+        else
+        {
+            final int n = face.ordinal();
+            start = this.paintedFaceIndex[n];
+            end = n == 5 ? this.paintedQuads.length : this.paintedFaceIndex[n + 1];
+        }
+        while(start < end)
+        {
+            consumer.accept(this.paintedQuads[start++]);
+        }
     }
     
     public int getOcclusionHash(@Nullable EnumFacing face)
@@ -72,147 +109,63 @@ public class QuadContainer
 
     private int computeOcclusionHash(EnumFacing face)
     {
-        List<BakedQuad> quads = getQuads(face);
         QuadListKeyBuilder keyBuilder = new QuadListKeyBuilder(face);
-        for(BakedQuad q : quads)
-        {
-            LightUtil.putBakedQuad(keyBuilder, q);
-        }
+        this.forEachPaintedQuad(face, q -> q.produceGeometricVertices(keyBuilder));
         return keyBuilder.getQuadListKey();
-    }
-    
-    protected static class Extended extends QuadContainer
-    {
-        private final List<BakedQuad> up;
-        private final List<BakedQuad> down;
-        private final List<BakedQuad> east;
-        private final List<BakedQuad> west;
-        private final List<BakedQuad> north;
-        private final List<BakedQuad> south;
-        
-        protected Extended(
-                List<BakedQuad> general,
-                List<BakedQuad> up,
-                List<BakedQuad> down,
-                List<BakedQuad> east,
-                List<BakedQuad> west,
-                List<BakedQuad> north,
-                List<BakedQuad> south)
-        {
-            super(general);
-            this.up = up;
-            this.down = down;
-            this.east = east;
-            this.west = west;
-            this.north = north;
-            this.south = south;
-        }
-        
-        @Override
-        public final List<BakedQuad> getQuads(@Nullable EnumFacing face)
-        {
-            if(face ==null) return this.general;
-
-            switch(face)
-            {
-            case DOWN:
-                return this.down;
-            case EAST:
-                return this.east;
-            case NORTH:
-                return this.north;
-            case SOUTH:
-                return this.south;
-            case UP:
-                return this.up;
-            case WEST:
-                return this.west;
-            default:
-                return QuadHelper.EMPTY_QUAD_LIST;
-
-            }
-        }
     }
     
     public static class Builder implements Consumer<IPolygon>
     {
-
+        int size = 0;
+        
         @SuppressWarnings("unchecked")
-        final SimpleUnorderedArrayList<BakedQuad>[] buckets = new SimpleUnorderedArrayList[7];
+        final SimpleUnorderedArrayList<IPolygon>[] buckets = new SimpleUnorderedArrayList[7];
         
         @Override
-        public void accept(@SuppressWarnings("null") IPolygon poly)
+        public void accept(@SuppressWarnings("null") IPolygon quad)
         {
-           
-            EnumFacing facing = poly.getActualFace();
+            final @Nullable EnumFacing facing = quad.getActualFace();
             final int index = facing == null ? 6 : facing.ordinal();
             
-            SimpleUnorderedArrayList<BakedQuad> bucket = buckets[index];
+            SimpleUnorderedArrayList<IPolygon> bucket = buckets[index];
             if(bucket  == null)
             {
-                bucket = new SimpleUnorderedArrayList<BakedQuad>();
+                bucket = new SimpleUnorderedArrayList<IPolygon>();
                 buckets[index] = bucket;
             }
-            bucket.add(QuadBakery.createBakedQuad(poly, false));
+            bucket.add(quad);
+            size++;
         }
             
         public QuadContainer build()
         {
-            ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-    
-            final int upCount = addAndGetSize(builder, buckets[UP.ordinal()]);
-            final int downCount = addAndGetSize(builder, buckets[DOWN.ordinal()]);
-            final int eastCount = addAndGetSize(builder, buckets[EAST.ordinal()]);
-            final int westCount = addAndGetSize(builder, buckets[WEST.ordinal()]);
-            final int northCount = addAndGetSize(builder, buckets[NORTH.ordinal()]);
-            final int southCount = addAndGetSize(builder, buckets[SOUTH.ordinal()]);
-            final int genCount = addAndGetSize(builder, buckets[6]);
+            if(this.size == 0)
+                return EMPTY_CONTAINER;
             
-            ImmutableList<BakedQuad> quads = builder.build();
-    
-            if(upCount == 0 && downCount == 0 && eastCount == 0 && westCount == 0 && northCount == 0 && southCount == 0)
+            IPolygon[] quads = new IPolygon[this.size];
+            int[] indexes = new int[6];
+            
+            int i = addAndGetSize(quads, 0, buckets[6]);
+            
+            for(int j = 0; j < 6; j++)
             {
-                return genCount  == 0 
-                        ? EMPTY_CONTAINER
-                        : new QuadContainer(quads);
+                indexes[j] = i;
+                i += addAndGetSize(quads, i, buckets[j]);
             }
             
-            int first = 0;
-            
-            final List<BakedQuad> up = upCount == 0 ? ImmutableList.of() : quads.subList(first, first + upCount);
-            first +=  upCount;
-    
-            final List<BakedQuad> down = downCount == 0 ? ImmutableList.of() : quads.subList(first, first + downCount);
-            first +=  downCount;
-            
-            final List<BakedQuad> east = eastCount == 0 ? ImmutableList.of() : quads.subList(first, first + eastCount);
-            first +=  eastCount;
-            
-            final List<BakedQuad> west = westCount == 0 ? ImmutableList.of() : quads.subList(first, first + westCount);
-            first +=  westCount;
-            
-            final List<BakedQuad> north = northCount == 0 ? ImmutableList.of() : quads.subList(first, first + northCount);
-            first +=  northCount;
-            
-            final List<BakedQuad> south = southCount == 0 ? ImmutableList.of() : quads.subList(first, first + southCount);
-            first +=  southCount;
-            
-            final List<BakedQuad> gen = genCount == 0 ? ImmutableList.of() : quads.subList(first, first + genCount);
-            
-            return new QuadContainer.Extended(gen, up, down, east, west, north, south);
-        
+            return new QuadContainer(quads, indexes);
         }
 
-        private final int addAndGetSize(ImmutableList.Builder<BakedQuad> builder, @Nullable SimpleUnorderedArrayList<BakedQuad> list)
+        private final int addAndGetSize(IPolygon[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPolygon> sourceList)
         {
-            if(list == null) return 0;
-            builder.addAll(list);
-            return list.size();
+            if(sourceList == null) return 0;
+            sourceList.copyToArray(targetArray, firstOpenIndex);
+            return sourceList.size();
         }
     }
 
 
-    private static class QuadListKeyBuilder implements IVertexConsumer
+    private static class QuadListKeyBuilder implements IGeometricVertexConsumer
     {
         private final int axis0;
         private final int axis1;
@@ -251,42 +204,36 @@ public class QuadContainer
         }
 
         @Override
-        public @Nonnull VertexFormat getVertexFormat()
+        public void acceptVertex(float x, float y, float z)
         {
-            return DefaultVertexFormats.POSITION;
-        }
-
-        @Override
-        public void setQuadTint(int tint)
-        {
-            //NOOP - not used
-        }
-
-        @Override
-        public void setQuadOrientation(@Nonnull EnumFacing orientation)
-        {
-            //NOOP - not used
-        }
-
-        @Override
-        public void setApplyDiffuseLighting(boolean diffuse)
-        {
-            //NOOP - not used
-        }
-
-        @Override
-        public void put(int element, @Nonnull float... data)
-        {
+            float v0 = 0, v1 = 0;
+            switch(axis0)
+            {
+                case 0:
+                    v0 = x;
+                    break;
+                case 1:
+                    v0 = y;
+                    break;
+                case 2:
+                    v0 = z;
+                    break;
+            }
+            
+            switch(axis1)
+            {
+                case 0:
+                    v1 = x;
+                    break;
+                case 1:
+                    v1 = y;
+                    break;
+                case 2:
+                    v1 = z;
+                    break;
+            }
             //don't need to check which element - position is the only one included
-            vertexKeys.add(((long)(Float.floatToRawIntBits(data[axis0])) | ((long)(Float.floatToRawIntBits(data[axis1])) << 32)));
-        }
-
-        @Override
-        public void setTexture(@Nonnull TextureAtlasSprite texture)
-        {
-            //NOOP - not used
+            vertexKeys.add(((long)(Float.floatToRawIntBits(v0)) | ((long)(Float.floatToRawIntBits(v1)) << 32)));
         }
     }
-
-
 }

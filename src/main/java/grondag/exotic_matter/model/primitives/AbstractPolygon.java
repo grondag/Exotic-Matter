@@ -2,6 +2,8 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.annotation.Nullable;
 
+import grondag.acuity.api.IRenderPipeline;
+import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.ColorHelper;
@@ -22,8 +24,10 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
     protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
+    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
+    protected static final BitPacker<AbstractPolygon>.IntElement PIPELINE_INDEX = BITPACKER.createIntElement(1024);
     
     protected static final long DEFAULT_BITS;
     static
@@ -110,6 +114,19 @@ public abstract class AbstractPolygon implements IMutablePolygon
         this.stateBits = (color & 0xFFFFFFFFL) | (this.stateBits & 0xFFFFFFFF00000000L);
     }
 
+
+    @Override
+    public boolean isEmissive()
+    {
+        return EMISSIVE_BIT.getValue(this);
+    }
+
+    @Override
+    public void setEmissive(boolean isEmissive)
+    {
+        EMISSIVE_BIT.setValue(isEmissive, this);
+    }
+
     @Override
     public boolean isLockUV()
     {
@@ -135,7 +152,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public BlockRenderLayer getRenderPass()
+    public BlockRenderLayer getRenderLayer()
     {
         return RENDERPASS_BITS.getValue(this);
     }
@@ -154,10 +171,9 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public EnumFacing setNominalFace(EnumFacing face)
+    public void setNominalFace(@Nullable EnumFacing face)
     {
         NOMINAL_FACE_BITS.setValue(face, this);
-        return face;
     }
     
     @Override
@@ -240,8 +256,13 @@ public abstract class AbstractPolygon implements IMutablePolygon
     @Override
     public Vec3f getFaceNormal()
     {
-        if(this.faceNormal == null) this.faceNormal = computeFaceNormal();
-        return this.faceNormal;
+        Vec3f result = this.faceNormal;
+        if(result == null)
+        {
+            result = computeFaceNormal();
+            this.faceNormal = result;
+        }
+        return result;
     }
     
     @Override
@@ -268,5 +289,18 @@ public abstract class AbstractPolygon implements IMutablePolygon
     public void multiplyColor(int color)
     {
         this.setColor(ColorHelper.multiplyColor(this.getColor(), color));
+    }
+    
+    @Override
+    public @Nullable IRenderPipeline getPipeline()
+    {
+        return ClientProxy.acuityPipeline(PIPELINE_INDEX.getValue(this));
+    }
+    
+    @Override
+    public IMutablePolygon setPipeline(IRenderPipeline pipeline)
+    {
+        PIPELINE_INDEX.setValue(pipeline.getIndex(), this);
+        return this;
     }
 }

@@ -5,13 +5,13 @@ import javax.annotation.Nonnull;
 import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
@@ -77,7 +77,7 @@ public class BlockModelDebugHighlighter
         GlStateManager.doPolygonOffset(-1f, -1f);
         GlStateManager.enablePolygonOffset();
         
-        model.forAllQuads((IExtendedBlockState) state, q -> drawQuad(d0, d1, d2, q, tessellator, buffer));
+        model.forAllPaintedQuads((IExtendedBlockState) state, q -> drawQuad(d0, d1, d2, q, tessellator, buffer));
         
 //        GlStateManager.enableDepth();
         GlStateManager.depthMask(true);
@@ -92,71 +92,35 @@ public class BlockModelDebugHighlighter
             double d0,
             double d1,
             double d2,
-            BakedQuad quad, 
+            IPolygon quad, 
             @Nonnull Tessellator tessellator, 
             @Nonnull BufferBuilder buffer)
     {
         
-    
-        int[] vertexData = quad.getVertexData();
-        
-        double[] normalData = new double[24];
-        
-        int dataOffset = 0;
-        int normalDataOffset = 0;
-        
-        final int normalFormatOffset = quad.getFormat().getNormalOffset() / 4;
-        
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
-        for(int i = 0; i < 4; i++)
+        quad.produceGeometricVertices((float x, float y, float z) ->
         {
-            double  x = d0 + Float.intBitsToFloat(vertexData[dataOffset]);
-            double  y = d1 + Float.intBitsToFloat(vertexData[dataOffset + 1]);
-            double  z = d2 + Float.intBitsToFloat(vertexData[dataOffset + 2]);
-            buffer.pos(x, y, z).color(1f, 1f, 1f, 1f).endVertex();
-            
-            if(quad.getFormat().hasNormal())
-            {
-                normalData[normalDataOffset++] = x;
-                normalData[normalDataOffset++] = y;
-                normalData[normalDataOffset++] = z;
-                
-                int normal = vertexData[dataOffset + normalFormatOffset];
-                
-                normalData[normalDataOffset++] = ((float)(byte)(normal & 0xFF)) / 127f;
-                normalData[normalDataOffset++] = ((float)(byte)((normal >>> 8) & 0xFF)) / 127f;
-                normalData[normalDataOffset++] = ((float)(byte)((normal >>> 16) & 0xFF)) / 127f;
-            }
- 
-            dataOffset += quad.getFormat().getIntegerSize();
-        }
+            buffer.pos(x + d0, y + d1, z + d2).color(1f, 1f, 1f, 1f).endVertex();
+        });
         tessellator.draw();
         
-        if(quad.getFormat().hasNormal())
+        quad.produceNormalVertices((float x, float y, float z, float xNormal, float yNormal, float zNormal) ->
         {
-            int normalDataIndex = 0;
-            for(int i = 0; i < 4; i++)
-            {
-                
-                final double  x = normalData[normalDataIndex++];
-                final double  y = normalData[normalDataIndex++];
-                final double  z = normalData[normalDataIndex++];
-                final double  dx = normalData[normalDataIndex++];
-                final double  dy = normalData[normalDataIndex++];
-                final double  dz = normalData[normalDataIndex++];
-                
-                // only draw vertex normals that differ from the standard side normals
-                int zeroCount = 0;
-                if(Math.abs(dx) < 0.0000001) zeroCount++; 
-                if(Math.abs(dy) < 0.0000001) zeroCount++;
-                if(Math.abs(dz) < 0.0000001) zeroCount++; 
-                if(zeroCount == 2) continue;
-                
-                buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
-                buffer.pos(x, y, z).color(0.7f, 1f, 1f, 1f).endVertex();
-                buffer.pos(x + dx, y + dy, z + dz).color(0.7f, 1f, 1f, 1f).endVertex();
-                tessellator.draw();
-            }
-        }
+            // only draw vertex normals that differ from the standard side normals
+            int zeroCount = 0;
+            if(Math.abs(xNormal) < 0.0000001) zeroCount++; 
+            if(Math.abs(yNormal) < 0.0000001) zeroCount++;
+            if(Math.abs(zNormal) < 0.0000001) zeroCount++; 
+            if(zeroCount == 2) return;
+            
+            double px = x + d0;
+            double py = y + d1;
+            double pz = z + d2;
+            
+            buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
+            buffer.pos(px, py, pz).color(0.7f, 1f, 1f, 1f).endVertex();
+            buffer.pos(px + xNormal, py + yNormal, pz + zNormal).color(0.7f, 1f, 1f, 1f).endVertex();
+            tessellator.draw();
+        });
     }
 }

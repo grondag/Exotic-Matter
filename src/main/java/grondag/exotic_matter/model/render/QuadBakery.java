@@ -164,7 +164,7 @@ public class QuadBakery
 //                format));
     }
     
-    private static void applyTextureRotation(IPolygon raw, float[][] uvData)
+    public static void applyTextureRotation(IPolygon raw, float[][] uvData)
     {
        switch(raw.getRotation())
        {

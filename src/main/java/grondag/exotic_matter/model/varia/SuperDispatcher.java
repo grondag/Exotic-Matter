@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.acuity.api.IPipelinedBakedModel;
+import grondag.acuity.api.IPipelinedQuadConsumer;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
@@ -20,7 +22,6 @@ import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -75,7 +76,7 @@ public class SuperDispatcher
             }
             
 		    provideFormattedQuads(key, false, p ->
-		        containers[p.getRenderPass().ordinal()].accept(p));
+		        containers[p.getRenderLayer().ordinal()].accept(p));
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
 
@@ -98,7 +99,7 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	provideFormattedQuads(key, true, p -> builder.add(QuadBakery.createBakedQuad(p, true)));
+	    	provideFormattedQuads(key, true, p -> p.addBakedItemQuadsToBuilder(builder));
 			return new SimpleItemBlockModel(builder.build(), true);
 		}       
     }
@@ -220,13 +221,15 @@ public class SuperDispatcher
         return this.delegates[RenderLayout.TRANSLUCENT_ONLY.ordinal];
     }
     
-    public class DispatchDelegate implements IBakedModel, IModel
+    public class DispatchDelegate implements IBakedModel, IModel, IPipelinedBakedModel
     {
         private final String modelResourceString;
+        private final RenderLayout blockRenderLayout;
         
         private DispatchDelegate(RenderLayout blockRenderLayout)
         {
             this.modelResourceString = ExoticMatter.INSTANCE.prefixResource(SuperDispatcher.RESOURCE_BASE_NAME  + blockRenderLayout.ordinal);
+            this.blockRenderLayout = blockRenderLayout;
         }
 
         /** only used for block layer version */
@@ -239,7 +242,7 @@ public class SuperDispatcher
          * For the debug renderer - enumerates all painted quads for all layers.
          * Pass in an extended block state.
          */
-        public void forAllQuads(@Nullable IExtendedBlockState state, Consumer<BakedQuad> consumer)
+        public void forAllPaintedQuads(@Nullable IExtendedBlockState state, Consumer<IPolygon> consumer)
         {
             ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
             
@@ -248,13 +251,25 @@ public class SuperDispatcher
             {
                 if(qc != null)
                 {
-                    qc.getQuads(null).forEach(consumer);
-                    for(EnumFacing face : EnumFacing.VALUES)
-                    {
-                        qc.getQuads(face).forEach(consumer);
-                    }
+                    qc.forEachPaintedQuad(consumer);
                 }
             }
+        }
+        
+        @Override
+        public boolean mightRenderInLayer(BlockRenderLayer forLayer)
+        {
+            return this.blockRenderLayout.containsBlockRenderLayer(forLayer);
+        }
+        
+        @Override
+        public void produceQuads(IPipelinedQuadConsumer quadConsumer)
+        {
+            ISuperModelState modelState = ((IExtendedBlockState)quadConsumer.blockState()).getValue(ISuperBlock.MODEL_STATE);
+            SparseLayerMap map = modelCache.get(modelState);
+            QuadContainer qc = map.get(MinecraftForgeClient.getRenderLayer());
+            if(qc != null)
+                qc.forEachPaintedQuad(q -> quadConsumer.accept(q));
         }
         
         @Override
@@ -277,7 +292,7 @@ public class SuperDispatcher
             if(layer == null)
             {
                 QuadContainer qc = damageCache.get(modelState.geometricState());
-                return qc.getQuads(side);
+                return qc.getBakedQuads(side);
             }
             else
             {
@@ -285,7 +300,7 @@ public class SuperDispatcher
                 QuadContainer container = map.get(layer);
                 if(container == null)
                         return QuadHelper.EMPTY_QUAD_LIST;
-                return container.getQuads(side);
+                return container.getBakedQuads(side);
             }
         }
          
