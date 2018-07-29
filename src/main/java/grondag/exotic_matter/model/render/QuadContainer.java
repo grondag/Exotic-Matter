@@ -47,14 +47,14 @@ public class QuadContainer
             
             {
                 final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-                this.forEachPaintedQuad(null, q -> q.addBakedItemQuadsToBuilder(builder));
+                this.forEachPaintedQuad(null, q -> q.addBakedQuadsToBuilder(builder, false));
                 faceLists[6] = builder.build();
             }
             
             for(EnumFacing f : EnumFacing.VALUES)
             {
                 final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-                this.forEachPaintedQuad(f, q -> q.addBakedItemQuadsToBuilder(builder));
+                this.forEachPaintedQuad(f, q -> q.addBakedQuadsToBuilder(builder, false));
                 faceLists[f.ordinal()] = builder.build();
             }
         }

@@ -607,9 +607,9 @@ public interface IPolygon extends IPipelinedQuad
         return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
     }
     
-    public default void addBakedItemQuadsToBuilder(Builder<BakedQuad> builder)
+    public default void addBakedQuadsToBuilder(Builder<BakedQuad> builder, boolean isItem)
     {
-        builder.add(QuadBakery.createBakedQuad(this, true));
+        builder.add(QuadBakery.createBakedQuad(this, isItem));
         //TODO: handle multiple layers
     }
 

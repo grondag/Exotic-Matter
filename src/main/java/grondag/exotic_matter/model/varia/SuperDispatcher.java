@@ -99,7 +99,7 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	provideFormattedQuads(key, true, p -> p.addBakedItemQuadsToBuilder(builder));
+	    	provideFormattedQuads(key, true, p -> p.addBakedQuadsToBuilder(builder, true));
 			return new SimpleItemBlockModel(builder.build(), true);
 		}       
     }
