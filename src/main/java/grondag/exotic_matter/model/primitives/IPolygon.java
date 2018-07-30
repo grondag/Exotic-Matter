@@ -61,7 +61,7 @@ public interface IPolygon extends IPipelinedQuad
      * Gets the face to be used for setupFace semantics.  
      * Is a general facing but does NOT mean poly is actually on that face.
      */
-    public @Nullable EnumFacing getNominalFace();
+    public EnumFacing getNominalFace();
 
     /** 
      * Causes texture to appear rotated within the frame

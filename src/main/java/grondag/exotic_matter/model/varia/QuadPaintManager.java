@@ -86,26 +86,26 @@ public class QuadPaintManager
             PainterList painters = paintersForSurface(poly.getSurfaceInstance());
             if(painters.isEmpty()) return;
             
+            IMutablePolygon quad = Poly.mutableCopyOf(poly);
+            
             // if lockUV is on, derive UV coords by projection
             // of vertex coordinates on the plane of the quad's face
             
             // do this here to avoid doing it for all painters
             // and because the quadrant split test requires it.
-            if(poly.isLockUV())
+            if(quad.isLockUV())
             {
-                IMutablePolygon q = Poly.mutableCopyOf(poly);
-                q.assignLockedUVCoordinates();
-                poly = q;
+                quad.assignLockedUVCoordinates();
             }
             
-            if(painters.needsQuadrants() && QuadrantSplitter.uvQuadrant(poly) == null)
+            if(painters.needsQuadrants() && QuadrantSplitter.uvQuadrant(quad) == null)
             {
-                QuadrantSplitter.splitAndPaint(poly, 
+                QuadrantSplitter.splitAndPaint(quad, 
                         q -> painters.producePaintedQuads(q, target, isItem));
             }
             else
             {
-                painters.producePaintedQuads(poly, target, isItem);
+                painters.producePaintedQuads(quad, target, isItem);
             }
         }
       

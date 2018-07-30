@@ -20,7 +20,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
      */
     protected static final BitPacker<AbstractPolygon>.LongElement COLOR_BITS = BITPACKER.createLongElement(0xFFFFFFFFL);
     
-    protected static final BitPacker<AbstractPolygon>.NullableEnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createNullableEnumElement(EnumFacing.class);
+    protected static final BitPacker<AbstractPolygon>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
     protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
@@ -33,7 +33,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     static
     {
         long defaultBits = 0xFFFFFFFFL; // white
-        defaultBits |= NOMINAL_FACE_BITS.getBits(null);
         defaultBits |= ROTATION_BITS.getBits(Rotation.ROTATE_NONE);
         defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
         defaultBits |= LOCKUV_BITS.getBits(false);
@@ -165,13 +164,13 @@ public abstract class AbstractPolygon implements IMutablePolygon
 
     
     @Override
-    public @Nullable EnumFacing getNominalFace()
+    public EnumFacing getNominalFace()
     {
         return NOMINAL_FACE_BITS.getValue(this);
     }
 
     @Override
-    public void setNominalFace(@Nullable EnumFacing face)
+    public void setNominalFace(EnumFacing face)
     {
         NOMINAL_FACE_BITS.setValue(face, this);
     }

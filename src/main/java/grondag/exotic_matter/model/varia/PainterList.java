@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.QuadPainter;
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;
@@ -55,7 +57,8 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
      * Expects that quadrant split has already happened if required.
      * May emit more quads than are input due to surface subdivision.
      */
-    public void producePaintedQuads(IPolygon q, Consumer<IPolygon> target, boolean isItem)
+    @SuppressWarnings("null")
+    public void producePaintedQuads(IMutablePolygon q, Consumer<IPolygon> target, boolean isItem)
     {
         if(this.hasSolidBase && this.size > 1 && ClientProxy.isAcuityEnabled())
         {
@@ -65,7 +68,16 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
         else
         {
             // emit single-layer quads
-            this.forEach(painter -> painter.producePaintedQuad(q, p -> target.accept(p), isItem));
+            // avoid making an extra copy of input if we don't have to
+            final int end = this.size - 1;
+            if(end > 0)
+            {
+                for(int i = 0; i < end ; i++)
+                {
+                    this.get(i).producePaintedQuad(q.paintableCopy(), p -> target.accept(p.getParent()), isItem);
+                }
+            }
+            this.get(end).producePaintedQuad(q.paintableCopy(), p -> target.accept(p.getParent()), isItem);
         }
     }
 

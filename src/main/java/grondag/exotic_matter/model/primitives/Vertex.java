@@ -10,7 +10,7 @@ import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public final class Vertex extends Vec3f
+public final class Vertex extends Vec3f implements IPaintableVertex
 {
     public final float u;
     public final float v;
@@ -97,23 +97,27 @@ public final class Vertex extends Vec3f
     }
 
     /** returns copy of this vertex with given color */
+    @Override
     public final Vertex withColor(int colorIn)
     {
         return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, this.glow);
     }
 
     /** returns copy of this vertex with given glow (0-255) */
+    @Override
     public final Vertex withGlow(int glowIn)
     {
         return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, glowIn);
     }
     
+    @Override
     public final Vertex withColorGlow(int colorIn, int glowIn)
     {
         return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, glowIn);
     }
     
     /** returns copy of this vertex with given UV */
+    @Override
     public final Vertex withUV(float uNew, float vNew)
     {
         return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normal, this.glow);
@@ -294,5 +298,35 @@ public final class Vertex extends Vec3f
                 // "top" is north instead of south
                 return this.withUV(this.x, this.z);
         }
+    }
+
+    @Override
+    public short glow()
+    {
+        return this.glow;
+    }
+
+    @Override
+    public int color()
+    {
+        return this.color;
+    }
+
+    @Override
+    public float u()
+    {
+        return this.u;
+    }
+
+    @Override
+    public float v()
+    {
+        return this.v;
+    }
+
+    @Override
+    public IPaintableVertex interpolate(IPaintableVertex nextVertex, float dist)
+    {
+        return this.interpolate((Vertex)nextVertex, dist);
     }
 }

@@ -5,7 +5,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.IPaintableQuad;
+import grondag.exotic_matter.model.primitives.IPaintableVertex;
 import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vertex;
@@ -18,29 +19,29 @@ import grondag.exotic_matter.world.FaceCorner;
 public class QuadrantSplitter
 {
     @Nullable
-    public final static FaceCorner uvQuadrant(IPolygon quad)
+    public final static FaceCorner uvQuadrant(IPaintableQuad quad)
     {
         final int vCount = quad.vertexCount();
         
-        Vertex v = quad.getVertex(0);
+        IPaintableVertex v = quad.getPaintableVertex(0);
         
-        float uMin = v.u;
-        float uMax = v.u;
-        float vMin = v.v;
-        float vMax = v.v;
+        float uMin = v.u();
+        float uMax = v.u();
+        float vMin = v.v();
+        float vMax = v.v();
         
         for(int i = 1; i < vCount; i++)
         {
-            v = quad.getVertex(i);
-            if(v.u < uMin) 
-                uMin = v.u;
-            else if(v.u > uMax)
-                uMax = v.u;
+            v = quad.getPaintableVertex(i);
+            if(v.u() < uMin) 
+                uMin = v.u();
+            else if(v.u() > uMax)
+                uMax = v.u();
             
-            if(v.v < vMin) 
-                vMin = v.v;
-            else if(v.v > vMax)
-                vMax = v.v;
+            if(v.v() < vMin) 
+                vMin = v.v();
+            else if(v.v() > vMax)
+                vMax = v.v();
         }
         
         // note that v is inverted from FaceCorner semantics.
@@ -85,7 +86,7 @@ public class QuadrantSplitter
         }
     }
     
-    public static final void splitAndPaint(IPolygon quad, Consumer<IPolygon> target)
+    public static final void splitAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target)
     {
         int lowCount = 0;
         int highCount = 0;
@@ -159,7 +160,7 @@ public class QuadrantSplitter
         }
     }
     
-    private static final void splitVAndPaint(IPolygon quad, Consumer<IPolygon> target, boolean isHighU)
+    private static final void splitVAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isHighU)
     {
         int lowCount = 0;
         int highCount = 0;

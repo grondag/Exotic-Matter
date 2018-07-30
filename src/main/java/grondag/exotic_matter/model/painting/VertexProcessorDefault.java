@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.Vertex;
+import grondag.exotic_matter.model.primitives.IPaintableQuad;
+import grondag.exotic_matter.model.primitives.IPaintableVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.util.BlockRenderLayer;
@@ -21,7 +21,7 @@ public class VertexProcessorDefault extends VertexProcessor
     }
     
     @Override
-    public final void process(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
+    public final void process(IPaintableQuad result, ISuperModelState modelState, PaintLayer paintLayer)
     {
         final int brightness = modelState.getBrightness(paintLayer) * 17; // x17 because glow is 0-255
         
@@ -43,10 +43,10 @@ public class VertexProcessorDefault extends VertexProcessor
             
             for(int i = 0; i < result.vertexCount(); i++)
             {
-                Vertex v = result.getVertex(i);
+                IPaintableVertex v = result.getPaintableVertex(i);
                 if(v != null)
                 {
-                    final float w = v.glow / 255f;
+                    final float w = v.glow() / 255f;
                     int b = Math.round(lampBrightness * w + brightness * (1 - w));
                     int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
                     result.setVertex(i, v.withColorGlow(c | alpha, b));
@@ -58,10 +58,10 @@ public class VertexProcessorDefault extends VertexProcessor
             // normal shaded surface - tint existing colors, usually WHITE to start with
             for(int i = 0; i < result.vertexCount(); i++)
             {
-                Vertex v = result.getVertex(i);
+                IPaintableVertex v = result.getPaintableVertex(i);
                 if(v != null)
                 {
-                    final int c = ColorHelper.multiplyColor(color, v.color);
+                    final int c = ColorHelper.multiplyColor(color, v.color());
                     result.setVertex(i, v.withColorGlow(c, brightness));
                 }
             }

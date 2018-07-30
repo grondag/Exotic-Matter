@@ -8,12 +8,10 @@ import javax.vecmath.Matrix4f;
 
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.world.Rotation;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public interface IMutablePolygon extends IPolygon
+public interface IMutablePolygon extends IPolygon, IPaintableQuad
 {
     @Override
     public default IMutablePolygon mutableReference()
@@ -29,14 +27,6 @@ public interface IMutablePolygon extends IPolygon
     
     public IMutablePolygon replaceColor(int color);
     
-    public void setMinU(float minU);
-
-    public void setMaxU(float maxU);
-
-    public void setMinV(float minV);
-
-    public void setMaxV(float maxV);
-
     /** Using this instead of method on vertex 
      * ensures normals are set correctly for tris.
      */
@@ -56,10 +46,6 @@ public interface IMutablePolygon extends IPolygon
     
     ///// used in painters
     
-    public void setTextureName(@Nullable String textureName);
-
-    public void setRenderPass(BlockRenderLayer renderPass);
-
     /**
      * Assigns UV coordinates to each vertex by projecting vertex
      * onto plane of the quad's face. If the quad is not rotated,
@@ -67,19 +53,12 @@ public interface IMutablePolygon extends IPolygon
      * For example, on NSEW faces, "up" (+y) corresponds to the top of the texture.
      */
     public void assignLockedUVCoordinates();
-
-    /** 
-     * Unique scale transformation of all vertex coordinates 
-     * using block center (0.5, 0.5, 0.5) as origin.
-     */
-    public void scaleFromBlockCenter(float scale);
+    
 
     /**
      * Multiplies this quads color and all vertex color by given value
      */
     public void multiplyColor(int color);
-
-    public void setRotation(Rotation rotation);
 
     /**
      * Multiplies uvMin/Max by the given factors.
@@ -118,7 +97,7 @@ public interface IMutablePolygon extends IPolygon
      * 
      * @see #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)
      */
-    IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
 
     /**
      * Same as {@link #setupFaceQuad(double, double, double, double, double, EnumFacing)}
@@ -191,7 +170,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Sets the face to be used for setupFace semantics
      */
-    void setNominalFace(@Nullable EnumFacing face);
+    void setNominalFace(EnumFacing face);
 
     /** 
      * applies the given transformation to this polygon
@@ -220,9 +199,10 @@ public interface IMutablePolygon extends IPolygon
 
     void invertFaceNormal();
 
-    /**
-     * Adds given offsets to u,v values of each vertex.
-     */
-    public void offsetVertexUV(float uShift, float vShift);
+    @Override
+    default boolean isConvex()
+    {
+        return IPolygon.super.isConvex();
+    }
 
 }

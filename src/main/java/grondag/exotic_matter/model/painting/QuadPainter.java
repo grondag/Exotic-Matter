@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -28,7 +27,7 @@ public abstract class QuadPainter
      * Implementations can and should assume locked UV coordinates are assigned before 
      * this is called if UV locking is enabled for the quad<p>
      * 
-     * At this point {@link #isQuadValidForPainting(IPolygon)} has been checked and is true. 
+     * At this point {@link #isQuadValidForPainting(IPaintableQuad)} has been checked and is true. 
      * Input quad will already be a clone and can be modified directly if expedient.
      * RenderLayer, lighting mode and color will already be set.<p>
      * 
@@ -36,7 +35,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void textureQuad(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem);
+    protected abstract void textureQuad(IPaintableQuad inputQuad, Consumer<IPaintableQuad> target, boolean isItem);
     
     /**
      * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
@@ -61,7 +60,7 @@ public abstract class QuadPainter
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
     
-    protected abstract boolean isQuadValidForPainting(IPolygon inputQuad);
+    protected abstract boolean isQuadValidForPainting(IPaintableQuad inputQuad);
     
     /**
      * True if painter will render a solid surface. When Acuity API is enabled
@@ -87,27 +86,29 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void producePaintedQuad(IPolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
+    public final void producePaintedQuad(IPaintableQuad inputQuad, Consumer<IPaintableQuad> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
-        IMutablePolygon result = Poly.mutableCopyOf(inputQuad);
-        
-        result.setRenderPass(modelState.getRenderPass(paintLayer));
+        inputQuad.setRenderPass(modelState.getRenderPass(paintLayer));
      
         // TODO: Vary color slightly with species, as user-selected option
         
-        this.textureQuad(result, target, isItem);
+        this.textureQuad(inputQuad, target, isItem);
     }
     
     /**
      * Call from paint quad in sub classes to return results.
      * Handles item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, Consumer<IPolygon> target, boolean isItem)
+    protected final void postPaintProcessQuadAndOutput(IPaintableQuad inputQuad, Consumer<IPaintableQuad> target, boolean isItem)
     {
         if(isItem)
         {
+            //Acuity API doesn't support multi-layer textures for item render yet.
+            //This step wouldn't be necessary if it did.
+            assert inputQuad.layerCount() == 1;
+            
             switch(this.paintLayer)
             {
             case MIDDLE:
@@ -122,7 +123,6 @@ public abstract class QuadPainter
                 break;
             }
         }
-        
         modelState.getVertexProcessor(this.paintLayer).process(inputQuad, modelState, paintLayer);
 
         target.accept(inputQuad);

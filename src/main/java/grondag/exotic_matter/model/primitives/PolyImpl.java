@@ -7,20 +7,11 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
-import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.CSG.CSGNode.Root;
-import grondag.exotic_matter.model.render.LitBakedQuad;
 import grondag.exotic_matter.varia.ColorHelper;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 
-@Deprecated
 public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 {
     private final Vertex[] vertices;
@@ -216,7 +207,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
 
     @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setNominalFace(side);
@@ -224,7 +215,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setupFaceQuad(
@@ -238,7 +229,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
 
     @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
     {
         assert(this.vertexCount() == 4);
         this.setNominalFace(face);
@@ -246,7 +237,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
     {
         assert(this.vertexCount() == 3);
         this.setNominalFace(side);
@@ -255,7 +246,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
 
     @Override
-    public IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, EnumFacing topFace)
+    public IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
     {
         assert(this.vertexCount() == 3);
         return this.setupFaceQuad(tv0, tv1, tv2, tv2, topFace);
@@ -285,7 +276,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         this.setColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            if(getVertex(i) != null) setVertex(i, ((Vertex)getVertex(i)).withColor(color));
+            setVertex(i, ((Vertex)getVertex(i)).withColor(color));
         }
         return this;
     }
@@ -297,11 +288,8 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)this.getVertex(i);
-            if(v != null)
-            {
-                int vColor = ColorHelper.multiplyColor(color, v.color);
-                this.setVertex(i, v.withColor(vColor));
-            }
+            int vColor = ColorHelper.multiplyColor(color, v.color);
+            this.setVertex(i, v.withColor(vColor));
         }
     }
 
@@ -366,11 +354,6 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     public void assignLockedUVCoordinates()
     {
         EnumFacing face = getNominalFace();
-        if(face == null)
-        {
-            assert false : "RawQuad.assignLockedUVCoordinates encountered null nominal face.  Should not occur.  Using normal face instead.";
-            face = getNormalFace();
-        }
 
         for(int i = 0; i < this.vertexCount(); i++)
         {
@@ -419,16 +402,13 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         // so need to translate face vectors to/from block center 
         // origin before/applying matrix.
         final EnumFacing nomFace = this.getNominalFace();
-        if(nomFace != null)
-        {
-            Vec3i curNorm = nomFace.getDirectionVec();
-            Vector4f newFaceVec = new Vector4f(curNorm.getX() + 0.5f, curNorm.getY() + 0.5f, curNorm.getZ() + 0.5f, 1);
-            matrix.transform(newFaceVec);
-            newFaceVec.x -= 0.5;
-            newFaceVec.y -= 0.5;
-            newFaceVec.z -= 0.5;
-            this.setNominalFace(QuadHelper.computeFaceForNormal(newFaceVec));
-        }
+        Vec3i curNorm = nomFace.getDirectionVec();
+        Vector4f newFaceVec = new Vector4f(curNorm.getX() + 0.5f, curNorm.getY() + 0.5f, curNorm.getZ() + 0.5f, 1);
+        matrix.transform(newFaceVec);
+        newFaceVec.x -= 0.5;
+        newFaceVec.y -= 0.5;
+        newFaceVec.z -= 0.5;
+        this.setNominalFace(QuadHelper.computeFaceForNormal(newFaceVec));
     }
 
     @Override
@@ -484,7 +464,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     @Override
     public void toTris(Consumer<IPolygon> target)
     {
-        // TODO: egregious hack is egregious
+        // UGLY: egregious hack is egregious
         // is copy pasta of CSG version - couldn't be buggered at the time
         // probably the right way is to accept a collection interface
         // and implement that in CSG root
@@ -547,6 +527,48 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         {
             consumer.accept(this.vertices[i]);
         }
+    }
+
+    @Override
+    public IMutablePolygon getParent()
+    {
+        return this;
+    }
+
+    @Override
+    public IPaintableVertex getPaintableVertex(int i)
+    {
+        return this.getVertex(i);
+    }
+
+    @Override
+    public int layerCount()
+    {
+        return 1;
+    }
+
+    @Override
+    public IPaintableQuad paintableCopy()
+    {
+        return Poly.mutableCopyOf(this);
+    }
+
+    @Override
+    public IPaintableQuad paintableCopy(int vertexCount)
+    {
+        return Poly.mutable(this, vertexCount);
+    }
+
+    @Override
+    public void setVertex(int i, IPaintableVertex v)
+    {
+        this.setVertex(i, (Vertex)v);
+    }
+
+    @Override
+    public void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean ensureConvex)
+    {
+        this.toQuads(q -> consumer.accept((IPaintableQuad) q), ensureConvex);
     }
     
 //    private String tag;
