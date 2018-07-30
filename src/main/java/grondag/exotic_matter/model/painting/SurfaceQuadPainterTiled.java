@@ -190,7 +190,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            IPaintableQuad slice = input.paintableCopy();
+            IPaintableQuad slice = input.paintableCopyWithVertices();
             slice.setMinU(flipped ? 1 : 0);
             slice.setMaxU(flipped ? 0 : 1);
             
@@ -326,7 +326,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            IPaintableQuad slice = input.paintableCopy();
+            IPaintableQuad slice = input.paintableCopyWithVertices();
             slice.setMinV(flipped ? 1 : 0);
             slice.setMaxV(flipped ? 0 : 1);
             

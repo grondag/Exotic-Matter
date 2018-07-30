@@ -45,9 +45,9 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
     
     @Override
-    public IPaintableQuad paintableCopy()
+    public IPaintableQuad paintableCopyWithVertices()
     {
-        return getParent().paintableCopy().getSubQuad(layerIndex());
+        return getParent().paintableCopyWithVertices().getSubQuad(layerIndex());
     }
 
     @Override

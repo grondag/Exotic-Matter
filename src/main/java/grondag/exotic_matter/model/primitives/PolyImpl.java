@@ -549,9 +549,9 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
     
     @Override
-    public IPaintableQuad paintableCopy()
+    public IPaintableQuad paintableCopyWithVertices()
     {
-        return this.mutableCopy();
+        return this.mutableCopyWithVertices();
     }
 
     @Override

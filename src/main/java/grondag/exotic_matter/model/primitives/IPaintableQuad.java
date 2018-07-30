@@ -79,7 +79,7 @@ public interface IPaintableQuad
 
     float getMaxV();
 
-    IPaintableQuad paintableCopy();
+    IPaintableQuad paintableCopyWithVertices();
 
     IPaintableQuad paintableCopy(int vertexCount);
 

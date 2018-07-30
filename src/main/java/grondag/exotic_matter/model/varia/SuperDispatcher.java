@@ -111,7 +111,7 @@ public class SuperDispatcher
             QuadContainer.Builder builder = new QuadContainer.Builder();
             key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
-                IMutablePolygon mutable = q.mutableCopy();
+                IMutablePolygon mutable = q.mutableCopyWithVertices();
                 
                 // arbitrary choice - just needs to be a simple non-null texture
                 mutable.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());

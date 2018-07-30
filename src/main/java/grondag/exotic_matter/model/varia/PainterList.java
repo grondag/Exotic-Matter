@@ -73,10 +73,10 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             {
                 for(int i = 0; i < end ; i++)
                 {
-                    this.get(i).producePaintedQuad(q.paintableCopy(), p -> target.accept(p.getParent()), isItem);
+                    this.get(i).producePaintedQuad(q.paintableCopyWithVertices(), p -> target.accept(p.getParent()), isItem);
                 }
             }
-            this.get(end).producePaintedQuad(q.paintableCopy(), p -> target.accept(p.getParent()), isItem);
+            this.get(end).producePaintedQuad(q.paintableCopyWithVertices(), p -> target.accept(p.getParent()), isItem);
         }
     }
 
