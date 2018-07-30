@@ -59,10 +59,36 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
     @SuppressWarnings("null")
     public void producePaintedQuads(IMutablePolygon q, Consumer<IPolygon> target, boolean isItem)
     {
-        if(this.hasSolidBase && this.size > 1 && ClientProxy.isAcuityEnabled())
+        if(this.hasSolidBase && ClientProxy.isAcuityEnabled())
         {
-            // do multi-layered
-            System.out.println("whoops!");
+            switch(this.size)
+            {
+            case 0:
+                break;
+                
+            case 1:
+                this.get(0).producePaintedQuad(q, p -> target.accept(p.getParent()), isItem);
+                break;
+                
+            case 2:
+                this.get(0).producePaintedQuad(q, p0 -> 
+                {
+                    this.get(1).producePaintedQuad(p0, p1 -> target.accept(p1.getParent()), isItem);
+                }, isItem);
+                break;
+                
+            case 3:
+                this.get(0).producePaintedQuad(q, p0 -> 
+                {
+                    this.get(1).producePaintedQuad(p0, p1 -> 
+                    {
+                        this.get(0).producePaintedQuad(p1, p2 -> target.accept(p2.getParent()), isItem);
+                    }, isItem);
+                }, isItem);
+                
+            default:
+                throw new ArrayIndexOutOfBoundsException();
+            }
         }
         else
         {
@@ -76,7 +102,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                     this.get(i).producePaintedQuad(q.paintableCopyWithVertices(), p -> target.accept(p.getParent()), isItem);
                 }
             }
-            this.get(end).producePaintedQuad(q.paintableCopyWithVertices(), p -> target.accept(p.getParent()), isItem);
+            this.get(end).producePaintedQuad(q, p -> target.accept(p.getParent()), isItem);
         }
     }
 
