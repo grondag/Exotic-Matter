@@ -17,6 +17,7 @@ import grondag.exotic_matter.block.SuperBlockStackHelper;
 import grondag.exotic_matter.block.SuperModelItemOverrideList;
 import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
 import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
+import grondag.exotic_matter.model.painting.QuadPaintManager;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;

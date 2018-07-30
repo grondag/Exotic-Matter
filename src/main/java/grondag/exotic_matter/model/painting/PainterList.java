@@ -1,11 +1,10 @@
-package grondag.exotic_matter.model.varia;
+package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ClientProxy;
-import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
