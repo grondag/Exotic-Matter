@@ -25,7 +25,7 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.texture.TextureHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -431,7 +431,7 @@ public class RasterFont extends TextureAtlasSprite
      */
     public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
     {
-        IMutablePolygon template = Poly.mutable(4);
+        IMutablePolygon template = new PolyImpl(4);
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setColor(color);
         template.setLockUV(false);
@@ -466,7 +466,7 @@ public class RasterFont extends TextureAtlasSprite
                 
                 for(EnumFacing face : EnumFacing.VALUES)
                 {
-                    IMutablePolygon quad = Poly.mutableCopyOf(template);
+                    IMutablePolygon quad = template.mutableCopy(4);
                     quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                     quad.scaleFromBlockCenter(bumpFactor);
                     list.add(quad);

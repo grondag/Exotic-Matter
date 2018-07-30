@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPaintableVertex;
-import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vertex;
 import grondag.exotic_matter.world.FaceCorner;
@@ -110,10 +109,10 @@ public class QuadrantSplitter
         else
         {
             // spanning
-            IMutablePolygon high = Poly.mutable(quad, highCount + 2);
+            IMutablePolygon high = quad.mutableCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IMutablePolygon low = Poly.mutable(quad, lowCount + 2);
+            IMutablePolygon low = quad.mutableCopy(lowCount + 2);
             int iLowVertex = 0;
             
             Vertex thisVertex = quad.getVertex(vCount -1);
@@ -184,10 +183,10 @@ public class QuadrantSplitter
         else
         {
             // spanning
-            IMutablePolygon high = Poly.mutable(quad, highCount + 2);
+            IMutablePolygon high = quad.mutableCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IMutablePolygon low = Poly.mutable(quad, lowCount + 2);
+            IMutablePolygon low = quad.mutableCopy(lowCount + 2);
             int iLowVertex = 0;
             
             Vertex thisVertex = quad.getVertex(vCount -1);

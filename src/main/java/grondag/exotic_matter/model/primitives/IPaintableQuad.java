@@ -9,6 +9,10 @@ import net.minecraft.util.EnumFacing;
 
 public interface IPaintableQuad
 {
+    
+    //UGLY: needs cleanup
+    
+    IPaintableQuad getSubQuad(int layerIndex);
 
     void setMinU(float f);
 
@@ -55,7 +59,21 @@ public interface IPaintableQuad
     /**
      * Adds given offsets to u,v values of each vertex.
      */
-    void offsetVertexUV(float f, float g);
+    default void offsetVertexUV(float uShift, float vShift)
+    {
+        for(int i = 0; i < this.vertexCount(); i++)
+        {
+            IPaintableVertex v = this.getPaintableVertex(i);
+            v = v.withUV(v.u() + uShift, v.v() + vShift);
+            
+            assert v.u() > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.u() < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.v() > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v.v() < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds";
+
+            this.setVertex(i, v);
+        }       
+    }
 
     float getMaxU();
 

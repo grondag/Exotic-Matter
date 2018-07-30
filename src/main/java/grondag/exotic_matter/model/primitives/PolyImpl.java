@@ -16,45 +16,56 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 {
     private final Vertex[] vertices;
     private final int vertexCount;
-
-    PolyImpl()
+    
+    /**
+     * override in multi-texture subclasses
+     */
+    public PolyImpl newInstance(int vertexCount)
     {
-        this(4);
+        return new PolyImpl(vertexCount);
     }
-
-    PolyImpl(IPolygon template)
-    {
-        this(template, template.vertexCount());
-    }
-
-    PolyImpl(int vertexCount)
+    
+    public PolyImpl(int vertexCount)
     {
         assert vertexCount > 2 : "Bad polygon structure.";
         this.vertexCount = vertexCount;
         this.vertices = new Vertex[vertexCount];
     }
 
-    public PolyImpl(IPolygon template, int vertexCount)
+    protected IVertexFactory vertexFactory()
     {
-        this(vertexCount);
-        this.copyProperties(template);
+        return Vertex.DEFAULT_FACTORY;
     }
-
+    
     @Override
     public PolyImpl clone() throws CloneNotSupportedException
     {
         throw new CloneNotSupportedException();
     }
     
-    @Deprecated
-    protected PolyImpl mutableCopy()
+    @Override
+    public final PolyImpl mutableCopy(int vertexCount)
     {
-        PolyImpl result = new PolyImpl(this);
+        PolyImpl result = newInstance(vertexCount);
+        result.copyProperties(this);
+        return result;
+    }
+    
+    @Override
+    public final PolyImpl mutableCopy()
+    {
+        return mutableCopy(this.vertexCount);
+    }
+    
+    @Override
+    public final PolyImpl mutableCopyWithVertices()
+    {
+        PolyImpl result = mutableCopy();
         result.copyVertices(this);
         return result;
     }
 
-    protected void copyVertices(IPolygon template)
+    protected final void copyVertices(IPolygon template)
     {
         final int c = this.vertexCount();
         
@@ -89,7 +100,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
         int head = vertexCount - 1;
         int tail = 2;
-        PolyImpl work = new PolyImpl(this, 4);
+        PolyImpl work = this.mutableCopy(4);
         work.setVertex(0, this.getVertex(head));
         work.setVertex(1, this.getVertex(0));
         work.setVertex(2, this.getVertex(1));
@@ -98,7 +109,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
         while(head - tail > 1)
         {
-            work = new PolyImpl(this, head - tail == 2 ? 3 : 4);
+            work = this.mutableCopy(head - tail == 2 ? 3 : 4);
             work.setVertex(0, this.getVertex(head));
             work.setVertex(1, this.getVertex(tail));
             work.setVertex(2, this.getVertex(++tail));
@@ -156,49 +167,50 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             rv3 = vertexIn3.withXY(1 - vertexIn3.y, vertexIn3.x);
         }
 
+        final IVertexFactory factory = vertexFactory();
         
         switch(this.getNominalFace())
         {
         case UP:
-            setVertex(0, new Vertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
 
         case DOWN:     
-            setVertex(0, new Vertex(rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
 
         case EAST:
-            setVertex(0, new Vertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
 
         case WEST:
-            setVertex(0, new Vertex(rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
 
         case NORTH:
-            setVertex(0, new Vertex(1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
 
         case SOUTH:
-            setVertex(0, new Vertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, new Vertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, new Vertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, new Vertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
             break;
         }
 
@@ -328,19 +340,19 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     @Override
     public void addVertex(int index, float x, float y, float z, float u, float v, int color)
     {
-        this.addVertex(index, new Vertex(x, y, z, u, v, color));
+        this.addVertex(index, vertexFactory().newVertex(x, y, z, u, v, color));
     }
     
     @Override
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vec3f normal)
     {
-        this.addVertex(index, new Vertex(x, y, z, u, v, color, normal));
+        this.addVertex(index, vertexFactory().newVertex(x, y, z, u, v, color, normal));
     }
     
     @Override
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
     {
-        this.addVertex(index, new Vertex(x, y, z, u, v, color, normalX, normalY, normalZ));
+        this.addVertex(index, vertexFactory().newVertex(x, y, z, u, v, color, normalX, normalY, normalZ));
     }
     
     @Override
@@ -435,7 +447,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             int head = this.vertexCount - 1;
             int tail = 1;
 
-            PolyImpl work = new PolyImpl(this, 3);
+            PolyImpl work = this.mutableCopy(3);
             work.setVertex(0, this.getVertex(head));
             work.setVertex(1, this.getVertex(0));
             work.setVertex(2, this.getVertex(tail));
@@ -443,7 +455,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
             while(head - tail > 1)
             {
-                work = new PolyImpl(this, 3);
+                work = this.mutableCopy(3);
                 work.setVertex(0, this.getVertex(head));
                 work.setVertex(1, this.getVertex(tail));
                 work.setVertex(2, this.getVertex(++tail));
@@ -451,7 +463,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
                 if(head - tail > 1)
                 {
-                    work = new PolyImpl(this, 3);
+                    work = this.mutableCopy(3);
                     work.setVertex(0, this.getVertex(head));
                     work.setVertex(1, this.getVertex(tail));
                     work.setVertex(2, this.getVertex(--head));
@@ -477,7 +489,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
             int head = this.vertexCount - 1;
             int tail = 1;
 
-            PolyImpl work = new PolyImpl(this, 3);
+            PolyImpl work = this.mutableCopy(3);
             work.setVertex(0, this.getVertex(head));
             work.setVertex(1, this.getVertex(0));
             work.setVertex(2, this.getVertex(tail));
@@ -485,7 +497,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
             while(head - tail > 1)
             {
-                work = new PolyImpl(this, 3);
+                work = this.mutableCopy(3);
                 work.setVertex(0, this.getVertex(head));
                 work.setVertex(1, this.getVertex(tail));
                 work.setVertex(2, this.getVertex(++tail));
@@ -493,30 +505,13 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
 
                 if(head - tail > 1)
                 {
-                    work = new PolyImpl(this, 3);
+                    work = this.mutableCopy(3);
                     work.setVertex(0, this.getVertex(head));
                     work.setVertex(1, this.getVertex(tail));
                     work.setVertex(2, this.getVertex(--head));
                     target.accept(work);
                 }
             }
-        }
-    }
-
-    @Override
-    public final void offsetVertexUV(float uShift, float vShift)
-    {
-        for(int i = 0; i < this.vertexCount; i++)
-        {
-            Vertex v = this.vertices[i];
-            v = v.withUV(v.u + uShift, v.v + vShift);
-            
-            assert v.u > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
-            assert v.u < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
-            assert v.v > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
-            assert v.v < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds";
-
-            this.vertices[i] = v;
         }
     }
     
@@ -548,15 +543,21 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
+    public IPaintableQuad getSubQuad(int layerIndex)
+    {
+        return this;
+    }
+    
+    @Override
     public IPaintableQuad paintableCopy()
     {
-        return Poly.mutableCopyOf(this);
+        return this.mutableCopy();
     }
 
     @Override
     public IPaintableQuad paintableCopy(int vertexCount)
     {
-        return Poly.mutable(this, vertexCount);
+        return this.mutableCopy(vertexCount);
     }
 
     @Override

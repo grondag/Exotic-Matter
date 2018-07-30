@@ -15,7 +15,7 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
@@ -55,7 +55,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     private Collection<IPolygon> getTestQuads()
     {
-        IMutablePolygon template = Poly.mutable(4);
+        IMutablePolygon template = new PolyImpl(4);
         template.setLockUV(true);
         template.setSurfaceInstance(SURFACE_MAIN);
   

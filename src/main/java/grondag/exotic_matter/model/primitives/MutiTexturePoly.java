@@ -1,217 +1,58 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.function.Consumer;
-
-import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.world.Rotation;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-
-public abstract class MutiTexturePoly extends PolyImpl implements IMultiTexturedPolygon
+public abstract class MutiTexturePoly
 {
-    public static class Double extends MutiTexturePoly
+    public static class Double extends PolyImpl
     {
         protected final DoubleDelegate doubleDelegate  = new DoubleDelegate();
+
+        public Double(int vertexCount)
+        {
+            super(vertexCount);
+        }
         
+        @Override
+        public Double newInstance(int vertexCount)
+        {
+            return new Double(vertexCount);
+        }
+        
+        @Override
+        protected void copyProperties(IPolygon fromObject)
+        {
+            super.copyProperties(fromObject);
+            if(fromObject instanceof Double)
+            {
+                this.doubleDelegate.copyPropertiesFrom(((Double)fromObject).doubleDelegate);
+            }
+        }
+
+        @Override
+        protected IVertexFactory vertexFactory()
+        {
+            return MultiTextureVertex.Double.FACTORY;
+        }
+
         @Override
         public int layerCount()
         {
             return 2;
         }
         
-        private class DoubleDelegate implements IPaintableQuad
+        private class DoubleDelegate extends PaintableSubQuad
         {
-
-            @Override
-            public void setMinU(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMinU()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setMaxU(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void setMinV(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMinV()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setMaxV(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public Surface getSurfaceInstance()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public int textureSalt()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public boolean isLockUV()
-            {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public EnumFacing getNominalFace()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setRotation(Rotation object)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public Rotation getRotation()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setTextureName(String textureName)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
             @Override
             public IMutablePolygon getParent()
             {
-                // TODO Auto-generated method stub
-                return null;
+                return Double.this;
             }
 
             @Override
-            public int vertexCount()
+            protected int layerIndex()
             {
-                // TODO Auto-generated method stub
-                return 0;
+                return 1;
             }
 
-            @Override
-            public IPaintableVertex getPaintableVertex(int i)
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void scaleFromBlockCenter(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public int layerCount()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setRenderPass(BlockRenderLayer renderPass)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void offsetVertexUV(float f, float g)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMaxU()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public float getMaxV()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public IPaintableQuad paintableCopy()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public IPaintableQuad paintableCopy(int vertexCount)
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setVertex(int i, IPaintableVertex thisVertex)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public boolean isConvex()
-            {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean b)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            
         }
         
         @Override
@@ -227,213 +68,60 @@ public abstract class MutiTexturePoly extends PolyImpl implements IMultiTextured
                 throw new IndexOutOfBoundsException();
             }
         }
-        
-        
     }
     
     public static class Triple extends Double
     {
         protected final TripleDelegate tripleDelegate  = new TripleDelegate();
-        
-        private class TripleDelegate implements IPaintableQuad
+
+        public Triple(int vertexCount)
         {
-
-            @Override
-            public void setMinU(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMinU()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setMaxU(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void setMinV(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMinV()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setMaxV(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public Surface getSurfaceInstance()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public int textureSalt()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public boolean isLockUV()
-            {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public EnumFacing getNominalFace()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setRotation(Rotation object)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public Rotation getRotation()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setTextureName(String textureName)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public IMutablePolygon getParent()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public int vertexCount()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public IPaintableVertex getPaintableVertex(int i)
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void scaleFromBlockCenter(float f)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public int layerCount()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public void setRenderPass(BlockRenderLayer renderPass)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void offsetVertexUV(float f, float g)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public float getMaxU()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public float getMaxV()
-            {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-
-            @Override
-            public IPaintableQuad paintableCopy()
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public IPaintableQuad paintableCopy(int vertexCount)
-            {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public void setVertex(int i, IPaintableVertex thisVertex)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public boolean isConvex()
-            {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean b)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            
+            super(vertexCount);
         }
         
+        @Override
+        public Triple newInstance(int vertexCount)
+        {
+            return new Triple(vertexCount);
+        }
+        
+        @Override
+        protected void copyProperties(IPolygon fromObject)
+        {
+            super.copyProperties(fromObject);
+            if(fromObject instanceof Triple)
+            {
+                this.tripleDelegate.copyPropertiesFrom(((Triple)fromObject).tripleDelegate);
+            }
+        }
+
+        @Override
+        protected IVertexFactory vertexFactory()
+        {
+            return MultiTextureVertex.Triple.FACTORY;
+        }
+
         @Override
         public int layerCount()
         {
             return 3;
+        }
+        
+        private class TripleDelegate extends PaintableSubQuad
+        {
+            
+            @Override
+            public IMutablePolygon getParent()
+            {
+                return Triple.this;
+            }
+
+            @Override
+            protected int layerIndex()
+            {
+                return 2;
+            }
+
         }
         
         @Override

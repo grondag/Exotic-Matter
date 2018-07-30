@@ -44,7 +44,7 @@ public class CubeInputs{
 
     public IPolygon makeRawFace(EnumFacing side){
 
-        IMutablePolygon qi = Poly.mutable(4);
+        IMutablePolygon qi = new PolyImpl(4);
         qi.setColor(this.color);
         
         qi.setLockUV(true);

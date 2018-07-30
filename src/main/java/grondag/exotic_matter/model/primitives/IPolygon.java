@@ -702,6 +702,12 @@ public interface IPolygon extends IPipelinedQuad
         
 
     }
+
+    IMutablePolygon mutableCopyWithVertices();
+
+    IMutablePolygon mutableCopy();
+
+    IMutablePolygon mutableCopy(int vertexCount);
     
 //    /**
 //     * For testing

@@ -8,43 +8,54 @@ import javax.vecmath.Vector4f;
 import grondag.exotic_matter.varia.ColorHelper;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.Vec3d;
 
-public final class Vertex extends Vec3f implements IPaintableVertex
+public class Vertex extends Vec3f implements IPaintableVertex
 {
+    public static final IVertexFactory DEFAULT_FACTORY = new IVertexFactory()
+    {
+        @Override
+        public Vertex newVertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal, int glow)
+        {
+            return new Vertex(x, y, z, u, v, color, normal, glow);
+        }
+
+        @Override
+        public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight)
+        {
+            final int newGlow = (int) (from.glow + (to.glow - from.glow) * toWeight);
+            
+            int newColor = ColorHelper.interpolate(from.color, to.color, toWeight);
+            final float newU = from.u + (to.u - from.u) * toWeight;
+            final float newV = from.v + (to.v - from.v) * toWeight;
+            return newVertex(newX, newY, newZ, newU, newV, newColor, newNormal, newGlow);
+        }
+
+        @Override
+        public Vertex withColorGlow(Vertex vertex, int colorIn, int glowIn)
+        {
+            return newVertex(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn);
+        }
+
+        @Override
+        public Vertex withUV(Vertex vertex, float uNew, float vNew)
+        {
+            return newVertex(vertex.x, vertex.y, vertex.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow);
+        }
+
+        @Override
+        public Vertex withGeometry(Vertex vertex, float x, float y, float z, @Nullable Vec3f normal)
+        {
+            return newVertex(x, y, z, vertex.u, vertex.v, vertex.color, normal, vertex.glow);
+        }
+    };
+            
     public final float u;
     public final float v;
     public final int color;
     public final @Nullable Vec3f normal;
     public final short glow;
     
-    public Vertex(Vec3f point, float u, float v, int color, Vec3f normal)
-    {
-        this(point.x, point.y, point.z, u, v, color, normal);
-    }
-    
-    @Deprecated
-    public Vertex(Vec3d point, double u, double v, int color, Vec3d normal)
-    {
-        this((float)point.x, (float)point.y, (float)point.z, (float)u, (float)v, color, (float)normal.x, (float)normal.y, (float)normal.z);
-    }
-    
-    public Vertex(float x, float y, float z, float u, float v, int color)
-    {
-        this(x, y, z, u, v, color, null);
-    }
-
-    public Vertex(float x, float y, float z, float u, float v, int color, int glow)
-    {
-        this(x, y, z, u, v, color, null, glow);
-    }
-    
-    public Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal)
-    {
-        this(x, y, z, u, v, color, normal, 0);
-    }
-    
-    public Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal, int glow)
+    protected Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal, int glow)
     {
         super(x, y, z);
         this.u = u;
@@ -54,14 +65,9 @@ public final class Vertex extends Vec3f implements IPaintableVertex
         this.glow = (short) (glow & 0xFF);
     }
     
-    public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
+    protected IVertexFactory factory()
     {
-        this(x, y, z, u, v, color, new Vec3f(normalX, normalY, normalZ));
-    }
-
-    public Vertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ, int glow)
-    {
-        this(x, y, z, u, v, color, new Vec3f(normalX, normalY, normalZ), glow);
+        return DEFAULT_FACTORY;
     }
     
     /**
@@ -74,59 +80,45 @@ public final class Vertex extends Vec3f implements IPaintableVertex
     }
     
     /**
-     * Returns copy of self. If normal is present it is inverted in the copy.
-     * @return
+     * Returns copy of self if normal is present. If normal is present return copy with inverted normal.
      */
+    @SuppressWarnings("null")
     public final Vertex flipped()
     {
         return this.normal == null
-                ? new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, null, this.glow)
-                : new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal.inverse(), this.glow);
+                ? this
+                : factory().withGeometry(this, this.x, this.y, this.z, this.normal.inverse());
     }
     
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(float normalXIn, float normalYIn, float normalZIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normalXIn, normalYIn, normalZIn, this.glow);
+        return factory().withGeometry(this, this.x, this.y, this.z, new Vec3f(normalXIn, normalYIn, normalZIn));
     }
     
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(Vec3f normal)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, normal, this.glow);
-    }
-
-    /** returns copy of this vertex with given color */
-    @Override
-    public final Vertex withColor(int colorIn)
-    {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, this.glow);
-    }
-
-    /** returns copy of this vertex with given glow (0-255) */
-    @Override
-    public final Vertex withGlow(int glowIn)
-    {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, glowIn);
+        return factory().withGeometry(this, this.x, this.y, this.z, normal);
     }
     
     @Override
     public final Vertex withColorGlow(int colorIn, int glowIn)
     {
-        return new Vertex(this.x, this.y, this.z, this.u, this.v, colorIn, this.normal, glowIn);
+        return factory().withColorGlow(this, colorIn, glowIn);
     }
     
     /** returns copy of this vertex with given UV */
     @Override
     public final Vertex withUV(float uNew, float vNew)
     {
-        return new Vertex(this.x, this.y, this.z, uNew, vNew, this.color, this.normal, this.glow);
+        return factory().withUV(this, uNew, vNew);
     }
     
     /** returns copy of this vertex with given XYZ coords */
     public final Vertex withXYZ(float xNew, float yNew, float zNew)
     {
-        return new Vertex(xNew, yNew, zNew, this.u, this.v, this.color, this.normal, this.glow);
+        return factory().withGeometry(this, xNew, yNew, zNew, this.normal);
     }
     
     public final Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
@@ -142,14 +134,15 @@ public final class Vertex extends Vec3f implements IPaintableVertex
 
         if(this.normal == null)
         {
-            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color, null, this.glow);
+            return factory().withGeometry(this, tmp.x, tmp.y, tmp.z, null);
         }
         else
         {
+            @SuppressWarnings("null")
             Vector4f tmpNormal = new Vector4f(this.normal.x, this.normal.y, this.normal.z, 1f);
             matrix.transform(tmpNormal);
             float normScale= (float) (1/Math.sqrt(tmpNormal.x*tmpNormal.x + tmpNormal.y*tmpNormal.y + tmpNormal.z*tmpNormal.z));
-            return new Vertex(tmp.x, tmp.y, tmp.z, this.u, this.v, this.color, tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale, this.glow);
+            return factory().withGeometry(this, tmp.x, tmp.y, tmp.z, new Vec3f(tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale));
         }
 
     }
@@ -245,19 +238,12 @@ public final class Vertex extends Vec3f implements IPaintableVertex
         final float newY = this.y + (otherVertex.y - this.y) * otherWeight;
         final float newZ = this.z + (otherVertex.z - this.z) * otherWeight;
         
-        final float newU = this.u + (otherVertex.u - this.u) * otherWeight;
-        final float newV = this.v + (otherVertex.v - this.v) * otherWeight;
-        
-        final int newGlow = (int) (this.glow + (otherVertex.glow - this.glow) * otherWeight);
-        
-        int newColor = ColorHelper.interpolate(this.color, otherVertex.color, otherWeight);
-        
         final Vec3f thisNormal = this.normal;
         final Vec3f otherNormal = otherVertex.normal;
         
         if(thisNormal == null || otherNormal == null)
         {
-            return new Vertex(newX, newY, newZ, newU, newV, newColor, null, newGlow);
+            return factory().interpolate(newX, newY, newZ, null, this, otherVertex, otherWeight);
         }
         else
         {
@@ -266,7 +252,7 @@ public final class Vertex extends Vec3f implements IPaintableVertex
             final float normZ = thisNormal.z + (otherNormal.z - thisNormal.z) * otherWeight;
             final float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
             
-            return new Vertex(newX, newY, newZ, newU, newV, newColor, normX * normScale, normY * normScale, normZ * normScale, newGlow);
+            return factory().interpolate(newX, newY, newZ, new Vec3f(normX * normScale, normY * normScale, normZ * normScale), this, otherVertex, otherWeight);
         }
     }
     
@@ -328,5 +314,23 @@ public final class Vertex extends Vec3f implements IPaintableVertex
     public IPaintableVertex interpolate(IPaintableVertex nextVertex, float dist)
     {
         return this.interpolate((Vertex)nextVertex, dist);
+    }
+
+    @Override
+    public float x()
+    {
+        return this.x;
+    }
+    
+    @Override
+    public float y()
+    {
+        return this.y;
+    }
+    
+    @Override
+    public float z()
+    {
+        return this.z;
     }
 }

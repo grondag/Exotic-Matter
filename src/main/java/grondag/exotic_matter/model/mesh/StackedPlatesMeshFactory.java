@@ -18,7 +18,7 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.ICollisionHandler;
@@ -57,12 +57,12 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         final Matrix4f matrix = modelState.getMatrix4f();
         final float height = (meta + 1) / 16;
         
-        IMutablePolygon template = Poly.mutable(4);
+        IMutablePolygon template = new PolyImpl(4);
         template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 
-        IMutablePolygon quad = Poly.mutable(template);
+        IMutablePolygon quad = template.mutableCopy(4);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
@@ -71,7 +71,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
-            quad = Poly.mutable(template);
+            quad = template.mutableCopy(4);
             quad.setSurfaceInstance(SIDE_SURFACE);
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
@@ -79,7 +79,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
             target.accept(quad);
         }
         
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);

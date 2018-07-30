@@ -259,7 +259,7 @@ public class QuadHelper
         */
        public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPolygon> list)
        {
-           IMutablePolygon template = Poly.mutable(4);
+           IMutablePolygon template = new PolyImpl(4);
            template.setTextureName("hard_science:blocks/" + rawTextureName);
            template.setColor(color);
            template.setLockUV(false);
@@ -305,7 +305,7 @@ public class QuadHelper
            
            for(EnumFacing face : EnumFacing.VALUES)
            {
-               IMutablePolygon quad = Poly.mutable(template);
+               IMutablePolygon quad = template.mutableCopy(4);
                quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                quad.scaleFromBlockCenter(scaleFactor);
                list.add(quad);

@@ -20,7 +20,6 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
@@ -112,7 +111,7 @@ public class SuperDispatcher
             QuadContainer.Builder builder = new QuadContainer.Builder();
             key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
-                IMutablePolygon mutable = Poly.mutableCopyOf(q);
+                IMutablePolygon mutable = q.mutableCopy();
                 
                 // arbitrary choice - just needs to be a simple non-null texture
                 mutable.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());

@@ -3,7 +3,6 @@ package grondag.exotic_matter.block;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;

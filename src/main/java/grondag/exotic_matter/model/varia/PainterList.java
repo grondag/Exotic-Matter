@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.QuadPainter;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;

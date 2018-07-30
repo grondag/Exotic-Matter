@@ -10,7 +10,6 @@ import grondag.exotic_matter.model.painting.QuadrantSplitter;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -86,7 +85,7 @@ public class QuadPaintManager
             PainterList painters = paintersForSurface(poly.getSurfaceInstance());
             if(painters.isEmpty()) return;
             
-            IMutablePolygon quad = Poly.mutableCopyOf(poly);
+            IMutablePolygon quad = poly.mutableCopy();
             
             // if lockUV is on, derive UV coords by projection
             // of vertex coordinates on the plane of the quad's face

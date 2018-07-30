@@ -14,7 +14,7 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
@@ -52,7 +52,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     
     private Collection<IPolygon> generateQuads()
     {
-        IMutablePolygon template = Poly.mutable(4);
+        IMutablePolygon template = new PolyImpl(4);
         template.setLockUV(false);
         template.setSurfaceInstance(SURFACE_MAIN);
   

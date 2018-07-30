@@ -13,7 +13,6 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Poly;
 import grondag.exotic_matter.model.primitives.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
@@ -45,8 +44,8 @@ public class MeshHelper
         final Vec3d axisX = new Vec3d(isY ? 1 : 0, !isY ? 1 : 0, 0)
                 .crossProduct(axisZ).normalize();
         final Vec3d axisY = axisX.crossProduct(axisZ).normalize();
-        IMutablePolygon top = Poly.mutable(template, polySlices);
-        IMutablePolygon bottom = Poly.mutable(template, polySlices);
+        IMutablePolygon top = template.mutableCopy(polySlices);
+        IMutablePolygon bottom = template.mutableCopy(polySlices);
         
         List<IPolygon> results = new ArrayList<>(48);
 
@@ -72,7 +71,7 @@ public class MeshHelper
                 Vec3d n1= cylNormal(axisX, axisY, t0);
  
                 
-                IMutablePolygon newQuad = Poly.mutable(template);
+                IMutablePolygon newQuad = template.mutableCopy();
                 
                 newQuad.addVertex(0, centerStart.add(n0.scale(quadStartRadius)), u0, v0, template.getColor(), n0);
                 newQuad.addVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, template.getColor(), n1);
@@ -152,7 +151,7 @@ public class MeshHelper
         // create 20 triangles of the icosahedron
         List<IPolygon> results = new ArrayList<>(20);
         
-        IMutablePolygon poly = Poly.mutable(template, 3);
+        IMutablePolygon poly = template.mutableCopy(3);
        
         Surface.Builder surfBuilder = Surface.builder(poly.getSurfaceInstance());
         if(surfBuilder.topology() == SurfaceTopology.TILED)
@@ -211,7 +210,7 @@ public class MeshHelper
     
     private static IPolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IPolygon template)
     {
-        IMutablePolygon newQuad = Poly.mutable(template, 3);
+        IMutablePolygon newQuad = template.mutableCopy(3);
         
         if(normals == null)
         {
@@ -266,31 +265,31 @@ public class MeshHelper
     @SuppressWarnings("deprecation")
     public static void makeBox(AxisAlignedBB box, IPolygon template, Consumer<IPolygon> target)
     {
-        IMutablePolygon quad = Poly.mutable(template);
+        IMutablePolygon quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         target.accept(quad);
     
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
         target.accept(quad);
     
         //-X
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
         target.accept(quad);
         
         //+X
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
         target.accept(quad);
         
         //-Z
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
         target.accept(quad);
         
         //+Z
-        quad = Poly.mutable(template);
+        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
         target.accept(quad);
     }
@@ -312,7 +311,7 @@ public class MeshHelper
         final float zEnd = origin.z + zSize;
         final int color = template.getColor();
         
-        IMutablePolygon quad = Poly.mutable(template, 4);
+        IMutablePolygon quad = template.mutableCopy(4);
         quad.setLockUV(false);
         quad.setMinU(0);
         quad.setMaxU(xSize);

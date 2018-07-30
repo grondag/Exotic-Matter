@@ -3,8 +3,8 @@ package grondag.exotic_matter.model.CSG;
 import java.util.Arrays;
 import java.util.List;
 
+import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.primitives.Vec3f;
 import grondag.exotic_matter.model.primitives.Vertex;
 
@@ -63,8 +63,7 @@ public class CSGPolygon
 
     public IPolygon applyInverted()
     {
-        
-        PolyImpl result = new PolyImpl(this.original, this.vertex.length);
+        IMutablePolygon result = this.original.mutableCopy(this.vertex.length);
         
         final int vCount = this.vertex.length;
         if(this.isInverted)
