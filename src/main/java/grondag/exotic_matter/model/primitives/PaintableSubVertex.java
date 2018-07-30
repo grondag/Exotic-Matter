@@ -92,4 +92,6 @@ public abstract class PaintableSubVertex<T extends Vertex> implements IPaintable
     {
         return parent.interpolate(nextVertex, dist);
     }
+    
+    
 }

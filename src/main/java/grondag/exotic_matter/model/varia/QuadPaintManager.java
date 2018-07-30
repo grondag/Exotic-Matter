@@ -85,7 +85,7 @@ public class QuadPaintManager
             PainterList painters = paintersForSurface(poly.getSurfaceInstance());
             if(painters.isEmpty()) return;
             
-            IMutablePolygon quad = poly.mutableCopy();
+            IMutablePolygon quad = poly.mutableCopyWithVertices();
             
             // if lockUV is on, derive UV coords by projection
             // of vertex coordinates on the plane of the quad's face
