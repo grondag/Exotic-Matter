@@ -13,82 +13,24 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-import grondag.acuity.api.IPipelinedQuad;
-import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.render.QuadBakery;
-import grondag.exotic_matter.world.Rotation;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Immutable base interface for classes used to create and transform meshes before baking into MC quads.<p>
- * 
- * Regarding texture coordinates...<br>
- * UV min and max for quads and vertices prior to baking are generally in the range 0-1. (Not the 0-16 MC convention)
- * 
- * However, see SurfaceTopology for variation in that meaning...  <p>
- * 
- * Note that a "min" UV value in the polygon instance may not be the mathematical minimum
- * because UV values can be flipped for to reverse the texture during rendering.  Same applies to max.<p>
- * 
  */
 
-public interface IPolygon extends IPipelinedQuad
+public interface IPolygon extends IPaintableQuad
 {
     Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
-    public @Nullable String getTextureName();
-
-    /**
-     * If non-zero, signals painter to randomize texture on this surface
-     * to be different from and not join with adjacent textures.<p>
-     * 
-     * Enables texture randomization on painted surfaces that don't have position information.
-     * Populated by mesh generator if applicable.  Supports values 0-255.
-     */
-    public int textureSalt();
-    
-    /**
-     * Gets the face to be used for setupFace semantics.  
-     * Is a general facing but does NOT mean poly is actually on that face.
-     */
-    public EnumFacing getNominalFace();
-
-    /** 
-     * Causes texture to appear rotated within the frame
-     * of this texture. Relies on UV coordinates
-     * being in the range 0-1. <br><br>
-     * 
-     * Rotation happens during quad bake.
-     * If lockUV is true, rotation happens after UV
-     * coordinates are derived.
-     */
-    public Rotation getRotation();
-
     public int getColor();
-
-    /**
-     * If true and Acuity API is enabled, will signal API that surface is emissive.
-     * Per-vertex glow will still be passed as lightmap values.
-     */
-    public boolean isEmissive();
-    
-    /** 
-     * If true then quad painters will ignore UV coordinates and instead set
-     * based on projection of vertices onto the given nominal face.
-     * Note that FaceVertex does this by default even if lockUV is not specified.
-     * To get unlockedUV coordiates, specificy a face using FaceVertex.UV or FaceVertex.UVColored.
-     */
-    public boolean isLockUV();
     
     /**
      * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.
@@ -123,8 +65,6 @@ public interface IPolygon extends IPipelinedQuad
      */
     public boolean hasFaceNormal();
     
-    public Vec3f getFaceNormal();
-    
     public default  float[] getFaceNormalArray()
     {
         Vec3f normal = getFaceNormal();
@@ -136,32 +76,6 @@ public interface IPolygon extends IPipelinedQuad
         retval[2] = normal.z;
         return retval;
     }
-
-    public boolean shouldContractUVs();
-
-    /**
-     * See notes on UV coordinates in IPolygon header
-     */
-    public float getMinU();
-
-    /**
-     * See notes on UV coordinates in IPolygon header
-     */
-    public float getMaxU();
-
-    /**
-     * See notes on UV coordinates in IPolygon header
-     */
-    public float getMinV();
-
-    /**
-     * See notes on UV coordinates in IPolygon header
-     */
-    public float getMaxV();
-
-    public Surface getSurfaceInstance();
-
-    public int vertexCount();
     
     public Vertex getVertex(int index);
     
@@ -357,13 +271,8 @@ public interface IPolygon extends IPipelinedQuad
 
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
-    
-    /**
-     * Returns true if this polygon is convex.
-     * All Tris must be.  
-     * For quads, confirms that each turn around the quad 
-     * goes same way by comparing cross products of edges.
-     */
+
+    @Override
     public default boolean isConvex()
     {
         return isConvex(this.vertexArray());
@@ -610,7 +519,6 @@ public interface IPolygon extends IPipelinedQuad
     public default void addBakedQuadsToBuilder(Builder<BakedQuad> builder, boolean isItem)
     {
         builder.add(QuadBakery.createBakedQuad(this, isItem));
-        //TODO: handle multiple layers
     }
 
     public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
@@ -630,77 +538,6 @@ public interface IPolygon extends IPipelinedQuad
             else
                 consumer.acceptVertex(v.x, v.y, v.z, v.normal.x, v.normal.y, v.normal.z);
         });
-    }
-    
-    @SideOnly(value = Side.CLIENT)
-    @Override
-    public default void produceVertices(IPipelinedVertexConsumer vertexLighter)
-    {
-        final float minU = this.getMinU();
-        final float minV = this.getMinV();
-        
-        final float spanU = this.getMaxU() - minU;
-        final float spanV = this.getMaxV() - minV;
-        
-        @SuppressWarnings("null")
-        final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(this.getTextureName());
-        
-        float[][] uvData = new float[4][2];
-        
-        for(int i = 0; i < 4; i++)
-        {
-            Vertex v = this.getVertex(i);
-            uvData[i][0] = v.u;
-            uvData[i][1] = v.v;
-        }
-        
-        // apply texture rotation
-        QuadBakery.applyTextureRotation(this, uvData);
-        
-        // scale UV coordinates to size of texture sub-region
-        for(int v = 0; v < 4; v++)
-        {
-            uvData[v][0] = minU + spanU * uvData[v][0];
-            uvData[v][1] = minV + spanV * uvData[v][1];
-        }
-
-        if(this.shouldContractUVs())
-        {
-            QuadBakery.contractUVs(textureSprite, uvData);
-        }
-        
-        Vec3f fn = this.getFaceNormal();
-        final float spriteMinU = textureSprite.getMinU();
-        final float spriteSpanU = textureSprite.getMaxU() - spriteMinU;
-        final float spriteMinV = textureSprite.getMinV();
-        final float spriteSpanV = textureSprite.getMaxV() - spriteMinV;
-        
-        int glow = 0;
-        
-        vertexLighter.setEmissive(0, this.isEmissive());
-        
-        for(int i = 0; i < 4; i++)
-        {
-            // doing interpolation here vs using sprite methods to avoid wasteful multiply and divide by 16
-            final float uCoord = spriteMinU + uvData[i][0] * spriteSpanU;
-            final float vCoord = spriteMinV + uvData[i][1] * spriteSpanV;
-            
-            Vertex v = this.getVertex(i);
-            Vec3f n = v.normal;
-            if(n == null)
-                n =  fn;
-            
-            if(v.glow != glow)
-            {
-                final int g = v.glow * 17;
-                vertexLighter.setBlockLightMap(g, g, g, 255);
-                glow = v.glow;
-            }
-            
-            vertexLighter.acceptVertex(v.x, v.y, v.z, n.x, n.y, n.z, v.color, uCoord, vCoord);
-        }
-        
-
     }
 
     IMutablePolygon mutableCopyWithVertices();

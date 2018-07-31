@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.varia.ColorHelper;
 
 public abstract class PaintableSubVertex<T extends Vertex> implements IPaintableVertex 
@@ -85,6 +87,12 @@ public abstract class PaintableSubVertex<T extends Vertex> implements IPaintable
     public float z()
     {
         return parent.z();
+    }
+    
+    @Override
+    public @Nullable Vec3f normal()
+    {
+        return parent.normal();
     }
     
     @Override

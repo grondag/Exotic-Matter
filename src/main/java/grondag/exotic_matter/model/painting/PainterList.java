@@ -58,7 +58,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
     @SuppressWarnings("null")
     public void producePaintedQuads(IMutablePolygon q, Consumer<IPolygon> target, boolean isItem)
     {
-        if(this.hasSolidBase && ClientProxy.isAcuityEnabled())
+        // Item render currently doesn't support multi-textured quads.
+        // Could handle in IPolygon.addBakedQuadsToBuilder but this is easier until item support happens.
+        if(!isItem && this.hasSolidBase && ClientProxy.isAcuityEnabled())
         {
             switch(this.size)
             {

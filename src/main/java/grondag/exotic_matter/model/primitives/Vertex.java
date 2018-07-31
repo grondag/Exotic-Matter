@@ -333,4 +333,10 @@ public class Vertex extends Vec3f implements IPaintableVertex
     {
         return this.z;
     }
+    
+    @Override
+    public @Nullable Vec3f normal()
+    {
+        return this.normal;
+    }
 }

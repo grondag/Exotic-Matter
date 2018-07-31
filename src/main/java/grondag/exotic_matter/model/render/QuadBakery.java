@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.render;
 
+import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.client.Minecraft;
@@ -164,7 +165,7 @@ public class QuadBakery
 //                format));
     }
     
-    public static void applyTextureRotation(IPolygon raw, float[][] uvData)
+    public static void applyTextureRotation(IPaintableQuad raw, float[][] uvData)
     {
        switch(raw.getRotation())
        {

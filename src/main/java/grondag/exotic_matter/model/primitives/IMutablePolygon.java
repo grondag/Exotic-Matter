@@ -158,8 +158,6 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ);
     
     void setColor(int color);
-
-    void setEmissive(boolean isEmissive);
     
     void setLockUV(boolean isLockUV);
 

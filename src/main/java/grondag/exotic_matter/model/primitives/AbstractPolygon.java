@@ -23,11 +23,13 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected static final BitPacker<AbstractPolygon>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
-    protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BITS = BITPACKER.createBooleanElement();
+    protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BIT = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
     protected static final BitPacker<AbstractPolygon>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
     protected static final BitPacker<AbstractPolygon>.IntElement PIPELINE_INDEX = BITPACKER.createIntElement(1024);
+    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT_2 = BITPACKER.createBooleanElement();
+    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT_3 = BITPACKER.createBooleanElement();
     
     protected static final long DEFAULT_BITS;
     static
@@ -35,7 +37,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
         long defaultBits = 0xFFFFFFFFL; // white
         defaultBits |= ROTATION_BITS.getBits(Rotation.ROTATE_NONE);
         defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
-        defaultBits |= LOCKUV_BITS.getBits(false);
+        defaultBits |= LOCKUV_BIT.getBits(false);
         defaultBits |= CONTRACTUV_BITS.getBits(true);
         DEFAULT_BITS = defaultBits;
     }
@@ -129,13 +131,13 @@ public abstract class AbstractPolygon implements IMutablePolygon
     @Override
     public boolean isLockUV()
     {
-        return LOCKUV_BITS.getValue(this);
+        return LOCKUV_BIT.getValue(this);
     }
 
     @Override
     public void setLockUV(boolean isLockUV)
     {
-        LOCKUV_BITS.setValue(isLockUV, this);
+        LOCKUV_BIT.setValue(isLockUV, this);
     }
 
     @Override

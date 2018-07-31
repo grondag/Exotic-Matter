@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
@@ -135,11 +136,23 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
 
     @Override
+    public boolean shouldContractUVs()
+    {
+        return getParent().shouldContractUVs();
+    }
+    
+    @Override
     public EnumFacing getNominalFace()
     {
         return getParent().getNominalFace();
     }
 
+    @Override
+    public Vec3f getFaceNormal()
+    {
+        return getParent().getFaceNormal();
+    }
+    
     @Override
     public void setRotation(Rotation rotation)
     {
@@ -156,6 +169,12 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     public void setTextureName(String textureName)
     {
         this.textureName = textureName;
+    }
+    
+    @Override
+    public @Nullable String getTextureName()
+    {
+        return this.textureName;
     }
     
 
@@ -199,5 +218,17 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     public boolean isConvex()
     {
         return getParent().isConvex();
+    }
+    
+    @Override
+    public @Nullable IRenderPipeline getPipeline()
+    {
+        return getParent().getPipeline();
+    }
+
+    @Override
+    public BlockRenderLayer getRenderLayer()
+    {
+        return getParent().getRenderLayer();
     }
 }

@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
+import javax.annotation.Nullable;
+
 public interface IPaintableVertex
 {
     default IPaintableVertex forTextureLayer(int layer)
@@ -39,5 +41,7 @@ public interface IPaintableVertex
     float z();
 
     float y();
+
+    @Nullable Vec3f normal();
 
 }

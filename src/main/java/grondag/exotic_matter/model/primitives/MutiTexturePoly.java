@@ -53,6 +53,17 @@ public abstract class MutiTexturePoly
                 return 1;
             }
 
+            @Override
+            public boolean isEmissive()
+            {
+                return EMISSIVE_BIT_2.getValue(Double.this);
+            }
+
+            @Override
+            public void setEmissive(boolean isEmissive)
+            {
+                EMISSIVE_BIT_2.setValue(isEmissive, Double.this);
+            }
         }
         
         @Override
@@ -122,6 +133,17 @@ public abstract class MutiTexturePoly
                 return 2;
             }
 
+            @Override
+            public boolean isEmissive()
+            {
+                return EMISSIVE_BIT_3.getValue(Triple.this);
+            }
+
+            @Override
+            public void setEmissive(boolean isEmissive)
+            {
+                EMISSIVE_BIT_3.setValue(isEmissive, Triple.this);
+            }
         }
         
         @Override
