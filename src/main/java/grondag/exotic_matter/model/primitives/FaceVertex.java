@@ -61,9 +61,9 @@ public class FaceVertex
         return new FaceVertex.UV(this.x, this.y, this.depth, u, v, this.glow);
     }
 
-    public int color(int defaultColor)
+    public int color()
     {
-        return defaultColor;
+        return 0xFFFFFFFF;
     }
     
     /**
@@ -111,7 +111,7 @@ public class FaceVertex
         }
 
         @Override
-        public int color(int defaultColor)
+        public int color()
         {
             return color;
         }
@@ -231,7 +231,7 @@ public class FaceVertex
         }
         
         @Override
-        public int color(int defaultColor)
+        public int color()
         {
             return color;
         }

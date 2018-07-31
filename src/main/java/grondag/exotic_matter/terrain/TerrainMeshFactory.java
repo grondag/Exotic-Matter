@@ -32,7 +32,6 @@ import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.CollisionBoxDispatcher;
 import grondag.exotic_matter.model.varia.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
-import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
 import net.minecraft.block.Block;
@@ -139,7 +138,6 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
         IMutablePolygon templateBuilder = new PolyImpl(4);
 
-        templateBuilder.setColor(Color.WHITE);
         templateBuilder.setLockUV(true);
         templateBuilder.setSurfaceInstance(SURFACE_TOP);
         // default - need to change for sides and bottom

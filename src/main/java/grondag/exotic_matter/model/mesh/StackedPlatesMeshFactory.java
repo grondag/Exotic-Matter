@@ -58,7 +58,6 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         final float height = (meta + 1) / 16;
         
         IMutablePolygon template = new PolyImpl(4);
-        template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 

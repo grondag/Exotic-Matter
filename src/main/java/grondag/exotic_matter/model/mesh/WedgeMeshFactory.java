@@ -24,7 +24,6 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         Matrix4f matrix = modelState.getMatrix4f();
         
         IMutablePolygon template = new PolyImpl(4);
-        template.setColor(0xFFFFFFFF);
         template.setRotation(Rotation.ROTATE_NONE);
         template.setLockUV(true);
 

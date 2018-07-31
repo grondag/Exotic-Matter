@@ -36,6 +36,11 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
     
     public void setVertexColor(int index, int vColor);
     
+    /**
+     * Multiplies all vertex color by given value
+     */
+    public void multiplyColor(int color);
+    
     public void setVertex(int index, Vertex v);
     
     /**
@@ -53,12 +58,6 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
      * For example, on NSEW faces, "up" (+y) corresponds to the top of the texture.
      */
     public void assignLockedUVCoordinates();
-    
-
-    /**
-     * Multiplies this quads color and all vertex color by given value
-     */
-    public void multiplyColor(int color);
 
     /**
      * Multiplies uvMin/Max by the given factors.
@@ -156,8 +155,6 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, Vec3f normal);
     
     public void addVertex(int index, float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ);
-    
-    void setColor(int color);
     
     void setLockUV(boolean isLockUV);
 

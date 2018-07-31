@@ -261,7 +261,6 @@ public class QuadHelper
        {
            IMutablePolygon template = new PolyImpl(4);
            template.setTextureName("hard_science:blocks/" + rawTextureName);
-           template.setColor(color);
            template.setLockUV(false);
            template.setShouldContractUVs(contractUVs);
            

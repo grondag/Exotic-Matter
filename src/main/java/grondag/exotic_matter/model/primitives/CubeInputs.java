@@ -45,7 +45,6 @@ public class CubeInputs{
     public IPolygon makeRawFace(EnumFacing side){
 
         IMutablePolygon qi = new PolyImpl(4);
-        qi.setColor(this.color);
         
         qi.setLockUV(true);
         qi.setRotation((rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);

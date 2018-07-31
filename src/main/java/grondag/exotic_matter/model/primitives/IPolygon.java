@@ -30,8 +30,6 @@ public interface IPolygon extends IPaintableQuad
 {
     Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
-    public int getColor();
-    
     /**
      * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.
      */

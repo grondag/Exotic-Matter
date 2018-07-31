@@ -154,7 +154,6 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         EnumFacing.Axis axis = state.getAxis();
 
         IMutablePolygon quadInputs = new PolyImpl(4);
-        quadInputs.setColor(Color.WHITE);
         quadInputs.setLockUV(true);
 
         Surface cutSurface = state.hasBrightness(PaintLayer.LAMP) ? INSTANCE_CUT_LAMP : INSTANCE_CUT;

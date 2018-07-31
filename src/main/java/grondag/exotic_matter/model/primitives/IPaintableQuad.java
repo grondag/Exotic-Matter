@@ -213,7 +213,7 @@ public interface IPaintableQuad extends IPipelinedQuad
      */
     Rotation getRotation();
 
-    void setTextureName(String textureName);
+    void setTextureName(@Nullable String textureName);
     
     @Nullable String getTextureName();
 

@@ -73,10 +73,10 @@ public class MeshHelper
                 
                 IMutablePolygon newQuad = template.mutableCopy();
                 
-                newQuad.addVertex(0, centerStart.add(n0.scale(quadStartRadius)), u0, v0, template.getColor(), n0);
-                newQuad.addVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, template.getColor(), n1);
-                newQuad.addVertex(2, centerEnd.add(n1.scale(quadEndRadius)), u1, v1, template.getColor(), n1);
-                newQuad.addVertex(3, centerEnd.add(n0.scale(quadEndRadius)), u0, v1, template.getColor(), n0);
+                newQuad.addVertex(0, centerStart.add(n0.scale(quadStartRadius)), u0, v0, 0xFFFFFFFF, n0);
+                newQuad.addVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, 0xFFFFFFFF, n1);
+                newQuad.addVertex(2, centerEnd.add(n1.scale(quadEndRadius)), u1, v1, 0xFFFFFFFF, n1);
+                newQuad.addVertex(3, centerEnd.add(n0.scale(quadEndRadius)), u0, v1, 0xFFFFFFFF, n0);
                 results.add(newQuad);
                 
                 if(j == 0 || j == raySlices - 1)
@@ -87,11 +87,11 @@ public class MeshHelper
 
                     if(j == 0)
                     {    
-                        bottom.addVertex(i, centerStart.add(n0.scale(quadStartRadius)), u, v, template.getColor());                
+                        bottom.addVertex(i, centerStart.add(n0.scale(quadStartRadius)), u, v, 0xFFFFFFFF);                
                     }
                     if(j == raySlices - 1)
                     {
-                        top.addVertex(polySlices - i - 1, centerEnd.add(n0.scale(quadEndRadius)), u, v, template.getColor());
+                        top.addVertex(polySlices - i - 1, centerEnd.add(n0.scale(quadEndRadius)), u, v, 0xFFFFFFFF);
                     }
                 }
             }
@@ -216,30 +216,30 @@ public class MeshHelper
         {
             if(topHalf)
             {
-                newQuad.addVertex(0, points[p1], 1, 1, template.getColor());
-                newQuad.addVertex(1, points[p2], 0, 1, template.getColor());
-                newQuad.addVertex(2, points[p3], 1, 0, template.getColor());
+                newQuad.addVertex(0, points[p1], 1, 1, 0xFFFFFFFF);
+                newQuad.addVertex(1, points[p2], 0, 1, 0xFFFFFFFF);
+                newQuad.addVertex(2, points[p3], 1, 0, 0xFFFFFFFF);
             }
             else
             {
-                newQuad.addVertex(0, points[p1], 0, 0, template.getColor());
-                newQuad.addVertex(1, points[p2], 1, 0, template.getColor());
-                newQuad.addVertex(2, points[p3], 0, 1, template.getColor());
+                newQuad.addVertex(0, points[p1], 0, 0, 0xFFFFFFFF);
+                newQuad.addVertex(1, points[p2], 1, 0, 0xFFFFFFFF);
+                newQuad.addVertex(2, points[p3], 0, 1, 0xFFFFFFFF);
             }
         }
         else
         {
             if(topHalf)
             {
-                newQuad.addVertex(0, points[p1], 1, 1, template.getColor(), normals[p1]);
-                newQuad.addVertex(1, points[p2], 0, 1, template.getColor(), normals[p2]);
-                newQuad.addVertex(2, points[p3], 1, 0, template.getColor(), normals[p3]);
+                newQuad.addVertex(0, points[p1], 1, 1, 0xFFFFFFFF, normals[p1]);
+                newQuad.addVertex(1, points[p2], 0, 1, 0xFFFFFFFF, normals[p2]);
+                newQuad.addVertex(2, points[p3], 1, 0, 0xFFFFFFFF, normals[p3]);
             }
             else
             {
-                newQuad.addVertex(0, points[p1], 0, 0, template.getColor(), normals[p1]);
-                newQuad.addVertex(1, points[p2], 1, 0, template.getColor(), normals[p2]);
-                newQuad.addVertex(2, points[p3], 0, 1, template.getColor(), normals[p3]);
+                newQuad.addVertex(0, points[p1], 0, 0, 0xFFFFFFFF, normals[p1]);
+                newQuad.addVertex(1, points[p2], 1, 0, 0xFFFFFFFF, normals[p2]);
+                newQuad.addVertex(2, points[p3], 0, 1, 0xFFFFFFFF, normals[p3]);
             }
         }
         // clear face normal if has been set somehow
@@ -309,7 +309,6 @@ public class MeshHelper
         final float xEnd = origin.x + xSize;
         final float yEnd = origin.y + ySize;
         final float zEnd = origin.z + zSize;
-        final int color = template.getColor();
         
         IMutablePolygon quad = template.mutableCopy(4);
         quad.setLockUV(false);
@@ -318,10 +317,10 @@ public class MeshHelper
         quad.setMinV(0);
         quad.setMaxV(zSize);
         quad.setNominalFace(EnumFacing.UP);
-        quad.addVertex(0, xEnd, yEnd, origin.z, 0, 0, color, 0, 1, 0);
-        quad.addVertex(1, origin.x, yEnd, origin.z, 0, 0, color, 0, 1, 0);
-        quad.addVertex(2, origin.x, yEnd, zEnd, 0, 0, color, 0, 1, 0);
-        quad.addVertex(3, xEnd, yEnd, zEnd, 0, 0, color, 0, 1, 0);
+        quad.addVertex(0, xEnd, yEnd, origin.z, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(1, origin.x, yEnd, origin.z, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(2, origin.x, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(3, xEnd, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
 //        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         builder.add(quad);
     

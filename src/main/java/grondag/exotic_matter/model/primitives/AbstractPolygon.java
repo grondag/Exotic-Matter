@@ -6,7 +6,6 @@ import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker;
-import grondag.exotic_matter.varia.ColorHelper;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -14,11 +13,6 @@ import net.minecraft.util.EnumFacing;
 public abstract class AbstractPolygon implements IMutablePolygon
 {
     protected static final BitPacker<AbstractPolygon> BITPACKER = new BitPacker<AbstractPolygon>(p -> p.stateBits, (p, b) -> p.stateBits = b);
-    
-    /**
-     * Claim the lower half of our state bits for color.  Actual access can be via direct bitwise math.
-     */
-    protected static final BitPacker<AbstractPolygon>.LongElement COLOR_BITS = BITPACKER.createLongElement(0xFFFFFFFFL);
     
     protected static final BitPacker<AbstractPolygon>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
     protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
@@ -34,7 +28,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     protected static final long DEFAULT_BITS;
     static
     {
-        long defaultBits = 0xFFFFFFFFL; // white
+        long defaultBits = 0;
         defaultBits |= ROTATION_BITS.getBits(Rotation.ROTATE_NONE);
         defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
         defaultBits |= LOCKUV_BIT.getBits(false);
@@ -102,19 +96,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     {
         ROTATION_BITS.setValue(rotation, this);
     }
-
-    @Override
-    public int getColor()
-    {
-        return (int)(this.stateBits & 0xFFFFFFFFL);
-    }
-
-    @Override
-    public void setColor(int color)
-    {
-        this.stateBits = (color & 0xFFFFFFFFL) | (this.stateBits & 0xFFFFFFFF00000000L);
-    }
-
 
     @Override
     public boolean isEmissive()
@@ -284,12 +265,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
     {
         this.surfaceInstance = surfaceInstance;
         return this;
-    }
-    
-    @Override
-    public void multiplyColor(int color)
-    {
-        this.setColor(ColorHelper.multiplyColor(this.getColor(), color));
     }
     
     @Override

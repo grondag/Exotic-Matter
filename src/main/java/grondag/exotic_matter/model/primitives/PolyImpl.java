@@ -172,45 +172,45 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         switch(this.getNominalFace())
         {
         case UP:
-            setVertex(0, factory.newVertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(), rv3.glow()));
             break;
 
         case DOWN:     
-            setVertex(0, factory.newVertex(rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(), rv3.glow()));
             break;
 
         case EAST:
-            setVertex(0, factory.newVertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(), rv3.glow()));
             break;
 
         case WEST:
-            setVertex(0, factory.newVertex(rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(), rv3.glow()));
             break;
 
         case NORTH:
-            setVertex(0, factory.newVertex(1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(), rv3.glow()));
             break;
 
         case SOUTH:
-            setVertex(0, factory.newVertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(this.getColor()), rv0.glow()));
-            setVertex(1, factory.newVertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(this.getColor()), rv1.glow()));
-            setVertex(2, factory.newVertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(this.getColor()), rv2.glow()));
-            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(this.getColor()), rv3.glow()));
+            setVertex(0, factory.newVertex(rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(), rv0.glow()));
+            setVertex(1, factory.newVertex(rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(), rv1.glow()));
+            setVertex(2, factory.newVertex(rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(), rv2.glow()));
+            if(this.vertexCount == 4) setVertex(3, factory.newVertex(rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(), rv3.glow()));
             break;
         }
 
@@ -280,12 +280,11 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     /**
-     * Changes all vertices and quad color to new color and returns itself
+     * Changes all vertices color to new color and returns itself
      */
     @Override
     public IMutablePolygon replaceColor(int color)
     {
-        this.setColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
         {
             setVertex(i, ((Vertex)getVertex(i)).withColor(color));
@@ -296,7 +295,6 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     @Override
     public void multiplyColor(int color)
     {
-        super.multiplyColor(color);
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)this.getVertex(i);

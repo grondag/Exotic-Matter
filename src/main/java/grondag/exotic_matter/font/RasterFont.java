@@ -433,7 +433,6 @@ public class RasterFont extends TextureAtlasSprite
     {
         IMutablePolygon template = new PolyImpl(4);
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
-        template.setColor(color);
         template.setLockUV(false);
         template.setShouldContractUVs(false);
         
@@ -461,7 +460,7 @@ public class RasterFont extends TextureAtlasSprite
             {
                 float glyphWidth = g.pixelWidth * scaleFactor;
                 FaceVertex[] fv;
-                fv = makeFaceVertices(g, left, 1.05f, glyphWidth, height);
+                fv = makeFaceVertices(g, left, 1.05f, glyphWidth, height, color);
                 left += glyphWidth;
                 
                 for(EnumFacing face : EnumFacing.VALUES)
@@ -477,17 +476,17 @@ public class RasterFont extends TextureAtlasSprite
 
     }
     
-    private FaceVertex[] makeFaceVertices(GlyphInfo glyph, float left, float top, float width, float height)
+    private FaceVertex[] makeFaceVertices(GlyphInfo glyph, float left, float top, float width, float height, int color)
     {
         float bottom = top - height;
         float right = left + width;
         
         FaceVertex[] result = new FaceVertex[4];
         
-        result[0] = new FaceVertex.UV(left, bottom, 0, glyph.uMinNormal, glyph.vMaxNormal);
-        result[1] = new FaceVertex.UV(right, bottom, 0, glyph.uMaxNormal, glyph.vMaxNormal);
-        result[2] = new FaceVertex.UV(right, top, 0, glyph.uMaxNormal, glyph.vMinNormal);
-        result[3] = new FaceVertex.UV(left, top, 0, glyph.uMinNormal, glyph.vMinNormal);
+        result[0] = new FaceVertex.UVColored(left, bottom, 0, glyph.uMinNormal, glyph.vMaxNormal, color, 0);
+        result[1] = new FaceVertex.UVColored(right, bottom, 0, glyph.uMaxNormal, glyph.vMaxNormal, color, 0);
+        result[2] = new FaceVertex.UVColored(right, top, 0, glyph.uMaxNormal, glyph.vMinNormal, color, 0);
+        result[3] = new FaceVertex.UVColored(left, top, 0, glyph.uMinNormal, glyph.vMinNormal, color, 0);
         
         return result;
     }
