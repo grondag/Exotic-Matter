@@ -166,7 +166,7 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
 
     @Override
-    public void setTextureName(String textureName)
+    public void setTextureName(@Nullable String textureName)
     {
         this.textureName = textureName;
     }

@@ -10,6 +10,7 @@ import grondag.acuity.api.IAcuityListener;
 import grondag.acuity.api.IAcuityRuntime;
 import grondag.acuity.api.IPipelineManager;
 import grondag.acuity.api.IRenderPipeline;
+import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.block.DummyColorHandler;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
@@ -54,7 +55,7 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     
     private static @Nullable IAcuityRuntime acuity;
     private static @Nullable IPipelineManager pipelineManager;
-
+    
     private static void refreshCamera()
     {
         Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
@@ -202,5 +203,14 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     {
         final IPipelineManager p = pipelineManager;
         return p == null ? null : p.getPipelineByIndex(value);
+    }
+    
+    /**
+     * Handles null checking and shortens pointer chase
+     */
+    public static @Nullable IRenderPipeline acuityDefaultPipeline(TextureFormat format)
+    {
+        final IPipelineManager p = pipelineManager;
+        return p == null ? null : p.getDefaultPipeline(format);
     }
 }

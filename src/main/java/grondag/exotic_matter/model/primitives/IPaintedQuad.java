@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 import grondag.acuity.api.IPipelinedQuad;
 import grondag.acuity.api.IPipelinedVertexConsumer;
+import grondag.acuity.api.IRenderPipeline;
+import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.world.Rotation;
@@ -121,6 +123,15 @@ public interface IPaintedQuad extends IPipelinedQuad
     IPaintableQuad paintableCopyWithVertices();
 
     IPaintableQuad paintableCopy(int vertexCount);
+    
+    /**
+     * Convenient shorthand for null check and texture format lookup.
+     */
+    public default @Nullable TextureFormat textureFormat()
+    {
+        final IRenderPipeline p = this.getPipeline();
+        return p == null ? null : p.textureFormat();
+    }
     
     @Override
     @SideOnly(value = Side.CLIENT)

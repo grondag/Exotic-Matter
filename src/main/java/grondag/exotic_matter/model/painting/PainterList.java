@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -68,10 +69,15 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 1:
+                q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.SINGLE));
                 this.get(0).producePaintedQuad(q, p -> target.accept(p.getParent()), isItem);
                 break;
                 
             case 2:
+                // make sure has an appropriate pipeline, some models may set up before we get here
+                if(q.textureFormat() != TextureFormat.DOUBLE)
+                    q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.DOUBLE));
+                
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
                     this.get(1).producePaintedQuad(p0, p1 -> target.accept(p1.getParent()), isItem);
@@ -79,6 +85,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 3:
+                // make sure has an appropriate pipeline, some models may set up before we get here
+                if(q.textureFormat() != TextureFormat.TRIPLE)
+                    q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
                     this.get(1).producePaintedQuad(p0, p1 -> 

@@ -126,7 +126,7 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
     IMutablePolygon setSurfaceInstance(Surface surfaceInstance);
     
     /** sets acuity render pipeline and returns self for convenience */
-    IMutablePolygon setPipeline(IRenderPipeline pipeline);
+    IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline);
     
     /**
      * Enforces immutability of vertex geometry once a vertex is added
