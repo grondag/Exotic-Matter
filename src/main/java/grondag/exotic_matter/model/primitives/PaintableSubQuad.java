@@ -42,7 +42,16 @@ public abstract class PaintableSubQuad implements IPaintableQuad
         this.maxV = otherSubQuad.maxV;
         this.rotation = otherSubQuad.rotation;
         this.textureName = otherSubQuad.textureName;
-        this.renderPass = otherSubQuad.renderPass;
+    }
+    
+    protected void copyPropertiesFrom(IPolygon poly)
+    {
+        this.minU = poly.getMinU();
+        this.minV = poly.getMinV();
+        this.maxU = poly.getMaxU();
+        this.maxV = poly.getMaxV();
+        this.rotation = poly.getRotation();
+        this.textureName = poly.getTextureName();
     }
     
     @Override
@@ -197,9 +206,9 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
 
     @Override
-    public void setRenderPass(BlockRenderLayer renderPass)
+    public void setRenderLayer(BlockRenderLayer renderPass)
     {
-        this.renderPass = renderPass;
+        getParent().setRenderLayer(renderPass);
     }
 
     @Override

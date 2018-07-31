@@ -143,7 +143,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public void setRenderPass(BlockRenderLayer renderPass)
+    public void setRenderLayer(BlockRenderLayer renderPass)
     {
         RENDERPASS_BITS.setValue(renderPass, this);
     }

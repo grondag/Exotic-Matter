@@ -90,8 +90,10 @@ public abstract class QuadPainter
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
-        inputQuad.setRenderPass(modelState.getRenderPass(paintLayer));
+        inputQuad.setRenderLayer(modelState.getRenderPass(paintLayer));
      
+        inputQuad.setEmissive(modelState.isEmissive(paintLayer));
+        
         // TODO: Vary color slightly with species, as user-selected option
         
         this.textureQuad(inputQuad, target, isItem);

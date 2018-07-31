@@ -65,7 +65,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         return result;
     }
 
-    protected final void copyVertices(IPolygon template)
+    protected void copyVertices(IPolygon template)
     {
         final int c = this.vertexCount();
         

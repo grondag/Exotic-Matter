@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
+import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
@@ -489,15 +490,15 @@ public class ModelState implements ISuperModelState
     }
     
     @Override
-    public int getBrightness(PaintLayer layer)
+    public boolean isEmissive(PaintLayer layer)
     {
-        return ModelStateData.PAINT_LIGHT[layer.ordinal()].getValue(this);
+        return ModelStateData.PAINT_EMISSIVE[layer.ordinal()].getValue(this);
     }
 
     @Override
-    public void setBrightness(PaintLayer layer, int brightness)
+    public void setEmissive(PaintLayer layer, boolean isEmissive)
     {
-        ModelStateData.PAINT_LIGHT[layer.ordinal()].setValue(brightness, this);
+        ModelStateData.PAINT_EMISSIVE[layer.ordinal()].setValue(isEmissive, this);
         clearStateFlags();
         invalidateHashCode();
     }
@@ -787,16 +788,22 @@ public class ModelState implements ISuperModelState
     {
         switch(layer)
         {
-        case BASE:
-        case CUT:
-        case LAMP:
-        default:
-            return this.isTranslucent(layer) ? BlockRenderLayer.TRANSLUCENT : BlockRenderLayer.SOLID;
-            
-        case MIDDLE:
-        case OUTER:
-            return BlockRenderLayer.TRANSLUCENT;
-        
+            case BASE:
+            case CUT:
+            case LAMP:
+            default:
+                return this.isTranslucent(layer) ? BlockRenderLayer.TRANSLUCENT : BlockRenderLayer.SOLID;
+                
+            case MIDDLE:
+            case OUTER:
+            {
+                this.populateStateFlagsIfNeeded();
+                if(ClientProxy.isAcuityEnabled())
+                    // report solid if multi-layer solid render is enabled and applicable
+                    return (this.stateFlags & STATE_FLAG_HAS_SOLID_RENDER) == STATE_FLAG_HAS_SOLID_RENDER ? BlockRenderLayer.SOLID : BlockRenderLayer.TRANSLUCENT;
+                else 
+                    return BlockRenderLayer.TRANSLUCENT;
+            }
         }
     }
     

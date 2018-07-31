@@ -156,7 +156,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         IMutablePolygon quadInputs = new PolyImpl(4);
         quadInputs.setLockUV(true);
 
-        Surface cutSurface = state.hasBrightness(PaintLayer.LAMP) ? INSTANCE_CUT_LAMP : INSTANCE_CUT;
+        Surface cutSurface = state.isEmissive(PaintLayer.LAMP) ? INSTANCE_CUT_LAMP : INSTANCE_CUT;
 
         if(face.getAxis() == axis)
         {

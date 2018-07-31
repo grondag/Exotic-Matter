@@ -51,7 +51,7 @@ public class ModelStateData
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_TEXTURE = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<ModelState>.IntElement[] PAINT_LIGHT = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
+    public static final BitPacker<ModelState>.BooleanElement[] PAINT_EMISSIVE = (BitPacker<ModelState>.BooleanElement[]) new BitPacker<?>.BooleanElement[PaintLayer.SIZE];
     @SuppressWarnings("unchecked")
     public static final BitPacker<ModelState>.IntElement[] PAINT_VERTEX_PROCESSOR = (BitPacker<ModelState>.IntElement[]) new BitPacker<?>.IntElement[PaintLayer.SIZE];
 
@@ -89,7 +89,7 @@ public class ModelStateData
             PAINT_ALPHA[i] = PACKER_LAYERS[i].createIntElement(0x100);
             PAINT_TEXTURE[i] = PACKER_LAYERS[i].createIntElement(TexturePaletteRegistry.MAX_PALETTES);
             PAINT_IS_TRANSLUCENT[i] = PACKER_LAYERS[i].createBooleanElement();
-            PAINT_LIGHT[i] = PACKER_LAYERS[i].createIntElement(16); 
+            PAINT_EMISSIVE[i] = PACKER_LAYERS[i].createBooleanElement(); 
             PAINT_VERTEX_PROCESSOR[i] = PACKER_LAYERS[i].createIntElement(VertexProcessors.MAX_PROCESSORS); 
         }
         

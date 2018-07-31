@@ -99,7 +99,7 @@ public class CommonEventHandler
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.SPHERE);
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.WHITE);
-        workingModel.setBrightness(PaintLayer.BASE, 15);
+        workingModel.setEmissive(PaintLayer.BASE, true);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
@@ -113,7 +113,7 @@ public class CommonEventHandler
         workingModel.setColorRGB(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
         
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.WHITE);
-        workingModel.setBrightness(PaintLayer.LAMP, 15);
+        workingModel.setEmissive(PaintLayer.LAMP, true);
         workingModel.setColorRGB(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT).getColor(EnumColorMap.LAMP));
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel)
             .setCreativeTab(ExoticMatter.tabMod));

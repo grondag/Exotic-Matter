@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
+import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPaintableVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -23,8 +24,6 @@ public class VertexProcessorDefault extends VertexProcessor
     @Override
     public final void process(IPaintableQuad result, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        final int brightness = modelState.getBrightness(paintLayer) * 17; // x17 because glow is 0-255
-        
         int color = modelState.getColorARGB(paintLayer);
         if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
             color =  0xFF000000 | color;
@@ -36,7 +35,7 @@ public class VertexProcessorDefault extends VertexProcessor
         if(paintLayer != PaintLayer.LAMP && result.getSurfaceInstance().isLampGradient)
         {
             int lampColor = modelState.getColorARGB(PaintLayer.LAMP);
-            int lampBrightness = modelState.getBrightness(PaintLayer.LAMP)  * 17; // x17 because glow is 0-255
+            int lampBrightness = modelState.isEmissive(PaintLayer.LAMP) ? 255 : 0;
             
             // keep target surface alpha
             int alpha = color & 0xFF000000;
@@ -44,13 +43,10 @@ public class VertexProcessorDefault extends VertexProcessor
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 IPaintableVertex v = result.getPaintableVertex(i);
-                if(v != null)
-                {
-                    final float w = v.glow() / 255f;
-                    int b = Math.round(lampBrightness * w + brightness * (1 - w));
-                    int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
-                    result.setVertex(i, v.withColorGlow(c | alpha, b));
-                }
+                final float w = v.glow() / 255f;
+                int b = Math.round(lampBrightness * w);
+                int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
+                result.setVertex(i, v.withColorGlow(c | alpha, b));
             }
         }
         else
@@ -59,11 +55,12 @@ public class VertexProcessorDefault extends VertexProcessor
             for(int i = 0; i < result.vertexCount(); i++)
             {
                 IPaintableVertex v = result.getPaintableVertex(i);
-                if(v != null)
-                {
-                    final int c = ColorHelper.multiplyColor(color, v.color());
-                    result.setVertex(i, v.withColorGlow(c, brightness));
-                }
+                
+                // if acuity is enabled, will use emissive flag directly
+                final int brightness = ClientProxy.isAcuityEnabled() ? 0 : modelState.isEmissive(paintLayer) ? 255 : 0;
+                
+                final int c = ColorHelper.multiplyColor(color, v.color());
+                result.setVertex(i, v.withColorGlow(c, brightness));
             }
         }
     }

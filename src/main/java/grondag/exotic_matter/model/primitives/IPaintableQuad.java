@@ -32,7 +32,7 @@ public interface IPaintableQuad extends IPaintedQuad
      */
     void scaleFromBlockCenter(float f);
 
-    void setRenderPass(BlockRenderLayer renderPass);
+    void setRenderLayer(BlockRenderLayer renderPass);
 
     /**
      * Adds given offsets to u,v values of each vertex.

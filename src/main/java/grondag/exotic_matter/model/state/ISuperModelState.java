@@ -116,19 +116,10 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
 
     void setTexture(PaintLayer layer, ITexturePalette tex);
 
-    int getBrightness(PaintLayer layer);
+    boolean isEmissive(PaintLayer layer);
 
-    /**
-     * 0 = ambient lighting
-     * 15 = full brightness
-     */
-    void setBrightness(PaintLayer layer, int brightness);
+    void setEmissive(PaintLayer layer, boolean isEmissive);
 
-    default boolean hasBrightness(PaintLayer layer)
-    {
-        return this.getBrightness(layer) > 0;
-    }
-    
     int getPosX();
 
     void setPosX(int index);

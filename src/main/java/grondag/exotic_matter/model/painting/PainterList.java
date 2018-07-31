@@ -8,6 +8,7 @@ import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.MultiTexturePoly;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -74,6 +75,8 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 2:
+                q = new MultiTexturePoly.Double(q);
+                
                 // make sure has an appropriate pipeline, some models may set up before we get here
                 if(q.textureFormat() != TextureFormat.DOUBLE)
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.DOUBLE));
@@ -85,6 +88,8 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 3:
+                q = new MultiTexturePoly.Triple(q);
+                
                 // make sure has an appropriate pipeline, some models may set up before we get here
                 if(q.textureFormat() != TextureFormat.TRIPLE)
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
@@ -92,9 +97,10 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 {
                     this.get(1).producePaintedQuad(p0, p1 -> 
                     {
-                        this.get(0).producePaintedQuad(p1, p2 -> target.accept(p2.getParent()), isItem);
+                        this.get(2).producePaintedQuad(p1, p2 -> target.accept(p2.getParent()), isItem);
                     }, isItem);
                 }, isItem);
+                break;
                 
             default:
                 throw new ArrayIndexOutOfBoundsException();

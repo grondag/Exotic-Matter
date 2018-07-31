@@ -1,12 +1,19 @@
 package grondag.exotic_matter.model.primitives;
 
-public abstract class MutiTexturePoly
+public abstract class MultiTexturePoly
 {
     public static class Double extends PolyImpl
     {
         protected final DoubleDelegate doubleDelegate  = new DoubleDelegate();
 
-        public Double(int vertexCount)
+        public Double(IPolygon fromTemplate)
+        {
+            this(fromTemplate.vertexCount());
+            this.copyProperties(fromTemplate);
+            this.copyVertices(fromTemplate);
+        }
+        
+        public Double(int  vertexCount)
         {
             super(vertexCount);
         }
@@ -25,8 +32,28 @@ public abstract class MutiTexturePoly
             {
                 this.doubleDelegate.copyPropertiesFrom(((Double)fromObject).doubleDelegate);
             }
+            else
+            {
+                this.doubleDelegate.copyPropertiesFrom(fromObject);
+            }
         }
 
+        @Override
+        protected void copyVertices(IPolygon template)
+        {
+            if(template.getClass() == this.getClass())
+                super.copyVertices(template);
+            else
+            {
+                final int c = this.vertexCount();
+                for(int i = 0; i < c; i++)
+                {
+                    Vertex v = template.getVertex(i);
+                    this.setVertex(i, vertexFactory().newVertex(v.x, v.y, v.z, v.u, v.v, v.color, v.normal, v.glow));
+                }
+            }
+        }
+        
         @Override
         protected IVertexFactory vertexFactory()
         {
@@ -90,6 +117,13 @@ public abstract class MutiTexturePoly
             super(vertexCount);
         }
         
+        public Triple(IPolygon fromTemplate)
+        {
+            this(fromTemplate.vertexCount());
+            this.copyProperties(fromTemplate);
+            this.copyVertices(fromTemplate);
+        }
+        
         @Override
         public Triple newInstance(int vertexCount)
         {
@@ -104,8 +138,12 @@ public abstract class MutiTexturePoly
             {
                 this.tripleDelegate.copyPropertiesFrom(((Triple)fromObject).tripleDelegate);
             }
+            else
+            {
+                this.tripleDelegate.copyPropertiesFrom(fromObject);
+            }
         }
-
+        
         @Override
         protected IVertexFactory vertexFactory()
         {
