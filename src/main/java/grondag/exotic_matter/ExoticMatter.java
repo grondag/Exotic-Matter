@@ -31,7 +31,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
         name = ExoticMatter.MODNAME,
         version = ExoticMatter.VERSION,
         acceptedMinecraftVersions = "[1.12]",
-        dependencies = "after:theoneprobe")
+        dependencies = "after:theoneprobe; after:acuity")
 
 public class ExoticMatter implements IGrondagMod
 {
