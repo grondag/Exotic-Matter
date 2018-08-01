@@ -82,4 +82,12 @@ public abstract class CommonProxy
     {
 
     }
+
+    /**
+     * Always false on server side.
+     */
+    public boolean isAcuityEnabled()
+    {
+        return false;
+    }
 }

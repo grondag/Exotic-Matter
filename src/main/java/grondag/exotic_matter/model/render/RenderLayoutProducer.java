@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.render;
 
-import grondag.exotic_matter.ClientProxy;
+import grondag.exotic_matter.ExoticMatter;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -28,7 +28,7 @@ public abstract class RenderLayoutProducer
         @Override
         public final RenderLayout renderLayout()
         {
-            return ClientProxy.isAcuityEnabled() ? RenderLayout.SOLID_ONLY : RenderLayout.SOLID_AND_TRANSLUCENT;
+            return ExoticMatter.proxy.isAcuityEnabled() ? RenderLayout.SOLID_ONLY : RenderLayout.SOLID_AND_TRANSLUCENT;
         }
     };
 

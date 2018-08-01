@@ -23,7 +23,7 @@ public class FakeWorldStateCache extends AbstractWorldStateCache
     }
     
     @Override
-    protected void clear()
+    public void clear()
     {
         // NOOP
     }

@@ -94,5 +94,11 @@ public class WorldStateNibble implements IWorldStateCache
         return (pos.getX() & 0xF) | ((pos.getY() & 0xF) << 4) | ((pos.getZ() & 0xF) << 8);
     }
 
+    @Override
+    public void clear()
+    {
+        // NOOP - will be called at whole cache level
+    }
+
 
 }

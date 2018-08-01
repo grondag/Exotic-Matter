@@ -116,7 +116,8 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     }
     
     @SuppressWarnings("null")
-    public static boolean isAcuityEnabled()
+    @Override
+    public boolean isAcuityEnabled()
     {
         return acuity != null && acuity.isAcuityEnabled();
     }
@@ -192,8 +193,11 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     @Override
     public void onAcuityStatusChange(boolean newEnabledStatus)
     {
-        // force rebuild of containers because renderlayouts may change
+        // force rebuild of containers because render layouts may change
         SuperDispatcher.INSTANCE.clear();
+        
+        // some blocks may produce different model states depending on API status
+        this.clientWorldStateCache().clear();
     }
 
     /**

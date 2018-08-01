@@ -17,6 +17,7 @@ public class WorldStateCache extends AbstractWorldStateCache
 {
     @Nullable protected World world;
     
+    @Override
     public void setWorld(@Nullable World world)
     {
         if(this.world != null) this.world.removeEventListener(this);
@@ -47,7 +48,7 @@ public class WorldStateCache extends AbstractWorldStateCache
     }
     
     @Override
-    protected void clear()
+    public void clear()
     {
         this.nibbles.clear();
     }

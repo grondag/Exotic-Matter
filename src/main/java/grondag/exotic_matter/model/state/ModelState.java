@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
-import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
@@ -798,7 +797,7 @@ public class ModelState implements ISuperModelState
             case OUTER:
             {
                 this.populateStateFlagsIfNeeded();
-                if(ClientProxy.isAcuityEnabled())
+                if(ExoticMatter.proxy.isAcuityEnabled())
                     // report solid if multi-layer solid render is enabled and applicable
                     return (this.stateFlags & STATE_FLAG_HAS_SOLID_RENDER) == STATE_FLAG_HAS_SOLID_RENDER ? BlockRenderLayer.SOLID : BlockRenderLayer.TRANSLUCENT;
                 else 

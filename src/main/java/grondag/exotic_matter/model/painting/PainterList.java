@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.MultiTexturePoly;
@@ -62,7 +63,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
     {
         // Item render currently doesn't support multi-textured quads.
         // Could handle in IPolygon.addBakedQuadsToBuilder but this is easier until item support happens.
-        if(!isItem && this.hasSolidBase && ClientProxy.isAcuityEnabled())
+        if(!isItem && this.hasSolidBase && ExoticMatter.proxy.isAcuityEnabled())
         {
             switch(this.size)
             {

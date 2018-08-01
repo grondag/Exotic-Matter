@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.ClientProxy;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPaintableVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -57,7 +57,7 @@ public class VertexProcessorDefault extends VertexProcessor
                 IPaintableVertex v = result.getPaintableVertex(i);
                 
                 // if acuity is enabled, will use emissive flag directly
-                final int brightness = ClientProxy.isAcuityEnabled() ? 0 : modelState.isEmissive(paintLayer) ? 255 : 0;
+                final int brightness = ExoticMatter.proxy.isAcuityEnabled() ? 0 : modelState.isEmissive(paintLayer) ? 255 : 0;
                 
                 final int c = ColorHelper.multiplyColor(color, v.color());
                 result.setVertex(i, v.withColorGlow(c, brightness));

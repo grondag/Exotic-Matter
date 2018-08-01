@@ -26,7 +26,8 @@ public abstract class AbstractWorldStateCache implements IWorldStateCache,  IWor
     /**
      * Called when world is unloaded.
      */
-    protected abstract void clear();
+    @Override
+    public abstract void clear();
     
     protected abstract void invalidateNibble(int chunkX, int nibbleY, int chunkZ);
     

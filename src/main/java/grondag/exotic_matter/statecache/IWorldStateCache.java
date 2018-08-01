@@ -32,4 +32,6 @@ public interface IWorldStateCache
     default void markBlockRangeForRenderUpdate(int xStart, int i, int zStart, int xEnd, int j, int zEnd) {}
 
     default void setWorld(@Nullable World world) {}
+    
+    void clear();
 }
