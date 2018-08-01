@@ -70,7 +70,6 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 1:
-                q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.SINGLE));
                 this.get(0).producePaintedQuad(q, p -> target.accept(p.getParent()), isItem);
                 break;
                 
@@ -83,7 +82,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
-                    this.get(1).producePaintedQuad(p0, p1 -> target.accept(p1.getParent()), isItem);
+                    this.get(1).producePaintedQuad(p0.getSubQuad(1), p1 -> target.accept(p1.getParent()), isItem);
                 }, isItem);
                 break;
                 
@@ -95,9 +94,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
-                    this.get(1).producePaintedQuad(p0, p1 -> 
+                    this.get(1).producePaintedQuad(p0.getSubQuad(1), p1 -> 
                     {
-                        this.get(2).producePaintedQuad(p1, p2 -> target.accept(p2.getParent()), isItem);
+                        this.get(2).producePaintedQuad(p1.getSubQuad(2), p2 -> target.accept(p2.getParent()), isItem);
                     }, isItem);
                 }, isItem);
                 break;

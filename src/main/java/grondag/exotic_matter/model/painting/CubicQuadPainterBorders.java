@@ -57,7 +57,21 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         if(inputs == null) return;
         
         // don't render the "no border" texture unless this is a tile of some kind
-        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile()) return;
+        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile())
+        {
+            // if this is a multi-texture quad then simply set the alpha 
+            // to zero - we still need to emit the quad
+            if(quad.layerCount() > 1)
+            {
+                for(int i = 0; i < quad.vertexCount(); i++)
+                {
+                    quad.setVertex(i, quad.getPaintableVertex(i).withColor(0x00FFFFFF));
+                }
+            }
+            // if using vanilla rendering just skip it
+            else
+                return;
+        }
         
         quad.setRotation(inputs.rotation);
 //        cubeInputs.rotateBottom = false;

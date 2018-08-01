@@ -18,6 +18,11 @@ public abstract class MultiTexturePoly
             super(vertexCount);
         }
         
+        protected IMutablePolygon getParentInner()
+        {
+            return this;
+        }
+        
         @Override
         public Double newInstance(int vertexCount)
         {
@@ -71,7 +76,7 @@ public abstract class MultiTexturePoly
             @Override
             public IMutablePolygon getParent()
             {
-                return Double.this;
+                return getParentInner();
             }
 
             @Override
@@ -162,7 +167,7 @@ public abstract class MultiTexturePoly
             @Override
             public IMutablePolygon getParent()
             {
-                return Triple.this;
+                return getParentInner();
             }
 
             @Override

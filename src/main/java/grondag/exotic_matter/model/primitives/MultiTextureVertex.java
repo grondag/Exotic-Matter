@@ -189,6 +189,12 @@ public class MultiTextureVertex
             this(x, y, z, u, v, color, normal, glow, new Second(u, v, color, glow), new Third(u, v, color, glow));
         }
         
+        @Override
+        protected Double withNewSecond(float u, float v, int color, int glow)
+        {
+            return new Triple(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, this.glow, new Second(u, v, color, glow), this.third.copy());
+        }
+        
         protected Triple withNewThird(float u, float v, int color, int glow)
         {
             return new Triple(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, this.glow, this.second.copy(), new Third(u, v, color, glow));
