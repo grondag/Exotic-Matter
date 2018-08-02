@@ -2,7 +2,6 @@ package grondag.exotic_matter.simulator.persistence;
 
 import java.util.Arrays;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -74,18 +73,18 @@ public class AssignedNumbersAuthority implements IReadWriteNBT, IDirtNotifier
         this.clear();
     }
     
-    public void register(@Nonnull IIdentified registrant)
+    public void register(IIdentified registrant)
     {
         this.indexes[registrant.idType().ordinal()].register(registrant);
     }
     
-    public void unregister(@Nonnull IIdentified registrant)
+    public void unregister(IIdentified registrant)
     {
         this.indexes[registrant.idType().ordinal()].unregister(registrant);
     }
     
     @Nullable
-    public IIdentified get(int id, @Nonnull AssignedNumber idType)
+    public IIdentified get(int id, AssignedNumber idType)
     {
         return this.indexes[idType.ordinal()].get(id);
     }

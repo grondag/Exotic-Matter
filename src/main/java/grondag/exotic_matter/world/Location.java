@@ -1,6 +1,5 @@
 package grondag.exotic_matter.world;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.serialization.NBTDictionary;
@@ -43,7 +42,7 @@ public class Location extends BlockPos
         }
     }
 
-    public static void saveToNBT(@Nullable Location loc, @Nonnull NBTTagCompound nbt)
+    public static void saveToNBT(@Nullable Location loc, NBTTagCompound nbt)
     {
         if(loc != null)
         {

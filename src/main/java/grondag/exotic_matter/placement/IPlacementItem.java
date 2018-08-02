@@ -1,6 +1,5 @@
 package grondag.exotic_matter.placement;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -783,7 +782,6 @@ public interface IPlacementItem
      * All are always positive numbers.<br>
      * Region rotation is or isn't applied according to parameter.<br>
      */
-    @Nonnull
     public default BlockPos getRegionSize(ItemStack stack, boolean applyRegionRotation)
     {
         NBTTagCompound tag = stack.getTagCompound();
@@ -797,7 +795,6 @@ public interface IPlacementItem
     /**
      * See {@link #getRegionSize(ItemStack, boolean)}
      */
-    @Nonnull
     public default void setRegionSize(ItemStack stack, BlockPos pos)
     {
         if(!this.isRegionSizeSupported(stack)) return;
@@ -810,7 +807,6 @@ public interface IPlacementItem
      * See {@link #getRegionSize(ItemStack, boolean)}
      * Returns false if feature not supported.
      */
-    @Nonnull
     public default boolean changeRegionSize(ItemStack stack, int dx, int dy, int dz)
     {
         if(!this.isRegionSizeSupported(stack)) return false;

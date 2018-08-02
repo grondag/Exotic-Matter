@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 
@@ -211,7 +210,7 @@ public class Transform
      * have any orientation to be transformed) then simply 
      * returns the input face.
      */
-    public static EnumFacing rotateFace(@Nonnull ISuperModelState modelState, @Nonnull EnumFacing face)
+    public static EnumFacing rotateFace(ISuperModelState modelState, EnumFacing face)
     {
         return FACE_MAPS[computeTransformKey(modelState)].map(face);
     }
@@ -224,7 +223,7 @@ public class Transform
      * Equivalently, list containing results of calling {@link #rotateFace(ISuperModelState, EnumFacing)}
      * for each face in {@link EnumFacing#values()} in order.
      */
-    public static FaceMap getFaceMap(@Nonnull ISuperModelState modelState)
+    public static FaceMap getFaceMap(ISuperModelState modelState)
     {
         return FACE_MAPS[computeTransformKey(modelState)];
     }
@@ -251,7 +250,7 @@ public class Transform
          * Returns face that results from applying the transform
          * associated with this map.
          */
-        public EnumFacing map(@Nonnull EnumFacing fromFace)
+        public EnumFacing map(EnumFacing fromFace)
         {
             return FACING_MAP[this.index][fromFace.ordinal()];
         }
@@ -260,7 +259,7 @@ public class Transform
          * Inverse of {@link #map(EnumFacing)}.  Maps from output
          * face of transform back to input face.
          */
-        public EnumFacing inverseMap(@Nonnull EnumFacing toFace)
+        public EnumFacing inverseMap(EnumFacing toFace)
         {
             return FACING_MAP_INVERSE[this.index][toFace.ordinal()];
         }

@@ -33,7 +33,7 @@ public class SuperTileEntity extends TileEntity
     public static final String NBT_SERVER_SIDE_TAG = NBTDictionary.claim("serverOnly");
     
     /** Returns server-side tag if one is present, creating it if not. */
-    public static @Nonnull NBTTagCompound getServerTag(@Nonnull NBTTagCompound fromTag)
+    public static NBTTagCompound getServerTag(NBTTagCompound fromTag)
     {
         NBTBase result = fromTag.getTag(NBT_SERVER_SIDE_TAG);
         if(result == null || result.getId() != 10)

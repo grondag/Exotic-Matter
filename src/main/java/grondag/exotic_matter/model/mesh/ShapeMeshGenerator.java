@@ -3,8 +3,6 @@ package grondag.exotic_matter.model.mesh;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
-
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -49,7 +47,6 @@ public abstract class ShapeMeshGenerator
      */
     public BlockOrientationType orientationType(ISuperModelState modelState) { return BlockOrientationType.NONE; } 
     
-    @Nonnull
     public abstract ICollisionHandler collisionHandler();
     
     /** 

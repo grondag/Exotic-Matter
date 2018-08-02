@@ -14,12 +14,12 @@ public class ConcurrentForwardingList<T> extends ForwardingList<T>
 {
     private volatile List<T> delegate;
     
-    public ConcurrentForwardingList(@Nonnull List<T> delegate)
+    public ConcurrentForwardingList(List<T> delegate)
     {
         this.delegate = delegate;
     }
     
-    public void setDelegate(@Nonnull List<T> delegate)
+    public void setDelegate(List<T> delegate)
     {
         this.delegate = delegate;
     }

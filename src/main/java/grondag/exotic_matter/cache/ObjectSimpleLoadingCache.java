@@ -2,7 +2,6 @@ package grondag.exotic_matter.cache;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nonnull;
 
 public class ObjectSimpleLoadingCache<K, V> implements ISimpleLoadingCache
 {
@@ -39,7 +38,7 @@ public class ObjectSimpleLoadingCache<K, V> implements ISimpleLoadingCache
     }
     
     @SuppressWarnings("unchecked")
-    public V get(@Nonnull K key)
+    public V get(K key)
     {
         ObjectCacheState localState = activeState;
         

@@ -1,6 +1,5 @@
 package grondag.exotic_matter.varia;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -15,7 +14,7 @@ public class SimpleUnorderedArraySet<T> extends AbstractUnorderedArrayList<T>
      * Returns existing value that was replaced if checked, null otherwise.
      */
     @Nullable
-    public T put(@Nonnull T newItem)
+    public T put(T newItem)
     {
         for(int i = this.size - 1; i >= 0; i--)
         {
@@ -38,7 +37,7 @@ public class SimpleUnorderedArraySet<T> extends AbstractUnorderedArrayList<T>
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    public T putIfNotPresent(@Nonnull T newItem)
+    public T putIfNotPresent(T newItem)
     {
         for(int i = this.size - 1; i >= 0; i--)
         {

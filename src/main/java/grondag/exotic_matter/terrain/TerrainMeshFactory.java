@@ -226,7 +226,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
-    private @Nonnull Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
+    private Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);

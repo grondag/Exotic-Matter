@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -265,7 +264,6 @@ public class DomainManager implements ISimulationTopNode
      * The player's currently active domain. If player
      * has never specified, will be the player's intrinsic domain.
      */
-    @Nonnull
     public IDomain getActiveDomain(EntityPlayerMP player)
     {
         IDomain result = this.playerActiveDomains.get(player.getName());
@@ -303,8 +301,6 @@ public class DomainManager implements ISimulationTopNode
     /**
      * The player's private, default domain. Created if does not already exist.
      */
-    @SuppressWarnings("deprecation")
-    @Nonnull
     public IDomain getIntrinsicDomain(EntityPlayerMP player)
     {
         IDomain result = this.playerIntrinsicDomains.get(player.getName());

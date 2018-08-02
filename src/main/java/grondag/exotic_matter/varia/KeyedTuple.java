@@ -1,6 +1,5 @@
 package grondag.exotic_matter.varia;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** 
@@ -11,7 +10,7 @@ public abstract class KeyedTuple<T>
 {
     public final T key;
     
-    public KeyedTuple(@Nonnull T key)
+    public KeyedTuple(T key)
     {
         this.key = key;
     }

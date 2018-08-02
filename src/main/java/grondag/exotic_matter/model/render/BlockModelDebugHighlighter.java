@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.render;
 
-import javax.annotation.Nonnull;
-
 import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
@@ -60,12 +58,12 @@ public class BlockModelDebugHighlighter
             double d0,
             double d1,
             double d2,
-            @Nonnull IBlockAccess world,
-            @Nonnull DispatchDelegate model, 
-            @Nonnull IBlockState state, 
-            @Nonnull BlockPos pos, 
-            @Nonnull Tessellator tessellator, 
-            @Nonnull BufferBuilder buffer)
+            IBlockAccess world,
+            DispatchDelegate model, 
+            IBlockState state, 
+            BlockPos pos, 
+            Tessellator tessellator, 
+            BufferBuilder buffer)
     {
 
 //        GlStateManager.disableDepth();
@@ -93,8 +91,8 @@ public class BlockModelDebugHighlighter
             double d1,
             double d2,
             IPolygon quad, 
-            @Nonnull Tessellator tessellator, 
-            @Nonnull BufferBuilder buffer)
+            Tessellator tessellator, 
+            BufferBuilder buffer)
     {
         
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
