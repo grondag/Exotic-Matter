@@ -3,7 +3,6 @@ package grondag.exotic_matter.model.primitives;
 import javax.annotation.Nullable;
 
 import grondag.acuity.api.IRenderPipeline;
-import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker;
@@ -34,8 +33,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
         defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
         defaultBits |= LOCKUV_BIT.getBits(false);
         defaultBits |= CONTRACTUV_BITS.getBits(true);
-        IRenderPipeline p = ClientProxy.acuityDefaultPipeline(TextureFormat.SINGLE);
-        defaultBits |= PIPELINE_INDEX.getBits(p == null ? 0 : p.getIndex());
         DEFAULT_BITS = defaultBits;
     }
     
