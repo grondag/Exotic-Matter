@@ -16,7 +16,6 @@ import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
-import grondag.exotic_matter.model.render.Shaders;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.statecache.IWorldStateCache;
 import grondag.exotic_matter.statecache.WorldStateCache;
@@ -170,11 +169,6 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
     {
         super.postInit(event);
         SuperTileEntity.updateRenderDistance();
-        
-        Shaders.loadShaders();
-        if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager)
-            ((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(r ->Shaders.loadShaders());
-
     }
     
     static final IWorldStateCache worldStateCache = new WorldStateCache();

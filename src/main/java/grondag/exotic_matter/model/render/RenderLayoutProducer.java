@@ -12,7 +12,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * 
  * Not an enum to avoid deadlocks during static initialization. (Was a problem, not sure if still is.)
  */
-@SideOnly(Side.CLIENT)
 public abstract class RenderLayoutProducer
 {
     public static final RenderLayoutProducer ALWAYS_SOLID = new Simple(0, RenderLayout.SOLID_ONLY);
