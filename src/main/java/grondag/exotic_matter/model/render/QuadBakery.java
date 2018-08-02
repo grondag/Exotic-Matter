@@ -22,6 +22,21 @@ public class QuadBakery
     public static final float[] LIGHTMAP_FULLBRIGHT = {MAX_LIGHT_FLOAT, MAX_LIGHT_FLOAT};
     
     /**
+     * Temporary Workaround for Forge #5073
+     */
+    private static final VertexFormat ITEM_ALTERNATE;
+    
+    static
+    {
+        ITEM_ALTERNATE = new VertexFormat();
+        ITEM_ALTERNATE.addElement(DefaultVertexFormats.POSITION_3F);
+        ITEM_ALTERNATE.addElement(DefaultVertexFormats.COLOR_4UB);
+        ITEM_ALTERNATE.addElement(DefaultVertexFormats.NORMAL_3B);
+        ITEM_ALTERNATE.addElement(DefaultVertexFormats.PADDING_1B);
+        ITEM_ALTERNATE.addElement(DefaultVertexFormats.TEX_2F);
+    }
+    
+    /**
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
      * Use this for item models.  Doing so will disable pre-baked lighting
@@ -90,7 +105,8 @@ public class QuadBakery
          * This should be OK, because we generally don't care about shading for full-brightness render.
          */
         VertexFormat format = forceItemFormat || glowBits == 0
-                ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM
+//                ? net.minecraft.client.renderer.vertex.DefaultVertexFormats.ITEM
+                ? ITEM_ALTERNATE
                 : net.minecraft.client.renderer.vertex.DefaultVertexFormats.BLOCK;
         
         final float spriteMinU = textureSprite.getMinU();
@@ -156,7 +172,8 @@ public class QuadBakery
             }
         }
         
-        return format == DefaultVertexFormats.ITEM
+        
+        return format == ITEM_ALTERNATE //DefaultVertexFormats.ITEM
                 ? new BakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, true, format)
                 : new LitBakedQuad(vertexData, normalData, -1, raw.getActualFace(), textureSprite, true, format, glowBits);
         
