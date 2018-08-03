@@ -1,8 +1,6 @@
 package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.ExoticMatter;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Selects of appropriate render layout based on availability of Acuity Rendering API.<p>

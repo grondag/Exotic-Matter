@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
@@ -124,9 +123,6 @@ public interface IMutablePolygon extends IPolygon, IPaintableQuad
 
     /** sets surface value and returns self for convenience */
     IMutablePolygon setSurfaceInstance(Surface surfaceInstance);
-    
-    /** sets acuity render pipeline and returns self for convenience */
-    IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline);
     
     /**
      * Enforces immutability of vertex geometry once a vertex is added

@@ -41,6 +41,9 @@ public class QuadContainer
     @SuppressWarnings({ "unchecked", "null" })
     public List<BakedQuad> getBakedQuads(@Nullable EnumFacing face)
     {
+        //  build locally and don't set until end in case another thread is racing with us
+        ImmutableList<BakedQuad>[] faceLists = this.faceLists;
+        
         if(faceLists == null)
         {
             faceLists = new ImmutableList[7];
@@ -57,6 +60,8 @@ public class QuadContainer
                 this.forEachPaintedQuad(f, q -> q.addBakedQuadsToBuilder(builder, false));
                 faceLists[f.ordinal()] = builder.build();
             }
+            
+            this.faceLists = faceLists;
         }
  
         return face == null ? faceLists[6] : faceLists[face.ordinal()];

@@ -83,7 +83,6 @@ import net.minecraftforge.registries.IForgeRegistry;
 /**
  * Base class for HardScience building blocks.
  */
-@SuppressWarnings("deprecation")
 
 @Optional.InterfaceList({
     @Optional.Interface(iface = "mcjty.theoneprobe.api.IProbeInfoAccessor", modid = "theoneprobe")})

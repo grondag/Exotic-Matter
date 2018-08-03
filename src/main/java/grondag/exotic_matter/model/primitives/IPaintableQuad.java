@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.annotation.Nullable;
 
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 
@@ -54,5 +55,8 @@ public interface IPaintableQuad extends IPaintedQuad
     }
 
     void setVertex(int i, IPaintableVertex thisVertex);
+    
+    /** sets acuity render pipeline and returns self for convenience */
+    IPaintableQuad setPipeline(@Nullable IRenderPipeline pipeline);
 
 }

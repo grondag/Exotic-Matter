@@ -91,6 +91,12 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
     
     @Override
+    public IPaintableQuad setPipeline(@Nullable IRenderPipeline pipeline)
+    {
+        return getParent().setPipeline(pipeline).getSubQuad(layerIndex());
+    }
+    
+    @Override
     public void setMinU(float minU)
     {
         this.minU = minU;

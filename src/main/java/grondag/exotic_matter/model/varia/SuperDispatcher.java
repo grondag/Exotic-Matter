@@ -75,8 +75,7 @@ public class SuperDispatcher
 		            containers[layer.ordinal()] = new QuadContainer.Builder();
             }
             
-		    provideFormattedQuads(key, false, p ->
-		        containers[p.getRenderLayer().ordinal()].accept(p));
+		    provideFormattedQuads(key, false, p -> containers[p.getRenderLayer().ordinal()].accept(p));
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
 
@@ -242,7 +241,7 @@ public class SuperDispatcher
          * For the debug renderer - enumerates all painted quads for all layers.
          * Pass in an extended block state.
          */
-        public void forAllPaintedQuads(@Nullable IExtendedBlockState state, Consumer<IPolygon> consumer)
+        public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPolygon> consumer)
         {
             ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
             
@@ -269,7 +268,14 @@ public class SuperDispatcher
             SparseLayerMap map = modelCache.get(modelState);
             QuadContainer qc = map.get(MinecraftForgeClient.getRenderLayer());
             if(qc != null)
-                qc.forEachPaintedQuad(q -> quadConsumer.accept(q));
+            {
+                qc.forEachPaintedQuad(null, q -> quadConsumer.accept(q));
+                for(EnumFacing face : EnumFacing.VALUES)
+                {
+                    if(quadConsumer.shouldOutputSide(face))
+                            qc.forEachPaintedQuad(face, q -> quadConsumer.accept(q));
+                }
+            }
         }
         
         @Override
