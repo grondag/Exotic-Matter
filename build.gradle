@@ -152,11 +152,13 @@ processResources
 sourceSets {
 	main {
 	        java {
-	            include 'grondag/**'
+	            include 'grondag/**/*'
+	            exclude '*.DS_Store'
 	        }
 	        resources
 	        {
-	        	include '**'
+	        	include '**/*'
+	        	exclude '*.DS_Store'
 	        }
 	    }
     test {
