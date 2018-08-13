@@ -6,7 +6,7 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-        
+            
         maven {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
@@ -108,6 +108,11 @@ repositories {
         name = "refinedstorage"
         url = "https://dl.bintray.com/raoulvdberge/dev/"
     }
+    
+    maven {
+    	name = "grondag"
+    	url = "https://grondag-repo.appspot.com"
+    }
 }
 
 artifacts {
@@ -122,6 +127,7 @@ dependencies {
     
 	deobfCompile "mezz.jei:jei_1.12.2:${jei_version}"
     deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-${top_version}"
+    deobfCompile "grondag:acuity:mc1.12.2-0.0.0.240-alpha"
 	
 	// not currently using these APIs
 	// here to support compatibility testing in dev environment
