@@ -74,6 +74,11 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
         
         //see Config.render().enableFaceCullingOnFlowBlocks for explanation
         IBlockState neighborState = blockAccess.getBlockState(mpos);
+        
+        // exploit special case - adjacent dynamic blocks *always* cover each other's faces
+        if(neighborState.getBlock() instanceof TerrainDynamicBlock) 
+            return TerrainBlockHelper.isEmpty(neighborState, blockAccess, mpos);
+        
         if(ConfigXM.RENDER.enableFaceCullingOnFlowBlocks && TerrainBlockHelper.isFlowBlock(neighborState.getBlock()))
         {
             int myOcclusionKey = this.getOcclusionKey(blockState, blockAccess, pos, side);
