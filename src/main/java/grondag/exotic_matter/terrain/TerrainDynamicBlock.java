@@ -13,6 +13,7 @@ import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.WorldLightOpacity;
 import grondag.exotic_matter.varia.Useful;
+import grondag.exotic_matter.world.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -70,12 +71,18 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
     @SideOnly(Side.CLIENT)
     public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side)
     {
+        // See Config.render().enableFaceCullingOnFlowBlocks for explanation
+        // Exploits special case - adjacent dynamic blocks *always* cover each other's faces
+        // however, due to uneven render chunk updates they may not do so immediately
+        // most visible on surface  blocks, so always render sides if block is on a chunk boundary
+
+        if(WorldHelper.isOnRenderChunkBoundary(pos))
+            return true;
+        
         final MutableBlockPos mpos = shouldSideBeRenderedPos.get().setPos(pos).move(side);
         
-        //see Config.render().enableFaceCullingOnFlowBlocks for explanation
         IBlockState neighborState = blockAccess.getBlockState(mpos);
-        
-        // exploit special case - adjacent dynamic blocks *always* cover each other's faces
+
         if(neighborState.getBlock() instanceof TerrainDynamicBlock) 
             return TerrainBlockHelper.isEmpty(neighborState, blockAccess, mpos);
         

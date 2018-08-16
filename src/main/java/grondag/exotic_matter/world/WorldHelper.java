@@ -219,5 +219,22 @@ public class WorldHelper
         }
         
     }
-
+    
+    public static boolean isOnRenderChunkBoundary(BlockPos pos)
+    {
+        int n = pos.getX() & 0xF;
+        if(n == 0 || n == 0xF) 
+            return true;
+        
+        n = pos.getY() & 0xF;
+        if(n == 0 || n == 0xF) 
+            return true;
+        
+        n = pos.getZ() & 0xF;
+        if(n == 0 || n == 0xF) 
+            return true;
+        
+        return false;
+    }
+    
 }
