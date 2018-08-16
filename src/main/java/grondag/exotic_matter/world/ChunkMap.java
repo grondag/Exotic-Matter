@@ -66,6 +66,8 @@ public abstract class ChunkMap<T> implements Iterable<T>
         
     public Iterator<T> existingChunksNear(BlockPos pos, int chunkRadius)
     {
+        final int radius = Math.min(chunkRadius, Useful.DISTANCE_SORTED_CIRCULAR_OFFSETS_MAX_RADIUS);
+        
         return new AbstractIterator<T>()
         {
             private int i = 0;
@@ -75,7 +77,7 @@ public abstract class ChunkMap<T> implements Iterable<T>
             {
                 Vec3i offset = Useful.getDistanceSortedCircularOffset(i++);
                 
-                while(offset != null && offset.getY() <= chunkRadius)
+                while(offset.getY() <= radius)
                 {
                     T result = getIfExists(pos.add(offset.getX() * 16, 0, offset.getZ() * 16));
                     if(result != null) return result;

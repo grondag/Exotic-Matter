@@ -36,13 +36,15 @@ public class Useful
      */
     public static final Vec3i DISTANCE_SORTED_CIRCULAR_OFFSETS[];
     
+    public static final int DISTANCE_SORTED_CIRCULAR_OFFSETS_MAX_RADIUS = 64;
+    
     static
     {
         // need to use a hash bc fill2dCircleInPlaneXZ does not guarantee uniqueness.
         HashSet<Vec3i> offsets = new HashSet<Vec3i>();
 
         
-        for(long packed : Useful.fill2dCircleInPlaneXZ(64).toArray())
+        for(long packed : Useful.fill2dCircleInPlaneXZ(DISTANCE_SORTED_CIRCULAR_OFFSETS_MAX_RADIUS).toArray())
         {
             int x = PackedBlockPos.getX(packed);
             int z = PackedBlockPos.getZ(packed);
@@ -65,12 +67,10 @@ public class Useful
      * Returns values in a sequence of horizontal offsets from X=0, Z=0.<br>
      * Y value is the euclidian distance from the origin.<br>
      * Values are sorted by distance from 0,0,0. Value at index 0 is the origin.<br>
-     * Distance is up to 64 blocks from origin. Values outside that range return null.<br>
+     * Distance is up to 64 blocks from origin. Values outside that range throw exceptions.<br>
      */
-    @Nullable
     public static Vec3i getDistanceSortedCircularOffset(int index)
     {
-        if(index < 0 || index >= DISTANCE_SORTED_CIRCULAR_OFFSETS.length) return null;
         return DISTANCE_SORTED_CIRCULAR_OFFSETS[index];
     }
     

@@ -74,11 +74,12 @@ public class PerChunkBlockPosQueue
     public int sizeInChunksNear(BlockPos pos, int chunkRadius)
     {
         int result = 0;
+        final int radius = Math.min(chunkRadius, Useful.DISTANCE_SORTED_CIRCULAR_OFFSETS_MAX_RADIUS);
         
         int i = 0;
         Vec3i offset = Useful.getDistanceSortedCircularOffset(i);
         
-        while(offset.getY() <= chunkRadius)
+        while(offset.getY() <= radius)
         {
             result += sizeInChunkAt(pos.add(offset.getX() * 16, 0, offset.getZ() * 16));
             offset = Useful.getDistanceSortedCircularOffset(++i);
