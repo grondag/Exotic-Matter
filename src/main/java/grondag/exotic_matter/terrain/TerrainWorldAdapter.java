@@ -15,7 +15,7 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 /**
- * Caches expensive world state updates until next prepare() call.
+ * Caches expensive world state lookups until next prepare() call.
  */
 public class TerrainWorldAdapter implements IBlockAccess
 {
@@ -43,27 +43,41 @@ public class TerrainWorldAdapter implements IBlockAccess
         this.terrainStates.clear();
     }
     
-    private final MutableBlockPos mutablePos = new MutableBlockPos();
+    @Override
+    public IBlockState getBlockState(BlockPos pos)
+    {
+        long packedBlockPos = PackedBlockPos.pack(pos);
+        IBlockState result = blockStates.get(packedBlockPos);
+        if(result == null)
+        {
+            result = world.getBlockState(pos);
+            blockStates.put(packedBlockPos, result);
+        }
+        return result;
+    }
     
+    private final MutableBlockPos getBlockPos = new MutableBlockPos();
     public IBlockState getBlockState(long packedBlockPos)
     {
         IBlockState result = blockStates.get(packedBlockPos);
         if(result == null)
         {
-            PackedBlockPos.unpackTo(packedBlockPos, mutablePos);
-            result = world.getBlockState(mutablePos);
+            PackedBlockPos.unpackTo(packedBlockPos, getBlockPos);
+            result = world.getBlockState(getBlockPos);
             blockStates.put(packedBlockPos, result);
         }
         return result;
     }
 
+    private final MutableBlockPos getTerrainPos = new MutableBlockPos();
+    
     public TerrainState terrainState(IBlockState state, long packedBlockPos)
     {
         TerrainState result = terrainStates.get(packedBlockPos);
         if(result == null)
         {
-            PackedBlockPos.unpackTo(packedBlockPos, mutablePos);
-            result = TerrainBlockHelper.getTerrainState(state, this, mutablePos);
+            PackedBlockPos.unpackTo(packedBlockPos, getTerrainPos);
+            result = TerrainBlockHelper.getTerrainState(state, this, getTerrainPos);
             terrainStates.put(packedBlockPos, result);
         }
         return result;
@@ -80,11 +94,6 @@ public class TerrainWorldAdapter implements IBlockAccess
         terrainStates.remove(packedBlockPos);
     }
     
-    public void setBlockState(BlockPos pos, IBlockState newState)
-    {
-        this.setBlockState(PackedBlockPos.pack(pos), newState);
-    }
-    
     @Override
     @Nullable
     public TileEntity getTileEntity(BlockPos pos)
@@ -96,12 +105,6 @@ public class TerrainWorldAdapter implements IBlockAccess
     public int getCombinedLight(BlockPos pos, int lightValue)
     {
         return world.getCombinedLight(pos, lightValue);
-    }
-
-    @Override
-    public IBlockState getBlockState(BlockPos pos)
-    {
-        return this.getBlockState(PackedBlockPos.pack(pos));
     }
 
     @Override

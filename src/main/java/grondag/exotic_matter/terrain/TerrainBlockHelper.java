@@ -127,29 +127,10 @@ public class TerrainBlockHelper
      * Shorthand for {@link #adjustFillIfNeeded(World, BlockPos, Predicate)} with no predicate.
      */
     @Nullable
-    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, BlockPos basePos)
+    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, long packedBasePos)
     {
-        return adjustFillIfNeeded(worldObj, basePos, null);
+        return adjustFillIfNeeded(worldObj, packedBasePos, null);
     }
-    
-    @Nullable
-    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, long packedBlockPos)
-    {
-        return adjustFillIfNeeded(worldObj, PackedBlockPos.unpack(packedBlockPos), null);
-    }
-    
-    /**
-     * Want to avoid the synchronization penalty of pooled block pos.
-     * Used only {@link #adjustFillIfNeeded(World, BlockPos, Predicate)}, which is not re-entrant.
-     */
-    private static ThreadLocal<BlockPos.MutableBlockPos> adjustPos = new ThreadLocal<BlockPos.MutableBlockPos>()
-    {
-        @Override
-        protected MutableBlockPos initialValue()
-        {
-            return new BlockPos.MutableBlockPos();
-        }
-    };
     
     /**
      * Adds or removes a filler block if needed.
@@ -162,9 +143,9 @@ public class TerrainBlockHelper
      * 
      */
     @Nullable
-    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, final BlockPos basePos, @Nullable Predicate<IBlockState> filter)
+    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, final long packedBasePos, @Nullable Predicate<IBlockState> filter)
     {
-        final IBlockState baseState = worldObj.getBlockState(basePos);
+        final IBlockState baseState = worldObj.getBlockState(packedBasePos);
         final Block baseBlock = baseState.getBlock();
         
         if(TerrainBlockHelper.isFlowHeight(baseBlock)) return null;
@@ -179,10 +160,6 @@ public class TerrainBlockHelper
         IBlockState update = null; 
                 
         int targetMeta = SHOULD_BE_AIR;
-
-        BlockPos.MutableBlockPos mPos = adjustPos.get();
-        
-        mPos.setPos(basePos.getX(), basePos.getY() - 1, basePos.getZ());
         
         /**
          * If space is occupied with a non-displaceable block, will be ignored.
@@ -193,9 +170,11 @@ public class TerrainBlockHelper
          * two below needs a fill = 2;
          * Otherwise should be air.
          */
-        final IBlockState stateBelow = worldObj.getBlockState(mPos);
+        final long posBelow = PackedBlockPos.down(packedBasePos,  1);
+        final IBlockState stateBelow = worldObj.getBlockState(posBelow);
+        
         if(isFlowHeight(stateBelow.getBlock()) 
-                && topFillerNeeded(stateBelow, worldObj, mPos) > 0)
+                && worldObj.terrainState(stateBelow, posBelow).topFillerNeeded() > 0)
         {
             targetMeta = 0;
 
@@ -203,10 +182,11 @@ public class TerrainBlockHelper
         }
         else 
         {
-            mPos.setPos(basePos.getX(), basePos.getY() - 2, basePos.getZ());
-            final IBlockState stateTwoBelow = worldObj.getBlockState(mPos);
+            final long posTwoBelow = PackedBlockPos.down(packedBasePos,  2);
+            final IBlockState stateTwoBelow = worldObj.getBlockState(posTwoBelow);
+            
             if((isFlowHeight(stateTwoBelow.getBlock()) 
-                    && topFillerNeeded(stateTwoBelow, worldObj, mPos) == 2))
+                    && worldObj.terrainState(stateTwoBelow, posTwoBelow).topFillerNeeded() == 2))
             {
                 targetMeta = 1;
                 fillBlock = (ISuperBlock) TerrainBlockRegistry.TERRAIN_STATE_REGISTRY.getFillerBlock(stateTwoBelow.getBlock());
@@ -215,23 +195,22 @@ public class TerrainBlockHelper
 
         if(isFlowFiller(baseBlock))
         {
-
             if(targetMeta == SHOULD_BE_AIR)
             {
                 update = Blocks.AIR.getDefaultState();
-                worldObj.setBlockState(basePos, update);
+                worldObj.setBlockState(packedBasePos, update);
             }
             else if(fillBlock != null && (baseState.getValue(ISuperBlock.META) != targetMeta || baseBlock != fillBlock))
             {
                 update = ((Block)fillBlock).getDefaultState().withProperty(ISuperBlock.META, targetMeta);
-                worldObj.setBlockState(basePos, update);
+                worldObj.setBlockState(packedBasePos, update);
             }
             //confirm filler needed and adjustIfEnabled/remove if needed
         }
         else if(targetMeta != SHOULD_BE_AIR && fillBlock != null)
         {
             update = ((Block)fillBlock).getDefaultState().withProperty(ISuperBlock.META, targetMeta);
-            worldObj.setBlockState(basePos, update);
+            worldObj.setBlockState(packedBasePos, update);
         }
         
         return update;
