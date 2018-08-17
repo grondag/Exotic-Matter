@@ -19,10 +19,10 @@ import net.minecraft.world.biome.Biome;
  */
 public class TerrainWorldAdapter implements IBlockAccess
 {
-    private World world;
+    protected World world;
     
-    private Long2ObjectOpenHashMap<IBlockState> blockStates = new Long2ObjectOpenHashMap<>();
-    private Long2ObjectOpenHashMap<TerrainState> terrainStates = new Long2ObjectOpenHashMap<>();
+    protected Long2ObjectOpenHashMap<IBlockState> blockStates = new Long2ObjectOpenHashMap<>();
+    protected Long2ObjectOpenHashMap<TerrainState> terrainStates = new Long2ObjectOpenHashMap<>();
     
     @SuppressWarnings("null")
     public TerrainWorldAdapter()
@@ -91,7 +91,21 @@ public class TerrainWorldAdapter implements IBlockAccess
     {
         world.setBlockState(PackedBlockPos.unpack(packedBlockPos), newState);
         blockStates.put(packedBlockPos, newState);
-        terrainStates.remove(packedBlockPos);
+        for(int x = -1; x <= 1; x++)
+        {
+            for(int z = -1; z <= 1; z++)
+            {
+                for(int y = -2; y <= 2; y++)
+                {
+                    terrainStates.remove(PackedBlockPos.add(packedBlockPos, x, y, z));
+                }
+            }
+        }
+    }
+    
+    public void setBlockState(BlockPos blockPos, IBlockState newState)
+    {
+        this.setBlockState(PackedBlockPos.pack(blockPos), newState);
     }
     
     @Override
