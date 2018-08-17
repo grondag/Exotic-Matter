@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -126,9 +127,15 @@ public class TerrainBlockHelper
      * Shorthand for {@link #adjustFillIfNeeded(World, BlockPos, Predicate)} with no predicate.
      */
     @Nullable
-    public static IBlockState adjustFillIfNeeded(World worldObj, BlockPos basePos)
+    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, BlockPos basePos)
     {
         return adjustFillIfNeeded(worldObj, basePos, null);
+    }
+    
+    @Nullable
+    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, long packedBlockPos)
+    {
+        return adjustFillIfNeeded(worldObj, PackedBlockPos.unpack(packedBlockPos), null);
     }
     
     /**
@@ -155,7 +162,7 @@ public class TerrainBlockHelper
      * 
      */
     @Nullable
-    public static IBlockState adjustFillIfNeeded(World worldObj, final BlockPos basePos, @Nullable Predicate<IBlockState> filter)
+    public static IBlockState adjustFillIfNeeded(TerrainWorldAdapter worldObj, final BlockPos basePos, @Nullable Predicate<IBlockState> filter)
     {
         final IBlockState baseState = worldObj.getBlockState(basePos);
         final Block baseBlock = baseState.getBlock();
