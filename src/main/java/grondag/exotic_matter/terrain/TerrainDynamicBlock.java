@@ -8,6 +8,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -83,8 +84,8 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
         
         IBlockState neighborState = blockAccess.getBlockState(mpos);
 
-        if(neighborState.getBlock() instanceof TerrainDynamicBlock) 
-            return TerrainBlockHelper.isEmpty(neighborState, blockAccess, mpos);
+        if(neighborState.getBlock() instanceof TerrainDynamicBlock)
+            return SuperBlockWorldAccess.access(blockAccess).terrainState(neighborState, mpos).isEmpty();
         
         if(ConfigXM.RENDER.enableFaceCullingOnFlowBlocks && TerrainBlockHelper.isFlowBlock(neighborState.getBlock()))
         {
@@ -133,7 +134,7 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
         Block staticVersion = TerrainBlockRegistry.TERRAIN_STATE_REGISTRY.getStaticBlock(this);
         if(staticVersion == null || state.getBlock() != this) return;
 
-        ISuperModelState myModelState = this.getModelStateAssumeStateIsCurrent(state, world, pos, true);
+        ISuperModelState myModelState = SuperBlockWorldAccess.access(world).getModelState(this, state, pos, true);
         myModelState.setStatic(true);
         world.setBlockState(pos, staticVersion.getDefaultState()
                 .withProperty(ISuperBlock.META, state.getValue(ISuperBlock.META)), 7);
@@ -144,7 +145,7 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
     public int quantityDropped(IBlockAccess world, BlockPos pos, IBlockState state)
     {
         double volume = 0;
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, world, pos, true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).computeModelState(this, state, pos, true);
         for(AxisAlignedBB box : modelState.getShape().meshFactory().collisionHandler().getCollisionBoxes(modelState))
         {
             volume += Useful.volumeAABB(box);
@@ -156,13 +157,13 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
     @Override
     public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos)
     {
-        return TerrainBlockHelper.isEmpty(worldIn.getBlockState(pos), worldIn, pos);
+        return SuperBlockWorldAccess.access(worldIn).terrainState(pos).isEmpty();
     }
 
     @Override
     public boolean isAir(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
     {
-        return TerrainBlockHelper.isEmpty(state, world, pos);
+        return SuperBlockWorldAccess.access(world).terrainState(pos).isEmpty();
     }
 
     @Override
@@ -199,7 +200,7 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
     @Override
     public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos)
     {
-        return TerrainBlockHelper.shouldBeFullCube(state, world, pos);
+        return SuperBlockWorldAccess.access(world).terrainState(state, pos).isFullCube();
     }
     
     @Override

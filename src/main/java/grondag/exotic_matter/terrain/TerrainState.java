@@ -3,16 +3,18 @@ package grondag.exotic_matter.terrain;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
+import grondag.exotic_matter.world.PackedBlockPos;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IBlockAccess;
 
 public class TerrainState
 {
@@ -401,6 +403,10 @@ public class TerrainState
         return (this.simpleFlags & SIMPLE_FLAG_MOST_SIDES) == SIMPLE_FLAG_MOST_SIDES;
     }
     
+    /** 
+     * Returns true of geometry of flow block should be a full cube based on self and neighboring flow blocks.
+     * Returns false if otherwise or if is not a flow block. 
+     */
     public boolean isFullCube()
     {
         refreshVertexCalculationsIfNeeded();
@@ -425,6 +431,9 @@ public class TerrainState
         return true;
     }
 
+    /** 
+     * Returns true if geometry of flow block has nothing in it.
+     */
     public boolean isEmpty()
     {
         refreshVertexCalculationsIfNeeded();
@@ -1081,9 +1090,16 @@ public class TerrainState
         return div;
     }
     
-    public static <T> T produceBitsFromWorldStatically(ISuperBlock block, IBlockState state, IBlockAccess world, BlockPos pos, ITerrainBitConsumer<T> consumer)
+    public static <T> T produceBitsFromWorldStatically(ISuperBlock block, IBlockState state, ISuperBlockAccess world, BlockPos pos, ITerrainBitConsumer<T> consumer)
     {
         return produceBitsFromWorldStatically(block.isFlowFiller(), state, world, pos, consumer);
+    }
+    
+    public static TerrainState terrainState(ISuperBlockAccess world, IBlockState state, BlockPos pos)
+    {
+        Block block = state.getBlock();
+        if(!TerrainBlockHelper.isFlowHeight(block)) return TerrainState.EMPTY_STATE;
+        return produceBitsFromWorldStatically((ISuperBlock)block, state, world, pos, TerrainState.FACTORY);
     }
     
     @SuppressWarnings("null")
@@ -1110,7 +1126,7 @@ public class TerrainState
         
     }
     
-    private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, IBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)
+    private static <T> T produceBitsFromWorldStatically(boolean isFlowFiller, IBlockState state, ISuperBlockAccess world, final BlockPos pos, ITerrainBitConsumer<T> consumer)
     {
         int sideHeight[] = new int[4];
         int cornerHeight[] = new int[4];
@@ -1171,6 +1187,7 @@ public class TerrainState
             }
         }
     
+        //TODO: use packed block pos instead of mutable here
         int[][] neighborHeight = new int[3][3];
         neighborHeight[1][1] = TerrainBlockHelper.getFlowHeightFromState(originState);
         final int centerHeight = neighborHeight[1][1];
@@ -1189,7 +1206,7 @@ public class TerrainState
                 mPos.setPos(pos.getX() - 1 + x, yOrigin, pos.getZ() - 1 + z);
     
                 // use cache if available
-                neighborHeight[x][z] = TerrainBlockHelper.getFlowHeight(world, mPos);
+                neighborHeight[x][z] = world.getFlowHeight(mPos);
     
             }
         }
@@ -1240,30 +1257,25 @@ public class TerrainState
      * Returns relative flow height based on blocks 2 above through 2 down.
      * Gets called frequently, thus the use of mutable pos.
      */
-    public static int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
+    public static int getFlowHeight(ISuperBlockAccess world, long packedBlockPos)
     {
-        pos.setY(pos.getY() + 2);;
-        IBlockState state = world.getBlockState(pos);
+        IBlockState state = world.getBlockState(PackedBlockPos.up(packedBlockPos, 2));
         int h = TerrainBlockHelper.getFlowHeightFromState(state);
         if(h > 0) return 2 * BLOCK_LEVELS_INT + h;
     
-        pos.setY(pos.getY() - 1);
-        state = world.getBlockState(pos);
+        state = world.getBlockState(PackedBlockPos.up(packedBlockPos));
         h = TerrainBlockHelper.getFlowHeightFromState(state);
         if(h > 0) return BLOCK_LEVELS_INT + h;
     
-        pos.setY(pos.getY() - 1);
-        state = world.getBlockState(pos);
+        state = world.getBlockState(packedBlockPos);
         h = TerrainBlockHelper.getFlowHeightFromState(state);
         if(h > 0) return h;
     
-        pos.setY(pos.getY() - 1);
-        state = world.getBlockState(pos);
+        state = world.getBlockState(PackedBlockPos.down(packedBlockPos));
         h = TerrainBlockHelper.getFlowHeightFromState(state);
         if(h > 0) return -BLOCK_LEVELS_INT + h;
     
-        pos.setY(pos.getY() - 1);
-        state = world.getBlockState(pos);
+        state = world.getBlockState(PackedBlockPos.down(packedBlockPos, 2));
         h = TerrainBlockHelper.getFlowHeightFromState(state);
         if(h > 0) return -2 * BLOCK_LEVELS_INT + h;
     

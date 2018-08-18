@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -30,7 +31,7 @@ public class BlockHighlighter
     		if (bs != null && bs.getBlock() instanceof ISuperBlock) 
     		{
     		    ISuperBlock block = (ISuperBlock) bs.getBlock();
-    		    ISuperModelState modelState = block.getModelStateAssumeStateIsCurrent(bs, world, pos, true);
+    		    ISuperModelState modelState = SuperBlockWorldAccess.access(world).getModelState(block, bs, pos, true);
     		    drawBlockHighlight(modelState, pos, event.getPlayer(), event.getPartialTicks(), false);
 				event.setCanceled(true);
     		}

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -17,38 +18,11 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TerrainBlockHelper 
 {
     public static final Block FLOW_BLOCK_INDICATOR = new Block(Material.AIR);
-    
-    /**
-     * Exploits world state cache on logical client.  Will return EMPTY_STATE if not a terrain block.
-     * 
-     * FIXME: is this called on client often enough to be worth using client-side state cache?
-     */
-    public static TerrainState getTerrainState(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
-    {
-        Block block = blockState.getBlock();
-        if(!TerrainBlockHelper.isFlowHeight(block)) return TerrainState.EMPTY_STATE;
-        
-        // cubic blocks don't have terrain state in model state, and so can't rely on model state cache
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER || block instanceof TerrainCubicBlock
-                ? TerrainState.produceBitsFromWorldStatically((ISuperBlock)block, blockState, blockAccess, pos, TerrainState.FACTORY)
-                : ExoticMatter.proxy.clientWorldStateCache().getModelState((ISuperBlock)block, blockAccess, blockState, pos, true).getTerrainState();
-    }
-    
-    /**
-     * Exploits world state cache on logical client.
-     */
-    public static int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
-    {
-        // this is explicitly a performance optimization called frequently for terrain blocks
-        // doing it this way to avoid overhead of instanceof in the FMLCommonHandler method
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
-                ? TerrainState.getFlowHeight(world, pos)
-                : ExoticMatter.proxy.clientWorldStateCache().getFlowHeight(world, pos);
-    }
     
     /**
      * Convenience method to check for flow block. 
@@ -113,16 +87,6 @@ public class TerrainBlockHelper
         return stateWithDiscreteFlowHeight(state, (int) Math.round(value * TerrainState.BLOCK_LEVELS_INT));
     }
 
-    /**
-     * Use for height blocks.
-     * Returns number of filler blocks needed above: 0, 1 or 2.
-     * Is not perfect predictor so check filler block geometry after placement.
-     */
-    public static int topFillerNeeded(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
-    {
-        return getTerrainState(blockState, blockAccess, pos).topFillerNeeded();
-    }
-    
     /**
      * Shorthand for {@link #adjustFillIfNeeded(World, BlockPos, Predicate)} with no predicate.
      */
@@ -220,19 +184,9 @@ public class TerrainBlockHelper
      * Returns true of geometry of flow block should be a full cube based on self and neighboring flow blocks.
      * Returns false if otherwise or if is not a flow block. 
      */
-    public static boolean shouldBeFullCube(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
+    public static boolean shouldBeFullCube(IBlockState blockState, ISuperBlockAccess blockAccess, BlockPos pos)
     {
-        return getTerrainState(blockState, blockAccess, pos).isFullCube();
-    }
-    
-    
-    /** 
-     * Returns true if geometry of flow block has nothing in it or if is not a flow block.
-     * Returns false if otherwise. 
-     */
-    public static boolean isEmpty(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos)
-    {
-        return getTerrainState(blockState, blockAccess, pos).isEmpty();
+        return blockAccess.terrainState(blockState, pos).isFullCube();
     }
     
     /**

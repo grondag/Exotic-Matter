@@ -1,7 +1,9 @@
 package grondag.exotic_matter.placement;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.BlockCorner;
 import grondag.exotic_matter.world.Rotation;
@@ -79,12 +81,13 @@ public class BlockOrientationHandler
         ISuperModelState outputModelState = SuperBlockStackHelper.getStackModelState(stack);
         ISuperModelState closestModelState = null;
         World world = player.world;
+        ISuperBlockAccess access = SuperBlockWorldAccess.access(world);
         IBlockState onBlockState = world.getBlockState(pPos.onPos);
         Block onBlock = onBlockState.getBlock();
 
         if(onBlock instanceof ISuperBlock)
         {
-            closestModelState = ((ISuperBlock)onBlock).getModelState(world, pPos.onPos, true);
+            closestModelState = access.getModelState((ISuperBlock)onBlock, pPos.onPos, true);
 
             //can't use onBlock as reference if is of a different type
             if(closestModelState.getShape() != outputModelState.getShape()) closestModelState = null;
@@ -118,7 +121,7 @@ public class BlockOrientationHandler
                                 if(distSq < closestDistSq)
                                 {
                                     ISuperBlock testBlock = (ISuperBlock)testBlockState.getBlock();
-                                    ISuperModelState testModelState = testBlock.getModelState(world, testPos, true);
+                                    ISuperModelState testModelState = access.getModelState(testBlock, testPos, true);
                                     if(testModelState.getShape() == outputModelState.getShape())
                                     {
                                         closestDistSq = distSq;

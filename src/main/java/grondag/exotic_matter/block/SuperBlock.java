@@ -148,7 +148,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     public void addCollisionBoxToList(@Nonnull IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull AxisAlignedBB entityBox, @Nonnull List<AxisAlignedBB> collidingBoxes,
             @Nullable Entity entityIn, boolean p_185477_7_)
     {       
-        ISuperModelState modelState = this.getModelState(worldIn, pos, true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(worldIn).getModelState(this, pos, true);
         ICollisionHandler collisionHandler = modelState.getShape().meshFactory().collisionHandler();
 
         AxisAlignedBB localMask = entityBox.offset(-pos.getX(), -pos.getY(), -pos.getZ());
@@ -184,7 +184,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
             }
         }
         
-        ISuperModelState modelState = this.getModelStateAssumeStateIsCurrent(world.getBlockState(pos), world, pos, false);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).getModelState(this, pos, false);
 
         for (int j = 0; j < 4; ++j)
         {
@@ -224,7 +224,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         }
         
         BlockPos pos = target.getBlockPos();
-        ISuperModelState modelState = this.getModelState(world, pos, false);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).getModelState(this, pos, false);
         
         EnumFacing side = target.sideHit;
 
@@ -325,7 +325,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     {
         if(blockState == null || world == null || data == null || probeInfo == null) return;
         
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(blockState, world, data.getPos(), true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).computeModelState(this, blockState, data.getPos(), true);
         
         probeInfo.text(I18n.translateToLocal("label.shape") + ": " + modelState.getShape().localizedName());
         probeInfo.text(I18n.translateToLocal("label.base_color") + ": " + Integer.toHexString(modelState.getColorARGB(PaintLayer.BASE)));
@@ -466,7 +466,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean canPlaceTorchOnTop(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
     {
-        return this.getModelStateAssumeStateIsStale(state, world, pos, true).sideShape(EnumFacing.UP).holdsTorch;
+        return SuperBlockWorldAccess.access(world).computeModelState(this, state, pos, true).sideShape(EnumFacing.UP).holdsTorch;
     }
 
     /**
@@ -543,7 +543,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean doesSideBlockRendering(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, @Nonnull EnumFacing face)
     {
-        ISuperModelState modelState = this.getModelStateAssumeStateIsCurrent(state, world, pos, true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).getModelState(this, state, pos, true);
         return !modelState.hasTranslucentGeometry() && modelState.sideShape(face).occludesOpposite;
     }
     
@@ -561,7 +561,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     {
         if(this.getSubstance(state, world, pos).isTranslucent)
         {
-            ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, world, pos, false);
+            ISuperModelState modelState = SuperBlockWorldAccess.access(world).computeModelState(this, state, pos, false);
             
             Color lamp = Color.fromRGB(modelState.getColorARGB(PaintLayer.BASE)).lumify();
             float saturation = modelState.getAlpha(PaintLayer.BASE) / 255f;
@@ -596,13 +596,13 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public AxisAlignedBB getBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
     {
-        return this.getModelStateAssumeStateIsStale(state, worldIn, pos, true).getCollisionBoundingBox();
+        return SuperBlockWorldAccess.access(worldIn).computeModelState(this, state, pos, true).getCollisionBoundingBox();
     }
 
     @Override
     public @Nullable AxisAlignedBB getCollisionBoundingBox(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos)
     {
-        return this.getModelStateAssumeStateIsStale(state, worldIn, pos, true).getCollisionBoundingBox();
+        return SuperBlockWorldAccess.access(worldIn).computeModelState(this, state, pos, true).getCollisionBoundingBox();
     }
 
      /** 
@@ -646,7 +646,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     public IBlockState getExtendedState(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
     {
         return ((IExtendedBlockState)state)
-                .withProperty(MODEL_STATE, getModelStateAssumeStateIsCurrent(state, world, pos, true));
+                .withProperty(MODEL_STATE, SuperBlockWorldAccess.access(world).getModelState(this, state, pos, true));
     }
 
     /**
@@ -723,13 +723,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
     {
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).getModelState(this, state, pos, false);
         if(this.getSubstance(state, world, pos).isTranslucent)
         {
-            return WorldLightOpacity.opacityFromAlpha(this.getModelStateAssumeStateIsCurrent(state, world, pos, false).getAlpha(PaintLayer.BASE));
+            return WorldLightOpacity.opacityFromAlpha(modelState.getAlpha(PaintLayer.BASE));
         }
         else
         {
-            return this.getModelStateAssumeStateIsCurrent(state, world, pos, false).geometricSkyOcclusion();
+            return modelState.geometricSkyOcclusion();
         }
     }
 
@@ -756,10 +757,9 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      * Use this option to prevent infinite recursion when need to reference some static state )
      * information in order to determine dynamic world state. Block tests are main use case for false.
      * 
-     * 
      */
     @Override
-    public ISuperModelState getModelState(IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
+    public ISuperModelState getModelState(ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
         return getModelStateAssumeStateIsCurrent(world.getBlockState(pos), world, pos, refreshFromWorldIfNeeded);
     }
@@ -780,7 +780,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      * by path finding.
      */
     @Override
-    public ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
+    public ISuperModelState computeModelState(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
         ISuperModelState result = this.getDefaultModelState();
         if(refreshFromWorldIfNeeded)
@@ -799,7 +799,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      * Use when absolutely certain given block state is current.
      */
     @Override
-    public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
+    public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
         if(state instanceof IExtendedBlockState)
         {
@@ -809,14 +809,14 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         }
         
         // for mundane (non-TE) blocks don't need to worry about state being persisted, logic is same for old and current states
-        return getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
+        return computeModelState(state, world, pos, refreshFromWorldIfNeeded);
     }
  
     @Override
     @SideOnly(Side.CLIENT)
     public int getOcclusionKey(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side)
     {
-        return SuperDispatcher.INSTANCE.getOcclusionKey(this.getModelStateAssumeStateIsCurrent(state, world, pos, true), side);
+        return SuperDispatcher.INSTANCE.getOcclusionKey(SuperBlockWorldAccess.access(world).getModelState(this, state, pos, true), side);
     }
 
     @Override
@@ -837,9 +837,8 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public List<AxisAlignedBB> getSelectionBoundingBoxes(World worldIn, BlockPos pos, IBlockState state)
     {
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, worldIn, pos, true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(worldIn).getModelState(this, state, pos, true);
         return modelState.collisionBoxes(pos);
-        
     }
 
     @Override
@@ -1020,7 +1019,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public BlockFaceShape getBlockFaceShape(IBlockAccess world, IBlockState state, BlockPos pos, EnumFacing face)
     {
-        return this.getModelState(world, pos, true).sideShape(face) == SideShape.SOLID
+        return SuperBlockWorldAccess.access(world).getModelState(this, pos, true).sideShape(face) == SideShape.SOLID
          ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
     }
     
@@ -1119,7 +1118,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos)
     {
-        return this.getModelStateAssumeStateIsStale(state, world, pos, true).isCube() && this.getSubstance(state, world, pos).material.isSolid();
+        return SuperBlockWorldAccess.access(world).computeModelState(this, state, pos, true).isCube() && this.getSubstance(state, world, pos).material.isSolid();
     }
 
     /**
@@ -1144,7 +1143,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     @Override
     public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side)
     {
-        return this.getModelStateAssumeStateIsStale(base_state, world, pos, true).sideShape(side).holdsTorch;
+        return SuperBlockWorldAccess.access(world).computeModelState(this, base_state, pos, true).sideShape(side).holdsTorch;
     }
  
     @Override
@@ -1266,8 +1265,10 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
                 // only match with blocks with same "virtuality" as this one
                 if(this.isVirtual() == sBlock.isVirtual() && sBlock.getSubstance(otherBlockState, blockAccess, mpos).isTranslucent)
                 {
-                    ISuperModelState myModelState = this.getModelStateAssumeStateIsCurrent(blockState, blockAccess, pos, false);
-                    ISuperModelState otherModelState = sBlock.getModelStateAssumeStateIsCurrent(otherBlockState, blockAccess, mpos, false);
+                    ISuperBlockAccess access =  SuperBlockWorldAccess.access(blockAccess);
+                    
+                    ISuperModelState myModelState = access.getModelState(this, blockState, pos, false);
+                    ISuperModelState otherModelState = access.getModelState(sBlock, otherBlockState, mpos, false);
                     // for transparent blocks, want blocks with same apperance and species to join
                     return (myModelState.hasSpecies() && myModelState.getSpecies() != otherModelState.getSpecies())
                             || !myModelState.doShapeAndAppearanceMatch(otherModelState);

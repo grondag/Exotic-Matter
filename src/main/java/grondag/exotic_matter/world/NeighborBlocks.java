@@ -1,5 +1,7 @@
 package grondag.exotic_matter.world;
 
+import grondag.exotic_matter.block.ISuperBlockAccess;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.block.state.IBlockState;
@@ -27,7 +29,7 @@ public class NeighborBlocks
     private ISuperModelState modelStates[] = new ISuperModelState[STATE_COUNT];
 
 
-    private final IBlockAccess world;
+    private final ISuperBlockAccess world;
     private final int x;
     private final int y;
     private final int z;
@@ -44,7 +46,7 @@ public class NeighborBlocks
 
     public NeighborBlocks(IBlockAccess worldIn, BlockPos pos, IExtraStateFactory factory) 
     {
-        this.world = worldIn;
+        this.world = SuperBlockWorldAccess.access(worldIn);
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();

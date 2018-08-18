@@ -90,6 +90,11 @@ public class PackedBlockPos
         return packedValue + Y_INCREMENT;
     }
     
+    public static final long up(long packedValue, int howFar)
+    {
+        return packedValue + Y_INCREMENT * howFar;
+    }
+    
     public static final long down(long packedValue)
     {
         return packedValue - Y_INCREMENT;

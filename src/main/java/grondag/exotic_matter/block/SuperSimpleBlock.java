@@ -1,13 +1,10 @@
 package grondag.exotic_matter.block;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.WorldLightOpacity;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * For worldgen blocks and other blocks that cannot be configured by user.
@@ -62,14 +59,5 @@ public class SuperSimpleBlock extends SuperBlock
     protected WorldLightOpacity worldLightOpacity(IBlockState state)
     {
         return this.worldLightOpacity;
-    }
-
-    @Override
-    public ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
-    {
-        // exploit client-side state cache
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
-                ? super.getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded)
-                : ExoticMatter.proxy.clientWorldStateCache().getModelState(this, world, state, pos, refreshFromWorldIfNeeded);
     }
 }

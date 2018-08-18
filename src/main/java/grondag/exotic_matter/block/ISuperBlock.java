@@ -39,13 +39,6 @@ import net.minecraft.world.WorldServer;
 
 public interface ISuperBlock extends IBlockItemRegistrator
 {
-    public static ISuperModelState computeModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
-    {
-        ISuperModelState result = block.getDefaultModelState();
-        if(refreshFromWorld) result.refreshFromWorld(blockState, world, pos);
-        return result;
-    }
-    
     /**
      * Used for multiple purposes depending on the type of block. Thus the generic name.
      * Didn't find the block state property abstraction layer particularly useful for my purposes.
@@ -242,9 +235,17 @@ public interface ISuperBlock extends IBlockItemRegistrator
      * 
      * 
      */
-    ISuperModelState getModelState(IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
+    ISuperModelState getModelState(ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
 
+    /** 
+     * Use when absolutely certain given block state is current.
+     */
+    ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
+    
     /**
+     * Returns model state without caching the value in any way.  May use a cached value
+     * to satisfy the request.<p>
+     * 
      * At least one vanilla routine passes in a block state that does not match world.
      * (After block updates, passes in previous state to detect collision box changes.) <br><br>
      * 
@@ -259,12 +260,7 @@ public interface ISuperBlock extends IBlockItemRegistrator
      * on other components of model state (orthogonalAxis, for example) and those changes may not be detected
      * by path finding.
      */
-    ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
-
-    /** 
-     * Use when absolutely certain given block state is current.
-     */
-    ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
+    ISuperModelState computeModelState(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded);
 
     int getOcclusionKey(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side);
 

@@ -8,6 +8,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockStackHelper;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.block.SuperStaticBlock;
 import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -116,7 +117,7 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
     public int quantityDropped(IBlockAccess world, BlockPos pos, IBlockState state)
     {
         double volume = 0;
-        ISuperModelState modelState = this.getModelStateAssumeStateIsStale(state, world, pos, true);
+        ISuperModelState modelState = SuperBlockWorldAccess.access(world).computeModelState(this, state, pos, true);
         for(AxisAlignedBB box : modelState.getShape().meshFactory().collisionHandler().getCollisionBoxes(modelState))
         {
             volume += Useful.volumeAABB(box);
@@ -125,18 +126,6 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
         return (int) Math.min(9, volume * 9);
     }
  
-    @Override
-    public boolean isReplaceable(IBlockAccess worldIn, BlockPos pos)
-    {
-        return TerrainBlockHelper.isEmpty(worldIn.getBlockState(pos), worldIn, pos);
-    }
-
-    @Override
-    public boolean isAir(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
-    {
-        return TerrainBlockHelper.isEmpty(state, world, pos);
-    }
-    
     /**
      * Prevent neighboring dynamic blocks from updating geometry by making them static.
      */
@@ -183,12 +172,6 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
         // don't have enough information without world access or extended state
         // to determine if is full cube.
         return false;
-    }
-    
-    @Override
-    public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos)
-    {
-        return TerrainBlockHelper.shouldBeFullCube(state, world, pos);
     }
     
     @Override

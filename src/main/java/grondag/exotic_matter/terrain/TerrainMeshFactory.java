@@ -217,6 +217,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         final boolean needsSubdivision = !(hotness == 0 || hotness == TerrainState.ALL_HOT);
         final long key = needsSubdivision ? -modelState.getTerrainStateKey() : modelState.getTerrainStateKey();
         
+        if(key == TerrainState.EMPTY_BLOCK_STATE_KEY)
+            return;
+        
         // NB: was checking flowState.isFullCube() and returning cubeQuads() in
         // that case but can produce incorrect normals in rare cases that will cause
         // shading on top face to be visibly mismatched to neighbors.

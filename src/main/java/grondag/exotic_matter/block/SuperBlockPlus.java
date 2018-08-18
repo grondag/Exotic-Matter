@@ -58,7 +58,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
     }
     
     @Override
-    public ISuperModelState getModelStateAssumeStateIsStale(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
+    public ISuperModelState computeModelState(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
         TileEntity myTE = world.getTileEntity(pos);
         if(myTE != null && myTE instanceof SuperTileEntity) 
@@ -76,7 +76,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         }
         else
         {
-            return super.getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
+            return super.computeModelState(state, world, pos, refreshFromWorldIfNeeded);
         }
     }
     
@@ -84,7 +84,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
      * Use when absolutely certain given block state is current.
      */
     @Override
-    public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, IBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
+    public ISuperModelState getModelStateAssumeStateIsCurrent(IBlockState state, ISuperBlockAccess world, BlockPos pos, boolean refreshFromWorldIfNeeded)
     {
         if(state instanceof IExtendedBlockState)
         {
@@ -101,7 +101,7 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         }
         else
         {
-            return getModelStateAssumeStateIsStale(state, world, pos, refreshFromWorldIfNeeded);
+            return computeModelState(state, world, pos, refreshFromWorldIfNeeded);
         }
     }
     

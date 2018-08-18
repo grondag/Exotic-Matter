@@ -4,6 +4,7 @@ package grondag.exotic_matter.model.state;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.VertexProcessors;
@@ -110,7 +111,7 @@ public class ModelStateData
         {
             Block block = state.getBlock();
             return (block instanceof ISuperBlock) 
-                    ? ((ISuperBlock)block).getModelStateAssumeStateIsCurrent(state, worldIn, pos, false)
+                    ? SuperBlockWorldAccess.access(worldIn).getModelState((ISuperBlock)block, state, pos, false)
                     : null;
         }
     };
@@ -125,7 +126,7 @@ public class ModelStateData
         {
             Block block = state.getBlock();
             return (block instanceof ISuperBlock) 
-                    ? ((ISuperBlock)block).getModelStateAssumeStateIsCurrent(state, worldIn, pos, true)
+                    ? SuperBlockWorldAccess.access(worldIn).getModelState(((ISuperBlock)block), state, pos, true)
                     : null;
         }
     };

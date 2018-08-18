@@ -3,6 +3,7 @@ package grondag.exotic_matter.statecache;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -23,12 +24,8 @@ import net.minecraft.world.World;
  * the lookup of many block states for each neighbor.<p>
  * 
  */
-public interface IWorldStateCache
+public interface IWorldStateCache extends ISuperBlockAccess
 {
-    ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld);
-    
-    int getFlowHeight(IBlockAccess world, MutableBlockPos pos);
-
     default void markBlockRangeForRenderUpdate(int xStart, int i, int zStart, int xEnd, int j, int zEnd) {}
 
     default void setWorld(@Nullable World world) {}

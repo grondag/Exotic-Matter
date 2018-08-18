@@ -6,6 +6,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.color.ColorMap;
 import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
@@ -51,7 +52,7 @@ public interface ISuperModelState extends IReadWriteNBT, IMessagePlus
     int hashCode();
 
     /** returns self as convenience method */
-    ISuperModelState refreshFromWorld(IBlockState state, IBlockAccess world, BlockPos pos);
+    ISuperModelState refreshFromWorld(IBlockState state, ISuperBlockAccess world, BlockPos pos);
 
     ModelShape<?> getShape();
 

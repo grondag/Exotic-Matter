@@ -1,11 +1,11 @@
 package grondag.exotic_matter.varia;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.AbstractNonFaceTest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 
 /** returns true if NO border should be displayed */
 public class SuperBlockMasonryMatch extends AbstractNonFaceTest
@@ -27,13 +27,13 @@ public class SuperBlockMasonryMatch extends AbstractNonFaceTest
     public boolean wantsModelState() { return true; }
 
     @Override
-    protected boolean testBlock(IBlockAccess world, IBlockState ibs, BlockPos pos)
+    protected boolean testBlock(ISuperBlockAccess world, IBlockState ibs, BlockPos pos)
     {
-        return testBlock(world, ibs, pos, this.block.getModelStateAssumeStateIsCurrent(ibs, world, pos, false));
+        return testBlock(world, ibs, pos, world.getModelState(this.block, ibs, pos, false));
     }
     
     @Override
-    protected boolean testBlock(IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
+    protected boolean testBlock(ISuperBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
     {
         // for masonry blocks, a join indicates that a border IS present
         

@@ -6,10 +6,10 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.terrain.TerrainState;
 import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -28,7 +28,12 @@ public class WorldStateCache extends AbstractWorldStateCache
     
     private final ConcurrentHashMap<Long, WorldStateNibble> nibbles = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("null")
+    private WorldStateNibble getNibble(long packedBlockPos)
+    {
+        Long key = computeKey(PackedBlockPos.getX(packedBlockPos) >> 4, PackedBlockPos.getY(packedBlockPos) >> 4, PackedBlockPos.getZ(packedBlockPos) >> 4);
+        return this.nibbles.computeIfAbsent(key, k -> new WorldStateNibble());
+    }
+    
     private WorldStateNibble getNibble(BlockPos pos)
     {
         Long key = computeKey(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
@@ -36,15 +41,21 @@ public class WorldStateCache extends AbstractWorldStateCache
     }
     
     @Override
-    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
+    public ISuperModelState getModelState(ISuperBlock block, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
-        return this.getNibble(pos).getModelState(block, world, blockState, pos, refreshFromWorld);
+        return this.getNibble(pos).getModelState(block, this, blockState, pos, refreshFromWorld);
     }
 
     @Override
-    public int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
+    public int getFlowHeight(long packedBlockPos)
     {
-        return this.getNibble(pos).getFlowHeight(world, pos);
+        return this.getNibble(packedBlockPos).getFlowHeight(this, packedBlockPos);
+    }
+    
+    @Override
+    public int getFlowHeight(BlockPos pos)
+    {
+        return this.getNibble(pos).getFlowHeight(this, PackedBlockPos.pack(pos));
     }
     
     @Override
@@ -53,6 +64,7 @@ public class WorldStateCache extends AbstractWorldStateCache
         this.nibbles.clear();
     }
 
+    //TODO: maybe don't remove the whole thing?
     @Override
     protected void invalidateNibble(int chunkX, int nibbleY, int chunkZ)
     {
@@ -62,5 +74,38 @@ public class WorldStateCache extends AbstractWorldStateCache
     private long computeKey(int chunkX, int nibbleY, int chunkZ)
     {
         return PackedBlockPos.pack(chunkX, nibbleY, chunkZ);
+    }
+
+    @SuppressWarnings("null")
+    @Override
+    public IBlockAccess wrapped()
+    {
+        return world;
+    }
+
+    @Override
+    public TerrainState terrainState(IBlockState state, long packedBlockPos)
+    {
+        return this.getNibble(packedBlockPos).getTerrainState(this, PackedBlockPos.unpack(packedBlockPos));
+    }
+
+    @Override
+    public TerrainState terrainState(IBlockState state, BlockPos pos)
+    {
+        return this.getNibble(pos).getTerrainState(this, pos);
+    }
+
+    @SuppressWarnings("null")
+    @Override
+    public IBlockState getBlockState(BlockPos pos)
+    {
+        return world.getBlockState(pos);
+    }
+    
+    @SuppressWarnings("null")
+    @Override
+    public IBlockState getBlockState(long packedBlockPos)
+    {
+        return world.getBlockState(PackedBlockPos.unpack(packedBlockPos));
     }
 }

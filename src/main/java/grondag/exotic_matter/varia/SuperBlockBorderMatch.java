@@ -1,11 +1,11 @@
 package grondag.exotic_matter.varia;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.AbstractNonFaceTest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 
 public class SuperBlockBorderMatch extends AbstractNonFaceTest
 {
@@ -22,11 +22,11 @@ public class SuperBlockBorderMatch extends AbstractNonFaceTest
     }
     
     /** assumes you want to match block at given position */
-    public SuperBlockBorderMatch(IBlockAccess world, IBlockState ibs, BlockPos pos, boolean isSpeciesPartOfMatch)
+    public SuperBlockBorderMatch(ISuperBlockAccess world, IBlockState ibs, BlockPos pos, boolean isSpeciesPartOfMatch)
     {
         this.block = ((ISuperBlock)ibs.getBlock());
         //last param = false prevents recursion - we don't need the full model state (which depends on this logic)
-        this.matchModelState = this.block.getModelStateAssumeStateIsCurrent(ibs, world, pos, false);
+        this.matchModelState = world.getModelState(this.block, ibs, pos, false);
         this.isSpeciesPartOfMatch = isSpeciesPartOfMatch;
     }
     
@@ -34,7 +34,7 @@ public class SuperBlockBorderMatch extends AbstractNonFaceTest
     public boolean wantsModelState() { return true; }
     
     @Override
-    protected boolean testBlock(IBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
+    protected boolean testBlock(ISuperBlockAccess world, IBlockState ibs, BlockPos pos, ISuperModelState modelState)
     {
         return ibs.getBlock() == this.block 
                 && this.matchModelState.doShapeAndAppearanceMatch(modelState)
@@ -42,8 +42,8 @@ public class SuperBlockBorderMatch extends AbstractNonFaceTest
     }
 
     @Override
-    protected boolean testBlock(IBlockAccess world, IBlockState ibs, BlockPos pos)
+    protected boolean testBlock(ISuperBlockAccess world, IBlockState ibs, BlockPos pos)
     {
-        return testBlock(world, ibs, pos, this.block.getModelStateAssumeStateIsCurrent(ibs, world, pos, false));
+        return testBlock(world, ibs, pos, world.getModelState(this.block, ibs, pos, false));
     }
 }

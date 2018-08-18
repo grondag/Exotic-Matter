@@ -1,28 +1,63 @@
 package grondag.exotic_matter.terrain;
 
-import javax.annotation.Nullable;
+import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 
+import java.util.function.Supplier;
+
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.world.PackedBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.Biome;
 
 /**
  * Caches expensive world state lookups until next prepare() call.
+ * For server-side use on server thread only. Doesn't try to track 
+ * state changes while not in active use, and all state changes
+ * must be single threaded and occur through this instance.
+ * 
+ * TODO: add caching for flow height
  */
-public class TerrainWorldAdapter implements IBlockAccess
+public class TerrainWorldAdapter implements ISuperBlockAccess
 {
     protected World world;
     
-    protected Long2ObjectOpenHashMap<IBlockState> blockStates = new Long2ObjectOpenHashMap<>();
-    protected Long2ObjectOpenHashMap<TerrainState> terrainStates = new Long2ObjectOpenHashMap<>();
+    @SuppressWarnings("serial")
+    
+    public static class FastMap<V> extends Long2ObjectOpenHashMap<V>
+    {
+        /** 
+         * DOES NOT SUPPORT ZERO-VALUED KEYS<p>
+         * 
+         * Only computes key 1x and scans arrays 1x for a modest savings.
+         * Here because block updates are the on-tick performance bottleneck for lava sim.
+         */
+        private V computeFast(final long k, final Supplier<V> v)
+        {
+            final long[] key = this.key;
+            int pos = (int) it.unimi.dsi.fastutil.HashCommon.mix(k) & mask;
+            long curr = key[pos];
+            
+            // The starting point.
+            if (curr != 0)
+            {
+                if (curr == k) return value[pos];
+                while (!((curr = key[pos = (pos + 1) & mask]) == (0)))
+                    if (curr == k) return value[pos];
+            }
+            
+            final V result = v.get();
+            key[pos] = k;
+            value[pos] = result;
+            if (size++ >= maxFill) rehash(arraySize(size + 1, f));
+            return result;
+        }
+    }
+    protected FastMap<IBlockState> blockStates = new FastMap<>();
+    protected FastMap<TerrainState> terrainStates = new FastMap<>();
     
     @SuppressWarnings("null")
     public TerrainWorldAdapter()
@@ -44,45 +79,49 @@ public class TerrainWorldAdapter implements IBlockAccess
     }
     
     @Override
-    public IBlockState getBlockState(BlockPos pos)
+    public IBlockAccess wrapped()
+    {
+        return this.world;
+    }
+    
+    @Override
+    public IBlockState getBlockState(final BlockPos pos)
     {
         long packedBlockPos = PackedBlockPos.pack(pos);
-        IBlockState result = blockStates.get(packedBlockPos);
-        if(result == null)
-        {
-            result = world.getBlockState(pos);
-            blockStates.put(packedBlockPos, result);
-        }
-        return result;
+        return blockStates.computeFast(packedBlockPos, () -> world.getBlockState(pos));
     }
     
     private final MutableBlockPos getBlockPos = new MutableBlockPos();
+    @Override
     public IBlockState getBlockState(long packedBlockPos)
     {
-        IBlockState result = blockStates.get(packedBlockPos);
-        if(result == null)
-        {
+        return blockStates.computeFast(packedBlockPos, () -> 
+        { 
             PackedBlockPos.unpackTo(packedBlockPos, getBlockPos);
-            result = world.getBlockState(getBlockPos);
-            blockStates.put(packedBlockPos, result);
-        }
-        return result;
+            return world.getBlockState(getBlockPos);
+        });
     }
 
     private final MutableBlockPos getTerrainPos = new MutableBlockPos();
-    
+    @Override
     public TerrainState terrainState(IBlockState state, long packedBlockPos)
     {
-        TerrainState result = terrainStates.get(packedBlockPos);
-        if(result == null)
-        {
+        return terrainStates.computeFast(packedBlockPos, () -> 
+        { 
             PackedBlockPos.unpackTo(packedBlockPos, getTerrainPos);
-            result = TerrainBlockHelper.getTerrainState(state, this, getTerrainPos);
-            terrainStates.put(packedBlockPos, result);
-        }
-        return result;
+            return TerrainState.terrainState(this, state, getTerrainPos);
+        });
     }
 
+    @Override
+    public TerrainState terrainState(IBlockState state, BlockPos pos)
+    {
+        return terrainStates.computeFast(PackedBlockPos.pack(pos), () -> 
+        { 
+            return TerrainState.terrainState(this, state, pos);
+        });
+    }
+    
     /**
      * WARNING - do not use to set flow height blocks.
      * Assumes terrain states in cache will not change as a result of any block state changes.
@@ -106,49 +145,5 @@ public class TerrainWorldAdapter implements IBlockAccess
     public void setBlockState(BlockPos blockPos, IBlockState newState)
     {
         this.setBlockState(PackedBlockPos.pack(blockPos), newState);
-    }
-    
-    @Override
-    @Nullable
-    public TileEntity getTileEntity(BlockPos pos)
-    {
-        return world.getTileEntity(pos);
-    }
-
-    @Override
-    public int getCombinedLight(BlockPos pos, int lightValue)
-    {
-        return world.getCombinedLight(pos, lightValue);
-    }
-
-    @Override
-    public boolean isAirBlock(BlockPos pos)
-    {
-        IBlockState state = this.getBlockState(pos);
-        return state.getBlock().isAir(state, this, pos);
-    }
-
-    @Override
-    public Biome getBiome(BlockPos pos)
-    {
-        return world.getBiome(pos);
-    }
-
-    @Override
-    public int getStrongPower(BlockPos pos, EnumFacing direction)
-    {
-        return world.getStrongPower(pos, direction);
-    }
-
-    @Override
-    public WorldType getWorldType()
-    {
-        return world.getWorldType();
-    }
-
-    @Override
-    public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default)
-    {
-        return world.isSideSolid(pos, side, _default); 
     }
 }

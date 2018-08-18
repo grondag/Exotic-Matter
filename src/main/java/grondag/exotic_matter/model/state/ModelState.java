@@ -24,6 +24,7 @@ import javax.vecmath.Matrix4f;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.mesh.BlockOrientationType;
 import grondag.exotic_matter.model.mesh.ModelShape;
 import grondag.exotic_matter.model.mesh.ModelShapes;
@@ -265,7 +266,7 @@ public class ModelState implements ISuperModelState
 
     @SuppressWarnings("null")
     @Override
-    public ISuperModelState refreshFromWorld(IBlockState state, IBlockAccess world, BlockPos pos)
+    public ISuperModelState refreshFromWorld(IBlockState state, ISuperBlockAccess world, BlockPos pos)
     {
         //            Output.getLog().info("ModelState.refreshFromWorld static=" + this.isStatic + " @" + pos.toString());
         if(this.isStatic) return this;

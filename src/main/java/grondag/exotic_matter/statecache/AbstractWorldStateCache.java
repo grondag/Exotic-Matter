@@ -53,7 +53,7 @@ public abstract class AbstractWorldStateCache implements IWorldStateCache,  IWor
             }
         }
     }
-
+    
     @Override
     public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags)
     {

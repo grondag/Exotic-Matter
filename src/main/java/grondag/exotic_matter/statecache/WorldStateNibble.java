@@ -3,48 +3,51 @@ package grondag.exotic_matter.statecache;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.terrain.TerrainState;
+import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.IBlockAccess;
 import scala.actors.threadpool.Arrays;
 
 
 /**
  * Cache for a single 16x16x16 region.
  */
-public class WorldStateNibble implements IWorldStateCache
+public class WorldStateNibble
 {
     private @Nullable ISuperModelState[] modelStates;
     private @Nullable byte[] flowHeights;
+    private @Nullable TerrainState[] terrainStates;
     
 //    private static AtomicInteger terrainLookups = new AtomicInteger(0);
 //    private static AtomicInteger terrainHits = new AtomicInteger(0);
 //    private static AtomicInteger modelLookups = new AtomicInteger(0);
 //    private static AtomicInteger modelHits = new AtomicInteger(0);
     
-    @Override
-    public ISuperModelState getModelState(ISuperBlock block, IBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
+    public ISuperModelState getModelState(ISuperBlock block, ISuperBlockAccess world, IBlockState blockState, BlockPos pos, boolean refreshFromWorld)
     {
         ISuperModelState result;
         final int index =  computeIndex(pos);
+        ISuperModelState[] modelStates = this.modelStates;
         
         if(modelStates == null)
         {
             modelStates = new ISuperModelState[4096];
-            result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
+            result = block.getModelStateAssumeStateIsCurrent(blockState, world, pos, refreshFromWorld);
             
             // don't save in cache if not being refreshed - don't want to cache stale states
             if(refreshFromWorld) modelStates[index] = result;
+            
+            this.modelStates = modelStates;
         }
         else
         {
             result = modelStates[index];
             if(result == null)
             {
-                result = ISuperBlock.computeModelState(block, world, blockState, pos, refreshFromWorld);
+                result = block.getModelStateAssumeStateIsCurrent(blockState, world, pos, refreshFromWorld);
                 // don't save in cache if not being refreshed - don't want to cache stale states
                 if(refreshFromWorld) modelStates[index] = result;
             }
@@ -60,25 +63,26 @@ public class WorldStateNibble implements IWorldStateCache
         return result;
     }
     
-    @Override
-    public int getFlowHeight(IBlockAccess world, MutableBlockPos pos)
+    public int getFlowHeight(ISuperBlockAccess world, long packedBlockPos)
     {
         int result;
-        final int index =  computeIndex(pos);
+        final int index =  computeIndex(packedBlockPos);
+        byte[] flowHeights = this.flowHeights;
         
         if(flowHeights == null)
         {
             flowHeights = new byte[4096];
             Arrays.fill(flowHeights, Byte.MIN_VALUE);
-            result = TerrainState.getFlowHeight(world, pos);
+            result = TerrainState.getFlowHeight(world, packedBlockPos);
             flowHeights[index] = (byte) result;
+            this.flowHeights = flowHeights;
         }
         else
         {
             result = flowHeights[index];
             if(result == Byte.MIN_VALUE)
             {
-                result = TerrainState.getFlowHeight(world, pos);
+                result = TerrainState.getFlowHeight(world, packedBlockPos);
                 flowHeights[index] = (byte) result;
             }
 //            else terrainHits.incrementAndGet();
@@ -89,16 +93,38 @@ public class WorldStateNibble implements IWorldStateCache
         return result;
     }
     
+    public TerrainState getTerrainState(ISuperBlockAccess world, BlockPos pos)
+    {
+        TerrainState result;
+        final int index =  computeIndex(pos);
+        TerrainState[] terrainStates = this.terrainStates;
+        
+        if(terrainStates == null)
+        {
+            terrainStates = new TerrainState[4096];
+            result = TerrainState.terrainState(world, world.getBlockState(pos), pos);
+            terrainStates[index] = result;
+            this.terrainStates = terrainStates;
+        }
+        else
+        {
+            result = terrainStates[index];
+            if(result == null)
+            {
+                result = TerrainState.terrainState(world, world.getBlockState(pos), pos);
+                terrainStates[index] = result;
+            }
+        }
+        return result;
+    }
+
     private int computeIndex(BlockPos pos)
     {
         return (pos.getX() & 0xF) | ((pos.getY() & 0xF) << 4) | ((pos.getZ() & 0xF) << 8);
     }
-
-    @Override
-    public void clear()
+    
+    private int computeIndex(long packedBlockPos)
     {
-        // NOOP - will be called at whole cache level
+        return (PackedBlockPos.getX(packedBlockPos) & 0xF) | ((PackedBlockPos.getY(packedBlockPos) & 0xF) << 4) | ((PackedBlockPos.getZ(packedBlockPos) & 0xF) << 8);
     }
-
-
 }

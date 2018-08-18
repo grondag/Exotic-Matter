@@ -256,10 +256,9 @@ public class SuperTileEntity extends TileEntity
         
         if(this.isModelStateCacheDirty && refreshFromWorldIfNeeded)
         {
-            result.refreshFromWorld(state, world, pos);
+            result.refreshFromWorld(state, SuperBlockWorldAccess.access(world), pos);
             this.isModelStateCacheDirty = false;
         }
-        
         
         return result; 
     }
@@ -275,7 +274,7 @@ public class SuperTileEntity extends TileEntity
         }
         else
         {
-            return this.getModelState(this.world.getBlockState(this.pos), world, pos, true); 
+            return SuperBlockWorldAccess.access(this.world).getModelState((ISuperBlock)this.blockType, pos, true); 
         }
     }
     
@@ -283,7 +282,9 @@ public class SuperTileEntity extends TileEntity
     @SuppressWarnings("null")
     public ISuperModelState getCachedModelState()
     {
-        return this.modelState == null ? this.getModelState(this.world.getBlockState(this.pos), world, pos, true) : this.modelState;
+        return this.modelState == null 
+                ? SuperBlockWorldAccess.access(this.world).getModelState((ISuperBlock)this.blockType, pos, true)
+                : this.modelState;
     }
     
     public void setModelState(ISuperModelState modelState) 

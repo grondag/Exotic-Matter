@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.state;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -20,7 +21,7 @@ public class SuperBlockHelper
         IBlockState state = world.getBlockState(pos);
         if(state.getBlock() instanceof ISuperBlock)
         {
-            return ((ISuperBlock)state.getBlock()).getModelStateAssumeStateIsCurrent(state, world, pos, refreshFromWorldIfNeeded);
+            return SuperBlockWorldAccess.access(world).getModelState((ISuperBlock)state.getBlock(), state, pos, refreshFromWorldIfNeeded);
         }
         return null;
     }
