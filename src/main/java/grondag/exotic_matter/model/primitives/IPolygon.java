@@ -363,12 +363,12 @@ public interface IPolygon extends IPaintableQuad
     public default boolean isOnFace(@Nullable EnumFacing face, float tolerance)
     {
         if(face == null) return false;
-        boolean retVal = true;
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            retVal = retVal && getVertex(i).isOnFacePlane(face, tolerance);
+            if(!getVertex(i).isOnFacePlane(face, tolerance))
+                return false;
         }
-        return retVal;
+        return true;
     }
     
     public default Vec3f computeFaceNormal()

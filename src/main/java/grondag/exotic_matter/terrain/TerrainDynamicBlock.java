@@ -20,6 +20,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
@@ -84,8 +85,16 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
         
         IBlockState neighborState = blockAccess.getBlockState(mpos);
 
+        // up face isn't reliably covered due to nature of block topology - one quadrant could be cut off
+        // and other could simply be flat due to differences in neighbor height and face simplification
         if(neighborState.getBlock() instanceof TerrainDynamicBlock)
-            return SuperBlockWorldAccess.access(blockAccess).terrainState(neighborState, mpos).isEmpty();
+        {
+            TerrainState tState = SuperBlockWorldAccess.access(blockAccess).terrainState(neighborState, mpos);
+            if(side == EnumFacing.UP)
+                return !tState.isFullCube();
+            else
+                return tState.isEmpty();
+        }
         
         if(ConfigXM.RENDER.enableFaceCullingOnFlowBlocks && TerrainBlockHelper.isFlowBlock(neighborState.getBlock()))
         {

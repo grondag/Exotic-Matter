@@ -25,8 +25,10 @@ public class VertexProcessorDefault extends VertexProcessor
     public final void process(IPaintableQuad result, ISuperModelState modelState, PaintLayer paintLayer)
     {
         int color = modelState.getColorARGB(paintLayer);
-        if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
-            color =  0xFF000000 | color;
+        
+        //TODO: remove?  Was causing problems when acuity is enabled because renderpass will be solid
+//        if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
+//            color =  0xFF000000 | color;
         
         // If surface is a lamp gradient then glow bits are used 
         // to blend the lamp color/brighness with the nominal color/brightness.

@@ -96,7 +96,7 @@ public class ConfigXM
     
         @RequiresMcRestart
         @Comment("Enable animated textures. Set false if animation may be causing memory or performance problems.")
-        public boolean enableAnimatedTextures = true;
+        public boolean enableAnimatedTextures = false;
     
         @RequiresMcRestart
         @Comment("Collect statistics on texture animation. Used for testing.")

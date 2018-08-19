@@ -78,28 +78,34 @@ public class CommonEventHandler
         ISuperModelState workingModel;
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.CSGTEST);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
-        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
-//        workingModel.setColorMap(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(56));
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_GRANITE);
+        workingModel.setColorRGB(PaintLayer.BASE, 0xFF9B898C);
+        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BIGTEX_SLATE);
+        workingModel.setColorRGB(PaintLayer.CUT, 0xFF7F9BA6);
+        
         workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
-//        workingModel.setColorMap(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(4));
+        workingModel.setColorRGB(PaintLayer.LAMP, 0xFFD5E9FF);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.CUBE);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.TEST_4X4);
-        workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.TILE_DOTS);
-        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFF0000FF);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_WEATHERED_STONE);
+        workingModel.setColorRGB(PaintLayer.BASE, 0xEBF0F5);
+        workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.DECAL_SOFT_SKINNY_DIAGONAL_RIDGES_RANDOM);
+        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFFFFFF);
         workingModel.setTranslucent(PaintLayer.MIDDLE, true);
-        workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_SMOOTH_BLEND);
-        workingModel.setColorRGB(PaintLayer.OUTER, 0xFF104010);
+        workingModel.setAlpha(PaintLayer.MIDDLE, 0x18);
+        workingModel.setEmissive(PaintLayer.MIDDLE, true);
+        workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_LOGIC);
+        workingModel.setColorRGB(PaintLayer.OUTER, 0xD7FFFF);
         workingModel.setTranslucent(PaintLayer.OUTER, true);
+        workingModel.setEmissive(PaintLayer.OUTER, true);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("blocktest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();
         workingModel.setShape(ModShapes.SPHERE);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.WHITE);
-        workingModel.setEmissive(PaintLayer.BASE, true);
+        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+        workingModel.setColorRGB(PaintLayer.BASE, 0xBBC3C4);
         event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
         workingModel = new ModelState();

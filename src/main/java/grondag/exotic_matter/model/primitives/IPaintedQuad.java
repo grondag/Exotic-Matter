@@ -145,7 +145,7 @@ public interface IPaintedQuad extends IPipelinedQuad
         if(uvData.length > 1)
         {
             vertexLighter.setEmissive(1, this.getSubQuad(1).isEmissive());
-            if(uvData.length == 2)
+            if(uvData.length == 3)
             {
                 vertexLighter.setEmissive(2, this.getSubQuad(2).isEmissive());
             }
