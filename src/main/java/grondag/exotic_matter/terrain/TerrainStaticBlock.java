@@ -159,7 +159,7 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
     /**
      * Returns dynamic version of self if one is known. Otherwise returns self.
      */
-    public IBlockState dynamicState(IBlockState state, World world, BlockPos pos)
+    public IBlockState dynamicState(IBlockState state, IBlockAccess world, BlockPos pos)
     {
         Block dynamicVersion = TerrainBlockRegistry.TERRAIN_STATE_REGISTRY.getDynamicBlock(this);
         if(dynamicVersion == null || state.getBlock() != this) return state;

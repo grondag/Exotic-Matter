@@ -4,7 +4,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.world.PackedBlockPos;
@@ -13,12 +12,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TerrainBlockHelper 
 {

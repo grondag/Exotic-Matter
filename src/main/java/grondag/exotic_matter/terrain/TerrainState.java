@@ -1362,8 +1362,7 @@ public class TerrainState
             return;
         
         // -1 because full block is a single block, don't want to count it as block above
-        // -2 to shift back to -2 / +2 range
-        final int to = (height + NO_BLOCK - 1) / BLOCK_LEVELS_INT - 2;
+        final int to = (height - NO_BLOCK - 1) / BLOCK_LEVELS_INT;
         
         for(int i = 0; i <= to; i++)
             consumer.accept(PackedBlockPos.up(basePosition, i), i == to);
