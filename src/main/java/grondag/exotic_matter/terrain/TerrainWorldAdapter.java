@@ -19,7 +19,7 @@ import net.minecraft.world.World;
  * state changes while not in active use, and all state changes
  * must be single threaded and occur through this instance.
  * 
- * TODO: add caching for flow height
+ * TODO: add caching for flow height - do with as part  of SuperBlockState
  */
 public class TerrainWorldAdapter implements ISuperBlockAccess
 {
@@ -123,23 +123,46 @@ public class TerrainWorldAdapter implements ISuperBlockAccess
     }
     
     /**
-     * WARNING - do not use to set flow height blocks.
-     * Assumes terrain states in cache will not change as a result of any block state changes.
+     * Note this doesn't invalidate terrain state cache.  Need to do that
+     * directly before using anything that needs it if changing terrain surface.
      */
     public void setBlockState(long packedBlockPos, IBlockState newState)
     {
-        world.setBlockState(PackedBlockPos.unpack(packedBlockPos), newState);
+        setBlockState(packedBlockPos, newState, true);
+    }
+    
+    /**
+     * Use when you want to control {@link #onBlockStateChange(long, IBlockState, IBlockState)} call back.
+     */
+    protected void setBlockState(long packedBlockPos, IBlockState newState, boolean callback)
+    {
+        IBlockState oldState = getBlockState(packedBlockPos);
+        
+        if(newState == oldState)
+            return;
+        
         blockStates.put(packedBlockPos, newState);
-        for(int x = -1; x <= 1; x++)
-        {
-            for(int z = -1; z <= 1; z++)
-            {
-                for(int y = -2; y <= 2; y++)
-                {
-                    terrainStates.remove(PackedBlockPos.add(packedBlockPos, x, y, z));
-                }
-            }
-        }
+        applyBlockState(packedBlockPos, oldState, newState);
+        
+        if(callback)
+            this.onBlockStateChange(packedBlockPos, oldState, newState);
+    }
+    
+    /**
+     * Handles application of block state to world.  Override for deferred updates
+     * or use cases where world should not be affected directly.
+     */
+    protected void applyBlockState(long packedBlockPos, IBlockState oldState, IBlockState newState)
+    {
+        world.setBlockState(PackedBlockPos.unpack(packedBlockPos), newState);
+    }
+    
+    /**
+     * Called for all block state changes, even if not a terrain block.
+     */
+    protected void onBlockStateChange(long packedBlockPos, IBlockState oldBlockState, IBlockState newBlockState)
+    {
+        
     }
     
     public void setBlockState(BlockPos blockPos, IBlockState newState)

@@ -1098,7 +1098,7 @@ public class TerrainState
     public static TerrainState terrainState(ISuperBlockAccess world, IBlockState state, BlockPos pos)
     {
         Block block = state.getBlock();
-        if(!TerrainBlockHelper.isFlowHeight(block)) return TerrainState.EMPTY_STATE;
+        if(!TerrainBlockHelper.isFlowBlock(block)) return TerrainState.EMPTY_STATE;
         return produceBitsFromWorldStatically((ISuperBlock)block, state, world, pos, TerrainState.FACTORY);
     }
     
@@ -1324,5 +1324,48 @@ public class TerrainState
         }
         
         return MathHelper.clamp(result, 1, BLOCK_LEVELS_INT + BLOCK_LEVELS_INT_HALF);
+    }
+
+    @FunctionalInterface
+    public static interface INeighborConsumer
+    {
+        public void accept(long packedBlockPos, boolean isSurfaceBlock);
+    }
+    
+    /**
+     * Calls consumer with packed positions of all neighboring height blocks
+     * either influencing or influenced by a block with this state at the given position.
+     * Includes blocks underneath the surface, in addition to surface blocks.
+     * Does not include the block at the given position.
+     */
+    public void produceNeighbors(long myPackedPosition, INeighborConsumer consumer)
+    {
+        // does't apply to filler blocks
+        if(yOffset != 0) 
+            return;
+        
+        myPackedPosition = PackedBlockPos.down(myPackedPosition, 2);
+        produceNeighborsInner(PackedBlockPos.east(myPackedPosition), height(HorizontalFace.EAST), consumer);
+        produceNeighborsInner(PackedBlockPos.west(myPackedPosition), height(HorizontalFace.WEST), consumer);
+        produceNeighborsInner(PackedBlockPos.north(myPackedPosition), height(HorizontalFace.NORTH), consumer);
+        produceNeighborsInner(PackedBlockPos.south(myPackedPosition), height(HorizontalFace.SOUTH), consumer);
+        
+        produceNeighborsInner(PackedBlockPos.northEast(myPackedPosition), height(HorizontalCorner.NORTH_EAST), consumer);
+        produceNeighborsInner(PackedBlockPos.northWest(myPackedPosition), height(HorizontalCorner.NORTH_WEST), consumer);
+        produceNeighborsInner(PackedBlockPos.southEast(myPackedPosition), height(HorizontalCorner.SOUTH_EAST), consumer);
+        produceNeighborsInner(PackedBlockPos.southWest(myPackedPosition), height(HorizontalCorner.SOUTH_WEST), consumer);
+    }
+    
+    private void produceNeighborsInner(long basePosition, int height, INeighborConsumer consumer)
+    {
+        if(height == NO_BLOCK)
+            return;
+        
+        // -1 because full block is a single block, don't want to count it as block above
+        // -2 to shift back to -2 / +2 range
+        final int to = (height + NO_BLOCK - 1) / BLOCK_LEVELS_INT - 2;
+        
+        for(int i = 0; i <= to; i++)
+            consumer.accept(PackedBlockPos.up(basePosition, i), i == to);
     }
 }

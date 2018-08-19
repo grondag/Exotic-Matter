@@ -151,11 +151,20 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
      */
     public void makeDynamic(IBlockState state, World world, BlockPos pos)
     {
+        IBlockState newState = dynamicState(state, world, pos);
+        if(newState != state)
+            world.setBlockState(pos, newState, 3);
+    }
+    
+    /**
+     * Returns dynamic version of self if one is known. Otherwise returns self.
+     */
+    public IBlockState dynamicState(IBlockState state, World world, BlockPos pos)
+    {
         Block dynamicVersion = TerrainBlockRegistry.TERRAIN_STATE_REGISTRY.getDynamicBlock(this);
-        if(dynamicVersion == null || state.getBlock() != this) return;
+        if(dynamicVersion == null || state.getBlock() != this) return state;
 
-        world.setBlockState(pos, dynamicVersion.getDefaultState()
-                .withProperty(ISuperBlock.META, state.getValue(ISuperBlock.META)), 3);
+        return dynamicVersion.getDefaultState().withProperty(ISuperBlock.META, state.getValue(ISuperBlock.META));
     }
     
     // setting to false drops AO light value

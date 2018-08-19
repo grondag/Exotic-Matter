@@ -125,6 +125,26 @@ public class PackedBlockPos
         return packedValue + Z_INCREMENT;
     }
     
+    public static final long northEast(long packedValue)
+    {
+        return packedValue - Z_INCREMENT + X_INCREMENT;
+    }
+    
+    public static final long northWest(long packedValue)
+    {
+        return packedValue - Z_INCREMENT - X_INCREMENT;
+    }
+    
+    public static final long southEast(long packedValue)
+    {
+        return packedValue + Z_INCREMENT + X_INCREMENT;
+    }
+    
+    public static final long southWest(long packedValue)
+    {
+        return packedValue + Z_INCREMENT - X_INCREMENT;
+    }
+    
     public static final int getX(long packedValue)
     {
         return (int)((packedValue >> X_SHIFT) & X_MASK) - WORLD_BOUNDARY;
