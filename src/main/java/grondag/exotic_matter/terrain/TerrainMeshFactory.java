@@ -224,7 +224,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // that case but can produce incorrect normals in rare cases that will cause
         // shading on top face to be visibly mismatched to neighbors.
 //            cacheAttempts.incrementAndGet();
-        this.modelCache.get(key).forEach(wrapped);
+        final Collection<IPolygon> polys = this.modelCache.get(key);
+        assert polys != null : "Got null terrain mesh - not expected.";
+        polys.forEach(wrapped);
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
