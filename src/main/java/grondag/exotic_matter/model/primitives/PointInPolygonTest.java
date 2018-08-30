@@ -46,6 +46,21 @@ public class PointInPolygonTest
     }
 
     /**
+     * Tests if a point is Left|On|Right of an infinite line
+     * @param   lineStart
+     * @param   lineEnd
+     * @param   point
+     * @return  >0 for point left of the line <br>
+     *          =0 for point  on the line <br>
+     *          <0 for point  right of the line
+     */
+    private static float isLeft( float xStart, float yStart, float xEnd, float yEnd, float x, float y)
+    {
+        return  (xEnd - xStart) * (y - yStart)
+                - (x - xStart) * (yEnd - yStart);
+    }
+    
+    /**
      * Crossing number test for a point in a polygon.
      * This code is patterned after [Franklin, 2000]
      * @param point    point to be tested
@@ -105,34 +120,161 @@ public class PointInPolygonTest
         }
         return wn != 0;
     }
-
-    public static boolean isPointInPolygon(Vec3f point, IPolygon quad)
+    
+    public static boolean isPointInPolygonAny(Vec3f point, IPolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
         // that is most orthogonal to our plane
-        DiscardAxis discardAxis = DiscardAxis.get(quad.getFaceNormal());
+        final DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
+        final float x = d.x(point);
+        final float y = d.y(point);
+        final int size = quad.vertexCount();
+        
+        int wn = 0;    // the  winding number counter
 
-        Point2f testPoint = discardAxis.get2dPoint(point);
-
-        int size = quad.vertexCount();
-        Point2f vertices[] = new Point2f[size + 1];
+        final Vertex vArray[] = quad.vertexArray();
+        Vertex v = vArray[size - 1];
+        float x0 = d.x(v);
+        float y0 = d.y(v);
+        
+        float x1, y1;
+        // loop through all edges of the polygon
+        for (int i=0; i< size; i++)
         {
-            for(int i = 0; i < size; i++)
+            v = vArray[i];
+            x1 = d.x(v);
+            y1 = d.y(v);
+            if (y0 <= y)            // start y <= P.y
             {
-                vertices[i] = discardAxis.get2dPoint(quad.getVertex(i));
+                if (y1  > y)      // an upward crossing
+                    if (isLeft(x0, y0, x1, y1, x, y) > 0)  // P left of  edge
+                        ++wn;            // have  a valid up intersect
             }
-            // make array wrap to simplify usage
-            vertices[size] = vertices[0];
+            else  // start y > P.y (no test needed)
+            {
+                if (y1  <= y)     // a downward crossing
+                    if (isLeft(x0, y0, x1, y1, x, y) < 0)  // P right of  edge
+                        --wn;            // have  a valid down intersect
+            }
+            x0 = x1;
+            y0 = y1;
         }
-
-        return isPointInPolyWindingNumber(testPoint, vertices);
+        return wn != 0;
     }
 
+    public static boolean isPointInPolygon(Vec3f point, IPolygon quad)
+    {
+        final int size = quad.vertexCount();
+        if(size == 3)
+            return isPointInPolygonTri(point, quad);
+        else if(size == 4)
+            return isPointInPolygonQuad(point, quad);
+        else
+            return isPointInPolygonAny(point, quad);
+        
+    }
+    
+    public static boolean isPointInPolygonQuad(Vec3f point, IPolygon quad)
+    {
+        // faster to check in 2 dimensions, so throw away the axis 
+        // that is most orthogonal to our plane
+        final DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
+        final float x = d.x(point);
+        final float y = d.y(point);
+        Vertex v = quad.getVertex(0);
+        final float x0 = d.x(v);
+        final float y0 = d.y(v);
+        v = quad.getVertex(1);
+        final float x1 = d.x(v);
+        final float y1 = d.y(v);
+        v = quad.getVertex(2);
+        final float x2 = d.x(v);
+        final float y2 = d.y(v);
+        v = quad.getVertex(3);
+        final float x3 = d.x(v);
+        final float y3 = d.y(v);
+        
+        return isPointInPolygonTri(x, y, x0, y0, x1, y1, x2, y2) || isPointInPolygonTri(x, y, x0, y0, x2, y2, x3, y3);
+    }
+    
+    public static boolean isPointInPolygonTri(Vec3f point, IPolygon quad)
+    {
+        // faster to check in 2 dimensions, so throw away the axis 
+        // that is most orthogonal to our plane
+        final DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
+        final Vertex[] va = quad.vertexArray();
+        final Vertex v0 = va[0];
+        final Vertex v1 = va[1];
+        final Vertex v2 = va[2];
+        
+        return isPointInPolygonTri(d.x(point), d.y(point), 
+                d.x(v0), d.y(v0),
+                d.x(v1), d.y(v1),
+                d.x(v2), d.y(v2));
+        
+    }
+    
+    public static boolean isPointInPolygonTri(float x, float y, float x0, float y0, float x1, float y1, float x2, float y2)
+    {
+            if (isLeft(x0, y0, x1, y1, x, y) < 0)
+                return false;
+            
+            if (isLeft(x1, y1, x2, y2, x, y) < 0)
+                return false;
+            
+            if (isLeft(x2, y2, x0, y0, x, y) < 0)
+                return false;
+            
+            return true;
+    }
+    
+    
     private static enum DiscardAxis
     {
-        X,
-        Y,
-        Z;
+        X()
+        {
+            @Override
+            protected final float x(Vec3f pointIn)
+            {
+                return pointIn.y;
+            }
+
+            @Override
+            protected final float y(Vec3f pointIn)
+            {
+                return pointIn.z;
+            }
+        },
+        
+        Y()
+        {
+            @Override
+            protected final float x(Vec3f pointIn)
+            {
+                return pointIn.x;
+            }
+
+            @Override
+            protected final float y(Vec3f pointIn)
+            {
+                return pointIn.z;
+            }
+        },
+        
+        Z()
+        {
+            @Override
+            protected final float x(Vec3f pointIn)
+            {
+                return pointIn.x;
+            }
+
+            @Override
+            protected final float y(Vec3f pointIn)
+            {
+                return pointIn.y;
+            }
+        };
 
         /** 
          * Returns the orthogonalAxis that is most orthogonal to the plane
@@ -140,45 +282,25 @@ public class PointInPolygonTest
          */
         private static DiscardAxis get(Vec3f normal)
         {
-            DiscardAxis result = X;
-            float maxAbsoluteComponent = Math.abs(normal.x);
-
-            float absY = Math.abs(normal.y);
-            if(absY > maxAbsoluteComponent)
-            {
-                result = Y;
-                maxAbsoluteComponent = absY;
-            }
-
-            if(Math.abs(normal.z) > maxAbsoluteComponent)
-            {
-                result = Z;
-            }
-
-            return result;
+            final float absX = Math.abs(normal.x);
+            final float absY = Math.abs(normal.y);
+            if(absX > absY)
+                return absX > Math.abs(normal.z) ? X : Z;
+            else // y  >=  x
+                return absY > Math.abs(normal.z) ? Y : Z;
         }
 
         /**
          * Returns a 2d point with this orthogonalAxis discarded.
          */
-        private Point2f get2dPoint(Vec3f pointIn)
+        protected float x (Vec3f pointIn)
         {
-            switch(this)
-            {
-            case X:
-                return new Point2f(pointIn.y, pointIn.z);
-
-            case Y:
-                return new Point2f(pointIn.x, pointIn.z);
-
-            case Z:
-                return new Point2f(pointIn.x, pointIn.y);
-
-            default:
-                // nonsense
-                return null;
-
-            }
+            return pointIn.x;
+        }
+        
+        protected float y (Vec3f pointIn)
+        {
+            return pointIn.y;
         }
     }
 }

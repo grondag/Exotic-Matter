@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.Poly;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -21,31 +21,28 @@ public class PolyTest
     public void test()
     {
         Vec3f point;
-        IMutablePolygon quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        IMutablePolygon quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         // basic properties
-        assert quad.getColor() == 0xFFFFFFFF;
         assert !quad.isLockUV();
         assert quad.shouldContractUVs();
         assert quad.getNominalFace() == EnumFacing.UP;
         assert quad.getRotation() == Rotation.ROTATE_NONE;
-        assert quad.getRenderPass() == BlockRenderLayer.SOLID;
+        assert quad.getRenderLayer() == BlockRenderLayer.SOLID;
         
         quad.setLockUV(true);
         quad.setShouldContractUVs(false);
-        quad.setNominalFace(null);
+        quad.setNominalFace(EnumFacing.DOWN);
         quad.setRotation(Rotation.ROTATE_270);
-        quad.setRenderPass(BlockRenderLayer.TRANSLUCENT);
-        quad.setColor(0xFA123456);
+        quad.setRenderLayer(BlockRenderLayer.TRANSLUCENT);
         
         assert quad.isLockUV();
         assert !quad.shouldContractUVs();
-        assert quad.getNominalFace() == null;
+        assert quad.getNominalFace() == EnumFacing.DOWN;
         assert quad.getRotation() == Rotation.ROTATE_270;
-        assert quad.getRenderPass() == BlockRenderLayer.TRANSLUCENT;
-        assert quad.getColor() == 0xFA123456;
+        assert quad.getRenderLayer() == BlockRenderLayer.TRANSLUCENT;
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         // point on plane
         point = new Vec3f(0.5f, 0.5f, 0.5f);
@@ -67,11 +64,11 @@ public class PolyTest
         
         
         //convexity & area tests
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON);
         
-        quad = Poly.mutable(3).setupFaceQuad(EnumFacing.UP,
+        quad = new PolyImpl(3).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -79,7 +76,7 @@ public class PolyTest
         assertTrue(quad.isConvex());
         assertTrue(Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON);
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP,
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -89,19 +86,19 @@ public class PolyTest
         
         
         // normal facing calculation
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.UP);
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
         assertTrue(quad.getNormalFace() == EnumFacing.EAST);
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
         
-        quad = Poly.mutable(4).setupFaceQuad(EnumFacing.SOUTH,
+        quad = new PolyImpl(4).setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 0.1f), 
                 new FaceVertex(1, 0, 0.1f), 
                 new FaceVertex(1, 1, 0), 
