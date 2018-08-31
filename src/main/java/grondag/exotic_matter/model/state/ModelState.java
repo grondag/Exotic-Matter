@@ -54,7 +54,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 public class ModelState implements ISuperModelState
@@ -1001,11 +1000,11 @@ public class ModelState implements ISuperModelState
         this.populateStateFlagsIfNeeded();
         ModelState result = new ModelState();
         result.setShape(this.getShape());
-        result.setStaticShapeBits(this.getStaticShapeBits());
 
         switch(this.getShape().meshFactory().stateFormat)
         {
         case BLOCK:
+            result.setStaticShapeBits(this.getStaticShapeBits());
             if(this.hasAxis()) result.setAxis(this.getAxis());
             if(this.hasAxisOrientation()) result.setAxisInverted(this.isAxisInverted());
             if(this.hasAxisRotation()) result.setAxisRotation(this.getAxisRotation());
@@ -1020,6 +1019,9 @@ public class ModelState implements ISuperModelState
             break;
 
         case FLOW:
+            ModelStateData.FLOW_JOIN.setValue(ModelStateData.FLOW_JOIN.getValue(this), result);
+            break;
+            
         case MULTIBLOCK:
             result.shapeBits0 = this.shapeBits0;
             break;

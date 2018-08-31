@@ -54,10 +54,12 @@ public class PointInPolygonTest
      *          =0 for point  on the line <br>
      *          <0 for point  right of the line
      */
-    private static float isLeft( float xStart, float yStart, float xEnd, float yEnd, float x, float y)
+    private static float isLeft(float xStart, float yStart, float xEnd, float yEnd, float x, float y)
     {
         return  (xEnd - xStart) * (y - yStart)
                 - (x - xStart) * (yEnd - yStart);
+        
+        
     }
     
     /**
@@ -121,6 +123,7 @@ public class PointInPolygonTest
         return wn != 0;
     }
     
+    // FIX: this appears to have a 6% false negative rate but isn't really used right now
     public static boolean isPointInPolygonAny(Vec3f point, IPolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
@@ -144,24 +147,30 @@ public class PointInPolygonTest
             v = vArray[i];
             x1 = d.x(v);
             y1 = d.y(v);
-            if (y0 <= y)            // start y <= P.y
-            {
-                if (y1  > y)      // an upward crossing
-                    if (isLeft(x0, y0, x1, y1, x, y) > 0)  // P left of  edge
-                        ++wn;            // have  a valid up intersect
-            }
-            else  // start y > P.y (no test needed)
-            {
-                if (y1  <= y)     // a downward crossing
-                    if (isLeft(x0, y0, x1, y1, x, y) < 0)  // P right of  edge
-                        --wn;            // have  a valid down intersect
-            }
+            wn += windingNumber(x0, y0, x1, y1, x, y);
             x0 = x1;
             y0 = y1;
         }
         return wn != 0;
     }
 
+    private static int windingNumber(float x0, float y0, float x1, float y1, float x, float y)
+    {
+        if (y0 <= y)    // start y <= P.y
+        {
+            if (y1  > y)      // an upward crossing
+                if (isLeft(x0, y0, x1, y1, x, y) > 0)  // P left of  edge
+                    return 1;            // have  a valid up intersect
+        }
+        else            // start y > P.y
+        {
+            if (y1  <= y)     // a downward crossing
+                if (isLeft(x0, y0, x1, y1, x, y) < 0)  // P right of  edge
+                    return -1;            // have  a valid down intersect
+        }
+        return 0;
+    }
+    
     public static boolean isPointInPolygon(Vec3f point, IPolygon quad)
     {
         final int size = quad.vertexCount();
@@ -213,23 +222,16 @@ public class PointInPolygonTest
                 d.x(v2), d.y(v2));
         
     }
-    
+   
     public static boolean isPointInPolygonTri(float x, float y, float x0, float y0, float x1, float y1, float x2, float y2)
     {
-            if (isLeft(x0, y0, x1, y1, x, y) < 0)
-                return false;
-            
-            if (isLeft(x1, y1, x2, y2, x, y) < 0)
-                return false;
-            
-            if (isLeft(x2, y2, x0, y0, x, y) < 0)
-                return false;
-            
-            return true;
+        return (y1 - y0)*(x - x0) + (-x1 + x0)*(y - y0) >= 0
+            && (y2 - y1)*(x - x1) + (-x2 + x1)*(y - y1) >= 0
+            && (y0 - y2)*(x - x2) + (-x0 + x2)*(y - y2) >= 0;
     }
     
     
-    private static enum DiscardAxis
+    static enum DiscardAxis
     {
         X()
         {
@@ -280,7 +282,7 @@ public class PointInPolygonTest
          * Returns the orthogonalAxis that is most orthogonal to the plane
          * identified by the given normal and thus should be ignored for PnP testing.
          */
-        private static DiscardAxis get(Vec3f normal)
+        static DiscardAxis get(Vec3f normal)
         {
             final float absX = Math.abs(normal.x);
             final float absY = Math.abs(normal.y);

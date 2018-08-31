@@ -6,6 +6,8 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
+
 class PointInPolygonTestPerf
 {
 
@@ -30,8 +32,12 @@ class PointInPolygonTestPerf
     {
         final int samples = 10000000;
         long elapsed = 0;
-        final Random r = new Random(5);
-        
+        final Random r = new Random(42);
+        int falsePositiveCount = 0;
+        int falseNegativeCount = 0;
+//        double matchArea = 0;
+//        double missArea = 0;
+
         for(int i = 0; i < samples; i++)
         {
             PolyImpl poly = new PolyImpl(3);
@@ -40,9 +46,114 @@ class PointInPolygonTestPerf
             poly.addVertex(2, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
             Vec3f p = new Vec3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
             elapsed -= System.nanoTime();
-            PointInPolygonTest.isPointInPolygon3(p, poly);
+            boolean b = PointInPolygonTest.isPointInPolygon(p, poly);
             elapsed += System.nanoTime();
+//            double area = poly.getArea();
+//            if(Double.isNaN(area))
+//                area = 0;
+            if(b == accuratePointInTriangle(p, poly))
+            {
+//                matchArea += area;
+            }
+            else
+            {
+//                missArea += area;
+                if(b)
+                    falseNegativeCount++;
+                else
+                    falsePositiveCount++;
+            }
         }
         System.out.println("nanos per call: " + elapsed / samples);
+        System.out.println("False positive rate %: " + falsePositiveCount * 100 / samples);
+        System.out.println("False negative rate %: " + falseNegativeCount * 100 / samples);
+//        if(matchCount != samples)
+//        {
+//            System.out.println("Match avg area: " + matchArea / matchCount);
+//            System.out.println("Miss avg area: " + missArea / (samples - matchCount));
+//        }
+        System.out.println("");
+    }
+    
+    ////////////////  Below is adapted from http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html for testing 
+    
+    final static float EPSILON = 0.001f;
+    final static float EPSILON_SQUARE = EPSILON * EPSILON;
+
+    public static float side(float x1, float y1, float x2, float y2, float x, float y)
+    {
+     return (y2 - y1)*(x - x1) + (-x2 + x1)*(y - y1);
+    }
+
+    public static boolean naivePointInTriangle(float x1, float y1, float x2, float y2, float x3, float y3, float x, float y)
+    {
+        boolean checkSide1 = side(x1, y1, x2, y2, x, y) >= 0;
+        boolean checkSide2 = side(x2, y2, x3, y3, x, y) >= 0;
+        boolean checkSide3 = side(x3, y3, x1, y1, x, y) >= 0;
+        return checkSide1 && checkSide2 && checkSide3;
+    }
+
+    public static boolean pointInTriangleBoundingBox(float x1, float y1, float x2, float y2, float x3, float y3, float x, float y)
+    {
+        float xMin = Math.min(x1, Math.min(x2, x3)) - EPSILON;
+        float xMax = Math.max(x1, Math.max(x2, x3)) + EPSILON;
+        float yMin = Math.min(y1, Math.min(y2, y3)) - EPSILON;
+        float yMax = Math.max(y1, Math.max(y2, y3)) + EPSILON;
+     
+        return !( x < xMin || xMax < x || y < yMin || yMax < y );
+    }
+
+    public static float distanceSquarePointToSegment(float x1, float y1, float x2, float y2, float x, float y)
+    {
+        float p1_p2_squareLength = (x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1);
+        float dotProduct = ((x - x1)*(x2 - x1) + (y - y1)*(y2 - y1)) / p1_p2_squareLength;
+         if ( dotProduct < 0 )
+         {
+          return (x - x1)*(x - x1) + (y - y1)*(y - y1);
+         }
+         else if ( dotProduct <= 1 )
+         {
+             float p_p1_squareLength = (x1 - x)*(x1 - x) + (y1 - y)*(y1 - y);
+             return p_p1_squareLength - dotProduct * dotProduct * p1_p2_squareLength;
+         }
+         else
+         {
+          return (x - x2)*(x - x2) + (y - y2)*(y - y2);
+         }
+    }
+
+    public static boolean accuratePointInTriangle(float x, float y, float x1, float y1, float x2, float y2, float x3, float y3)
+    {
+     if (! pointInTriangleBoundingBox(x1, y1, x2, y2, x3, y3, x, y))
+      return false;
+     
+     if (naivePointInTriangle(x1, y1, x2, y2, x3, y3, x, y))
+      return true;
+     
+     if (distanceSquarePointToSegment(x1, y1, x2, y2, x, y) <= EPSILON_SQUARE)
+      return true;
+     if (distanceSquarePointToSegment(x2, y2, x3, y3, x, y) <= EPSILON_SQUARE)
+      return true;
+     if (distanceSquarePointToSegment(x3, y3, x1, y1, x, y) <= EPSILON_SQUARE)
+      return true;
+     
+     return false;
+    }
+    
+    public static boolean accuratePointInTriangle(Vec3f point, IPolygon quad)
+    {
+        // faster to check in 2 dimensions, so throw away the axis 
+        // that is most orthogonal to our plane
+        final PointInPolygonTest.DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
+        final Vertex[] va = quad.vertexArray();
+        final Vertex v0 = va[0];
+        final Vertex v1 = va[1];
+        final Vertex v2 = va[2];
+        
+        return accuratePointInTriangle(d.x(point), d.y(point), 
+                d.x(v0), d.y(v0),
+                d.x(v1), d.y(v1),
+                d.x(v2), d.y(v2));
+        
     }
 }
