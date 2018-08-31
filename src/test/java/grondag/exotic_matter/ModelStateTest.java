@@ -7,10 +7,10 @@ import grondag.exotic_matter.init.ModShapes;
 import grondag.exotic_matter.init.ModTextures;
 import grondag.exotic_matter.model.mesh.ModelShapes;
 import grondag.exotic_matter.model.painting.PaintLayer;
+import grondag.exotic_matter.model.painting.VertexProcessorDefault;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
-import grondag.exotic_matter.terrain.VertexProcessorLava;
 import grondag.exotic_matter.world.CornerJoinBlockStateSelector;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockRenderLayer;
@@ -45,7 +45,7 @@ public class ModelStateTest
 
         state.setColorRGB(PaintLayer.BASE, 0xFF1133);
         state.setColorRGB(PaintLayer.OUTER, 0x11AABBCC);
-        state.setBrightness(PaintLayer.LAMP, 15);
+        state.setEmissive(PaintLayer.LAMP, true);
         state.setTexture(PaintLayer.BASE, ModTextures.BLOCK_NOISE_STRONG);
         state.setTexture(PaintLayer.LAMP, ModTextures.BLOCK_COBBLE);
         state.setTexture(PaintLayer.MIDDLE, ModTextures.BLOCK_NOISE_SUBTLE_ZOOM);
@@ -60,7 +60,7 @@ public class ModelStateTest
         state.setCornerJoin(CornerJoinBlockStateSelector.getJoinState(69));
         state.setAxisInverted(true);
         state.setStaticShapeBits(879579585L);
-        state.setVertexProcessor(PaintLayer.BASE, VertexProcessorLava.INSTANCE);
+        state.setVertexProcessor(PaintLayer.BASE, VertexProcessorDefault.INSTANCE);
         
         NBTTagCompound persistedState = state.serializeNBT();
         
@@ -73,7 +73,7 @@ public class ModelStateTest
         assert(reloadedState.isLayerEnabled(PaintLayer.MIDDLE));
         assert(reloadedState.getColorARGB(PaintLayer.BASE) == 0xFFFF1133);
         assert(reloadedState.getColorARGB(PaintLayer.OUTER) == 0xFFAABBCC);
-        assert(reloadedState.getBrightness(PaintLayer.LAMP) == 15);
+        assert(reloadedState.isEmissive(PaintLayer.LAMP) == true);
         assert(reloadedState.getTexture(PaintLayer.BASE) == ModTextures.BLOCK_NOISE_STRONG);
         assert(reloadedState.getTexture(PaintLayer.LAMP) == ModTextures.BLOCK_COBBLE);
         assert(reloadedState.getTexture(PaintLayer.MIDDLE) == ModTextures.BLOCK_NOISE_SUBTLE_ZOOM);
@@ -89,7 +89,7 @@ public class ModelStateTest
         assert(reloadedState.getSimpleJoin().getIndex() == CornerJoinBlockStateSelector.getJoinState(69).simpleJoin.getIndex());
         assert(reloadedState.isAxisInverted());
         assert(reloadedState.getStaticShapeBits() == 879579585L);
-        assert(reloadedState.getVertexProcessor(PaintLayer.BASE) == VertexProcessorLava.INSTANCE);
+        assert(reloadedState.getVertexProcessor(PaintLayer.BASE) == VertexProcessorDefault.INSTANCE);
         RenderLayout rps = reloadedState.getRenderLayout();
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.SOLID) == true);
         assert(rps.containsBlockRenderLayer(BlockRenderLayer.CUTOUT) == false);

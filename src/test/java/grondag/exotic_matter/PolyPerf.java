@@ -4,16 +4,17 @@ import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
+import org.jline.utils.Log;
 import org.junit.Test;
 
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.Poly;
-import jline.internal.Log;
+import grondag.exotic_matter.model.primitives.PolyImpl;
 import net.minecraft.util.EnumFacing;
 
 public class PolyPerf
 {
 
+    @SuppressWarnings("null")
     @Test
     public void test()
     {
@@ -32,7 +33,7 @@ public class PolyPerf
             EnumFacing face = EnumFacing.HORIZONTALS[r.nextInt(4)];
             float x = r.nextFloat();
             float y = r.nextFloat();
-            quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
+            quad = new PolyImpl(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
             float px = r.nextFloat();
             float py = r.nextFloat();
             float pz = r.nextFloat();
@@ -52,7 +53,7 @@ public class PolyPerf
             EnumFacing face = EnumFacing.HORIZONTALS[r.nextInt(4)];
             float x = r.nextFloat();
             float y = r.nextFloat();
-            quad = Poly.mutable(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
+            quad = new PolyImpl(4).setupFaceQuad(face, x, y, x + r.nextFloat(), y + r.nextFloat(), r.nextFloat(), EnumFacing.UP);
             float px = r.nextFloat();
             float py = r.nextFloat();
             float pz = r.nextFloat();

@@ -20,7 +20,7 @@ public class CSGPlanPerf
         
         for(int i = 0; i < 200000000; i++)
         {
-            Vertex v = new Vertex(r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextInt(), null);
+            Vertex v = Vertex.DEFAULT_FACTORY.newVertex(r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextInt(), null, 0);
             plane.vertexIncrement(v);
         }
     }
