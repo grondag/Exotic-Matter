@@ -40,6 +40,11 @@ public class ModelStateFlagHelper
         else
             flags |= STATE_FLAG_HAS_SOLID_RENDER;
         
+        if(state.isTranslucent(PaintLayer.CUT))
+            flags |= (STATE_FLAG_HAS_TRANSLUCENT_GEOMETRY | STATE_FLAG_HAS_TRANSLUCENT_RENDER);
+        else
+            flags |= STATE_FLAG_HAS_SOLID_RENDER;
+        
         if(mesh.hasLampSurface(state)) 
         {
             ITexturePalette texLamp = state.getTexture(PaintLayer.LAMP);
