@@ -1071,8 +1071,11 @@ public class ModelState implements ISuperModelState
     @Override
     public void deserializeNBT(@Nullable NBTTagCompound tag)
     {
+        if(tag == null)
+            return;
+        
         int[] stateBits = tag.getIntArray(NBT_MODEL_BITS);
-        if(stateBits == null || stateBits.length != 16)
+        if(stateBits.length != 16)
         {
             ExoticMatter.INSTANCE.warn("Bad or missing data encounter during ModelState NBT deserialization.");
             return;
@@ -1086,7 +1089,7 @@ public class ModelState implements ISuperModelState
         
         // textures and vertex processors serialized by name because registered can change if mods/config change
         String layers = tag.getString(NBT_LAYERS);
-        if(!(layers == null || layers.isEmpty()))
+        if(layers.isEmpty())
         {
             String[] names = layers.split(",");
             if(names.length != 0)
