@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.varia;
+package grondag.exotic_matter.model.collision;
 
 import java.util.List;
 
@@ -15,7 +15,10 @@ public class CollisionBoxDispatcher
 
     public List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return this.modelBounds.get(modelState.geometricState());
+        //TODO: restore caching
+        ISuperModelState key = modelState.geometricState();
+        return CollisionBoxGenerator.makeCollisionBoxList(key.getShape().meshFactory().getShapeQuads(key));
+//        return this.modelBounds.get(modelState.geometricState());
     }
     
     private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, List<AxisAlignedBB>>

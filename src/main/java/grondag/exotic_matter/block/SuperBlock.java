@@ -19,7 +19,7 @@ import grondag.exotic_matter.model.render.RenderLayoutProducer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.MetaUsage;
 import grondag.exotic_matter.model.state.ModelState;
-import grondag.exotic_matter.model.varia.ICollisionHandler;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.ParticleDiggingSuperBlock;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.model.varia.SuperDispatcher;

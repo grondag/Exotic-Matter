@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.varia;
+package grondag.exotic_matter.model.collision;
 
 import java.util.List;
 

@@ -21,7 +21,7 @@ import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.varia.ICollisionHandler;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;

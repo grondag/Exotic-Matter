@@ -1,5 +1,8 @@
 package grondag.exotic_matter.model.render;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockWorldAccess;
@@ -57,7 +60,19 @@ public class BlockHighlighter
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         GlStateManager.glLineWidth(2.0F);
         GlStateManager.disableTexture2D();
-        GlStateManager.depthMask(false);
+
+//        Random rand = new Random(0);
+//        for (AxisAlignedBB aabb : modelState.collisionBoxes(pos)) 
+//        {
+//            float r = (rand.nextFloat() + 3f) * 0.25f;
+//            float g = (rand.nextFloat() + 3f) * 0.25f;
+//            float b = (rand.nextFloat() + 3f) * 0.25f;
+//            
+//            if(!isPreview) aabb = aabb.expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D);
+//            RenderGlobal.renderFilledBox(aabb.offset(-d0, -d1, -d2), r, g, b, 1f);
+//        }
+        
+      GlStateManager.depthMask(false);
 
         // Draw collision boxes
         for (AxisAlignedBB aabb : modelState.collisionBoxes(pos)) 
