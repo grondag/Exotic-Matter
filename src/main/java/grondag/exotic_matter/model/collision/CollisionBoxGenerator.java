@@ -64,12 +64,12 @@ public class CollisionBoxGenerator
         float[] data = polyData.get();
         TriangleBoxTest.packPolyData(v0, v1, v2, data);
         
-//        makeBoxVoxelMethodFill(voxels, data);
-        voxels.forEachVoxel(v ->
-        {
-            if(v.isEmpty() && TriangleBoxTest.triBoxOverlap(v.xCenter(), v.yCenter(), v.zCenter(), v.voxelSizeHalf(), data))
-                v.setFull();
-        });
+        makeBoxVoxelMethodFill(voxels, data);
+//        voxels.forEachVoxel(v ->
+//        {
+//            if(v.isEmpty() && TriangleBoxTest.triBoxOverlap(v.xCenter(), v.yCenter(), v.zCenter(), v.voxelSizeHalf(), data))
+//                v.setFull();
+//        });
     }
     
     private static void makeBoxVoxelMethodFill(IVoxelOctTree v, float[] data)
