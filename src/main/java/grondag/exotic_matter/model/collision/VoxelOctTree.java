@@ -186,7 +186,6 @@ public class VoxelOctTree implements IVoxelOctTree
         System.arraycopy(fillBits, 0, voxelBits, 0, 64);
     }
     
-    
     /**
      * Makes bottom nodes that are mostly full completely full, or otherwise makes them empty.
      */

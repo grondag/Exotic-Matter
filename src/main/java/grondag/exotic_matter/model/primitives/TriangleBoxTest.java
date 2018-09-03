@@ -1,10 +1,10 @@
 package grondag.exotic_matter.model.primitives;
 
 /**
- * 
  * Ported to Java from Tomas Akenine-Möller
  * http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt
  * Heavily modified for performance in this context.
+ * Used for high-performance voxelization of block models.
  */
 
 public class TriangleBoxTest
