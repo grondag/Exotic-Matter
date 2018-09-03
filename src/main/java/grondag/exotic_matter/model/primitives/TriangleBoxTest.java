@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * 
  * Ported to Java from Tomas Akenine-Möller
@@ -219,7 +221,7 @@ public class TriangleBoxTest
         polyData[POLY_NORM_Y] = e0z * e1x - e0x * e1z;
         polyData[POLY_NORM_Z] = e0x * e1y - e0y * e1x; 
     }
-
+    
     /**
      * Assumes boxes are cubes and polygon info is pre-packed into array using {@link #packPolyData(Vertex, Vertex, Vertex, float[])},
      */
@@ -279,14 +281,10 @@ public class TriangleBoxTest
             final float ey = polyData[EDGE_0_Y];
             final float ez = polyData[EDGE_0_Z];
             
-            final float fex = Math.abs(ex) * boxHalfSize;
-            final float fey = Math.abs(ey) * boxHalfSize;
-            final float fez = Math.abs(ez) * boxHalfSize;
-    
             {
                 final float a = ez * v0y - ey * v0z;
                 final float b = ez * v2y - ey * v2z;
-                final float rad = fez + fey;
+                final float rad = (Math.abs(ez) + Math.abs(ey)) * boxHalfSize; //fez + fey;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -297,7 +295,7 @@ public class TriangleBoxTest
             {
                 final float a = -ez * v0x + ex * v0z;
                 final float b = -ez * v2x + ex * v2z;
-                final float rad = fez + fex;
+                final float rad = (Math.abs(ez) + Math.abs(ex)) * boxHalfSize; //fez + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -308,7 +306,7 @@ public class TriangleBoxTest
             {
                 final float a = ey * v1x - ex * v1y;
                 final float b = ey * v2x - ex * v2y;
-                final float rad = fey + fex;
+                final float rad = (Math.abs(ey) + Math.abs(ex)) * boxHalfSize; //fey + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -322,14 +320,10 @@ public class TriangleBoxTest
             final float ey = polyData[EDGE_1_Y];
             final float ez = polyData[EDGE_1_Z];
             
-            final float fex = Math.abs(ex) * boxHalfSize;
-            final float fey = Math.abs(ey) * boxHalfSize;
-            final float fez = Math.abs(ez) * boxHalfSize;
-            
             {
                 final float a = ez * v0y - ey * v0z;
                 final float b = ez * v2y - ey * v2z;
-                final float rad = fez + fey;
+                final float rad = (Math.abs(ez) + Math.abs(ey)) * boxHalfSize; //fez + fey;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -340,7 +334,7 @@ public class TriangleBoxTest
             {
                 final float a = -ez * v0x + ex* v0z;
                 final float b = -ez * v2x + ex * v2z;
-                final float rad = fez + fex;
+                final float rad = (Math.abs(ez) + Math.abs(ex)) * boxHalfSize; //fez + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -351,7 +345,7 @@ public class TriangleBoxTest
             {
                 final float a = ey * v0x - ex * v0y;
                 final float b = ey * v1x - ex * v1y;
-                final float rad = fey + fex;
+                final float rad = (Math.abs(ey) + Math.abs(ex)) * boxHalfSize; //fey + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -365,14 +359,10 @@ public class TriangleBoxTest
             final float ey = polyData[EDGE_2_Y];
             final float ez = polyData[EDGE_2_Z];
             
-            final float fex = Math.abs(ex) * boxHalfSize;
-            final float fey = Math.abs(ey) * boxHalfSize;
-            final float fez = Math.abs(ez) * boxHalfSize;
-    
             {
                 final float a = ez * v0y - ey * v0z;
                 final float b = ez * v1y - ey * v1z;
-                final float rad = fez + fey;
+                final float rad = (Math.abs(ez) + Math.abs(ey)) * boxHalfSize; //fez + fey;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -383,7 +373,7 @@ public class TriangleBoxTest
             {
                 final float a = -ez * v0x + ex * v0z;
                 final float b = -ez * v1x + ex * v1z;
-                final float rad = fez + fex;
+                final float rad = (Math.abs(ez) + Math.abs(ex)) * boxHalfSize; //fez + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
@@ -394,7 +384,7 @@ public class TriangleBoxTest
             {
                 final float a = ey * v1x - ex * v1y;
                 final float b = ey * v2x - ex * v2y;
-                final float rad = fey + fex;
+                final float rad = (Math.abs(ey) + Math.abs(ex)) * boxHalfSize; //fey + fex;
                 if(a < b)
                 {
                     if( a > rad || b < -rad) return false;
