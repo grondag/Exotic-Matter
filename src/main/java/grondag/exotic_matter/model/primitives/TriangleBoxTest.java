@@ -282,62 +282,73 @@ public class TriangleBoxTest
         final float v2z = polyData[POLY_V2_Z] - boxCenterZ;
 
         // Separating axis tests
+        float ex = polyData[EDGE_0_X];
+        float ey = polyData[EDGE_0_Y];
+        float ez = polyData[EDGE_0_Z];
 
-        float fex = Math.abs(polyData[EDGE_0_X]) * boxHalfSize;
-        float fey = Math.abs(polyData[EDGE_0_Y]) * boxHalfSize;
-        float fez = Math.abs(polyData[EDGE_0_Z]) * boxHalfSize;
-
+        float fex = Math.abs(ex) * boxHalfSize;
+        float fey = Math.abs(ey) * boxHalfSize;
+        float fez = Math.abs(ez) * boxHalfSize;
+        
         if(separatingAxisTest(
-                polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z, 
-                polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z, 
+                ez * v0y - ey * v0z, 
+                ez * v2y - ey * v2z, 
                 fez + fey)) return false;
 
         if(separatingAxisTest(
-                -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z, 
-                -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z, 
+                -ez * v0x + ex * v0z, 
+                -ez * v2x + ex * v2z, 
                 fez + fex)) return false;
 
         if(separatingAxisTest(
-                polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y, 
-                polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y, 
+                ey * v1x - ex * v1y, 
+                ey * v2x - ex * v2y, 
                 fey + fex)) return false;
 
-        fex = Math.abs(polyData[EDGE_1_X]) * boxHalfSize;
-        fey = Math.abs(polyData[EDGE_1_Y]) * boxHalfSize;
-        fez = Math.abs(polyData[EDGE_1_Z]) * boxHalfSize;
+        ex = polyData[EDGE_1_X];
+        ey = polyData[EDGE_1_Y];
+        ez = polyData[EDGE_1_Z];
+        
+        fex = Math.abs(ex) * boxHalfSize;
+        fey = Math.abs(ey) * boxHalfSize;
+        fez = Math.abs(ez) * boxHalfSize;
 
         if(separatingAxisTest(
-                polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z, 
-                polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z, 
+                ez * v0y - ey * v0z, 
+                ez * v2y - ey * v2z, 
                 fez + fey)) return false;
 
         if(separatingAxisTest(
-                -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z, 
-                -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z, 
+                -ez * v0x + ex * v0z, 
+                -ez * v2x + ex * v2z, 
                 fez + fex)) return false;
 
         if(separatingAxisTest(
-                polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y, 
-                polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y, 
+                ey * v0x - ex * v0y, 
+                ey * v1x - ex * v1y, 
                 fey + fex)) return false;
 
-        fex = Math.abs(polyData[EDGE_2_X]) * boxHalfSize;
-        fey = Math.abs(polyData[EDGE_2_Y]) * boxHalfSize;
-        fez = Math.abs(polyData[EDGE_2_Z]) * boxHalfSize;
+        ex = polyData[EDGE_2_X];
+        ey = polyData[EDGE_2_Y];
+        ez = polyData[EDGE_2_Z];
+        
+        fex = Math.abs(ex) * boxHalfSize;
+        fey = Math.abs(ey) * boxHalfSize;
+        fez = Math.abs(ez) * boxHalfSize;
 
         if(separatingAxisTest(
-                polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z, 
-                polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z, 
+                ez * v0y - ey * v0z, 
+                ez * v1y - ey * v1z, 
                 fez + fey)) return false;
 
         if(separatingAxisTest(
-                -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z, 
-                -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z, 
+                -ez * v0x + ex * v0z, 
+                -ez * v1x + ex * v1z, 
                 fez + fex)) return false;
 
         if(separatingAxisTest(
-                polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y, 
-                polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y, 
+                ey * v1x - ex * v1y, 
+                ey * v2x - ex * v2y, 
                 fey + fex)) return false;
 
         if(!planeBoxOverlap(polyData[POLY_NORM_X], polyData[POLY_NORM_Y], polyData[POLY_NORM_Z], v0x, v0y, v0z, boxHalfSize)) return false;
