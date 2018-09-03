@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * 
  * Ported to Java from Tomas Akenine-Möller

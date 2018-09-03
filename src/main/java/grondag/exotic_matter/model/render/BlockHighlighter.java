@@ -1,8 +1,5 @@
 package grondag.exotic_matter.model.render;
 
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockWorldAccess;
