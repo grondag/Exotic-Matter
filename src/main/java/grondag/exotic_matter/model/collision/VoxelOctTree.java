@@ -2,6 +2,11 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.function.Consumer;
 
+/**
+ * 
+ * OctTree representation of a unit cube.  
+ * Meant for high-performance voxelization of block models.
+ */
 public class VoxelOctTree implements IVoxelOctTree
 {
 
