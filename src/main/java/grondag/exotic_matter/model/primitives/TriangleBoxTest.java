@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * 
  * Ported to Java from Tomas Akenine-Möller
@@ -11,83 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TriangleBoxTest
 {
-    public final static int X = 0;
-    public final static int Y = 1;
-    public final static int Z = 2;
-
-    private static void CROSS(float[] dest, float[] v1, float[] v2) 
-    {
-        dest[0]=v1[1]*v2[2]-v1[2]*v2[1];
-        dest[1]=v1[2]*v2[0]-v1[0]*v2[2];
-        dest[2]=v1[0]*v2[1]-v1[1]*v2[0]; 
-    }
-
-    private static float DOT(float[] v0, float[] v1) 
-    {
-        return (v0[0]*v1[0]+v0[1]*v1[1]+v0[2]*v1[2]);
-    }
-
-
-    private static void SUB(float[] dest, float[] v0, float[] v1)
-    {
-        dest[0]=v0[0]-v1[0];
-        dest[1]=v0[1]-v1[1];
-        dest[2]=v0[2]-v1[2]; 
-    }
-
-    public static boolean planeBoxOverlapSlow(float[] normal, float[] vert, float[] maxbox)
-    {
-        int q;
-        float[] vmin = new float[3];
-        float[] vmax = new float[3];
-        float v;
-
-        for(q = X; q <= Z; q++)
-        {
-            v=vert[q];
-            if(normal[q]>0.0f)
-            {
-                vmin[q]=-maxbox[q] - v;
-                vmax[q]= maxbox[q] - v;
-            }
-            else
-            {
-                vmin[q]= maxbox[q] - v;
-                vmax[q]=-maxbox[q] - v;
-            }
-        }
-
-        if(DOT(normal,vmin)>0.0f) return false;
-        if(DOT(normal,vmax)>=0.0f) return true;
-        return false;
-    }
-
-    public static boolean planeBoxOverlap(float[] normal, float[] vert, float boxHalfSize)
-    {
-        int q;
-        float[] vmin = new float[3];
-        float[] vmax = new float[3];
-        float v;
-
-        for(q = X; q <= Z; q++)
-        {
-            v=vert[q];
-            if(normal[q]>0.0f)
-            {
-                vmin[q]= -boxHalfSize - v;
-                vmax[q]= boxHalfSize - v;
-            }
-            else
-            {
-                vmin[q]= boxHalfSize - v;
-                vmax[q]=  -boxHalfSize - v;
-            }
-        }
-
-        if(DOT(normal,vmin)>0.0f) return false;
-        if(DOT(normal,vmax)>=0.0f) return true;
-        return false;
-    }
 
     public static boolean planeBoxOverlap(final float normX, final float normY, final float normZ, final float vX, final float vY, final float vZ, float boxHalfSize)
     {
@@ -133,200 +54,6 @@ public class TriangleBoxTest
         return false;
     }
 
-    public static boolean triBoxOverlapSlow(float centerX, float centerY, float centerZ, float halfDist, IPolygon poly)
-    {
-        float[] boxcenter = new float[3];
-        float[] boxhalfsize = new float[3];
-
-        boxcenter[0] = centerX;
-        boxcenter[1] = centerY;
-        boxcenter[2] = centerZ;
-        boxhalfsize[0] = halfDist;
-        boxhalfsize[1] = halfDist;
-        boxhalfsize[2] = halfDist;
-
-        Vertex[] v = poly.vertexArray();
-
-        if(poly.vertexCount() == 3)
-        {
-            return triBoxOverlapSlow(boxcenter, boxhalfsize, v[0], v[1], v[2]);
-        }
-        else
-        {
-            return triBoxOverlapSlow(boxcenter, boxhalfsize, v[0], v[1], v[2])
-                    || triBoxOverlapSlow(boxcenter, boxhalfsize, v[0], v[2], v[3]);
-        }
-    }
-
-    public static boolean triBoxOverlapSlow(float[] boxcenter, float[] boxhalfsize, Vertex v0, Vertex v1, Vertex v2)
-    {
-        float[][] triverts = new float[3][3];
-        triverts[0][0] = v0.x;
-        triverts[0][1] = v0.y;
-        triverts[0][2] = v0.z;
-        triverts[1][0] = v1.x;
-        triverts[1][1] = v1.y;
-        triverts[1][2] = v1.z;
-        triverts[2][0] = v2.x;
-        triverts[2][1] = v2.y;
-        triverts[2][2] = v2.z;
-        return triBoxOverlapSlow(boxcenter, boxhalfsize, triverts);
-    }
-
-    /**
-     * use separating axis theorem to test overlap between triangle and box
-     * 
-     *    need to test for overlap in these directions:
-     *    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle
-     *       we do not even need to test these)
-     *    2) normal of the triangle
-     *    3) crossproduct(edge from tri, {x,y,z}-directin)
-     *       this gives 3x3=9 more tests
-     * Dimensions are 3, 3, 3-3
-     * 
-     * This version closely follows the original and is useful for regression testing.
-     */
-    public static boolean triBoxOverlapSlow(float[] boxcenter,float[] boxhalfsize, float[][] triverts)
-    {
-        float[] v0 = new float[3];
-        float[] v1 = new float[3];
-        float[] v2 = new float[3];
-        float min,max,p0,p1,p2,rad,fex,fey,fez;
-
-        float[] normal = new float[3];
-        float[] e0 = new float[3];
-        float[] e1 = new float[3];
-        float[] e2 = new float[3];
-
-        /* move everything so that the boxcenter is in (0,0,0) */
-        SUB(v0, triverts[0], boxcenter);
-        SUB(v1, triverts[1], boxcenter);
-        SUB(v2, triverts[2], boxcenter);
-
-        /* compute triangle edges */
-        SUB(e0, v1, v0);      /* tri edge 0 */
-        SUB(e1, v2, v1);      /* tri edge 1 */
-        SUB(e2, v0, v2);      /* tri edge 2 */
-
-        /*  test the 9 tests first (this was faster) */
-        fex = Math.abs(e0[X]);
-        fey = Math.abs(e0[Y]);
-        fez = Math.abs(e0[Z]);
-
-        //AXISTEST_X01(e0[Z], e0[Y], fez, fey);
-        p0 = e0[Z] * v0[Y] - e0[Y] * v0[Z];
-        p2 = e0[Z] * v2[Y] - e0[Y] * v2[Z];
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
-        rad = fez * boxhalfsize[Y] + fey * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Y02(e0[Z], e0[X], fez, fex);
-        p0 = -e0[Z] * v0[X] + e0[X] * v0[Z];
-        p2 = -e0[Z] * v2[X] + e0[X] * v2[Z];
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
-        rad = fez * boxhalfsize[X] + fex * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Z12(e0[Y], e0[X], fey, fex);
-        p1 = e0[Y] * v1[X] - e0[X] * v1[Y];
-        p2 = e0[Y] * v2[X] - e0[X] * v2[Y];
-        if(p2<p1) {min=p2; max=p1;} else {min=p1; max=p2;}
-        rad = fey * boxhalfsize[X] + fex * boxhalfsize[Y];
-        if(min>rad || max<-rad) return false;
-
-        fex = Math.abs(e1[X]);
-        fey = Math.abs(e1[Y]);
-        fez = Math.abs(e1[Z]);
-
-        //AXISTEST_X01(e1[Z], e1[Y], fez, fey);
-        p0 = e1[Z] * v0[Y] - e1[Y] * v0[Z];
-        p2 = e1[Z] * v2[Y] - e1[Y] * v2[Z];
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
-        rad = fez * boxhalfsize[Y] + fey * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Y02(e1[Z], e1[X], fez, fex);
-        p0 = -e1[Z] * v0[X] + e1[X] * v0[Z];
-        p2 = -e1[Z] * v2[X] + e1[X] * v2[Z];
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
-        rad = fez * boxhalfsize[X] + fex * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Z0(e1[Y], e1[X], fey, fex);
-        p0 = e1[Y] * v0[X] - e1[X] * v0[Y];
-        p1 = e1[Y] * v1[X] - e1[X] * v1[Y];
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
-        rad = fey * boxhalfsize[X] + fex * boxhalfsize[Y];
-        if(min>rad || max<-rad) return false;
-
-        fex = Math.abs(e2[X]);
-        fey = Math.abs(e2[Y]);
-        fez = Math.abs(e2[Z]);
-
-        //AXISTEST_X2(e2[Z], e2[Y], fez, fey);
-        p0 = e2[Z] * v0[Y] - e2[Y] * v0[Z];
-        p1 = e2[Z] * v1[Y] - e2[Y] * v1[Z];
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
-        rad = fez * boxhalfsize[Y] + fey * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Y1(e2[Z], e2[X], fez, fex);
-        p0 = -e2[Z] * v0[X] + e2[X] * v0[Z];
-        p1 = -e2[Z] * v1[X] + e2[X] * v1[Z];
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
-        rad = fez * boxhalfsize[X] + fex * boxhalfsize[Z];
-        if(min>rad || max<-rad) return false;
-
-        //AXISTEST_Z12(e2[Y], e2[X], fey, fex);
-        p1 = e2[Y] * v1[X] - e2[X] * v1[Y];
-        p2 = e2[Y] * v2[X] - e2[X] * v2[Y];
-        if(p2<p1) {min=p2; max=p1;} else {min=p1; max=p2;}
-        rad = fey * boxhalfsize[X] + fex * boxhalfsize[Y];
-        if(min>rad || max<-rad) return false;
-
-
-        /*  first test overlap in the {x,y,z}-directions */
-        /*  find min, max of the triangle each direction, and test for overlap in */
-        /*  that direction -- this is equivalent to testing a minimal AABB around */
-        /*  the triangle against the AABB */
-
-        //       FINDMINMAX(v0[X],v1[X],v2[X],min,max);
-        min = max = v0[X];
-        if(v1[X] < min) min=v1[X];
-        if(v1[X] > max) max=v1[X];
-        if(v2[X] < min) min=v2[X];
-        if(v2[X] > max) max=v2[X];
-        if(min>boxhalfsize[X] || max<-boxhalfsize[X]) return false;
-
-
-        /* test in Y-direction */
-        //       FINDMINMAX(v0[Y],v1[Y],v2[Y],min,max);
-        min = max = v0[Y];
-        if(v1[Y] < min) min=v1[Y];
-        if(v1[Y] > max) max=v1[Y];
-        if(v2[Y] < min) min=v2[Y];
-        if(v2[Y] > max) max=v2[Y];
-        if(min>boxhalfsize[Y] || max<-boxhalfsize[Y]) return false;
-
-        /* test in Z-direction */
-        //       FINDMINMAX(v0[Z],v1[Z],v2[Z],min,max);
-        //#define FINDMINMAX(x0,x1,x2,min,max) \
-        min = max = v0[Z];
-        if(v1[Z] < min) min=v1[Z];
-        if(v1[Z] > max) max=v1[Z];
-        if(v2[Z] < min) min=v2[Z];
-        if(v2[Z] > max) max=v2[Z];
-        if(min>boxhalfsize[Z] || max<-boxhalfsize[Z]) return false;
-
-        /*  test if the box intersects the plane of the triangle */
-        /*  compute plane equation of triangle: normal*x+d=0 */
-        CROSS(normal,e0,e1);
-
-        if(!planeBoxOverlapSlow(normal, v0, boxhalfsize)) return false;
-
-        return true;   /* box and triangle overlaps */
-    }
-
     public static final int POLY_MIN_X = 0;
     public static final int POLY_MAX_X = 1;
     public static final int POLY_MIN_Y = 2;
@@ -355,6 +82,11 @@ public class TriangleBoxTest
     public static final int EDGE_2_Y = 25;
     public static final int EDGE_2_Z = 26;
 
+    /**
+     * Packs data from Triangle vertices into array for use by {@link #triBoxOverlap(float, float, float, float, float[])}.
+     * Doing it this way enables reuse over many tests, minimizes call overhead and improves LOR. 
+     * For low garbage, use a threadlocal array.  
+     */
     public static void packPolyData(Vertex v0, Vertex v1, Vertex v2, float[] polyData)
     {
         final float x0 = v0.x;
@@ -488,10 +220,8 @@ public class TriangleBoxTest
         polyData[POLY_NORM_Z] = e0x * e1y - e0y * e1x; 
     }
 
-    static AtomicInteger errorCounter = new AtomicInteger();
-
     /**
-     * Assumes boxes are cubes and polygon info is pre-packed into array for LOR and reuse during iteration of voxels.
+     * Assumes boxes are cubes and polygon info is pre-packed into array using {@link #packPolyData(Vertex, Vertex, Vertex, float[])},
      */
     public static boolean triBoxOverlap(float boxCenterX, float boxCenterY, float boxCenterZ, float boxHalfSize, float[] polyData)
     {
@@ -551,30 +281,32 @@ public class TriangleBoxTest
         final float v2y = polyData[POLY_V2_Y] - boxCenterY;
         final float v2z = polyData[POLY_V2_Z] - boxCenterZ;
 
-        float min, max, p0, p1, p2, rad;
+        // Separating axis tests
+        float a, b;
+        float min, max, rad;
 
         float fex = Math.abs(polyData[EDGE_0_X]) * boxHalfSize;
         float fey = Math.abs(polyData[EDGE_0_Y]) * boxHalfSize;
         float fez = Math.abs(polyData[EDGE_0_Z]) * boxHalfSize;
 
         //AXISTEST_X01(e0[Z], e0[Y], fez, fey);
-        p0 = polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z;
-        p2 = polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z;
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
+        a = polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z;
+        b = polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fey;
         if(min>rad || max<-rad) return false;
 
         //AXISTEST_Y02(e0[Z], e0[X], fez, fex);
-        p0 = -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z;
-        p2 = -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z;
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
+        a = -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z;
+        b = -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fex;
         if(min>rad || max<-rad) return false;
 
         //AXISTEST_Z12(e0[Y], e0[X], fey, fex);
-        p1 = polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y;
-        p2 = polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y;
-        if(p2<p1) {min=p2; max=p1;} else {min=p1; max=p2;}
+        a = polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y;
+        b = polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y;
+        if(b<a) {min=b; max=a;} else {min=a; max=b;}
         rad = fey + fex;
         if(min>rad || max<-rad) return false;
 
@@ -583,23 +315,23 @@ public class TriangleBoxTest
         fez = Math.abs(polyData[EDGE_1_Z]) * boxHalfSize;
 
         //AXISTEST_X01(e1[Z], e1[Y], fez, fey);
-        p0 = polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z;
-        p2 = polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z;
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
+        a = polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z;
+        b = polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fey;
         if(min>rad || max<-rad) return false;
 
         //AXISTEST_Y02(e1[Z], e1[X], fez, fex);
-        p0 = -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z;
-        p2 = -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z;
-        if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;}
+        a = -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z;
+        b = -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fex;
         if(min>rad || max<-rad) return false;
 
         //AXISTEST_Z0(e1[Y], e1[X], fey, fex);
-        p0 = polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y;
-        p1 = polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y;
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
+        a = polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y;
+        b = polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fey + fex;
         if(min>rad || max<-rad) return false;
 
@@ -608,23 +340,23 @@ public class TriangleBoxTest
         fez = Math.abs(polyData[EDGE_2_Z]) * boxHalfSize;
 
         //AXISTEST_X2(e2[Z], e2[Y], fez, fey);
-        p0 = polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z;
-        p1 = polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z;
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
+        a = polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z;
+        b = polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fey;
         if(min>rad || max<-rad)  return false;
 
         //AXISTEST_Y1(e2[Z], e2[X], fez, fex);
-        p0 = -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z;
-        p1 = -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z;
-        if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;}
+        a = -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z;
+        b = -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
         rad = fez + fex;
         if(min>rad || max<-rad) return false;
 
         //AXISTEST_Z12(e2[Y], e2[X], fey, fex);
-        p1 = polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y;
-        p2 = polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y;
-        if(p2 < p1) {min = p2; max = p1;} else { min = p1; max = p2;}
+        a = polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y;
+        b = polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y;
+        if(b < a) {min = b; max = a;} else { min = a; max = b;}
         rad = fey + fex;
         if(min>rad || max<-rad) return false;
 
