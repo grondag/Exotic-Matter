@@ -227,45 +227,39 @@ public class TriangleBoxTest
     {
         // Bounding box tests
         // Exclude polys that merely touch an edge unless the poly is co-planar
-        final float minX = polyData[POLY_MIN_X];
-        final float maxX = polyData[POLY_MAX_X];
-        if(minX == maxX)
+        if(polyData[POLY_MIN_X] == polyData[POLY_MAX_X])
         {
-            if(minX > boxCenterX + boxHalfSize) return false;
-            if(maxX < boxCenterX - boxHalfSize) return false;
+            if(polyData[POLY_MIN_X] > boxCenterX + boxHalfSize) return false;
+            if(polyData[POLY_MAX_X] < boxCenterX - boxHalfSize) return false;
         }
         else
         {
-            if(minX >= boxCenterX + boxHalfSize) return false;
-            if(maxX <= boxCenterX - boxHalfSize) return false;
+            if(polyData[POLY_MIN_X] >= boxCenterX + boxHalfSize) return false;
+            if(polyData[POLY_MAX_X] <= boxCenterX - boxHalfSize) return false;
         }
 
-        final float minY = polyData[POLY_MIN_Y];
-        final float maxY = polyData[POLY_MAX_Y];
-        if(minY == maxY)
+        if(polyData[POLY_MIN_Y] == polyData[POLY_MAX_Y])
         {
-            if(minY > boxCenterY + boxHalfSize) return false;
-            if(maxY < boxCenterY - boxHalfSize) return false;
+            if(polyData[POLY_MIN_Y] > boxCenterY + boxHalfSize) return false;
+            if(polyData[POLY_MAX_Y] < boxCenterY - boxHalfSize) return false;
         }
         else
         {
-            if(minY >= boxCenterY + boxHalfSize) return false;
-            if(maxY <= boxCenterY - boxHalfSize) return false;
+            if(polyData[POLY_MIN_Y] >= boxCenterY + boxHalfSize) return false;
+            if(polyData[POLY_MAX_Y] <= boxCenterY - boxHalfSize) return false;
         }
 
-        final float minZ = polyData[POLY_MIN_Z];
-        final float maxZ = polyData[POLY_MAX_Z];
-        if(minZ == maxZ)
+        if(polyData[POLY_MIN_Z] == polyData[POLY_MAX_Z])
         {
-            if(minZ > boxCenterZ + boxHalfSize) return false;
-            if(maxZ < boxCenterZ - boxHalfSize) return false;
+            if(polyData[POLY_MIN_Z] > boxCenterZ + boxHalfSize) return false;
+            if(polyData[POLY_MAX_Z] < boxCenterZ - boxHalfSize) return false;
         }
         else
         {
-            if(minZ >= boxCenterZ + boxHalfSize) return false;
-            if(maxZ <= boxCenterZ - boxHalfSize) return false;
+            if(polyData[POLY_MIN_Z] >= boxCenterZ + boxHalfSize) return false;
+            if(polyData[POLY_MAX_Z] <= boxCenterZ - boxHalfSize) return false;
         }
-
+        
         /* move everything so that the boxcenter is in (0,0,0) */
         final float v0x = polyData[POLY_V0_X] - boxCenterX;
         final float v0y = polyData[POLY_V0_Y] - boxCenterY;
@@ -280,100 +274,134 @@ public class TriangleBoxTest
         final float v2z = polyData[POLY_V2_Z] - boxCenterZ;
 
         // Separating axis tests
-        float a, b, rad;
-
-        float fex = Math.abs(polyData[EDGE_0_X]) * boxHalfSize;
-        float fey = Math.abs(polyData[EDGE_0_Y]) * boxHalfSize;
-        float fez = Math.abs(polyData[EDGE_0_Z]) * boxHalfSize;
-
-        a = polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z;
-        b = polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z;
-        rad = fez + fey;
-        if(a < b)
         {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-
-        a = -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z;
-        b = -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z;
-        rad = fez + fex;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
+            final float ex = polyData[EDGE_0_X];
+            final float ey = polyData[EDGE_0_Y];
+            final float ez = polyData[EDGE_0_Z];
+            
+            final float fex = Math.abs(ex) * boxHalfSize;
+            final float fey = Math.abs(ey) * boxHalfSize;
+            final float fez = Math.abs(ez) * boxHalfSize;
+    
+            {
+                final float a = ez * v0y - ey * v0z;
+                final float b = ez * v2y - ey * v2z;
+                final float rad = fez + fey;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = -ez * v0x + ex * v0z;
+                final float b = -ez * v2x + ex * v2z;
+                final float rad = fez + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = ey * v1x - ex * v1y;
+                final float b = ey * v2x - ex * v2y;
+                final float rad = fey + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+        }
         
-        a = polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y;
-        b = polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y;
-        rad = fey + fex;
-        if(a < b)
         {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
+            final float ex = polyData[EDGE_1_X];
+            final float ey = polyData[EDGE_1_Y];
+            final float ez = polyData[EDGE_1_Z];
+            
+            final float fex = Math.abs(ex) * boxHalfSize;
+            final float fey = Math.abs(ey) * boxHalfSize;
+            final float fez = Math.abs(ez) * boxHalfSize;
+            
+            {
+                final float a = ez * v0y - ey * v0z;
+                final float b = ez * v2y - ey * v2z;
+                final float rad = fez + fey;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = -ez * v0x + ex* v0z;
+                final float b = -ez * v2x + ex * v2z;
+                final float rad = fez + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = ey * v0x - ex * v0y;
+                final float b = ey * v1x - ex * v1y;
+                final float rad = fey + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+        }
         
-        fex = Math.abs(polyData[EDGE_1_X]) * boxHalfSize;
-        fey = Math.abs(polyData[EDGE_1_Y]) * boxHalfSize;
-        fez = Math.abs(polyData[EDGE_1_Z]) * boxHalfSize;
-
-        a = polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z;
-        b = polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z;
-        rad = fez + fey;
-        if(a < b)
         {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-        
-        a = -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z;
-        b = -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z;
-        rad = fez + fex;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-        
-        a = polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y;
-        b = polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y;
-        rad = fey + fex;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-        
-        fex = Math.abs(polyData[EDGE_2_X]) * boxHalfSize;
-        fey = Math.abs(polyData[EDGE_2_Y]) * boxHalfSize;
-        fez = Math.abs(polyData[EDGE_2_Z]) * boxHalfSize;
-
-        a = polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z;
-        b = polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z;
-        rad = fez + fey;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-        
-        a = -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z;
-        b = -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z;
-        rad = fez + fex;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
-        
-        a = polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y;
-        b = polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y;
-        rad = fey + fex;
-        if(a < b)
-        {
-            if( a > rad || b < -rad) return false;
-        } 
-        else if(b > rad || a< -rad) return false;
+            final float ex = polyData[EDGE_2_X];
+            final float ey = polyData[EDGE_2_Y];
+            final float ez = polyData[EDGE_2_Z];
+            
+            final float fex = Math.abs(ex) * boxHalfSize;
+            final float fey = Math.abs(ey) * boxHalfSize;
+            final float fez = Math.abs(ez) * boxHalfSize;
+    
+            {
+                final float a = ez * v0y - ey * v0z;
+                final float b = ez * v1y - ey * v1z;
+                final float rad = fez + fey;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = -ez * v0x + ex * v0z;
+                final float b = -ez * v1x + ex * v1z;
+                final float rad = fez + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+            
+            {
+                final float a = ey * v1x - ex * v1y;
+                final float b = ey * v2x - ex * v2y;
+                final float rad = fey + fex;
+                if(a < b)
+                {
+                    if( a > rad || b < -rad) return false;
+                } 
+                else if(b > rad || a< -rad) return false;
+            }
+        }
         
         if(!planeBoxOverlap(polyData[POLY_NORM_X], polyData[POLY_NORM_Y], polyData[POLY_NORM_Z], v0x, v0y, v0z, boxHalfSize)) return false;
 
