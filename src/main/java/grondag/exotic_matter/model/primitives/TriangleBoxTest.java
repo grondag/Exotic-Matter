@@ -282,84 +282,86 @@ public class TriangleBoxTest
         final float v2z = polyData[POLY_V2_Z] - boxCenterZ;
 
         // Separating axis tests
+        float a, b;
+        float min, max, rad;
 
         float fex = Math.abs(polyData[EDGE_0_X]) * boxHalfSize;
         float fey = Math.abs(polyData[EDGE_0_Y]) * boxHalfSize;
         float fez = Math.abs(polyData[EDGE_0_Z]) * boxHalfSize;
 
-        if(separatingAxisTest(
-                polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z, 
-                polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z, 
-                fez + fey)) return false;
+        //AXISTEST_X01(e0[Z], e0[Y], fez, fey);
+        a = polyData[EDGE_0_Z] * v0y - polyData[EDGE_0_Y] * v0z;
+        b = polyData[EDGE_0_Z] * v2y - polyData[EDGE_0_Y] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fey;
+        if(min>rad || max<-rad) return false;
 
-        if(separatingAxisTest(
-                -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z, 
-                -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z, 
-                fez + fex)) return false;
+        //AXISTEST_Y02(e0[Z], e0[X], fez, fex);
+        a = -polyData[EDGE_0_Z] * v0x + polyData[EDGE_0_X] * v0z;
+        b = -polyData[EDGE_0_Z] * v2x + polyData[EDGE_0_X] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fex;
+        if(min>rad || max<-rad) return false;
 
-        if(separatingAxisTest(
-                polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y, 
-                polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y, 
-                fey + fex)) return false;
+        //AXISTEST_Z12(e0[Y], e0[X], fey, fex);
+        a = polyData[EDGE_0_Y] * v1x - polyData[EDGE_0_X] * v1y;
+        b = polyData[EDGE_0_Y] * v2x - polyData[EDGE_0_X] * v2y;
+        if(b<a) {min=b; max=a;} else {min=a; max=b;}
+        rad = fey + fex;
+        if(min>rad || max<-rad) return false;
 
         fex = Math.abs(polyData[EDGE_1_X]) * boxHalfSize;
         fey = Math.abs(polyData[EDGE_1_Y]) * boxHalfSize;
         fez = Math.abs(polyData[EDGE_1_Z]) * boxHalfSize;
 
-        if(separatingAxisTest(
-                polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z, 
-                polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z, 
-                fez + fey)) return false;
+        //AXISTEST_X01(e1[Z], e1[Y], fez, fey);
+        a = polyData[EDGE_1_Z] * v0y - polyData[EDGE_1_Y] * v0z;
+        b = polyData[EDGE_1_Z] * v2y - polyData[EDGE_1_Y] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fey;
+        if(min>rad || max<-rad) return false;
 
-        if(separatingAxisTest(
-                -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z, 
-                -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z, 
-                fez + fex)) return false;
+        //AXISTEST_Y02(e1[Z], e1[X], fez, fex);
+        a = -polyData[EDGE_1_Z] * v0x + polyData[EDGE_1_X] * v0z;
+        b = -polyData[EDGE_1_Z] * v2x + polyData[EDGE_1_X] * v2z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fex;
+        if(min>rad || max<-rad) return false;
 
-        if(separatingAxisTest(
-                polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y, 
-                polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y, 
-                fey + fex)) return false;
+        //AXISTEST_Z0(e1[Y], e1[X], fey, fex);
+        a = polyData[EDGE_1_Y] * v0x - polyData[EDGE_1_X] * v0y;
+        b = polyData[EDGE_1_Y] * v1x - polyData[EDGE_1_X] * v1y;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fey + fex;
+        if(min>rad || max<-rad) return false;
 
         fex = Math.abs(polyData[EDGE_2_X]) * boxHalfSize;
         fey = Math.abs(polyData[EDGE_2_Y]) * boxHalfSize;
         fez = Math.abs(polyData[EDGE_2_Z]) * boxHalfSize;
 
-        if(separatingAxisTest(
-                polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z, 
-                polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z, 
-                fez + fey)) return false;
+        //AXISTEST_X2(e2[Z], e2[Y], fez, fey);
+        a = polyData[EDGE_2_Z] * v0y - polyData[EDGE_2_Y] * v0z;
+        b = polyData[EDGE_2_Z] * v1y - polyData[EDGE_2_Y] * v1z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fey;
+        if(min>rad || max<-rad)  return false;
 
-        if(separatingAxisTest(
-                -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z, 
-                -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z, 
-                fez + fex)) return false;
+        //AXISTEST_Y1(e2[Z], e2[X], fez, fex);
+        a = -polyData[EDGE_2_Z] * v0x + polyData[EDGE_2_X] * v0z;
+        b = -polyData[EDGE_2_Z] * v1x + polyData[EDGE_2_X] * v1z;
+        if(a<b) {min=a; max=b;} else {min=b; max=a;}
+        rad = fez + fex;
+        if(min>rad || max<-rad) return false;
 
-        if(separatingAxisTest(
-                polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y, 
-                polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y, 
-                fey + fex)) return false;
+        //AXISTEST_Z12(e2[Y], e2[X], fey, fex);
+        a = polyData[EDGE_2_Y] * v1x - polyData[EDGE_2_X] * v1y;
+        b = polyData[EDGE_2_Y] * v2x - polyData[EDGE_2_X] * v2y;
+        if(b < a) {min = b; max = a;} else { min = a; max = b;}
+        rad = fey + fex;
+        if(min>rad || max<-rad) return false;
 
         if(!planeBoxOverlap(polyData[POLY_NORM_X], polyData[POLY_NORM_Y], polyData[POLY_NORM_Z], v0x, v0y, v0z, boxHalfSize)) return false;
 
         return true;   /* box and triangle overlaps */
-    }
-    
-    /**
-     * Returns true if a separating axis exists.
-     */
-    private static boolean separatingAxisTest(float a, float b, float rad)
-    {
-        if(a < b)
-        {
-            if(a > rad || b < -rad)
-                return true;
-        }
-        else
-        {   
-            if(b > rad || a < -rad)
-                return true;
-        }
-        return false;
     }
 }
