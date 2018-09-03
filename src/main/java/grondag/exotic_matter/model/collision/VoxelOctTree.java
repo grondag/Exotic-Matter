@@ -180,51 +180,12 @@ public class VoxelOctTree implements IVoxelOctTree
      */
     public void fillInterior()
     {
-        //TODO: remove
-        // check for leaks
-//        System.arraycopy(ALL_EMPTY, 0, fillBits, 0, 64);
-//        findExterior(voxel[voxelIndex(8, 8, 8)]);
-        
         System.arraycopy(ALL_FULL, 0, fillBits, 0, 64);
         for(int i : EXTERIOR_INDEX)
             voxel[i].floodClearFill();
         System.arraycopy(fillBits, 0, voxelBits, 0, 64);
     }
     
-    // TODO: remove
-    private void findExterior(Voxel v)
-    {
-        if(v.isFull() || (fillBits[v.dataIndex] & v.bitMask) == v.bitMask)
-            return;
-        
-        fillBits[v.dataIndex] |= v.bitMask;
-        
-        final int xyz = VOXEL_XYZ_INVERSE_INDEX[v.index];
-        final int x = xyz & 0xF;
-        final int y = (xyz >> 4) & 0xF;
-        final int z = (xyz >> 8) & 0xF;
-        
-        if(x == 0 || x == 15 || y == 0 || y == 15 || z == 0 || z == 15)
-            System.out.println(String.format("Found leak @ %d %d %d", x, y, z));
-        
-        if(x > 0)
-            findExterior(voxel[voxelIndex(x - 1, y, z)]);
-        
-        if(x < 15)
-            findExterior(voxel[voxelIndex(x + 1, y, z)]);    
-        
-        if(y > 0)
-            findExterior(voxel[voxelIndex(x, y - 1, z)]);
-        
-        if(y < 15)
-            findExterior(voxel[voxelIndex(x, y + 1, z)]);
-        
-        if(z > 0)
-            findExterior(voxel[voxelIndex(x, y, z - 1)]);
-        
-        if(z < 15)
-            findExterior(voxel[voxelIndex(x, y, z + 1)]);
-    }
     
     /**
      * Makes bottom nodes that are mostly full completely full, or otherwise makes them empty.
