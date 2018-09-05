@@ -138,6 +138,23 @@ public interface IVoxelOctTree
         }
     }
     
+    /**
+     * Returns a byte (0-255) value with each bit indicating if the
+     * subnode corresponding to bit ordinal is full.
+     */
+    public default int shapeBits()
+    {
+        int result = this.subNode(0).isFull() ? 1 : 0;
+        if(this.subNode(1).isFull()) result |= 2;
+        if(this.subNode(2).isFull()) result |= 4;
+        if(this.subNode(3).isFull()) result |= 8;
+        if(this.subNode(4).isFull()) result |= 16;
+        if(this.subNode(5).isFull()) result |= 32;
+        if(this.subNode(6).isFull()) result |= 64;
+        if(this.subNode(7).isFull()) result |= 128;
+        return result;
+    }
+    
     public float xCenter();
     public float yCenter();
     public float zCenter();
@@ -150,4 +167,15 @@ public interface IVoxelOctTree
     public default float yMax() { return yCenter() + voxelSizeHalf(); }
     public default float zMin() { return zCenter() - voxelSizeHalf(); }
     public default float zMax() { return zCenter() + voxelSizeHalf(); }
+    
+    /**
+     * These return values of 0-8 representing 1/8 split of unit cube.
+     * Should throw exception on 1/16 voxels.
+     */
+    public int xMin8();
+    public int xMax8();
+    public int yMin8();
+    public int yMax8();
+    public int zMin8();
+    public int zMax8();
 }

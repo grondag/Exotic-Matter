@@ -1,12 +1,12 @@
 package grondag.exotic_matter.model.collision;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.acuity.RunTimer;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
@@ -57,16 +57,24 @@ public class CollisionBoxGenerator
         }
     };
     
+    private static final ThreadLocal<CollisionBoxList.Builder> boxBuilder = new ThreadLocal<CollisionBoxList.Builder>()
+    {
+        @Override
+        protected CollisionBoxList.Builder initialValue()
+        {
+            return new CollisionBoxList.Builder();
+        }
+    };
+    
+    static AtomicInteger frameCounter = new AtomicInteger();
+    
     private static List<AxisAlignedBB> makeBoxVoxelMethod(Collection<IPolygon> quads)
     {
-        if(quads.isEmpty()) return Collections.emptyList();
-        
-        ImmutableList.Builder<AxisAlignedBB> retVal = new ImmutableList.Builder<AxisAlignedBB>();
+        if(quads.isEmpty()) return ImmutableList.of();
 
         VoxelOctTree voxels = vot.get();
         voxels.clear();
         
-        RunTimer.THREADED_5000.start();
         for(IPolygon poly : quads)
         {
             Vertex[] v  = poly.vertexArray();
@@ -76,24 +84,61 @@ public class CollisionBoxGenerator
             if(poly.vertexCount() == 4)
                 makeBoxVoxelMethodInner(v[0], v[2], v[3], voxels);
         }
-        RunTimer.THREADED_5000.finish();
 
         voxels.fillInterior();
         
         voxels.simplify();
         
-        genBoxes(voxels, retVal);
-
-        return retVal.build();
+        CollisionBoxList.Builder builder = boxBuilder.get();
+       
+        int oldCount = 0;
+        if((frameCounter.incrementAndGet() & 255) == 255)
+        {
+            builder.clear();
+            genBoxes(voxels, builder);
+            oldCount = builder.size();
+        }
+        
+        builder.clear();
+        genBoxes2(voxels, builder);
+        
+       if(oldCount > 0)
+       {
+           ExoticMatter.INSTANCE.info("Box count comparison: old method = %d, new method = %d", oldCount, builder.size());
+       }
+        
+        return builder.build();
     }
     
-    private static void genBoxes(IVoxelOctTree voxels, ImmutableList.Builder<AxisAlignedBB> builder)
+    private static void genBoxes(IVoxelOctTree voxels, CollisionBoxList.Builder builder)
     {
-            if(voxels.isEmpty())
-                return;
-            if(voxels.isFull())
-                builder.add(new AxisAlignedBB(voxels.xMin(), voxels.yMin(), voxels.zMin(), voxels.xMax(), voxels.yMax(), voxels.zMax()));
-            else if(voxels.hasSubnodes())
-                voxels.forEach(v -> genBoxes(v, builder));
+        if(voxels.isEmpty())
+            return;
+        if(voxels.isFull())
+            builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
+        else if(voxels.hasSubnodes())
+            genBoxesInner(voxels, builder);
     }
+    
+    private static void genBoxes2(VoxelOctTree voxels, CollisionBoxList.Builder builder)
+    {
+        if(voxels.isEmpty())
+            return;
+        
+        if(voxels.isFull())
+            builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
+        else
+        {
+            // TODO: make threadlocal or make part of builder
+            BoxFinder bf = new BoxFinder();
+            bf.outputBoxes(voxels, builder);
+        }
+    }
+    
+    private static void genBoxesInner(IVoxelOctTree voxels, CollisionBoxList.Builder builder)
+    {
+        voxels.forEach(v -> genBoxes(v, builder));
+    }
+    
+    
 }
