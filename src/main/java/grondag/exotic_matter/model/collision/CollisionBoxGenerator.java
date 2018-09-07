@@ -90,24 +90,26 @@ public class CollisionBoxGenerator
         voxels.simplify();
         
         CollisionBoxList.Builder builder = boxBuilder.get();
-       
-        int oldCount = 0;
-        if((frameCounter.incrementAndGet() & 255) == 255)
-        {
-            builder.clear();
-            genBoxes(voxels, builder);
-            oldCount = builder.size();
-        }
+        
+        //TODO: remove dual paths
+        
+        List<AxisAlignedBB> result;
+        
+        builder.clear();
+        genBoxes(voxels, builder);
+        int oldCount = builder.size();
+//        result = builder.build();
         
         builder.clear();
         genBoxes2(voxels, builder);
+        result = builder.build();
         
-       if(oldCount > 0)
+       if((frameCounter.incrementAndGet() & 255) == 255)
        {
            ExoticMatter.INSTANCE.info("Box count comparison: old method = %d, new method = %d", oldCount, builder.size());
        }
         
-        return builder.build();
+        return result;
     }
     
     private static void genBoxes(IVoxelOctTree voxels, CollisionBoxList.Builder builder)
