@@ -13,7 +13,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 /**
  * Static utility methods for BoxFinder
  */
-public class BoxHelper
+public class BoxFinderUtils
 {
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
@@ -165,23 +165,23 @@ public class BoxHelper
                 }
             }
             
-            BoxHelper.MIN_X[i] = minX;
-            BoxHelper.MIN_Y[i] = minY;
-            BoxHelper.MAX_X[i] = maxX;
-            BoxHelper.MAX_Y[i] = maxY;
+            BoxFinderUtils.MIN_X[i] = minX;
+            BoxFinderUtils.MIN_Y[i] = minY;
+            BoxFinderUtils.MAX_X[i] = maxX;
+            BoxFinderUtils.MAX_Y[i] = maxY;
         }
         
         IntArrayList volumes = new IntArrayList();
         for(Slice slice : Slice.values())
         {
-            for(int i = 0; i < BoxHelper.AREAS.length; i++)
+            for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)
             {
                 volumes.add(volumeKey(slice, i));
             }
         }
         
         VOLUME_KEYS = volumes.toIntArray();
-        IntArrays.quickSort(BoxHelper.VOLUME_KEYS, new IntComparator()
+        IntArrays.quickSort(BoxFinderUtils.VOLUME_KEYS, new IntComparator()
         {
             @Override
             public int compare(@SuppressWarnings("null") Integer o1, @SuppressWarnings("null") Integer o2)
@@ -275,7 +275,7 @@ public class BoxHelper
         {
             for(int yOrigin = 0; yOrigin <= 8 - ySize; yOrigin++)
             {
-                patterns.add(BoxHelper.makePattern(xOrigin, yOrigin, xSize, ySize));
+                patterns.add(BoxFinderUtils.makePattern(xOrigin, yOrigin, xSize, ySize));
             }
         }
     }
@@ -287,7 +287,7 @@ public class BoxHelper
         {
             for(int y = 0; y < ySize; y++)
             {
-                pattern |= (1L << BoxHelper.bitIndex(xOrigin + x, yOrigin + y));
+                pattern |= (1L << BoxFinderUtils.bitIndex(xOrigin + x, yOrigin + y));
             }
         }
         return pattern;

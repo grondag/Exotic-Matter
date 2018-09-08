@@ -15,10 +15,7 @@ public class CollisionBoxDispatcher
 
     public List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        //TODO: restore caching
-        ISuperModelState key = modelState.geometricState();
-        return CollisionBoxGenerator.makeCollisionBoxList(key.getShape().meshFactory().getShapeQuads(key));
-//        return this.modelBounds.get(modelState.geometricState());
+        return this.modelBounds.get(modelState.geometricState());
     }
     
     private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, List<AxisAlignedBB>>

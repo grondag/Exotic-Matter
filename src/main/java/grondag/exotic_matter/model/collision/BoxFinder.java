@@ -1,12 +1,11 @@
 package grondag.exotic_matter.model.collision;
 
-import static grondag.exotic_matter.model.collision.BoxHelper.EMPTY;
+import static grondag.exotic_matter.model.collision.BoxFinderUtils.EMPTY;
 
 import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.collision.BoxHelper.Slice;
-import grondag.exotic_matter.model.collision.CollisionBoxList.Builder;
+import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -43,7 +42,7 @@ public class BoxFinder
      */
     public void setFilled(int x, int y, int z)
     {
-        voxels[z] |= (1L << BoxHelper.bitIndex(x, y));
+        voxels[z] |= (1L << BoxFinderUtils.bitIndex(x, y));
     }
     
     public void setFilled(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -62,7 +61,7 @@ public class BoxFinder
     
     public void setEmpty(int x, int y, int z)
     {
-        voxels[z] &= ~(1L << BoxHelper.bitIndex(x, y));
+        voxels[z] &= ~(1L << BoxFinderUtils.bitIndex(x, y));
     }
     
     public void setEmpty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -79,7 +78,7 @@ public class BoxFinder
         }
     }
     
-    public void outputBoxes(VoxelOctTree voxels, CollisionBoxList.Builder builder)
+    public void outputBoxes(VoxelOctTree voxels, CollisionBoxListBuilder builder)
     {
         loadVoxels(voxels);
         
@@ -134,9 +133,9 @@ public class BoxFinder
     }
     
     
-    private void outputDisjointSet(long disjointSet, Builder builder)
+    private void outputDisjointSet(long disjointSet, CollisionBoxListBuilder builder)
     {
-        BoxHelper.forEachBit(disjointSet, i -> 
+        BoxFinderUtils.forEachBit(disjointSet, i -> 
         {
             int k = maximalVolumes[i];
             addBox(k, builder);
@@ -146,17 +145,17 @@ public class BoxFinder
     void explainDisjointSet(long disjointSet)
     {
         ExoticMatter.INSTANCE.info("Disjoint Set Info: Box Count = %d, Score = %d", Long.bitCount(disjointSet), scoreOfDisjointSet(disjointSet));
-        BoxHelper.forEachBit(disjointSet, i -> 
+        BoxFinderUtils.forEachBit(disjointSet, i -> 
         {
             int k = maximalVolumes[i];
-            Slice slice = BoxHelper.sliceFromKey(k);
-            int areaIndex = BoxHelper.patternIndexFromKey(k);
-            ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d", BoxHelper.volumeFromKey(k), BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex], BoxHelper.MAX_Y[areaIndex], slice.max);
+            Slice slice = BoxFinderUtils.sliceFromKey(k);
+            int areaIndex = BoxFinderUtils.patternIndexFromKey(k);
+            ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d", BoxFinderUtils.volumeFromKey(k), BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex], BoxFinderUtils.MAX_Y[areaIndex], slice.max);
         });
         ExoticMatter.INSTANCE.info("");
     }
     
-    private boolean outputBest(VoxelOctTree voxels, Builder builder)
+    private boolean outputBest(VoxelOctTree voxels, CollisionBoxListBuilder builder)
     {
         calcCombined();
         
@@ -173,7 +172,6 @@ public class BoxFinder
         findDisjointSets();
         
         
-//        ExoticMatter.INSTANCE.info("AVAILABLE DISJOINT SETS");
         
         final LongIterator it = disjointSets.iterator();
         long bestSet = it.nextLong();
@@ -197,9 +195,6 @@ public class BoxFinder
                 bestSet = set;
             }
         }
-        
-//        ExoticMatter.INSTANCE.info("CHOSEN DISJOINT SET");
-//        explainDisjointSet(disjointSets.getLong(bestIndex));
         
         outputDisjointSet(bestSet, builder);
         
@@ -229,17 +224,17 @@ public class BoxFinder
     {
         final SetScoreAccumulator counter = this.setScoreCounter;
         counter.prepare();
-        BoxHelper.forEachBit(set, setScoreCounter);
+        BoxFinderUtils.forEachBit(set, setScoreCounter);
         return counter.total;
     }
 
-    private void addBox(int volumeKey, Builder builder)
+    private void addBox(int volumeKey, CollisionBoxListBuilder builder)
     {
-        Slice slice = BoxHelper.sliceFromKey(volumeKey);
-        int areaIndex = BoxHelper.patternIndexFromKey(volumeKey);
+        Slice slice = BoxFinderUtils.sliceFromKey(volumeKey);
+        int areaIndex = BoxFinderUtils.patternIndexFromKey(volumeKey);
         
-        setEmpty(BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex], BoxHelper.MAX_Y[areaIndex], slice.max);
-        builder.add(BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex] + 1, BoxHelper.MAX_Y[areaIndex] + 1, slice.max + 1);
+        setEmpty(BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex], BoxFinderUtils.MAX_Y[areaIndex], slice.max);
+        builder.add(BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex] + 1, BoxFinderUtils.MAX_Y[areaIndex] + 1, slice.max + 1);
     }
     
     private void loadVoxels(VoxelOctTree voxels)
@@ -306,11 +301,11 @@ public class BoxFinder
             return true;
         
         if(limit == 1)
-            return !BoxHelper.isVolumeIncluded(volumes[0], volKey);
+            return !BoxFinderUtils.isVolumeIncluded(volumes[0], volKey);
         
         for(int i = 0; i < limit; i++)
         {
-            if(BoxHelper.isVolumeIncluded(volumes[i], volKey))
+            if(BoxFinderUtils.isVolumeIncluded(volumes[i], volKey))
                 return false;
         }
         
@@ -323,7 +318,7 @@ public class BoxFinder
         final int[] volumes = this.maximalVolumes;
         
         // TODO: use an exclusion test voxel hash to reduce search universe 
-        for(int v : BoxHelper.VOLUME_KEYS)
+        for(int v : BoxFinderUtils.VOLUME_KEYS)
         {
             if(isVolumePresent(v) && isVolumeMaximal(v))
             {
@@ -352,7 +347,7 @@ public class BoxFinder
             
             for(int j = 0; j < i; j++)
             {
-                if(BoxHelper.doVolumesIntersect(a, volumes[j]))
+                if(BoxFinderUtils.doVolumesIntersect(a, volumes[j]))
                 {
                     // could store only half of values, but 
                     // makes lookups and some tests easier later on
@@ -366,8 +361,8 @@ public class BoxFinder
     
     boolean isVolumePresent(int volKey)
     {
-        long pattern = BoxHelper.patternFromKey(volKey);
-        Slice slice = BoxHelper.sliceFromKey(volKey);
+        long pattern = BoxFinderUtils.patternFromKey(volKey);
+        Slice slice = BoxFinderUtils.sliceFromKey(volKey);
         
         return (pattern & combined[slice.ordinal()]) == pattern;
     }
@@ -380,7 +375,7 @@ public class BoxFinder
         @Override
         public void accept(int value)
         { 
-            total += BoxHelper.splitScore(actorVolume, maximalVolumes[value]);
+            total += BoxFinderUtils.splitScore(actorVolume, maximalVolumes[value]);
         }
     
         void prepare(int actorVolume)
@@ -402,7 +397,7 @@ public class BoxFinder
         for(int i = 0; i < limit; i++)
         {
             counter.prepare(maximalVolumes[i]);
-            BoxHelper.forEachBit(intersects[i], counter);
+            BoxFinderUtils.forEachBit(intersects[i], counter);
             scores[i] = counter.total;
         }
         

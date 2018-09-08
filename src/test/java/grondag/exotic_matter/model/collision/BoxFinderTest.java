@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.collision;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.model.collision.BoxHelper.Slice;
+import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 class BoxFinderTest
@@ -15,13 +15,13 @@ class BoxFinderTest
         
         for(Slice slice : Slice.values())
         {
-            for(int i = 0; i < BoxHelper.AREAS.length; i++)
+            for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)
             {
-                int volumeKey = BoxHelper.volumeKey(slice, i);
+                int volumeKey = BoxFinderUtils.volumeKey(slice, i);
                 
-                assert BoxHelper.volumeFromKey(volumeKey) == BoxHelper.volume(slice, i);
-                assert BoxHelper.sliceFromKey(volumeKey) == slice;
-                assert BoxHelper.patternFromKey(volumeKey) == BoxHelper.AREAS[i];
+                assert BoxFinderUtils.volumeFromKey(volumeKey) == BoxFinderUtils.volume(slice, i);
+                assert BoxFinderUtils.sliceFromKey(volumeKey) == slice;
+                assert BoxFinderUtils.patternFromKey(volumeKey) == BoxFinderUtils.AREAS[i];
             }
         }
         
@@ -33,17 +33,17 @@ class BoxFinderTest
         bf.populateMaximalVolumes();
         
         assert bf.volumeCount == 2;
-        assert BoxHelper.volumeFromKey(bf.maximalVolumes[0]) == 32;
-        assert BoxHelper.volumeFromKey(bf.maximalVolumes[1]) == 32;
+        assert BoxFinderUtils.volumeFromKey(bf.maximalVolumes[0]) == 32;
+        assert BoxFinderUtils.volumeFromKey(bf.maximalVolumes[1]) == 32;
         
         bf.setFilled(0, 2, 4, 1, 5, 5);
         bf.calcCombined();
         bf.populateMaximalVolumes();
         
         assert bf.volumeCount == 3;
-        assert BoxHelper.volumeFromKey(bf.maximalVolumes[0]) == 32;
-        assert BoxHelper.volumeFromKey(bf.maximalVolumes[1]) == 32;
-        assert BoxHelper.volumeFromKey(bf.maximalVolumes[2]) == 32;
+        assert BoxFinderUtils.volumeFromKey(bf.maximalVolumes[0]) == 32;
+        assert BoxFinderUtils.volumeFromKey(bf.maximalVolumes[1]) == 32;
+        assert BoxFinderUtils.volumeFromKey(bf.maximalVolumes[2]) == 32;
         
         bf.populateIntersects();
         
@@ -67,7 +67,7 @@ class BoxFinderTest
     {
         IntArrayList results = new IntArrayList();
         
-        BoxHelper.forEachBit(0xFFFFFFFFFFFFFFFFL, i -> results.add(i));
+        BoxFinderUtils.forEachBit(0xFFFFFFFFFFFFFFFFL, i -> results.add(i));
         
         assert results.size() == 64;
         

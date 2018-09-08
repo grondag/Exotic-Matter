@@ -57,16 +57,14 @@ public class CollisionBoxGenerator
         }
     };
     
-    private static final ThreadLocal<CollisionBoxList.Builder> boxBuilder = new ThreadLocal<CollisionBoxList.Builder>()
+    private static final ThreadLocal<CollisionBoxListBuilder> boxBuilder = new ThreadLocal<CollisionBoxListBuilder>()
     {
         @Override
-        protected CollisionBoxList.Builder initialValue()
+        protected CollisionBoxListBuilder initialValue()
         {
-            return new CollisionBoxList.Builder();
+            return new CollisionBoxListBuilder();
         }
     };
-    
-    static AtomicInteger frameCounter = new AtomicInteger();
     
     private static List<AxisAlignedBB> makeBoxVoxelMethod(Collection<IPolygon> quads)
     {
@@ -89,30 +87,21 @@ public class CollisionBoxGenerator
         
         voxels.simplify();
         
-        CollisionBoxList.Builder builder = boxBuilder.get();
+        final CollisionBoxListBuilder builder = boxBuilder.get();
         
         //TODO: remove dual paths
         
-        List<AxisAlignedBB> result;
-        
         builder.clear();
         genBoxes(voxels, builder);
-        int oldCount = builder.size();
 //        result = builder.build();
         
-        builder.clear();
-        genBoxes2(voxels, builder);
-        result = builder.build();
+//        builder.clear();
+//        genBoxes2(voxels, builder);
         
-       if((frameCounter.incrementAndGet() & 255) == 255)
-       {
-           ExoticMatter.INSTANCE.info("Box count comparison: old method = %d, new method = %d", oldCount, builder.size());
-       }
-        
-        return result;
+        return builder.build();
     }
     
-    private static void genBoxes(IVoxelOctTree voxels, CollisionBoxList.Builder builder)
+    private static void genBoxes(IVoxelOctTree voxels, CollisionBoxListBuilder builder)
     {
         if(voxels.isEmpty())
             return;
@@ -122,7 +111,7 @@ public class CollisionBoxGenerator
             genBoxesInner(voxels, builder);
     }
     
-    private static void genBoxes2(VoxelOctTree voxels, CollisionBoxList.Builder builder)
+    private static void genBoxes2(VoxelOctTree voxels, CollisionBoxListBuilder builder)
     {
         if(voxels.isEmpty())
             return;
@@ -137,7 +126,7 @@ public class CollisionBoxGenerator
         }
     }
     
-    private static void genBoxesInner(IVoxelOctTree voxels, CollisionBoxList.Builder builder)
+    private static void genBoxesInner(IVoxelOctTree voxels, CollisionBoxListBuilder builder)
     {
         voxels.forEach(v -> genBoxes(v, builder));
     }
