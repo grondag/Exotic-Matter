@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
+import java.util.function.IntConsumer;
+
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
@@ -22,7 +24,7 @@ public class BoxHelper
     //    private static final LongArrayList[] PATTERNS_BY_÷BIT = new LongArrayList[65];
     static final LongArrayList[] PATTERNS_BY_AREA = new LongArrayList[65];
 
-    static long[] EMPTY = new long[64];
+    static final long[] EMPTY = new long[64];
     
     static enum Slice
     {
@@ -88,6 +90,7 @@ public class BoxHelper
             this.layerBits = flags;
         }
     }
+    
     static
     {
         LongOpenHashSet patterns = new LongOpenHashSet();
@@ -195,12 +198,6 @@ public class BoxHelper
         });
     }
     
-    @FunctionalInterface
-    interface IBoxConsumer
-    {
-        void accept(int value);
-    }
-
     /**
      * Assumes values are pre-sorted.
      */
@@ -208,6 +205,61 @@ public class BoxHelper
     {
        return high * (high - 1) / 2;
     }
+
+    /**
+     * Returns the number of maximal volume that target volume
+     * must be split into if the actorVolume is chosen for output.
+     * Note this total does count boxes that would be included in the
+     * output volume but is zero if the boxes do not intersect.<p>
+     * 
+     * Produces consistent output in the cases of no intersection
+     * or full inclusion, but not expected these results will ever be 
+     * produced or used because won't be called for non-intersecting volumes
+     * (that test happens earlier) and we have eliminated non-maximal 
+     * volumes before this test happens.<p>
+     * 
+     * Returns 0 if the boxes do not intersect.<p>
+     * 
+     * Computed as the sum of actor bounds (any axis or side)
+     * that are within (not on the edge) of the target volume.  
+     * This works because each face within bounds will force 
+     * a split of the target box along the plane of the face. 
+     */
+    static int splitScore(int actorVolIndex, int targetVolIndex)
+    {
+        final Slice actorSlice = sliceFromKey(actorVolIndex);
+        final int actorPatternIndex = patternIndexFromKey(actorVolIndex);
+        
+        final Slice targetSlice = sliceFromKey(targetVolIndex);
+        final int targetPatternIndex = patternIndexFromKey(targetVolIndex);
+
+        // TODO: make this a slice/slice lookup and assign X,Y slices to each pattern
+
+        
+        int result = 0;
+        
+        if(actorSlice.min > targetSlice.min && actorSlice.min < targetSlice.max)
+            result++;
+
+        if(actorSlice.max > targetSlice.min && actorSlice.max < targetSlice.max)
+            result++;
+
+        
+        if(MIN_X[actorPatternIndex] > MIN_X[targetPatternIndex] && MIN_X[actorPatternIndex] < MAX_X[targetPatternIndex])
+            result++;
+        
+        if(MAX_X[actorPatternIndex] > MIN_X[targetPatternIndex] && MAX_X[actorPatternIndex] < MAX_X[targetPatternIndex])
+            result++;
+        
+        if(MIN_Y[actorPatternIndex] > MIN_Y[targetPatternIndex] && MIN_Y[actorPatternIndex] < MAX_Y[targetPatternIndex])
+            result++;
+        
+        if(MAX_Y[actorPatternIndex] > MIN_Y[targetPatternIndex] && MAX_Y[actorPatternIndex] < MAX_Y[targetPatternIndex])
+            result++;
+        
+        return result;
+    }
+    
 
     /**
      * Validates ordering and sorts if needed.
@@ -320,5 +372,127 @@ public class BoxHelper
     
         final long smallPattern =  patternFromKey(smallKey);
         return ((patternFromKey(bigKey) & smallPattern) == smallPattern);
+    }
+    
+    static void forEachBit(long bits, IntConsumer consumer)
+    {
+        if(bits != 0)
+        {
+            forEachBit32((int)(bits & 0xFFFFFFFFL), 0, consumer);
+            forEachBit32((int)((bits >> 32) & 0xFFFFFFFFL), 32, consumer);
+        }
+    }
+    
+    private static void forEachBit32(int bits, int baseIndex, IntConsumer consumer)
+    {
+        if(bits != 0)
+        {
+            forEachBit16((bits & 0xFFFF), baseIndex, consumer);
+            forEachBit16(((bits >> 16) & 0xFFFF), baseIndex + 16, consumer);
+        }
+    }
+    
+    private static void forEachBit16(int bits, int baseIndex, IntConsumer consumer)
+    {
+        if(bits != 0)
+        {
+            forEachBit8((bits & 0xFF), baseIndex, consumer);
+            forEachBit8(((bits >> 8) & 0xFF), baseIndex + 8, consumer);
+        }
+    }
+    
+    private static void forEachBit8(int bits, int baseIndex, IntConsumer consumer)
+    {
+        if(bits != 0)
+        {
+            forEachBit4((bits & 0xF), baseIndex, consumer);
+            forEachBit4(((bits >> 4) & 0xF), baseIndex + 4, consumer);
+        }
+    }
+    
+    private static void forEachBit4(int bits, int baseIndex, IntConsumer consumer)
+    {
+        switch(bits)
+        {
+        case 0:
+            break;
+            
+        case 1:
+            consumer.accept(baseIndex);
+            break;
+            
+        case 2:
+            consumer.accept(baseIndex + 1);
+            break;
+            
+        case 3:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 1);
+            break;
+            
+        case 4:
+            consumer.accept(baseIndex + 2);
+            break;
+            
+        case 5:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 2);
+            break;
+
+        case 6:
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 2);
+            break;
+        
+        case 7:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 2);
+            break;
+
+        case 8:
+            consumer.accept(baseIndex + 3);
+            break;
+
+        case 9:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 3);
+            break;
+            
+        case 10:
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 3);
+            break;
+
+        case 11:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 3);        
+            break;
+
+        case 12:
+            consumer.accept(baseIndex + 2);
+            consumer.accept(baseIndex + 3);
+            break;
+
+        case 13:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 2);
+            consumer.accept(baseIndex + 3);
+            break;
+
+        case 14:
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 2);
+            consumer.accept(baseIndex + 3);
+            break;
+        
+        case 15:
+            consumer.accept(baseIndex);
+            consumer.accept(baseIndex + 1);
+            consumer.accept(baseIndex + 2);
+            consumer.accept(baseIndex + 3);
+            break;
+        }
     }
 }

@@ -1,15 +1,14 @@
 package grondag.exotic_matter.model.collision;
 
-import java.util.BitSet;
+import static grondag.exotic_matter.model.collision.BoxHelper.EMPTY;
+
+import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxHelper.Slice;
 import grondag.exotic_matter.model.collision.CollisionBoxList.Builder;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-
-import static grondag.exotic_matter.model.collision.BoxHelper.*;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 /**
  * Quickly identifies largest filled AABBs within an 8x8x8 voxel volume
@@ -24,19 +23,19 @@ public class BoxFinder
     
     private long[] combined = new long[Slice.values().length];
     
-    private int searchIndex = 0;
+    final int[] maximalVolumes = new int[64];
     
-    private final IntArrayList searchList = new IntArrayList();
-    
-    final IntArrayList maximalVolumes = new IntArrayList();
+    int volumeCount = 0;
     
     final long[] intersects = new long[64];
+    
+    final LongOpenHashSet disjointSets = new LongOpenHashSet();
+    
+    final int[] volumeScores = new int[64];
     
     public void clear()
     {
         System.arraycopy(EMPTY, 0, voxels, 0, 8);
-        searchList.clear();
-        searchIndex = 0;
     }
     
     /**
@@ -88,217 +87,68 @@ public class BoxFinder
         
         while(outputBest(voxels, builder)) {};
         
-        outputRemnants(builder);
-        
     }
-    
-    private boolean outputLargest(VoxelOctTree voxels, Builder builder)
-    {
-        calcCombined();
-        
-        Slice bestSlice = null;
-        int bestVolume = 0;
-        int bestIndex = -1;
-        
-        for(Slice slice : Slice.values())
-        {
-            for(int i = 0; i < BoxHelper.AREAS.length; i++)
-            {
-                long pattern = BoxHelper.AREAS[i];
-                
-                if((pattern & combined[slice.ordinal()]) == pattern)
-                {
-                    int v = slice.depth * Long.bitCount(pattern);
-                    if(v > bestVolume)
-                    {
-                        bestVolume = v;
-                        bestSlice = slice;
-                        bestIndex = i;
-                    }
-                }
-            }
-        }
-        
-        if(bestSlice == null) 
-            return false;
-        
-        setEmpty(BoxHelper.MIN_X[bestIndex], BoxHelper.MIN_Y[bestIndex], bestSlice.min, BoxHelper.MAX_X[bestIndex], BoxHelper.MAX_Y[bestIndex], bestSlice.max);
-        builder.add(BoxHelper.MIN_X[bestIndex], BoxHelper.MIN_Y[bestIndex], bestSlice.min, BoxHelper.MAX_X[bestIndex] + 1, BoxHelper.MAX_Y[bestIndex] + 1, bestSlice.max + 1);
-        
-        return true;
-    }
-
-    final LongArrayList disjointSets = new LongArrayList();
-    
-    final IntArrayList stack = new IntArrayList();
     
     void findDisjointSets()
     {
         disjointSets.clear();
         
-        final int limit = searchList.size() - 1;
+        final int limit = this.volumeCount;
         
         for(int i = 0; i < limit; i++)
         {
-            tryDisjoint(i);
+            tryDisjoint(i, 0L, 0L);
         }
     }
     
     /**
-     * If stack is empty adds to stack and defines a new set.
-     * If stack is not empty and is disjoint with all in stack
-     * then then defines a new set with everything already
-     * in the stack.
-     * Lastly, pushes on to stack and attempts to create new sets 
-     * recursively, popping index off stack before returning.
+     * If maximal volume at index does not intersect with any
+     * existing member, then is added to the set and recursively
+     * attempt to add more members.
      * 
-     * Returns true if was successful in adding boxes.  
-     * If all subattempts are false this is a leaf node.
+     * If the volume cannot be added to the set because it 
+     * intersects, then this is a leaf node - adds the volume
+     * as a disjoint set and returns false.
+     * 
      */
-    private boolean tryDisjoint(int index)
+    private boolean tryDisjoint(int index, long members, long combinedIntersects)
     {
-        if(isDisjointWithStack(index))
+        final long joins = intersects[index];
+        final long mId = (1L << index);
+        if((mId & (combinedIntersects | members)) == 0)
         {
-            stack.push(index);
-            final int limit = searchList.size();
+            combinedIntersects |= joins;
+            members |= mId;
+            final int limit = this.volumeCount;
             boolean isLeaf = true;
-            if(index < limit - 2)
+            for(int i = 0; i  < limit; i++)
             {
-                
-                for(int i = index + 1; i < limit; i++)
-                {
-                    if(tryDisjoint(i))
-                        isLeaf = false;
-                }
+                if(i != index && tryDisjoint(i, members, combinedIntersects))
+                    isLeaf = false;
             }
             if(isLeaf)
-                addSetFromStack();
-            stack.popInt();
+                disjointSets.add(members);
             return true;
         }
         else return false;
     }
     
-    private boolean isDisjointWithStack(int index)
-    {
-        if(stack.isEmpty())
-            return true;
-        
-        final IntArrayList stack = this.stack;
-        final IntArrayList searchList = this.searchList;
-        final int limit = stack.size();
-        final int targetKey = searchList.getInt(index);
-        
-        for(int i = 0; i < limit; i++)
-        {
-            if(BoxHelper.doVolumesIntersect(targetKey, searchList.getInt(stack.getInt(i))))
-                return false;
-        }
-        return true;
-    }
-    
-    private void addSetFromStack()
-    {
-        final IntArrayList stack = this.stack;
-        final int limit = stack.size();
-        assert limit > 0;
-        
-        long set = 1L << stack.getInt(0);
-        
-        if(limit > 1)
-        {
-            for(int i = 0; i < limit; i++)
-            {
-                set |= (1L << stack.getInt(i));
-            }
-        }
-        disjointSets.add(set);
-    }
-    
-    /**
-     * Iterates in reverse order to allow remove of search results without
-     * affecting remaining indexes;  Integer value is index in searchList.
-     */
-    private void forEachBoxInDisjointSet(long disjointSet, BoxHelper.IBoxConsumer consumer)
-    {
-        long l = Long.highestOneBit(disjointSet);
-        
-        do
-        {
-            if((l & disjointSet) != 0L)
-                consumer.accept(63 - Long.numberOfLeadingZeros(l));
-            
-            l = l >> 1;
-        } while( l != 0);
-    }
-    
-    private class VolumeAccumulator implements BoxHelper.IBoxConsumer
-    {
-        int total;
-        int count;
-
-        @Override
-        public void accept(int value)
-        {
-            int score = BoxHelper.volumeFromKey(searchList.getInt(value));
-            total += score;
-            count++;
-        }
-        
-        int score()
-        {
-            return total; //Math.round((float)total / (count * count));
-        }
-    }
-    
-    private int scoreOfDisjointSet(long disjointSet)
-    {
-        VolumeAccumulator result = new VolumeAccumulator();
-        
-        forEachBoxInDisjointSet(disjointSet, result);
-        
-        return result.score();
-    }
-    
-    private final IntArrayList removalList = new IntArrayList();
     
     private void outputDisjointSet(long disjointSet, Builder builder)
     {
-        final IntArrayList removalList = this.removalList;
-        
-        forEachBoxInDisjointSet(disjointSet, i -> 
+        BoxHelper.forEachBit(disjointSet, i -> 
         {
-            int k = searchList.removeInt(i);
+            int k = maximalVolumes[i];
             addBox(k, builder);
-            removalList.add(k);
         });
-        
-        IntIterator ita = searchList.iterator();
-        
-        while(ita.hasNext())
-        {
-            final int a = ita.nextInt();
-            
-            IntIterator itb = removalList.iterator();
-            while(itb.hasNext())
-            {
-                if(BoxHelper.doVolumesIntersect(a, itb.nextInt()))
-                {
-                    ita.remove();
-                    break;
-                }
-            }
-        }
-        
-        removalList.clear();
     }
     
     void explainDisjointSet(long disjointSet)
     {
-        ExoticMatter.INSTANCE.info("Disjoint Set Info: Box Count = %d", Long.bitCount(disjointSet));
-        forEachBoxInDisjointSet(disjointSet, i -> 
+        ExoticMatter.INSTANCE.info("Disjoint Set Info: Box Count = %d, Score = %d", Long.bitCount(disjointSet), scoreOfDisjointSet(disjointSet));
+        BoxHelper.forEachBit(disjointSet, i -> 
         {
-            int k = searchList.getInt(i);
+            int k = maximalVolumes[i];
             Slice slice = BoxHelper.sliceFromKey(k);
             int areaIndex = BoxHelper.patternIndexFromKey(k);
             ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d", BoxHelper.volumeFromKey(k), BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex], BoxHelper.MAX_Y[areaIndex], slice.max);
@@ -310,48 +160,79 @@ public class BoxFinder
     {
         calcCombined();
         
-        populateSearchSet();
-        
-        final IntArrayList searchList = this.searchList;
-        
-        if(searchList.size() < 4)
+        populateMaximalVolumes();
+        if(this.volumeCount <= 1)
         {
-            while(!searchList.isEmpty())
-            {
-                addBox(searchList.getInt(0), builder);
-                removeFromSearch(0);
-            }
+            if(this.volumeCount == 1)
+                addBox(maximalVolumes[0], builder);
             return false;
         }
         
+        populateIntersects();
+        
         findDisjointSets();
         
-        int bestScore = 0;
-        int bestIndex = -1;
         
 //        ExoticMatter.INSTANCE.info("AVAILABLE DISJOINT SETS");
         
-        final LongArrayList disjointSets = this.disjointSets;
-        final int limit = disjointSets.size();
-        for(int i = 0; i < limit; i++)
+        final LongIterator it = disjointSets.iterator();
+        long bestSet = it.nextLong();
+        
+        if(disjointSets.size() == 1)
         {
-//            explainDisjointSet(disjointSets.getLong(i));
-            final int v = scoreOfDisjointSet(disjointSets.getLong(i));
-            if(v > bestScore)
+            outputDisjointSet(bestSet, builder);
+            return false;
+        }
+        
+        scoreMaximalVolumes();
+        int bestScore = scoreOfDisjointSet(bestSet);
+        
+        while(it.hasNext())
+        {
+            long set = it.nextLong();
+            int score = scoreOfDisjointSet(set);
+            if(score < bestScore)
             {
-                bestIndex = i;
-                bestScore = v;
+                bestScore = score;
+                bestSet = set;
             }
         }
         
 //        ExoticMatter.INSTANCE.info("CHOSEN DISJOINT SET");
 //        explainDisjointSet(disjointSets.getLong(bestIndex));
         
-        outputDisjointSet(disjointSets.getLong(bestIndex), builder);
+        outputDisjointSet(bestSet, builder);
         
         return true;
     }
     
+    
+    class SetScoreAccumulator implements IntConsumer
+    {
+        int total;
+
+        @Override
+        public void accept(int value)
+        { 
+            total += volumeScores[value];
+        }
+    
+        void prepare()
+        {
+            total = 0;
+        }
+    }
+    
+    private final SetScoreAccumulator setScoreCounter = new SetScoreAccumulator();
+    
+    private int scoreOfDisjointSet(long set)
+    {
+        final SetScoreAccumulator counter = this.setScoreCounter;
+        counter.prepare();
+        BoxHelper.forEachBit(set, setScoreCounter);
+        return counter.total;
+    }
+
     private void addBox(int volumeKey, Builder builder)
     {
         Slice slice = BoxHelper.sliceFromKey(volumeKey);
@@ -359,34 +240,6 @@ public class BoxFinder
         
         setEmpty(BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex], BoxHelper.MAX_Y[areaIndex], slice.max);
         builder.add(BoxHelper.MIN_X[areaIndex], BoxHelper.MIN_Y[areaIndex], slice.min, BoxHelper.MAX_X[areaIndex] + 1, BoxHelper.MAX_Y[areaIndex] + 1, slice.max + 1);
-    }
-
-    
-    private void removeFromSearch(int index)
-    {
-        int k = searchList.removeInt(index);
-        IntIterator it = searchList.iterator();
-        while(it.hasNext())
-        {
-            if(BoxHelper.doVolumesIntersect(it.nextInt(), k))
-                it.remove();
-        }
-    }
-    
-    private int bestTwoVolume(int withIndex)
-    {
-        final int withKey = searchList.getInt(withIndex);
-        final int limit = searchList.size();
-        int best = 0;
-        
-        for(int i = 0; i < limit; i++)
-        {
-            if(i == withIndex) continue;
-            final int k = searchList.getInt(i);
-            if(BoxHelper.areVolumesDisjoint(withKey, k))
-                best = Math.max(best, BoxHelper.volumeFromKey(k));
-        }
-        return best + BoxHelper.volumeFromKey(withKey);
     }
     
     private void loadVoxels(VoxelOctTree voxels)
@@ -447,17 +300,17 @@ public class BoxFinder
     
     boolean isVolumeMaximal(int volKey)
     {
-        IntArrayList list = this.maximalVolumes;
-        final int limit = list.size();
+        final int[] volumes = this.maximalVolumes;
+        final int limit = this.volumeCount;
         if(limit == 0)
             return true;
         
         if(limit == 1)
-            return !BoxHelper.isVolumeIncluded(list.getInt(0), volKey);
+            return !BoxHelper.isVolumeIncluded(volumes[0], volKey);
         
         for(int i = 0; i < limit; i++)
         {
-            if(BoxHelper.isVolumeIncluded(list.getInt(i), volKey))
+            if(BoxHelper.isVolumeIncluded(volumes[i], volKey))
                 return false;
         }
         
@@ -466,17 +319,18 @@ public class BoxFinder
     
     void populateMaximalVolumes()
     {
-        final IntArrayList list = this.maximalVolumes;
-        list.clear();
+        this.volumeCount = 0;
+        final int[] volumes = this.maximalVolumes;
         
         // TODO: use an exclusion test voxel hash to reduce search universe 
         for(int v : BoxHelper.VOLUME_KEYS)
         {
             if(isVolumePresent(v) && isVolumeMaximal(v))
             {
-                list.add(v);
-                if(list.size() >= 64)
-                    return;
+                final int c = this.volumeCount++;
+                volumes[c] = v;
+                if(c == 63)
+                    break;
             }
         }
     }
@@ -484,8 +338,8 @@ public class BoxFinder
     void populateIntersects()
     {
         final long[] intersects = this.intersects;
-        final IntArrayList list = this.maximalVolumes;
-        final int limit = list.size();
+        final int[] volumes = this.maximalVolumes;
+        final int limit = this.volumeCount;
 
         System.arraycopy(EMPTY, 0, intersects, 0, 64);
         
@@ -494,11 +348,11 @@ public class BoxFinder
         
         for(int i = 1; i < limit; i++)
         {
-            final int a = list.getInt(i);
+            final int a = volumes[i];
             
             for(int j = 0; j < i; j++)
             {
-                if(BoxHelper.doVolumesIntersect(a, list.getInt(j)))
+                if(BoxHelper.doVolumesIntersect(a, volumes[j]))
                 {
                     // could store only half of values, but 
                     // makes lookups and some tests easier later on
@@ -518,35 +372,39 @@ public class BoxFinder
         return (pattern & combined[slice.ordinal()]) == pattern;
     }
     
-    void populateSearchSet()
+    class VolumeScoreAccumulator implements IntConsumer
     {
-        IntArrayList list = this.searchList;
-        int index = this.searchIndex;
-        while(list.size() < 16 && index < BoxHelper.VOLUME_KEYS.length)
-        {
-            final int volKey = BoxHelper.VOLUME_KEYS[index++];
-            if(isVolumePresent(volKey))
-                list.add(volKey);
+        int actorVolume;
+        int total;
+
+        @Override
+        public void accept(int value)
+        { 
+            total += BoxHelper.splitScore(actorVolume, maximalVolumes[value]);
         }
-        this.searchIndex = index;
+    
+        void prepare(int actorVolume)
+        {
+            this.actorVolume = actorVolume;
+            total = 0;
+        }
     }
     
-    private void outputRemnants(CollisionBoxList.Builder builder)
+    private final VolumeScoreAccumulator volumeScorecounter = new VolumeScoreAccumulator();
+    
+    void scoreMaximalVolumes()
     {
-        for(int z = 0; z < 8; z++ )
+        final int[] scores = this.volumeScores;
+        final long[] intersects = this.intersects;
+        final int limit = this.volumeCount;
+        final VolumeScoreAccumulator counter = this.volumeScorecounter;
+        
+        for(int i = 0; i < limit; i++)
         {
-            final long bits = voxels[z];
-            if(bits == 0) continue;
-            
-            for(int i = 0; i < 64; i++)
-            {
-                if((bits & (1L << i)) != 0L)
-                {
-                    int x = i & 7;
-                    int y = (i >> 3) & 7;
-                    builder.addSorted(x, y, z, x + 1, y + 1, z + 1);
-                }   
-            }
+            counter.prepare(maximalVolumes[i]);
+            BoxHelper.forEachBit(intersects[i], counter);
+            scores[i] = counter.total;
         }
+        
     }
 }
