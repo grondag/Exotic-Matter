@@ -7,6 +7,7 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
     @Override
     protected void generateBoxes(CollisionBoxListBuilder builder)
     {
+        voxels.simplify2X();
         genBoxes(voxels, builder);
     }
 

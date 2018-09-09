@@ -207,6 +207,24 @@ public class VoxelOctTree implements IVoxelOctTree
         }
     }
     
+    /**
+     * Makes middle nodes that are mostly full completely full, or otherwise makes them empty.
+     * Meant to be called after {@link #simplify()} to generate fast coarse-grained collision boxes.
+     */
+    public void simplify2X()
+    {
+        for(Middle m : middle)
+        {
+            if(m.isEmpty() || m.isFull())
+                continue;
+            
+            if(m.isMostlyFull())
+                m.setFull();
+            else
+                m.clear();
+        }
+    }
+    
     @Override
     public boolean isFull()
     {
