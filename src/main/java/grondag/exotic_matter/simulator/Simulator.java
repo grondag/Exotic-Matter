@@ -94,7 +94,6 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     /**
      * Main simulation control thread - runs outside server thread.
      */
-    @SuppressWarnings("null")
     public static final ExecutorService CONTROL_THREAD = Executors.newSingleThreadExecutor(
             new ThreadFactory()
             {
@@ -102,7 +101,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
                 @Override
                 public Thread newThread(@Nullable Runnable r)
                 {
-                    Thread thread = new Thread(r, "Hard Science Simulation Control Thread -" + count.getAndIncrement());
+                    Thread thread = new Thread(r, "Exotic Matter Simulation Control Thread -" + count.getAndIncrement());
                     thread.setDaemon(true);
                     return thread;
                 }

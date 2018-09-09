@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ForwardingList;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.util.math.AxisAlignedBB;
 
