@@ -217,12 +217,12 @@ public class ModelStateData
     /** see {@link #STATE_FLAG_HAS_SOLID_RENDER} */
     public static final BitPacker<ModelState>.BooleanElement STATE_BIT_HAS_SOLID_RENDER = STATE_PACKER.createBooleanElement();
     /** True if any layer sould render in the solid block render layer */
-    public static final int STATE_FLAG_HAS_SOLID_RENDER = (int) STATE_BIT_HAS_SOLID_RENDER.comparisonMask();
+    public static final int STATE_FLAG_HAS_SOLID_RENDER = (int) STATE_BIT_HAS_TRANSLUCENT_GEOMETRY.comparisonMask();
     
     /** see {@link #STATE_FLAG_HAS_TRANSLUCENT_RENDER} */
     public static final BitPacker<ModelState>.BooleanElement STATE_BIT_HAS_TRANSLUCENT_RENDER = STATE_PACKER.createBooleanElement();
     /** True if any layer should render in the translucent block render layer */
-    public static final int STATE_FLAG_HAS_TRANSLUCENT_RENDER = (int) STATE_BIT_HAS_TRANSLUCENT_RENDER.comparisonMask();
+    public static final int STATE_FLAG_HAS_TRANSLUCENT_RENDER = (int) STATE_BIT_HAS_TRANSLUCENT_GEOMETRY.comparisonMask();
     
     /** use this to turn off flags that should not be used with non-block state formats */
     public static final int STATE_FLAG_DISABLE_BLOCK_ONLY = ~(
