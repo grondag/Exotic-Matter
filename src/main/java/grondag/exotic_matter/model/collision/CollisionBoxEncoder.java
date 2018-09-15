@@ -106,7 +106,6 @@ public class CollisionBoxEncoder
     
     /**
      * Returns box key representing combined AABB of both keys.
-     * Intended for use when both boxes share a face.
      */
     static int combineBoxes(int boxKey0, int boxKey1)
     {
@@ -117,6 +116,19 @@ public class CollisionBoxEncoder
                 Math.max(maxX(boxKey0), maxX(boxKey1)),
                 Math.max(maxY(boxKey0), maxY(boxKey1)),
                 Math.max(maxZ(boxKey0), maxZ(boxKey1)));
+    }
+    
+    /**
+     * Returns true if boxes share one or more voxels.
+     */
+    static boolean areIntersecting(int boxKey0, int boxKey1)
+    {
+        return minX(boxKey0) < maxX(boxKey1) 
+                && maxX(boxKey0) > minX(boxKey1) 
+                && minY(boxKey0) < maxY(boxKey1) 
+                && maxY(boxKey0) > minY(boxKey1) 
+                && minZ(boxKey0) <  maxZ(boxKey1) 
+                && maxZ(boxKey0) > minZ(boxKey1);
     }
     
     /**

@@ -32,10 +32,35 @@ public class BoxFinder
     
     final int[] volumeScores = new int[64];
     
-    public void clear()
+//    final IntArrayList fuzzyVolumes = new IntArrayList();
+//    int fuzzySearchTolerance;
+//    int fuzzySearchIndex;
+    
+    void clear()
     {
         System.arraycopy(EMPTY, 0, voxels, 0, 8);
+//        fuzzyVolumes.clear();
+//        fuzzySearchTolerance = 1;
+//        fuzzySearchIndex = 0;
     }
+    
+    /**
+     * Saves voxel data to given array.   Array must be >= 8 in length.
+     * Load with {@link #restoreFrom(long[])}.
+     */
+    public void saveTo(long[] data)
+    {
+        System.arraycopy(voxels, 0, data, 0, 8);
+    }
+    
+    /**
+     * Loads data from an earlier call to {@link #saveTo(long[])}
+     */
+    public void restoreFrom(long[] data)
+    {
+        System.arraycopy(data, 0, voxels, 0, 8);
+    }
+    
     
     /**
      * Coordinates must be 0 - 8
@@ -78,14 +103,172 @@ public class BoxFinder
         }
     }
     
-    public void outputBoxes(VoxelOctTree voxels, CollisionBoxListBuilder builder)
+
+    /**
+     * Finds the maximal volume that encloses the largest number of maximal volumes
+     * for the smallest number of voxel inaccuracies and then fills that volume.
+     */
+    boolean simplify()
     {
-        loadVoxels(voxels);
+        calcCombined();
+        populateMaximalVolumes();
         
-//        ExoticMatter.INSTANCE.info("STARTING BOX FINDINATOR");
+        int bestVolume = -1;
+        int bestScore = 0;
         
-        while(outputBest(voxels, builder)) {};
+        for(int v : BoxFinderUtils.VOLUME_KEYS)
+        {
+            int n = simplifcationScore(v);
+            
+            // for our purpose, split boxes contained in volume don't count
+            if(n > 0) 
+                n--;
+            
+            if(n > bestScore)
+            {
+                bestScore = n;
+                bestVolume = v;
+            }
+        }
         
+        if(bestVolume == -1)
+            return false;
+        
+        this.fillVolume(bestVolume);
+        return true;
+    }
+    
+    int simplifcationScore(int volumeKey)
+    {
+        
+        final int[] volumes = this.maximalVolumes;
+        final int limit = this.volumeCount;
+        
+        // To score higher than zero, must fully enclose at least two maximal volumes.
+        // If this volume would cause other maximal volume to split into two or more volumes
+        // that are not fully enclosed in this volume, then those count against the score.
+        int boxScore = -1;
+        
+        for(int i = 0; i < limit; i++)
+        {
+            int v = volumes[i];
+            if(BoxFinderUtils.isVolumeIncluded(volumeKey, v))
+                boxScore++;
+            
+            boxScore -= BoxFinderUtils.splitScore(volumeKey, v);
+        }
+        
+        if(boxScore == 0)
+            return 0;
+        
+        final int filled = countFilledVoxels(volumeKey);
+        final int vol = BoxFinderUtils.volumeFromKey(volumeKey);
+        
+        // must fill in some voxels or isn't a simplification
+        if(filled == vol)
+            return 0;
+        
+        // Preference is always given to lower error rates.
+        // Because we have chosen high scores to mean "better" we
+        // represent this inversely, as total possible voxels
+        // less the number of error voxels. 
+        int voxelScore = 512 - vol + filled;
+        
+        return (voxelScore << 16) | boxScore;
+    }
+    
+//    /**
+//     * Calling this clears any current maximal volume state.
+//     */
+//    public void applyNextSimplifcation()
+//    {
+//        findNextFuzzyVolume();
+//        
+//        // dont' fill fuzzy volumes until search complete
+//        // because doing so would cause cascading selection of volumes
+//        fillFuzzyVolumes();
+//    }
+//    
+//  
+//    
+//    /**
+//     * Finds next volumes that is almost present
+//     * to allow a larger number of volumes to be recognized. <p>
+//     * 
+//     * Tolerance is the number of voxels out of every 16 that can be missing
+//     * from maximal volumes that are recognized.  To be recognized,
+//     * voxels must be populated on each edge of the fuzzy volume.  (Can't 
+//     * add empty space.) <p>
+//     * 
+//     * Earlier attempts at "fuzzy" volume recognition tried to handle it
+//     * directly during {@link #populateMaximalVolumes(IPresenceTest)} but
+//     */
+//    void findNextFuzzyVolume()
+//    {
+//        final int[] volumes = BoxFinderUtils.VOLUME_KEYS;
+//        final int volLimit = volumes.length;
+//        
+//        for(int tolerance = this.fuzzySearchTolerance; tolerance < 16; tolerance *= 2)
+//        {
+//            for(int i = this.fuzzySearchIndex; i < volLimit;  i++)
+//            {
+//                if(isVolumePresentFuzzy(volumes[i], tolerance))
+//                {
+//                    this.fuzzyVolumes.add(volumes[i++]);
+//                    if(i == volLimit)
+//                    {
+//                        tolerance *= 2;
+//                        i = 0;
+//                    }
+//                    this.fuzzySearchTolerance = tolerance;
+//                    this.fuzzySearchIndex = i;
+//                    return;
+//                }
+//            }
+//            this.fuzzySearchIndex = 0;
+//        }
+//    }
+//    
+//    void fillFuzzyVolumes()
+//    {
+//        final int limit = fuzzyVolumes.size();
+//        for(int i = 0; i < limit; i++)
+//        {
+//            fillVolume(fuzzyVolumes.getInt(i));
+//        }
+//    }
+    
+    public void outputBoxes(CollisionBoxListBuilder builder)
+    {
+        while(outputBest(builder)) {};
+        outputRemainers(builder);
+    }
+    
+    void outputRemainers(CollisionBoxListBuilder builder)
+    {
+        outputRemainerInner(0, builder);
+        outputRemainerInner(1, builder);
+        outputRemainerInner(2, builder);
+        outputRemainerInner(3, builder);
+        outputRemainerInner(4, builder);
+        outputRemainerInner(5, builder);
+        outputRemainerInner(6, builder);
+        outputRemainerInner(7, builder);
+    }
+    
+    void outputRemainerInner(int z, CollisionBoxListBuilder builder)
+    {
+        final long bits = voxels[z];
+        
+        if(bits == 0L)
+            return;
+        
+        BoxFinderUtils.forEachBit(bits, i -> 
+        {
+            final int x = BoxFinderUtils.xFromBitIndex(i);
+            final int y = BoxFinderUtils.yFromBitIndex(i);
+            builder.addSorted(x, y, z, x + 1, y + 1, z + 1);
+        });
     }
     
     void findDisjointSets()
@@ -142,24 +325,62 @@ public class BoxFinder
         });
     }
     
+    void explainDisjointSets()
+    {
+        for(Long l : disjointSets)
+        {
+            explainDisjointSet(l);
+        }   
+    }
+    
     void explainDisjointSet(long disjointSet)
     {
         ExoticMatter.INSTANCE.info("Disjoint Set Info: Box Count = %d, Score = %d", Long.bitCount(disjointSet), scoreOfDisjointSet(disjointSet));
         BoxFinderUtils.forEachBit(disjointSet, i -> 
         {
-            int k = maximalVolumes[i];
-            Slice slice = BoxFinderUtils.sliceFromKey(k);
-            int areaIndex = BoxFinderUtils.patternIndexFromKey(k);
-            ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d", BoxFinderUtils.volumeFromKey(k), BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex], BoxFinderUtils.MAX_Y[areaIndex], slice.max);
+            explainVolume(i);
         });
         ExoticMatter.INSTANCE.info("");
     }
     
-    private boolean outputBest(VoxelOctTree voxels, CollisionBoxListBuilder builder)
+    void explainMaximalVolumes()
+    {
+        ExoticMatter.INSTANCE.info("Maximal Volumes");
+        for(int i = 0;  i < volumeCount; i++)
+        {
+            explainVolume(i);
+        }
+        ExoticMatter.INSTANCE.info("");
+    }
+    
+    void explainVolume(int volIndex)
+    {
+        final int volKey = maximalVolumes[volIndex];
+        StringBuilder b = new StringBuilder();
+        BoxFinderUtils.forEachBit(intersects[volIndex], i ->
+        {
+            if(b.length() != 0)
+                b.append(", ");
+            b.append(i);
+        });
+        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternFromKey(volKey), (minX, minY, maxX, maxY) ->
+        {
+            ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d  score = %d  intersects = %s  volKey = %d", BoxFinderUtils.volumeFromKey(volKey), 
+                    minX, minY, slice.min, maxX, maxY, slice.max, volumeScores[volIndex], b.toString(), volKey);
+            return 0;
+        });
+    }
+    
+    private boolean outputBest(CollisionBoxListBuilder builder)
     {
         calcCombined();
-        
         populateMaximalVolumes();
+        return outputBestInner(builder);
+    }
+    
+    private boolean outputBestInner(CollisionBoxListBuilder builder)
+    {
         if(this.volumeCount <= 1)
         {
             if(this.volumeCount == 1)
@@ -171,7 +392,7 @@ public class BoxFinder
         
         findDisjointSets();
         
-        
+       
         
         final LongIterator it = disjointSets.iterator();
         long bestSet = it.nextLong();
@@ -183,6 +404,7 @@ public class BoxFinder
         }
         
         scoreMaximalVolumes();
+        
         int bestScore = scoreOfDisjointSet(bestSet);
         
         while(it.hasNext())
@@ -228,17 +450,20 @@ public class BoxFinder
         return counter.total;
     }
 
-    private void addBox(int volumeKey, CollisionBoxListBuilder builder)
+    void addBox(int volumeKey, CollisionBoxListBuilder builder)
     {
         Slice slice = BoxFinderUtils.sliceFromKey(volumeKey);
-        int areaIndex = BoxFinderUtils.patternIndexFromKey(volumeKey);
-        
-        setEmpty(BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex], BoxFinderUtils.MAX_Y[areaIndex], slice.max);
-        builder.add(BoxFinderUtils.MIN_X[areaIndex], BoxFinderUtils.MIN_Y[areaIndex], slice.min, BoxFinderUtils.MAX_X[areaIndex] + 1, BoxFinderUtils.MAX_Y[areaIndex] + 1, slice.max + 1);
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternFromKey(volumeKey), (minX, minY, maxX, maxY) ->
+        {
+            setEmpty(minX, minY, slice.min, maxX, maxY, slice.max);
+            builder.add(minX, minY, slice.min, maxX + 1, maxY + 1, slice.max + 1);
+            return 0;
+        });
     }
     
-    private void loadVoxels(VoxelOctTree voxels)
+    void loadVoxels(VoxelOctTree voxels)
     {
+        clear();
         voxels.forEachBottom(v -> 
         {
             if(v.isFull())
@@ -293,7 +518,46 @@ public class BoxFinder
         combined[Slice.D8_0.ordinal()] = combined[Slice.D7_0.ordinal()] & voxels[7];
     }
     
+    /**
+     * True if volume cannot be expanded along any axis.
+     */
     boolean isVolumeMaximal(int volKey)
+    {
+        // PERF: would probably be better if Slice were simply an 8-bit word instead of an enum
+        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
+        final long pattern = BoxFinderUtils.patternFromKey(volKey);
+        
+        return BoxFinderUtils.testAreaBounds(pattern, (minX, minY, maxX, maxY) ->
+        {
+//            System.out.println(String.format("slice %d %d",slice.min, slice.max));
+//            System.out.println(String.format("pattern %d %d %d %d", minX, minY, maxX, maxY));
+            if(slice.min > 0 && isVolumePresent(pattern, BoxFinderUtils.sliceByMinMax(slice.min - 1, slice.max)))
+                return 1;
+            
+            if(slice.max < 7 && isVolumePresent(pattern, BoxFinderUtils.sliceByMinMax(slice.min, slice.max + 1)))
+                return 1;
+            
+            if(minX > 0 && isVolumePresent((pattern >>> 1) | pattern, slice))
+                return 1;
+            
+            if(maxX < 7 && isVolumePresent((pattern << 1) | pattern, slice))
+                return 1;
+            
+            if(minY > 0 && isVolumePresent((pattern >>> 8) | pattern, slice))
+                return 1;
+            
+            if(maxY < 7 && isVolumePresent((pattern << 8) | pattern, slice))
+                return 1;
+            
+            return 0;
+        }) == 0;
+        
+       
+            
+       
+    }
+    
+    boolean isVolumeMaximalOld(int volKey)
     {
         final int[] volumes = this.maximalVolumes;
         final int limit = this.volumeCount;
@@ -312,12 +576,21 @@ public class BoxFinder
         return true;
     }
     
+    @FunctionalInterface
+    interface IPresenceTest
+    {
+        boolean apply(int volumeKey);
+    }
+    
     void populateMaximalVolumes()
     {
         this.volumeCount = 0;
         final int[] volumes = this.maximalVolumes;
         
-        // TODO: use an exclusion test voxel hash to reduce search universe 
+        // disabled for release, not strictly needed but prevents confusion during debug
+//        Arrays.fill(volumes, 0, 64, 0);
+        
+        // PERF: use an exclusion test voxel hash to reduce search universe 
         for(int v : BoxFinderUtils.VOLUME_KEYS)
         {
             if(isVolumePresent(v) && isVolumeMaximal(v))
@@ -326,6 +599,15 @@ public class BoxFinder
                 volumes[c] = v;
                 if(c == 63)
                     break;
+            }
+        }
+        
+        for(int i = 0; i < volumeCount; i++)
+        {
+            for(int j = 0; j < volumeCount; j++)
+            {
+//                if(i != j)
+//                    assert !BoxFinderUtils.isVolumeIncluded(volumes[i], volumes[j]);
             }
         }
     }
@@ -354,6 +636,7 @@ public class BoxFinder
                     // to simply update both halves while we're here.
                     intersects[i] |= (1L << j);
                     intersects[j] |= (1L << i);
+                    
                 }
             }
         }
@@ -361,10 +644,88 @@ public class BoxFinder
     
     boolean isVolumePresent(int volKey)
     {
-        long pattern = BoxFinderUtils.patternFromKey(volKey);
-        Slice slice = BoxFinderUtils.sliceFromKey(volKey);
-        
+        return isVolumePresent(BoxFinderUtils.patternFromKey(volKey), BoxFinderUtils.sliceFromKey(volKey));
+    }
+    
+    boolean isVolumePresent(long pattern, Slice slice)
+    {
         return (pattern & combined[slice.ordinal()]) == pattern;
+    }
+    
+//    boolean isVolumePresentFuzzy(int volKey, int tolerance)
+//    {
+//        final long pattern = BoxFinderUtils.patternFromKey(volKey);
+//        final int patternBits = Long.bitCount(pattern);
+//        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
+//        
+//        // tolerance is number of voxels out of every 16 that can be skipped
+//        final int volume = patternBits * slice.depth;
+//        tolerance = tolerance * volume / 16;
+//        
+//        // PERF: shouldn't even call this method if volume is less than minimal needed for tolerance
+//        if(tolerance == 0)
+//            return false;
+//        
+//        
+//        // must have voxels on exterior - Z axis check
+//        if(voxels[slice.min] == 0L || voxels[slice.max] == 0L)
+//            return false;
+//        
+//        int missedBits = 0;
+//        
+//        long combined = 0;
+//        
+//        for(int i = slice.min; i <= slice.max; i++)
+//        {
+//            long v = voxels[i];
+//            combined |= v;
+//            missedBits += patternBits - Long.bitCount(pattern & v);
+//            if(missedBits > tolerance)
+//                return false;
+//        }
+//        
+//        // check for fuzzy - if no missing voxels not fuzzy
+//        if(missedBits == 0)
+//            return false;
+//        
+//        // confirm have exterior voxels at bounds for x and y axis
+//        return BoxFinderUtils.testAreaBounds(combined, (combinedMinX, combinedMinY, combinedMaxX, combinedMaxY) ->
+//        {
+//            return BoxFinderUtils.testAreaBounds(pattern, (patternMinX, patternMinY, patternMaxX, patternMaxY) ->
+//            {
+//                return  combinedMinX == patternMinX
+//                        && combinedMinY == patternMinY
+//                        && combinedMaxX == patternMaxX
+//                        && combinedMaxY == patternMaxY
+//                        ? 0 : 1;
+//            });
+//        }) == 0;
+//    }
+    
+    void fillVolume(int volKey)
+    {
+        final long pattern = BoxFinderUtils.patternFromKey(volKey);
+        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
+        
+        for(int i = slice.min; i <= slice.max; i++)
+        {
+            voxels[i] |= pattern;
+        }
+    }
+    
+    int countFilledVoxels(int volKey)
+    {
+        final long pattern = BoxFinderUtils.patternFromKey(volKey);
+        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
+        
+        int result = 0;
+        
+        for(int i = slice.min; i <= slice.max; i++)
+        {
+            result += Long.bitCount(voxels[i] & pattern);
+        }
+        
+        return result;
     }
     
     class VolumeScoreAccumulator implements IntConsumer

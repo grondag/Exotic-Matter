@@ -1,9 +1,14 @@
 package grondag.exotic_matter.model.render;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperBlockWorldAccess;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.varia.Color;
+import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
@@ -72,17 +77,42 @@ public class BlockHighlighter
       GlStateManager.depthMask(false);
 
         // Draw collision boxes
-        for (AxisAlignedBB aabb : modelState.collisionBoxes(pos)) 
-        {
-            if(!isPreview) aabb = aabb.expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D);
-            RenderGlobal.drawSelectionBoundingBox(aabb.offset(-d0, -d1, -d2), colorARGBfloat[1], colorARGBfloat[2], colorARGBfloat[3], colorARGBfloat[0]);
-        }
+       if(ConfigXM.RENDER.debugCollisionBoxes && !isPreview)
+       {
+           int hue = 0;
+//           GlStateManager.disableDepth();
+           int n = 0;
+           for (AxisAlignedBB aabb : modelState.collisionBoxes(pos)) 
+           {
+               Color c = Color.fromHCL(hue, Color.HCL_MAX, Color.HCL_MAX);
+               hue += 159;
+               
+               aabb = aabb.shrink(0.004);
+               RenderGlobal.drawSelectionBoundingBox(aabb.offset(-d0, -d1, -d2), c.RGB_R / 255f, c.RGB_G / 255f, c.RGB_B / 255f, 1.0f);
+               //TODO: remove
+//               if(n++ == 0)
+//                   break;
+           }
+//           GlStateManager.enableDepth();
+       }
+       else
+       {
+           for (AxisAlignedBB aabb : modelState.collisionBoxes(pos)) 
+           {
+               if(!isPreview)
+                   aabb = aabb.grow(0.0020000000949949026D);
+               RenderGlobal.drawSelectionBoundingBox(aabb.offset(-d0, -d1, -d2), colorARGBfloat[1], colorARGBfloat[2], colorARGBfloat[3], colorARGBfloat[0]);
+           }
+       }
+        
 
         // Debug Feature: draw outline of block boundaries for non-square blocks
         if(ConfigXM.RENDER.debugDrawBlockBoundariesForNonCubicBlocks)
         {
             AxisAlignedBB aabb = Block.FULL_BLOCK_AABB.offset(pos.getX(), pos.getY(), pos.getZ());
-            if(!isPreview) aabb = aabb.expand(0.0020000000949949026D, 0.0020000000949949026D, 0.0020000000949949026D);
+            if(!isPreview)
+                aabb = aabb.grow(0.0020000000949949026D);
+            
             RenderGlobal.drawSelectionBoundingBox(aabb.offset(-d0, -d1, -d2), 0.8F, 1.0F, 1.0F, 0.3F);
         }
         

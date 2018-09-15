@@ -21,6 +21,10 @@ public class CollisionBoxListBuilder
     private final Int2IntOpenHashMap faceToBoxMap = new Int2IntOpenHashMap();
     private final IntOpenHashSet boxSet = new IntOpenHashSet();
     
+    //TODO: remove
+    ImmutableList.Builder<AxisAlignedBB> builder = ImmutableList.builder();
+    int size;
+    
     public CollisionBoxListBuilder()
     {
         faceToBoxMap.defaultReturnValue(NOT_FOUND);
@@ -30,24 +34,29 @@ public class CollisionBoxListBuilder
     {
         faceToBoxMap.clear();
         boxSet.clear();
+        
+        builder = ImmutableList.builder();
+        size = 0;
     }
     
     public List<AxisAlignedBB> build()
     {
-        if(boxSet.isEmpty())
-            return ImmutableList.of();
-        else
-        {
-            ImmutableList.Builder<AxisAlignedBB> builder = ImmutableList.builder();
-            
-            IntIterator it = boxSet.iterator();
-            while(it.hasNext())
-            {
-                builder.add(CollisionBoxStore.getBox(it.nextInt()));
-            }
-            
-            return builder.build();
-        }
+//        if(boxSet.isEmpty())
+//            return ImmutableList.of();
+//        else
+//        {
+//            ImmutableList.Builder<AxisAlignedBB> builder = ImmutableList.builder();
+//            
+//            IntIterator it = boxSet.iterator();
+//            while(it.hasNext())
+//            {
+//                builder.add(CollisionBoxStore.getBox(it.nextInt()));
+//            }
+//            
+//            return builder.build();
+//        }
+        
+        return builder.build();
     }
     
     /**
@@ -96,34 +105,38 @@ public class CollisionBoxListBuilder
     
     private void add(int boxKey)
     {
-        int bestKey = NOT_FOUND;
-        int bestVolume = NOT_FOUND;
-        
-        for(EnumFacing face : EnumFacing.VALUES)
-        {
-            int testKey = faceToBoxMap.get(CollisionBoxEncoder.faceKey(face, boxKey));
-            if(testKey != NOT_FOUND )
-            {
-                int v = CollisionBoxEncoder.boxVolume(testKey);
-                if(v > bestVolume)
-                {
-                    bestKey = testKey;
-                    bestVolume = v;
-                }
-            }
-        }
-        
-        if(bestKey == NOT_FOUND)
-            addBox(boxKey);
-        else
-        {
-            removeBox(bestKey);
-            add(CollisionBoxEncoder.combineBoxes(boxKey, bestKey));
-        }
+//        int bestKey = NOT_FOUND;
+//        int bestVolume = NOT_FOUND;
+//        
+//        for(EnumFacing face : EnumFacing.VALUES)
+//        {
+//            int testKey = faceToBoxMap.get(CollisionBoxEncoder.faceKey(face, boxKey));
+//            if(testKey != NOT_FOUND )
+//            {
+//                int v = CollisionBoxEncoder.boxVolume(testKey);
+//                if(v > bestVolume)
+//                {
+//                    bestKey = testKey;
+//                    bestVolume = v;
+//                }
+//            }
+//        }
+//        
+//        if(bestKey == NOT_FOUND)
+//            addBox(boxKey);
+//        else
+//        {
+//            removeBox(bestKey);
+//            add(CollisionBoxEncoder.combineBoxes(boxKey, bestKey));
+//        }
+        builder.add(CollisionBoxStore.getBox(boxKey));
+        size++;
     }
 
     public int size()
     {
-        return this.boxSet.size();
+        return size;
+//        return this.boxSet.size();
     }
+
 }

@@ -865,7 +865,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     @Override
     public List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return CollisionBoxDispatcher.INSTANCE.getCollisionBoxes(modelState);
+        return CollisionBoxDispatcher.getCollisionBoxes(modelState);
     }
 
     @Override

@@ -15,6 +15,7 @@ import grondag.exotic_matter.block.DummyColorHandler;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperModelLoader;
 import grondag.exotic_matter.block.SuperTileEntity;
+import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
 import grondag.exotic_matter.model.color.BlockColorMapProvider;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.statecache.IWorldStateCache;
@@ -191,6 +192,13 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
         
         // some blocks may produce different model states depending on API status
         this.clientWorldStateCache().clear();
+    }
+
+    @Override
+    public void onRenderReload()
+    {
+        // enable force reload of cached collision boxes for debugging
+        CollisionBoxDispatcher.clear();
     }
 
     /**

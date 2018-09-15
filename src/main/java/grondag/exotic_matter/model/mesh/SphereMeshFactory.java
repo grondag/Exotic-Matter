@@ -95,7 +95,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     @Override
     public List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return CollisionBoxDispatcher.INSTANCE.getCollisionBoxes(modelState);
+        return CollisionBoxDispatcher.getCollisionBoxes(modelState);
     }
 
     @Override

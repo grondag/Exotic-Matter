@@ -220,45 +220,41 @@ public class TriangleBoxTest
         polyData[POLY_NORM_Z] = e0x * e1y - e0y * e1x; 
     }
     
+    private static float EPSILON = 0.001F;
+    
+    /**
+     * Per-axis bounding box test.  Returns true if tri min/max outside box bounds.
+     * Exclude polys that merely touch an edge unless the poly is co-planar
+     */
+    private  static boolean isTriExcluded(float triMin, float triMax, float boxCenter, float boxHalfSize)
+    {
+        if(triMin == triMax)
+        {
+            if(triMin > boxCenter + boxHalfSize) return true;
+            if(triMax < boxCenter - boxHalfSize) return true;
+        }
+        else
+        {
+            if(triMin >= boxCenter + boxHalfSize) return true;
+            if(triMax <= boxCenter - boxHalfSize) return true;
+        }
+        return false;
+    }
+    
     /**
      * Assumes boxes are cubes and polygon info is pre-packed into array using {@link #packPolyData(Vertex, Vertex, Vertex, float[])},
      */
     public static boolean triBoxOverlap(float boxCenterX, float boxCenterY, float boxCenterZ, float boxHalfSize, float[] polyData)
     {
-        // Bounding box tests
-        // Exclude polys that merely touch an edge unless the poly is co-planar
-        if(polyData[POLY_MIN_X] == polyData[POLY_MAX_X])
-        {
-            if(polyData[POLY_MIN_X] > boxCenterX + boxHalfSize) return false;
-            if(polyData[POLY_MAX_X] < boxCenterX - boxHalfSize) return false;
-        }
-        else
-        {
-            if(polyData[POLY_MIN_X] >= boxCenterX + boxHalfSize) return false;
-            if(polyData[POLY_MAX_X] <= boxCenterX - boxHalfSize) return false;
-        }
-
-        if(polyData[POLY_MIN_Y] == polyData[POLY_MAX_Y])
-        {
-            if(polyData[POLY_MIN_Y] > boxCenterY + boxHalfSize) return false;
-            if(polyData[POLY_MAX_Y] < boxCenterY - boxHalfSize) return false;
-        }
-        else
-        {
-            if(polyData[POLY_MIN_Y] >= boxCenterY + boxHalfSize) return false;
-            if(polyData[POLY_MAX_Y] <= boxCenterY - boxHalfSize) return false;
-        }
-
-        if(polyData[POLY_MIN_Z] == polyData[POLY_MAX_Z])
-        {
-            if(polyData[POLY_MIN_Z] > boxCenterZ + boxHalfSize) return false;
-            if(polyData[POLY_MAX_Z] < boxCenterZ - boxHalfSize) return false;
-        }
-        else
-        {
-            if(polyData[POLY_MIN_Z] >= boxCenterZ + boxHalfSize) return false;
-            if(polyData[POLY_MAX_Z] <= boxCenterZ - boxHalfSize) return false;
-        }
+        // bounding box tests
+        if(isTriExcluded(polyData[POLY_MIN_X], polyData[POLY_MAX_X], boxCenterX, boxHalfSize))
+            return false;
+        
+        if(isTriExcluded(polyData[POLY_MIN_Y], polyData[POLY_MAX_Y], boxCenterY, boxHalfSize))
+            return false;
+        
+        if(isTriExcluded(polyData[POLY_MIN_Z], polyData[POLY_MAX_Z], boxCenterZ, boxHalfSize))
+            return false;
         
         /* move everything so that the boxcenter is in (0,0,0) */
         final float v0x = polyData[POLY_V0_X] - boxCenterX;

@@ -17,14 +17,21 @@ public class BoxFinderUtils
 {
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
-    static final int[] MIN_X;
-    static final int[] MAX_X;
-    static final int[] MIN_Y;
-    static final int[] MAX_Y;
-    //    private static final LongArrayList[] PATTERNS_BY_÷BIT = new LongArrayList[65];
+    //TODO: remove
+    //    private static final LongArrayList[] PATTERNS_BY_BIT = new LongArrayList[65];
     static final LongArrayList[] PATTERNS_BY_AREA = new LongArrayList[65];
 
     static final long[] EMPTY = new long[64];
+    
+    static final Slice[][] lookupMinMax = new Slice[8][8];
+    
+    /**
+     * Max is inclusive and equal to max attribute of slice.
+     */
+    public static Slice sliceByMinMax(int minZ, int maxZ)
+    {
+        return lookupMinMax[minZ][maxZ];
+    }
     
     static enum Slice
     {
@@ -91,17 +98,20 @@ public class BoxFinderUtils
         }
     }
     
+    // PERF: call off of startup thread as first task in pool
     static
     {
-        LongOpenHashSet patterns = new LongOpenHashSet();
+        for(Slice slice : Slice.values())
+        {
+            lookupMinMax[slice.min][slice.max] = slice;
+        }
         
+        LongOpenHashSet patterns = new LongOpenHashSet();
+         
         for(int xSize = 1; xSize <= 8; xSize++)
         {
             for(int ySize = 1; ySize <= 8; ySize++)
             {
-                // leave very small patterns for box list to combine via face matching
-                if(xSize * ySize < 2) continue;
-                
                 addPatterns(xSize, ySize, patterns);
             }
         }
@@ -123,11 +133,6 @@ public class BoxFinderUtils
                 return  Integer.compare(Long.bitCount(k2), Long.bitCount(k1));
             }
         });
-        
-        MIN_X = new int[patterns.size()];
-        MIN_Y = new int[patterns.size()];
-        MAX_X = new int[patterns.size()];
-        MAX_Y = new int[patterns.size()];
         
         int[][] countByBit = new int[2][64];
 
@@ -154,7 +159,7 @@ public class BoxFinderUtils
                 if((p & (1L << bit)) != 0)
                 {
                     int x = bit & 7;
-                    int y = (bit >> 3) & 7;
+                    int y = (bit >>> 3) & 7;
                     minX = Math.min(x,  minX);
                     minY = Math.min(y,  minY);
                     maxX = Math.max(x,  maxX);
@@ -164,19 +169,15 @@ public class BoxFinderUtils
                     countByBit[a][bit]++;
                 }
             }
-            
-            BoxFinderUtils.MIN_X[i] = minX;
-            BoxFinderUtils.MIN_Y[i] = minY;
-            BoxFinderUtils.MAX_X[i] = maxX;
-            BoxFinderUtils.MAX_Y[i] = maxY;
         }
         
         IntArrayList volumes = new IntArrayList();
         for(Slice slice : Slice.values())
         {
-            for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)
+            for(int i = 0; i < AREAS.length; i++)
             {
-                volumes.add(volumeKey(slice, i));
+                if(slice.depth * Long.bitCount(AREAS[i]) > 1)
+                    volumes.add(volumeKey(slice, i));
             }
         }
         
@@ -196,6 +197,13 @@ public class BoxFinderUtils
                 return  Integer.compare(k2, k1);
             }
         });
+        
+//        int last = Integer.MAX_VALUE;
+//        for(int v : VOLUME_KEYS)
+//        {
+//            assert v <= last;
+//            last = v;
+//        }
     }
     
     /**
@@ -209,55 +217,58 @@ public class BoxFinderUtils
     /**
      * Returns the number of maximal volume that target volume
      * must be split into if the actorVolume is chosen for output.
-     * Note this total does count boxes that would be included in the
-     * output volume but is zero if the boxes do not intersect.<p>
-     * 
-     * Produces consistent output in the cases of no intersection
-     * or full inclusion, but not expected these results will ever be 
-     * produced or used because won't be called for non-intersecting volumes
-     * (that test happens earlier) and we have eliminated non-maximal 
-     * volumes before this test happens.<p>
+     * Note this total does not count boxes that would be included in the
+     * output volume.<p>
      * 
      * Returns 0 if the boxes do not intersect.<p>
      * 
      * Computed as the sum of actor bounds (any axis or side)
      * that are within (not on the edge) of the target volume.  
      * This works because each face within bounds will force 
-     * a split of the target box along the plane of the face. 
+     * a split of the target box along the plane of the face.
+     * 
+     * We subtract one from this total because we aren't counting
+     * the boxes that would be absorbed by the actor volume.
      */
     static int splitScore(int actorVolIndex, int targetVolIndex)
     {
         final Slice actorSlice = sliceFromKey(actorVolIndex);
-        final int actorPatternIndex = patternIndexFromKey(actorVolIndex);
-        
         final Slice targetSlice = sliceFromKey(targetVolIndex);
-        final int targetPatternIndex = patternIndexFromKey(targetVolIndex);
 
         // TODO: make this a slice/slice lookup and assign X,Y slices to each pattern
-
         
         int result = 0;
         
-        if(actorSlice.min > targetSlice.min && actorSlice.min < targetSlice.max)
+        // Must be >= or <= on one side of comparison because indexes are voxels and actual face depends on usage (min/max)
+        
+        if(actorSlice.min > targetSlice.min && actorSlice.min <= targetSlice.max)
             result++;
 
-        if(actorSlice.max > targetSlice.min && actorSlice.max < targetSlice.max)
+        if(actorSlice.max >= targetSlice.min && actorSlice.max < targetSlice.max)
             result++;
 
+        result += testAreaBounds(patternFromKey(targetVolIndex), (targetMinX, targetMinY, targetMaxX, targetMaxY) ->
+        {
+            return testAreaBounds(patternFromKey(actorVolIndex), (actorMinX, actorMinY, actorMaxX, actorMaxY) ->
+            {
+                int n = 0;
+                if(actorMinX > targetMinX && actorMinX <= targetMaxX)
+                    n++;
+                
+                if(actorMaxX >= targetMinX && actorMaxX < targetMaxX)
+                    n++;
+                
+                if(actorMinY > targetMinY && actorMinY <= targetMaxY)
+                    n++;
+                
+                if(actorMaxY >= targetMinY && actorMaxY < targetMaxY)
+                    n++;
+                
+                return n;
+            });
+        });
         
-        if(MIN_X[actorPatternIndex] > MIN_X[targetPatternIndex] && MIN_X[actorPatternIndex] < MAX_X[targetPatternIndex])
-            result++;
-        
-        if(MAX_X[actorPatternIndex] > MIN_X[targetPatternIndex] && MAX_X[actorPatternIndex] < MAX_X[targetPatternIndex])
-            result++;
-        
-        if(MIN_Y[actorPatternIndex] > MIN_Y[targetPatternIndex] && MIN_Y[actorPatternIndex] < MAX_Y[targetPatternIndex])
-            result++;
-        
-        if(MAX_Y[actorPatternIndex] > MIN_Y[targetPatternIndex] && MAX_Y[actorPatternIndex] < MAX_Y[targetPatternIndex])
-            result++;
-        
-        return result;
+        return result == 0 ? 0 : result - 1;
     }
     
 
@@ -275,7 +286,28 @@ public class BoxFinderUtils
         {
             for(int yOrigin = 0; yOrigin <= 8 - ySize; yOrigin++)
             {
-                patterns.add(BoxFinderUtils.makePattern(xOrigin, yOrigin, xSize, ySize));
+                long pattern = makePattern(xOrigin, yOrigin, xSize, ySize);
+                
+//                if(yOrigin + ySize < 8)
+//                    assert ((pattern << 8) | pattern) == makePattern(xOrigin, yOrigin, xSize, ySize + 1);
+//                
+//                if(yOrigin > 0)
+//                    assert ((pattern >>> 8) | pattern) == makePattern(xOrigin, yOrigin - 1, xSize, ySize + 1);
+//                
+//                final int x0 = xOrigin;
+//                final int y0 = yOrigin;
+//                final int x1 = xOrigin + xSize - 1;
+//                final int y1 = yOrigin + ySize - 1;
+//                testAreaBounds(pattern, (minX, minY, maxX, maxY) ->
+//                {
+//                    assert minX == x0;
+//                    assert minY == y0;
+//                    assert maxX == x1;
+//                    assert maxY == y1;
+//                    return 0;
+//                });
+                
+                patterns.add(pattern);
             }
         }
     }
@@ -287,7 +319,7 @@ public class BoxFinderUtils
         {
             for(int y = 0; y < ySize; y++)
             {
-                pattern |= (1L << BoxFinderUtils.bitIndex(xOrigin + x, yOrigin + y));
+                pattern |= (1L << bitIndex(xOrigin + x, yOrigin + y));
             }
         }
         return pattern;
@@ -297,23 +329,145 @@ public class BoxFinderUtils
     {
         return x | (y << 3);
     }
+    
+    static int xFromBitIndex(int bitIndex)
+    {
+        return bitIndex & 7;
+    }
+    
+    static int yFromBitIndex(int bitIndex)
+    {
+        return (bitIndex >>> 3) & 7;
+    }
+    
+    @FunctionalInterface
+    interface IBoundsTest
+    {
+        /**
+         * Max values are inclusive.
+         */
+        int apply(int xMin, int yMin, int xMax, int yMax);
+    }
 
+    /**
+     * Single-pass, bitwise derivation of x, y bounds for given area pattern. 
+     * Area does not have to be fully populated to work.
+     */
+    static int testAreaBounds(long areaPattern, IBoundsTest test)
+    {
+        if(areaPattern == 0L)
+        {
+            assert false : "Bad (zero) argument to findAreaBounds";
+            return 0;
+        }
+        
+        long xBits = 0;
+        
+        xBits = areaPattern | (areaPattern >>> 32);
+        xBits |= xBits >>> 16;
+        xBits |= xBits >>> 8;
+        xBits &= 0xFFL;
+        
+        return test.apply(minX(xBits), minY(areaPattern), maxX(xBits), maxY(areaPattern));
+    }
+    
+    /**
+     * For testing. 
+     */
+    static boolean doAreaBoundsMatch(long areaPattern, int minX, int minY, int maxX, int maxY)
+    {
+        return testAreaBounds(areaPattern, (x0, y0, x1, y1) ->
+        {
+            return (x0 == minX && y0 == minY && x1 == maxX && y1 == maxY) ? 1 : 0;
+        }) == 1;
+    }
+    
+    private static int minX(long xBits)
+    {
+        if((xBits & 0b1111) == 0)
+        {
+            if((xBits & 0b110000) == 0)
+                return (xBits & 0b1000000) == 0 ? 7 : 6;
+            else
+                return (xBits & 0b10000) == 0 ? 5 : 4;
+        }
+        else
+        {
+            if((xBits & 0b11) == 0)
+                return (xBits & 0b0100) == 0 ? 3 : 2;
+            else
+                return (xBits & 0b1) == 0 ? 1 : 0;
+        }
+    }
+    
+    private static int minY(long yBits)
+    {
+        if((yBits & 0xFFFFFFFFL) == 0L)
+        {
+            if((yBits & 0xFFFFFFFFFFFFL) == 0L)
+                return (yBits & 0xFFFFFFFFFFFFFFL) == 0L ? 7 : 6;
+            else
+                return (yBits & 0xFFFFFFFFFFL) == 0L ? 5 : 4;
+        }
+        else
+        {
+            if((yBits & 0xFFFFL) == 0L)
+                return (yBits & 0xFF0000L) == 0L ? 3 : 2;
+            else
+                return (yBits & 0xFFL) == 0L ? 1 : 0;
+        }
+    }
+    
+    private static int maxX(long xBits)
+    {
+        if((xBits & 0b11110000) == 0)
+        {
+            if((xBits & 0b1100) == 0)
+                return (xBits & 0b10) == 0 ? 0 : 1;
+            else
+                return (xBits & 0b1000) == 0 ? 2 : 3;
+        }
+        else
+        {
+            if((xBits & 0b11000000) == 0)
+                return (xBits & 0b100000) == 0 ? 4 : 5;
+            else
+                return (xBits & 0b10000000) == 0 ? 6 : 7;
+        }
+    }
+    
+    private static int maxY(long yBits)
+    {
+        if((yBits & 0xFFFFFFFF00000000L) == 0L)
+        {
+            if((yBits & 0xFFFF0000L) == 0L)
+                return (yBits & 0xFF00L) == 0L ? 0 : 1;
+            else
+                return (yBits & 0xFF000000) == 0L ? 2 : 3;
+        }
+        else
+        {
+            if((yBits & 0xFFFF000000000000L) == 0L)
+                return (yBits & 0xFF0000000000L) == 0L ? 4 : 5;
+            else
+                return (yBits & 0xFF00000000000000L) == 0L ? 6 : 7;
+        }
+    }
+    
     /**
      * Encodes a volume key that is naturally sortable by volume. (Larger values imply larger volume).
      */
     static int volumeKey(Slice slice, int patternIndex)
     {
         int volume = volume(slice, patternIndex);
-        return (volume << 17) | (patternIndex << 6) | slice.ordinal();
+        int result = (volume << 17) | (patternIndex << 6) | slice.ordinal();
+        assert result > 0;
+        return result;
     }
 
     static int volume(Slice slice, int patternIndex)
     {
-        int x = MAX_X[patternIndex] - MIN_X[patternIndex] + 1;
-        int y = MAX_Y[patternIndex] - MIN_Y[patternIndex] + 1;
-        int volume = slice.depth * x * y;
-        assert x * y == Long.bitCount(AREAS[patternIndex]);
-        return  volume;
+        return slice.depth * Long.bitCount(AREAS[patternIndex]);
     }
 
     static int volumeFromKey(int volumeKey)
@@ -343,6 +497,16 @@ public class BoxFinderUtils
     {
         return (sliceFromKey(volumeKey0).layerBits & sliceFromKey(volumeKey1).layerBits) != 0L
                 &&  (patternFromKey(volumeKey0) & patternFromKey(volumeKey1)) != 0L;
+    }
+    
+    /**
+     * True if volume matches the given bounds.<br>
+     * Second point coordinates are inclusive.
+     */
+    static boolean areVolumesSame(int volumeKey, int x0, int y0, int z0, int x1, int y1, int z1)
+    {
+        return sliceFromKey(volumeKey).min == z0 & sliceFromKey(volumeKey).max == z1
+                &&  doAreaBoundsMatch(patternFromKey(volumeKey), x0, y0, x1, y1);
     }
 
     /**
@@ -379,7 +543,7 @@ public class BoxFinderUtils
         if(bits != 0)
         {
             forEachBit32((int)(bits & 0xFFFFFFFFL), 0, consumer);
-            forEachBit32((int)((bits >> 32) & 0xFFFFFFFFL), 32, consumer);
+            forEachBit32((int)((bits >>> 32) & 0xFFFFFFFFL), 32, consumer);
         }
     }
     
@@ -388,7 +552,7 @@ public class BoxFinderUtils
         if(bits != 0)
         {
             forEachBit16((bits & 0xFFFF), baseIndex, consumer);
-            forEachBit16(((bits >> 16) & 0xFFFF), baseIndex + 16, consumer);
+            forEachBit16(((bits >>> 16) & 0xFFFF), baseIndex + 16, consumer);
         }
     }
     
@@ -397,7 +561,7 @@ public class BoxFinderUtils
         if(bits != 0)
         {
             forEachBit8((bits & 0xFF), baseIndex, consumer);
-            forEachBit8(((bits >> 8) & 0xFF), baseIndex + 8, consumer);
+            forEachBit8(((bits >>> 8) & 0xFF), baseIndex + 8, consumer);
         }
     }
     
@@ -406,7 +570,7 @@ public class BoxFinderUtils
         if(bits != 0)
         {
             forEachBit4((bits & 0xF), baseIndex, consumer);
-            forEachBit4(((bits >> 4) & 0xF), baseIndex + 4, consumer);
+            forEachBit4(((bits >>> 4) & 0xF), baseIndex + 4, consumer);
         }
     }
     

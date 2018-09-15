@@ -18,7 +18,7 @@ public interface ICollisionHandler
     
     public default List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return CollisionBoxDispatcher.INSTANCE.getCollisionBoxes(modelState);
+        return CollisionBoxDispatcher.getCollisionBoxes(modelState);
     }
 
     public default AxisAlignedBB getCollisionBoundingBox(ISuperModelState modelState)

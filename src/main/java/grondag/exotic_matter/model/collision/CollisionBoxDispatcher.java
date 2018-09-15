@@ -15,8 +15,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 public class CollisionBoxDispatcher
 {
-    public static final CollisionBoxDispatcher INSTANCE = new CollisionBoxDispatcher();
-    
     private static final ExecutorService EXEC = Executors.newSingleThreadExecutor(
             new ThreadFactory()
             {
@@ -31,7 +29,7 @@ public class CollisionBoxDispatcher
                 }
             });
     
-    private final ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>> modelBounds = new ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>>(new CollisionBoxLoader(),  0xFFF);
+    private static final ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>> modelBounds = new ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>>(new CollisionBoxLoader(),  0xFFF);
 
     private static ThreadLocal<FastBoxGenerator> fastBoxGen = new ThreadLocal<FastBoxGenerator>()
     {
@@ -42,9 +40,17 @@ public class CollisionBoxDispatcher
         }
     };
     
-    public List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
+    public static List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return this.modelBounds.get(modelState.geometricState());
+        return modelBounds.get(modelState.geometricState());
+    }
+    
+    /**
+     * Clears the cache.
+     */
+    public static void clear()
+    {
+        modelBounds.clear();
     }
     
     private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, List<AxisAlignedBB>>
@@ -60,6 +66,8 @@ public class CollisionBoxDispatcher
             final FastBoxGenerator generator = fastBoxGen.get();
             generator.prepare();
             key.getShape().meshFactory().produceShapeQuads(key, generator);
+            
+            // TODO: reuse these
             OptimizingBoxList result = new OptimizingBoxList(generator.build(), key);
             EXEC.execute(result);
             

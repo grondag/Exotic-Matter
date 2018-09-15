@@ -74,6 +74,16 @@ public class ConfigXM
         @Comment({"If true, terrain block models will be generated with fewer quads for relatively flat regions.",
             " Reduces memory consumption and may improve render performance but may also result in minor visual defects."})
         public boolean simplifyTerrainBlockGeometry = true;
+        
+        @Comment({"Maximum number of procedurally generated collision boxes for blocks that use then.",
+            " This is the budget for *optimal* boxes, which are generated in a separate-low priority thread.",
+            " This means there isn't much penalty for using more detailed collision boxes and allowing more ",
+            " detailed boxes can result in more accurate view tracing and projectile/entity collisions.",
+            " It is made configurable in case some future physics mod does collision processing and has ",
+            " performance issues with the larger numbers.  Smaller number are still pretty good. The generator",
+            " logic finds the best possible set of collision boxes (with 1/8 resolution) with the given budget."})
+        @RangeInt(min = 4, max = 64)
+        public int collisionBoxBudget = 8;
 
     }
     
@@ -131,6 +141,9 @@ public class ConfigXM
 
         @Comment("Debug feature: draw quad outlines and vertex normals for the block currently being looked at.")
         public boolean debugDrawQuadsOutlinesAndNormals = true;
+
+        @Comment("Debug Feature: collision boxes drown without depth, colorized and inset. Used for seeing collision box generation problems.")
+        public boolean debugCollisionBoxes;
     
         public static void recalcDerived()
         {
