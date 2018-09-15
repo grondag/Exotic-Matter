@@ -30,7 +30,6 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
     public List<AxisAlignedBB> build()
     {
         voxels.fillInterior();
-        voxels.simplify();
         builder.clear();
         generateBoxes(builder);
         return builder.build();

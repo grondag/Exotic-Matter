@@ -5,7 +5,6 @@ import java.util.function.IntConsumer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -19,7 +18,6 @@ public class BoxFinderUtils
     static final int[] VOLUME_KEYS;
     //TODO: remove
     //    private static final LongArrayList[] PATTERNS_BY_BIT = new LongArrayList[65];
-    static final LongArrayList[] PATTERNS_BY_AREA = new LongArrayList[65];
 
     static final long[] EMPTY = new long[64];
     
@@ -33,6 +31,12 @@ public class BoxFinderUtils
         return lookupMinMax[minZ][maxZ];
     }
     
+    /**
+     * All possible contiguous sections of the Z-axis into 1/8 units.<p>
+     * 
+     * In retrospect, would probably be better if Slice were simply an 8-bit word instead of an enum
+     * but code is working and is "fast enough" for now. Could matter, tho, with LOR.
+     */
     static enum Slice
     {
         D1_0(1, 0),
@@ -98,7 +102,6 @@ public class BoxFinderUtils
         }
     }
     
-    // PERF: call off of startup thread as first task in pool
     static
     {
         for(Slice slice : Slice.values())
@@ -139,15 +142,12 @@ public class BoxFinderUtils
         for(int i = 0; i <= 64; i++)
         {
 //            PATTERNS_BY_BIT[i] = new LongArrayList();
-            PATTERNS_BY_AREA[i] = new LongArrayList();
         }
         final long BIT_27 = 1L << 27;
         
         for(int i = 0; i < AREAS.length; i++)
         {
             long p = AREAS[i];
-            
-            PATTERNS_BY_AREA[Long.bitCount(p)].add(p);
             
             int minX = Integer.MAX_VALUE;
             int minY = Integer.MAX_VALUE;
@@ -235,8 +235,6 @@ public class BoxFinderUtils
         final Slice actorSlice = sliceFromKey(actorVolIndex);
         final Slice targetSlice = sliceFromKey(targetVolIndex);
 
-        // TODO: make this a slice/slice lookup and assign X,Y slices to each pattern
-        
         int result = 0;
         
         // Must be >= or <= on one side of comparison because indexes are voxels and actual face depends on usage (min/max)

@@ -455,7 +455,6 @@ public class BoxFinder
      */
     boolean isVolumeMaximal(int volKey)
     {
-        // PERF: would probably be better if Slice were simply an 8-bit word instead of an enum
         final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
         final long pattern = BoxFinderUtils.patternFromKey(volKey);
         

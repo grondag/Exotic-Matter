@@ -16,13 +16,17 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
+        voxels.simplify();
+        
         if(voxels.isEmpty())
             return;
         
         if(voxels.isFull())
             builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
         else
+        {
             generateBoxesInner(builder);
+        }
     }
     
     protected void generateBoxesInner(ICollisionBoxListBuilder builder)

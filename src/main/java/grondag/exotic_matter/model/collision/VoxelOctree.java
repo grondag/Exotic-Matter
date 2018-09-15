@@ -213,7 +213,7 @@ public class VoxelOctree implements IVoxelOctree
     
     /**
      * Makes middle nodes that are mostly full completely full, or otherwise makes them empty.
-     * Meant to be called after {@link #simplify()} to generate fast coarse-grained collision boxes.
+     * Used to generate fast coarse-grained collision boxes.
      */
     public void simplify2X()
     {
