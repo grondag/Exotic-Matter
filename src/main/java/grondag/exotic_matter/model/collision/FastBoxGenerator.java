@@ -3,16 +3,19 @@ package grondag.exotic_matter.model.collision;
 
 public class FastBoxGenerator extends AbstractVoxelBuilder
 {
+    protected FastBoxGenerator()
+    {
+        super(new JoiningBoxListBuilder());
+    }
 
     @Override
-    protected void generateBoxes(CollisionBoxListBuilder builder)
+    protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        //TODO: put back
-//        voxels.simplify2X();
+        voxels.simplify2X();
         genBoxes(voxels, builder);
     }
 
-    private void genBoxes(IVoxelOctTree voxels, CollisionBoxListBuilder builder)
+    private void genBoxes(IVoxelOctree voxels, ICollisionBoxListBuilder builder)
     {
         if(voxels.isEmpty())
             return;

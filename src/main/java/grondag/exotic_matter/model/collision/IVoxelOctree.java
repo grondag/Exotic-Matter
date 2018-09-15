@@ -3,10 +3,10 @@ package grondag.exotic_matter.model.collision;
 import java.util.function.Consumer;
 
 /**
- * Specialized octtree for tracking occupied voxels in a unit cube divided by 16 on each axis.
+ * Specialized octree for tracking occupied voxels in a unit cube divided by 16 on each axis.
  * Intended for collision box generation.
  */
-public interface IVoxelOctTree
+public interface IVoxelOctree
 {
     /**
      * True if nodes have sub nodes, false if nodes represent the 1/16 voxels.
@@ -117,13 +117,13 @@ public interface IVoxelOctTree
      * If has subnodes returns node at given address.
      * If this node is a voxel, throws an exception.
      */
-    public IVoxelOctTree subNode(int index);
+    public IVoxelOctree subNode(int index);
     
     /**
      * Applies consumer to each subnode if has subnodes.
      * Has no effect otherwise.
      */
-    public default void forEach(Consumer<IVoxelOctTree> consumer)
+    public default void forEach(Consumer<IVoxelOctree> consumer)
     {
         if(this.hasSubnodes())
         {

@@ -13,6 +13,10 @@ class BoxFinderTest
     {
         forEachBitTest();
         
+        assert Slice.D1_0.layerBits == 1;
+        assert Slice.D1_7.layerBits == 128;
+        assert Slice.D8_0.layerBits == 255;
+        
         for(Slice slice : Slice.values())
         {
             for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)

@@ -1,16 +1,20 @@
 package grondag.exotic_matter.model.collision;
 
 import grondag.exotic_matter.ConfigXM;
-import grondag.exotic_matter.ExoticMatter;
 
 public class OptimalBoxGenerator extends AbstractVoxelBuilder
 {
+    protected OptimalBoxGenerator()
+    {
+        super(new SimpleBoxListBuilder());
+    }
+
     final BoxFinder bf = new BoxFinder();
     
     final long[] snapshot = new long[8];
     
     @Override
-    protected void generateBoxes(CollisionBoxListBuilder builder)
+    protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
         if(voxels.isEmpty())
             return;
@@ -21,7 +25,7 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
             generateBoxesInner(builder);
     }
     
-    protected void generateBoxesInner(CollisionBoxListBuilder builder)
+    protected void generateBoxesInner(ICollisionBoxListBuilder builder)
     {
         bf.loadVoxels(voxels);
         bf.saveTo(snapshot);
@@ -38,6 +42,7 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
             builder.clear();
             bf.outputBoxes(builder);
             
+            // debug code to view/trace initial disjoint set selection in optimal simplification
 //            if(builder.size() <= ConfigXM.BLOCKS.collisionBoxBudget)
 //            {
 //                ExoticMatter.INSTANCE.info("FINAL BOX STRUCTURE REPORT");
@@ -52,7 +57,8 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
 //                bf.explainDisjointSets();
 //            }
         }
-        
+
+        // debug code to view/trace maximal volumes
 //        bf.restoreFrom(snapshot);
 //        bf.calcCombined();
 //        bf.populateMaximalVolumes();

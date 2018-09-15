@@ -32,16 +32,9 @@ public class BoxFinder
     
     final int[] volumeScores = new int[64];
     
-//    final IntArrayList fuzzyVolumes = new IntArrayList();
-//    int fuzzySearchTolerance;
-//    int fuzzySearchIndex;
-    
     void clear()
     {
         System.arraycopy(EMPTY, 0, voxels, 0, 8);
-//        fuzzyVolumes.clear();
-//        fuzzySearchTolerance = 1;
-//        fuzzySearchIndex = 0;
     }
     
     /**
@@ -177,74 +170,13 @@ public class BoxFinder
         return (voxelScore << 16) | boxScore;
     }
     
-//    /**
-//     * Calling this clears any current maximal volume state.
-//     */
-//    public void applyNextSimplifcation()
-//    {
-//        findNextFuzzyVolume();
-//        
-//        // dont' fill fuzzy volumes until search complete
-//        // because doing so would cause cascading selection of volumes
-//        fillFuzzyVolumes();
-//    }
-//    
-//  
-//    
-//    /**
-//     * Finds next volumes that is almost present
-//     * to allow a larger number of volumes to be recognized. <p>
-//     * 
-//     * Tolerance is the number of voxels out of every 16 that can be missing
-//     * from maximal volumes that are recognized.  To be recognized,
-//     * voxels must be populated on each edge of the fuzzy volume.  (Can't 
-//     * add empty space.) <p>
-//     * 
-//     * Earlier attempts at "fuzzy" volume recognition tried to handle it
-//     * directly during {@link #populateMaximalVolumes(IPresenceTest)} but
-//     */
-//    void findNextFuzzyVolume()
-//    {
-//        final int[] volumes = BoxFinderUtils.VOLUME_KEYS;
-//        final int volLimit = volumes.length;
-//        
-//        for(int tolerance = this.fuzzySearchTolerance; tolerance < 16; tolerance *= 2)
-//        {
-//            for(int i = this.fuzzySearchIndex; i < volLimit;  i++)
-//            {
-//                if(isVolumePresentFuzzy(volumes[i], tolerance))
-//                {
-//                    this.fuzzyVolumes.add(volumes[i++]);
-//                    if(i == volLimit)
-//                    {
-//                        tolerance *= 2;
-//                        i = 0;
-//                    }
-//                    this.fuzzySearchTolerance = tolerance;
-//                    this.fuzzySearchIndex = i;
-//                    return;
-//                }
-//            }
-//            this.fuzzySearchIndex = 0;
-//        }
-//    }
-//    
-//    void fillFuzzyVolumes()
-//    {
-//        final int limit = fuzzyVolumes.size();
-//        for(int i = 0; i < limit; i++)
-//        {
-//            fillVolume(fuzzyVolumes.getInt(i));
-//        }
-//    }
-    
-    public void outputBoxes(CollisionBoxListBuilder builder)
+    public void outputBoxes(ICollisionBoxListBuilder builder)
     {
         while(outputBest(builder)) {};
         outputRemainers(builder);
     }
     
-    void outputRemainers(CollisionBoxListBuilder builder)
+    void outputRemainers(ICollisionBoxListBuilder builder)
     {
         outputRemainerInner(0, builder);
         outputRemainerInner(1, builder);
@@ -256,7 +188,7 @@ public class BoxFinder
         outputRemainerInner(7, builder);
     }
     
-    void outputRemainerInner(int z, CollisionBoxListBuilder builder)
+    void outputRemainerInner(int z, ICollisionBoxListBuilder builder)
     {
         final long bits = voxels[z];
         
@@ -316,7 +248,7 @@ public class BoxFinder
     }
     
     
-    private void outputDisjointSet(long disjointSet, CollisionBoxListBuilder builder)
+    private void outputDisjointSet(long disjointSet, ICollisionBoxListBuilder builder)
     {
         BoxFinderUtils.forEachBit(disjointSet, i -> 
         {
@@ -372,14 +304,14 @@ public class BoxFinder
         });
     }
     
-    private boolean outputBest(CollisionBoxListBuilder builder)
+    private boolean outputBest(ICollisionBoxListBuilder builder)
     {
         calcCombined();
         populateMaximalVolumes();
         return outputBestInner(builder);
     }
     
-    private boolean outputBestInner(CollisionBoxListBuilder builder)
+    private boolean outputBestInner(ICollisionBoxListBuilder builder)
     {
         if(this.volumeCount <= 1)
         {
@@ -450,7 +382,7 @@ public class BoxFinder
         return counter.total;
     }
 
-    void addBox(int volumeKey, CollisionBoxListBuilder builder)
+    void addBox(int volumeKey, ICollisionBoxListBuilder builder)
     {
         Slice slice = BoxFinderUtils.sliceFromKey(volumeKey);
         BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternFromKey(volumeKey), (minX, minY, maxX, maxY) ->
@@ -461,7 +393,7 @@ public class BoxFinder
         });
     }
     
-    void loadVoxels(VoxelOctTree voxels)
+    void loadVoxels(VoxelOctree voxels)
     {
         clear();
         voxels.forEachBottom(v -> 
@@ -529,8 +461,6 @@ public class BoxFinder
         
         return BoxFinderUtils.testAreaBounds(pattern, (minX, minY, maxX, maxY) ->
         {
-//            System.out.println(String.format("slice %d %d",slice.min, slice.max));
-//            System.out.println(String.format("pattern %d %d %d %d", minX, minY, maxX, maxY));
             if(slice.min > 0 && isVolumePresent(pattern, BoxFinderUtils.sliceByMinMax(slice.min - 1, slice.max)))
                 return 1;
             
@@ -551,29 +481,6 @@ public class BoxFinder
             
             return 0;
         }) == 0;
-        
-       
-            
-       
-    }
-    
-    boolean isVolumeMaximalOld(int volKey)
-    {
-        final int[] volumes = this.maximalVolumes;
-        final int limit = this.volumeCount;
-        if(limit == 0)
-            return true;
-        
-        if(limit == 1)
-            return !BoxFinderUtils.isVolumeIncluded(volumes[0], volKey);
-        
-        for(int i = 0; i < limit; i++)
-        {
-            if(BoxFinderUtils.isVolumeIncluded(volumes[i], volKey))
-                return false;
-        }
-        
-        return true;
     }
     
     @FunctionalInterface
@@ -602,14 +509,19 @@ public class BoxFinder
             }
         }
         
-        for(int i = 0; i < volumeCount; i++)
-        {
-            for(int j = 0; j < volumeCount; j++)
-            {
-//                if(i != j)
-//                    assert !BoxFinderUtils.isVolumeIncluded(volumes[i], volumes[j]);
-            }
-        }
+//        for(int i = 0; i < volumeCount; i++)
+//        {
+//            for(int j = 0; j < volumeCount; j++)
+//            {
+//                if(i != j && BoxFinderUtils.isVolumeIncluded(volumes[i], volumes[j]))
+//                {
+//                    ExoticMatter.INSTANCE.info("REDUNDANT MAXIMAL VOLUMES");
+//                    explainVolume(i);
+//                    explainVolume(j);
+//                }
+//                    
+//            }
+//        }
     }
     
     void populateIntersects()
@@ -651,56 +563,6 @@ public class BoxFinder
     {
         return (pattern & combined[slice.ordinal()]) == pattern;
     }
-    
-//    boolean isVolumePresentFuzzy(int volKey, int tolerance)
-//    {
-//        final long pattern = BoxFinderUtils.patternFromKey(volKey);
-//        final int patternBits = Long.bitCount(pattern);
-//        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
-//        
-//        // tolerance is number of voxels out of every 16 that can be skipped
-//        final int volume = patternBits * slice.depth;
-//        tolerance = tolerance * volume / 16;
-//        
-//        // PERF: shouldn't even call this method if volume is less than minimal needed for tolerance
-//        if(tolerance == 0)
-//            return false;
-//        
-//        
-//        // must have voxels on exterior - Z axis check
-//        if(voxels[slice.min] == 0L || voxels[slice.max] == 0L)
-//            return false;
-//        
-//        int missedBits = 0;
-//        
-//        long combined = 0;
-//        
-//        for(int i = slice.min; i <= slice.max; i++)
-//        {
-//            long v = voxels[i];
-//            combined |= v;
-//            missedBits += patternBits - Long.bitCount(pattern & v);
-//            if(missedBits > tolerance)
-//                return false;
-//        }
-//        
-//        // check for fuzzy - if no missing voxels not fuzzy
-//        if(missedBits == 0)
-//            return false;
-//        
-//        // confirm have exterior voxels at bounds for x and y axis
-//        return BoxFinderUtils.testAreaBounds(combined, (combinedMinX, combinedMinY, combinedMaxX, combinedMaxY) ->
-//        {
-//            return BoxFinderUtils.testAreaBounds(pattern, (patternMinX, patternMinY, patternMaxX, patternMaxY) ->
-//            {
-//                return  combinedMinX == patternMinX
-//                        && combinedMinY == patternMinY
-//                        && combinedMaxX == patternMaxX
-//                        && combinedMaxY == patternMaxY
-//                        ? 0 : 1;
-//            });
-//        }) == 0;
-//    }
     
     void fillVolume(int volKey)
     {

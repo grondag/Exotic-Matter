@@ -14,8 +14,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
 {
     final float[] polyData = new float[27];
-    protected final VoxelOctTree voxels = new VoxelOctTree();
-    protected final CollisionBoxListBuilder builder = new CollisionBoxListBuilder();
+    protected final VoxelOctree voxels = new VoxelOctree();
+    protected final ICollisionBoxListBuilder builder;
+    
+    protected AbstractVoxelBuilder(ICollisionBoxListBuilder builder)
+    {
+        this.builder = builder;
+    }
     
     public void prepare()
     {
@@ -31,7 +36,7 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
         return builder.build();
     }
     
-    protected abstract void generateBoxes(CollisionBoxListBuilder builder);
+    protected abstract void generateBoxes(ICollisionBoxListBuilder builder);
     
     @Override
     public void accept(@SuppressWarnings("null") IPolygon poly)
@@ -51,7 +56,7 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
         acceptTriangleInner(voxels);
     }
     
-    private void acceptTriangleInner(IVoxelOctTree v)
+    private void acceptTriangleInner(IVoxelOctree v)
     {
         final float[] data = polyData;
         if(TriangleBoxTest.triBoxOverlap(v.xCenter(), v.yCenter(), v.zCenter(), v.voxelSizeHalf(), data))

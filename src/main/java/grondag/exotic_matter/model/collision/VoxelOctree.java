@@ -3,11 +3,15 @@ package grondag.exotic_matter.model.collision;
 import java.util.function.Consumer;
 
 /**
+ * Voxels of a unit cube to 1/16 (per axis) resolution navigable as an OctTree.  
+ * Meant for high-performance voxelization of block models.<p>
  * 
- * OctTree representation of a unit cube.  
- * Meant for high-performance voxelization of block models.
+ * Strictly speaking, this is <em>navigable</em> as an Octree which is
+ * useful to shortcut tests and other operations, but it is 
+ * implemented as a straightforward array of bits (as longs).
+ * This is simple and performant for our particular use case.
  */
-public class VoxelOctTree implements IVoxelOctTree
+public class VoxelOctree implements IVoxelOctree
 {
     private static final long FULL_BITS = 0xFFFFFFFFFFFFFFFFL;
     private static final long[] ALL_FULL = new long[64];
@@ -147,7 +151,7 @@ public class VoxelOctTree implements IVoxelOctTree
     private final Bottom[] bottom = new Bottom[512];
     private final Voxel[] voxel = new Voxel[4096];
     
-    public VoxelOctTree()
+    public VoxelOctree()
     {
         for(int i = 0; i < 8; i++)
             top[i] = new Top(i);
@@ -162,19 +166,19 @@ public class VoxelOctTree implements IVoxelOctTree
             voxel[i] = new Voxel(i);
     }
     
-    public void forEachVoxel(Consumer<IVoxelOctTree> consumer)
+    public void forEachVoxel(Consumer<IVoxelOctree> consumer)
     {
         for(Voxel v : voxel)
             consumer.accept(v);
     }
     
-    public void forEachBottom(Consumer<IVoxelOctTree> consumer)
+    public void forEachBottom(Consumer<IVoxelOctree> consumer)
     {
         for(Bottom b : bottom)
             consumer.accept(b);
     }
     
-    public IVoxelOctTree voxel(int x, int y, int z)
+    public IVoxelOctree voxel(int x, int y, int z)
     {
         return voxel[VOXEL_XYZ_INDEX[voxelPackedXYZ(x, y, z)]];
     }
@@ -269,7 +273,7 @@ public class VoxelOctTree implements IVoxelOctTree
     @Override
     public final float zCenter() { return 0.5f; }
     
-    private abstract class AbstractOct implements IVoxelOctTree
+    private abstract class AbstractOct implements IVoxelOctree
     {
         protected final int index;
         protected final float xCenter;
@@ -513,7 +517,7 @@ public class VoxelOctTree implements IVoxelOctTree
         }
 
         @Override
-        public IVoxelOctTree subNode(int index)
+        public IVoxelOctree subNode(int index)
         {
             throw new UnsupportedOperationException();
         }

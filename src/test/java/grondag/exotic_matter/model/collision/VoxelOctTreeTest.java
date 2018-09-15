@@ -8,7 +8,7 @@ class VoxelOctTreeTest
     @Test
     void test()
     {
-        VoxelOctTree vot = new VoxelOctTree();
+        VoxelOctree vot = new VoxelOctree();
         
         assert vot.isEmpty();
 
@@ -61,11 +61,11 @@ class VoxelOctTreeTest
         assert vot.isFull();
     }
     
-    private void testBox(IVoxelOctTree t)
+    private void testBox(IVoxelOctree t)
     {
         for(int i = 0; i < 8; i++)
         {
-            IVoxelOctTree st = t.subNode(i);
+            IVoxelOctree st = t.subNode(i);
             assert st.xMin() >= t.xMin();
             assert st.xMax() <= t.xMax();
             assert st.yMin() >= t.yMin();

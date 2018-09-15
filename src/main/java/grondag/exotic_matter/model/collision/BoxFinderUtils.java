@@ -91,7 +91,7 @@ public class BoxFinderUtils
             int flags = 0;
             for(int i = 0; i < depth; i++)
             {
-                flags |= (1 << i);
+                flags |= (1 << (min + i));
             }
             
             this.layerBits = flags;
