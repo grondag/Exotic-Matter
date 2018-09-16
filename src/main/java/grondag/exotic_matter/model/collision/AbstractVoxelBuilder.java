@@ -50,14 +50,14 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
             acceptTriangle(v[0], v[2], v[3]);
     }
 
-    private void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
+    protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
     {
         final float[] data = polyData;
         TriangleBoxTest.packPolyData(v0, v1, v2, data);
         acceptTriangleInner(voxels);
     }
     
-    private void acceptTriangleInner(IVoxelOctree v)
+    protected void acceptTriangleInner(IVoxelOctree v)
     {
         final float[] data = polyData;
         if(TriangleBoxTest.triBoxOverlap(v.xCenter(), v.yCenter(), v.zCenter(), v.voxelSizeHalf(), data))

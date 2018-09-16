@@ -1,5 +1,10 @@
 package grondag.exotic_matter.model.collision;
 
+import java.util.List;
+
+import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.Vertex;
+import net.minecraft.util.math.AxisAlignedBB;
 
 public class FastBoxGenerator extends AbstractVoxelBuilder
 {
@@ -22,5 +27,42 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
             builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
         else if(voxels.hasSubnodes())
             voxels.forEach(v -> genBoxes(v, builder));
+    }
+
+    //TODO: remove below - here for profiling
+    
+    @Override
+    public void prepare()
+    {
+        // TODO Auto-generated method stub
+        super.prepare();
+    }
+
+    @Override
+    public List<AxisAlignedBB> build()
+    {
+        // TODO Auto-generated method stub
+        return super.build();
+    }
+
+    @Override
+    public void accept(IPolygon poly)
+    {
+        // TODO Auto-generated method stub
+        super.accept(poly);
+    }
+
+    @Override
+    protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
+    {
+        // TODO Auto-generated method stub
+        super.acceptTriangle(v0, v1, v2);
+    }
+
+    @Override
+    protected void acceptTriangleInner(IVoxelOctree v)
+    {
+        // TODO Auto-generated method stub
+        super.acceptTriangleInner(v);
     }
 }

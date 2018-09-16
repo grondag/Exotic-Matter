@@ -220,8 +220,6 @@ public class TriangleBoxTest
         polyData[POLY_NORM_Z] = e0x * e1y - e0y * e1x; 
     }
     
-    private static float EPSILON = 0.001F;
-    
     /**
      * Per-axis bounding box test.  Returns true if tri min/max outside box bounds.
      * Exclude polys that merely touch an edge unless the poly is co-planar

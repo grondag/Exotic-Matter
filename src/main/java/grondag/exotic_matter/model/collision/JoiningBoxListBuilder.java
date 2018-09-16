@@ -3,11 +3,12 @@ package grondag.exotic_matter.model.collision;
 import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.X_AXIS;
 import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.Y_AXIS;
 import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.Z_AXIS;
-import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.faceKey;
 
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import java.util.function.IntConsumer;
+
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import scala.actors.threadpool.Arrays;
 
 /**
  * Accumulates immutable, low-garbage (via cache) lists of collision boxes 
@@ -15,20 +16,81 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
  */
 public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
 {
-    private static final int NOT_FOUND = -1;
+    @SuppressWarnings("unused")
+    private static final int MIN_A_SHIFT = 0;
+    private static final int MIN_B_SHIFT = 2;
+    private static final int MAX_A_SHIFT = 4;
+    private static final int MAX_B_SHIFT = 6;
+    private static final int AXIS_DEPTH_SHIFT = 8;
+    // x9 because 3 axis and 3 depths
+    private static final int MAX_FACE_KEYS = 4 * 4 * 4 * 4 * 9;
     
-    private final Int2IntOpenHashMap faceToBoxMap = new Int2IntOpenHashMap();
+    private static final int[] EMPTY_FACE_BOX_MAP = new int[MAX_FACE_KEYS];
+    
+    static
+    {
+        Arrays.fill(EMPTY_FACE_BOX_MAP, -1);
+    }
+    
+    /**
+     * Similar to method of same name in CollisionBoxEncorder but for 1/4 unit voxels
+     * and does not include exterior faces.<p>
+     * 
+     * depth is 0-2, where 0 is the first interior divison on the given axis
+     * and 2 is the last. (Again, not counting exterior faces.)
+     */
+    static int faceKey(int axisOrdinal, int depth, int minA, int minB, int maxA, int maxB)
+    {
+        int result = minA
+                | (minB << MIN_B_SHIFT) 
+                | ((maxA - 1) << MAX_A_SHIFT) 
+                | ((maxB - 1) << MAX_B_SHIFT)
+                | ((axisOrdinal * 3 + depth) << AXIS_DEPTH_SHIFT);
+        
+        //TODO: remove
+        assert result >= 0 && result < MAX_FACE_KEYS;
+        
+        return result;
+    }
+    
+    static void forEachFaceKey(int boxKey, IntConsumer faceKeyConsumer)
+    {
+        CollisionBoxEncoder.forBounds(boxKey, (minX, minY, minZ, maxX, maxY, maxZ) ->
+        {
+            final int x0 = minX >> 1;
+            final int y0 = minY >> 1;
+            final int z0 = minZ >> 1;
+            final int x1 = maxX >> 1;
+            final int y1 = maxY >> 1;
+            final int z1 = maxZ >> 1;
+            
+            if(y1 != 4) faceKeyConsumer.accept(faceKey(Y_AXIS, y1 - 1, x0, z0, x1, z1));
+            if(y0 != 0) faceKeyConsumer.accept(faceKey(Y_AXIS, y0 - 1, x0, z0, x1, z1));
+            
+            if(x1 != 4) faceKeyConsumer.accept(faceKey(X_AXIS, x1 - 1, y0, z0, y1, z1));
+            if(x0 != 0) faceKeyConsumer.accept(faceKey(X_AXIS, x0 - 1, y0, z0, y1, z1));
+            
+            if(z1 != 4) faceKeyConsumer.accept(faceKey(Z_AXIS, z1 - 1, x0, y0, x1, y1));
+            if(z0 != 0) faceKeyConsumer.accept(faceKey(Z_AXIS, z0 - 1, x0, y0, x1, y1));
+            return 0;
+        });
+    }
+    
+//    private final Int2IntOpenHashMap faceToBoxMap = new Int2IntOpenHashMap();
+    
+    private final int[] faceBoxMap = new int[MAX_FACE_KEYS];
+    
     private final IntOpenHashSet boxSet = new IntOpenHashSet();
     
     public JoiningBoxListBuilder()
     {
-        faceToBoxMap.defaultReturnValue(NOT_FOUND);
+        System.arraycopy(EMPTY_FACE_BOX_MAP, 0, faceBoxMap, 0, MAX_FACE_KEYS);
     }
     
     @Override
     public void clear()
     {
-        faceToBoxMap.clear();
+        System.arraycopy(EMPTY_FACE_BOX_MAP, 0, faceBoxMap, 0, MAX_FACE_KEYS);
         boxSet.clear();
     }
     
@@ -37,14 +99,14 @@ public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
      */
     private void removeBox(int boxKey)
     {
-        CollisionBoxEncoder.forEachFaceKey(boxKey, k -> faceToBoxMap.remove(k));
+        forEachFaceKey(boxKey, k -> faceBoxMap[k] = -1);
         boxSet.rem(boxKey);
     }
     
     private void addBox(int boxKey)
     {
         boxSet.add(boxKey);
-        CollisionBoxEncoder.forEachFaceKey(boxKey, k -> faceToBoxMap.put(k, boxKey));
+        forEachFaceKey(boxKey, k -> faceBoxMap[k] = boxKey);
     }
     
     //TODO: remove
@@ -82,22 +144,29 @@ public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
     {
         CollisionBoxEncoder.forBounds(boxKey, (minX, minY, minZ, maxX, maxY, maxZ) ->
         {
-            if(minY > 0 && tryCombine(boxKey, faceKey(Y_AXIS, maxY, minX, minZ, maxX, maxZ)))
+            final int x0 = minX >>> 1;
+            final int y0 = minY >>> 1;
+            final int z0 = minZ >>> 1;
+            final int x1 = maxX >>> 1;
+            final int y1 = maxY >>> 1;
+            final int z1 = maxZ >>> 1;
+            
+            if(y1 != 4 && tryCombine(boxKey, faceKey(Y_AXIS, y1 - 1, x0, z0, x1, z1)))
                 return 0;
             
-            if(minY < 8 && tryCombine(boxKey, faceKey(Y_AXIS, minY, minX, minZ, maxX, maxZ)))
+            if(y0 != 0 && tryCombine(boxKey, faceKey(Y_AXIS, y0 - 1, x0, z0, x1, z1)))
                 return 0;
             
-            if(minX > 0 && tryCombine(boxKey, faceKey(X_AXIS, maxX, minY, minZ, maxY, maxZ)))
+            if(x1 != 4 && tryCombine(boxKey, faceKey(X_AXIS, x1 - 1, y0, z0, y1, z1)))
                 return 0;
             
-            if(minX < 8 && tryCombine(boxKey, faceKey(X_AXIS, minX, minY, minZ, maxY, maxZ)))
+            if(x0 != 0 && tryCombine(boxKey, faceKey(X_AXIS, x0 - 1, y0, z0, y1, z1)))
                 return 0;
             
-            if(minZ > 0 && tryCombine(boxKey, faceKey(Z_AXIS, maxZ, minX, minY, maxX, maxY)))
+            if(z1 != 4 && tryCombine(boxKey, faceKey(Z_AXIS, z1 - 1, x0, y0, x1, y1)))
                 return 0;
             
-            if(minZ < 8 && tryCombine(boxKey, faceKey(Z_AXIS, minZ, minX, minY, maxX, maxY)))
+            if(z0 != 0 && tryCombine(boxKey, faceKey(Z_AXIS, z0 - 1, x0, y0, x1, y1)))
                 return 0;
             
             addBox(boxKey);
@@ -107,8 +176,8 @@ public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
 
     boolean tryCombine(int boxKey, int faceKey)
     {
-        int k = faceToBoxMap.get(faceKey);
-        if(k == NOT_FOUND )
+        int k = faceBoxMap[faceKey];
+        if(k == -1 )
             return false;
         
         removeBox(k);

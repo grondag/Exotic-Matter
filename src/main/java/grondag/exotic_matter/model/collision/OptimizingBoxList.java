@@ -38,8 +38,7 @@ public class OptimizingBoxList extends ForwardingList<AxisAlignedBB> implements 
         generator.prepare();
         modelState.getShape().meshFactory().produceShapeQuads(modelState, generator);
         wrapped = generator.build();
-        //TODO: remove
-        ExoticMatter.INSTANCE.info("Optimization completed, queue depth = %d", CollisionBoxDispatcher.QUEUE.size());
+//        ExoticMatter.INSTANCE.info("Optimization completed, queue depth = %d", CollisionBoxDispatcher.QUEUE.size());
         modelState = null;
     }
 }
