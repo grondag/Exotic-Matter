@@ -1,9 +1,12 @@
 package grondag.exotic_matter.model.collision;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,7 +20,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 public class CollisionBoxDispatcher
 {
-    private static final ExecutorService EXEC = Executors.newSingleThreadExecutor(
+    static final BlockingQueue<Runnable> QUEUE = new LinkedBlockingQueue<Runnable>();
+    private static final ExecutorService EXEC = new ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS,
+            QUEUE,
             new ThreadFactory()
             {
                 private AtomicInteger count = new AtomicInteger(1);
@@ -29,7 +35,15 @@ public class CollisionBoxDispatcher
                     thread.setPriority(Thread.MIN_PRIORITY);
                     return thread;
                 }
-            });
+            })
+            {
+                @Override
+                protected void finalize()
+                {
+                    super.finalize();
+                    shutdown();
+                }
+            };
     
     private static final ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>> modelBounds = new ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>>(new CollisionBoxLoader(),  0xFFF);
 
@@ -53,6 +67,7 @@ public class CollisionBoxDispatcher
     public static void clear()
     {
         modelBounds.clear();
+        QUEUE.clear();
     }
     
     private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, List<AxisAlignedBB>>

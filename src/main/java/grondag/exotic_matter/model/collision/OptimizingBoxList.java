@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ForwardingList;
 
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.util.math.AxisAlignedBB;
 
@@ -37,6 +38,8 @@ public class OptimizingBoxList extends ForwardingList<AxisAlignedBB> implements 
         generator.prepare();
         modelState.getShape().meshFactory().produceShapeQuads(modelState, generator);
         wrapped = generator.build();
+        //TODO: remove
+        ExoticMatter.INSTANCE.info("Optimization completed, queue depth = %d", CollisionBoxDispatcher.QUEUE.size());
         modelState = null;
     }
 }

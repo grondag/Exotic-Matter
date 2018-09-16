@@ -1,11 +1,13 @@
 package grondag.exotic_matter.model.collision;
 
+import java.util.ArrayList;
 import java.util.function.IntConsumer;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -17,12 +19,13 @@ public class BoxFinderUtils
 {
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
-    //TODO: remove
-    private static final IntArrayList[][][] VOLUMES_BY_BIT = new IntArrayList[8][8][8];
 
     static final long[] EMPTY = new long[64];
     
     static final Slice[][] lookupMinMax = new Slice[8][8];
+    
+    //TODO: remove
+//    static final ArrayList<VolumeFilter> VOLUME_FILTERS;
     
     /**
      * Max is inclusive and equal to max attribute of slice.
@@ -138,19 +141,6 @@ public class BoxFinderUtils
             }
         });
         
-
-        for(int x = 0; x < 8; x++)
-        {
-            for(int y = 0; y < 8; y++)
-            {
-                for(int z = 0; z < 8; z++)
-                {
-                    VOLUMES_BY_BIT[x][y][z] = new IntArrayList();
-                }
-            }
-        }
-      
-        
         IntArrayList volumes = new IntArrayList();
         for(Slice slice : Slice.values())
         {
@@ -178,13 +168,195 @@ public class BoxFinderUtils
             }
         });
         
-//        int last = Integer.MAX_VALUE;
-//        for(int v : VOLUME_KEYS)
-//        {
-//            assert v <= last;
-//            last = v;
-//        }
+//        VOLUME_FILTERS = createVolumeFilters();
     }
+    
+    static ArrayList<VolumeFilter> createVolumeFilters()
+    {
+        final ArrayList<VolumeFilter> filters = new ArrayList<>();
+        final IntOpenHashSet volumeKeys = new IntOpenHashSet(VOLUME_KEYS);
+        final IntOpenHashSet availableBits = new IntOpenHashSet();
+        
+        for(int i = 0; i < 512; i++)
+            availableBits.add(i);
+
+        while(volumeKeys.size() > 1000)
+            filters.add(findBestFilter(volumeKeys, availableBits));
+        
+        filters.add(new VolumeFilter(-1, -1, -1, volumeKeys.toIntArray()));
+        
+        return filters;
+    }
+    
+    static VolumeFilter findBestFilter(IntOpenHashSet volumeKeys, IntOpenHashSet availableBits)
+    {
+        IntArrayList bestList = new IntArrayList();
+        int bestBitIndex = -1;
+        
+        IntArrayList tryList = new IntArrayList();
+        
+        IntIterator itBit = availableBits.iterator();
+        while(itBit.hasNext())
+        {
+            final int bitIndex = itBit.nextInt();
+            tryList.clear();
+            
+            IntIterator itVol = volumeKeys.iterator();
+            while(itVol.hasNext() && tryList.size() <= 1001)
+            {
+                int v = itVol.nextInt();
+                if(doesVolumeIncludeBit(v, bitIndex & 7, (bitIndex >> 3) & 7, (bitIndex >> 6) & 7))
+                    tryList.add(v);
+            }
+            
+            if(tryList.size() < 1001 && tryList.size() > bestList.size())
+            {
+                bestBitIndex = bitIndex;
+                bestList.clear();
+                bestList.addAll(tryList);
+            }
+        }
+        
+        assert bestBitIndex != -1;
+        
+        volumeKeys.removeAll(bestList);
+        availableBits.rem(bestBitIndex);
+        
+        return new VolumeFilter(bestBitIndex & 7, (bestBitIndex >> 3) & 7, (bestBitIndex >> 6) & 7, bestList.toIntArray());
+        
+    }
+    
+    static void findBestExclusionBits()
+    {
+        final IntArrayList[] VOLUMES_BY_BIT = new IntArrayList[512];
+        final int[] COUNTS_BY_BIT = new int[512];
+        int coverageCount = 0;
+        
+        for(int i = 0; i < 512; i++)
+        {
+            VOLUMES_BY_BIT[i] = new IntArrayList();
+        }
+        
+        for(int v = 0; v <VOLUME_KEYS.length; v++)
+        {
+            final int k = VOLUME_KEYS[v];
+            final Slice slice = sliceFromKey(k);
+            final long pattern = patternFromKey(k);
+            final int vFinal = v;
+            
+            forEachBit(pattern, i ->  
+            {
+                final int x = xFromAreaBitIndex(i);
+                final int y = yFromAreaBitIndex(i);
+                for(int z = slice.min; z <= slice.max; z++)
+                {
+                    final int n = x | (y << 3) | (z << 6);
+                    VOLUMES_BY_BIT[n].add(vFinal);
+                    COUNTS_BY_BIT[n]++;
+                }
+            });
+        }
+        
+        boolean coverage[] = new boolean[VOLUME_KEYS.length];
+        
+        int firstIndex = -1;
+        int bestCount = -1;
+        for(int i =  0; i < 512; i++)
+        {
+            if(COUNTS_BY_BIT[i] > bestCount)
+            {
+                bestCount = COUNTS_BY_BIT[i];
+                firstIndex = i;
+            }
+        }
+        
+        coverageCount += bestCount;
+        System.out.println("First bit coverage  = " + bestCount);
+        
+        for(int v : VOLUMES_BY_BIT[firstIndex])
+            coverage[v] = true;
+        
+        int secondIndex = -1;
+        bestCount = -1;
+        for(int i =  0; i < 512; i++)
+        {
+            if(i == firstIndex)  continue;
+            
+            if(COUNTS_BY_BIT[i] > bestCount)
+            {
+                int c = 0;
+                for(int j : VOLUMES_BY_BIT[i])
+                    if(!coverage[j]) c++;
+
+                if(c  > bestCount)
+                {
+                    bestCount = c;
+                    secondIndex = i;
+                }
+            }
+            
+            for(int v : VOLUMES_BY_BIT[secondIndex])
+                coverage[v] = true;
+        }
+        
+        coverageCount += bestCount;
+        System.out.println("Second bit coverage  = " + bestCount);
+        
+        int thirdIndex = -1;
+        bestCount = -1;
+        for(int i =  0; i < 512; i++)
+        {
+            if(i == firstIndex || i == secondIndex)  continue;
+            
+            if(COUNTS_BY_BIT[i] > bestCount)
+            {
+                int c = 0;
+                for(int j : VOLUMES_BY_BIT[i])
+                    if(!coverage[j]) c++;
+
+                if(c  > bestCount)
+                {
+                    bestCount = c;
+                    thirdIndex = i;
+                }
+            }
+            
+            for(int v : VOLUMES_BY_BIT[thirdIndex])
+                coverage[v] = true;
+        }
+        
+        coverageCount += bestCount;
+        System.out.println("Third bit coverage  = " + bestCount);
+        
+        int fourthIndex = -1;
+        bestCount = -1;
+        for(int i =  0; i < 512; i++)
+        {
+            if(i == firstIndex || i == secondIndex)  continue;
+            
+            if(COUNTS_BY_BIT[i] > bestCount)
+            {
+                int c = 0;
+                for(int j : VOLUMES_BY_BIT[i])
+                    if(!coverage[j]) c++;
+
+                if(c  > bestCount)
+                {
+                    bestCount = c;
+                    fourthIndex = i;
+                }
+            }
+            
+            for(int v : VOLUMES_BY_BIT[fourthIndex])
+                coverage[v] = true;
+        }
+        
+        coverageCount += bestCount;
+        System.out.println("Fourth bit coverage  = " + bestCount);
+        
+        System.out.println("Coverge % = " + 100 * coverageCount / VOLUME_KEYS.length);
+    }
+    
     
     /**
      * Assumes values are pre-sorted.
@@ -297,23 +469,23 @@ public class BoxFinderUtils
         {
             for(int y = 0; y < ySize; y++)
             {
-                pattern |= (1L << bitIndex(xOrigin + x, yOrigin + y));
+                pattern |= (1L << areaBitIndex(xOrigin + x, yOrigin + y));
             }
         }
         return pattern;
     }
 
-    static int bitIndex(int x, int y)
+    static int areaBitIndex(int x, int y)
     {
         return x | (y << 3);
     }
     
-    static int xFromBitIndex(int bitIndex)
+    static int xFromAreaBitIndex(int bitIndex)
     {
         return bitIndex & 7;
     }
     
-    static int yFromBitIndex(int bitIndex)
+    static int yFromAreaBitIndex(int bitIndex)
     {
         return (bitIndex >>> 3) & 7;
     }
@@ -473,8 +645,14 @@ public class BoxFinderUtils
      */
     static boolean doVolumesIntersect(int volumeKey0, int volumeKey1)
     {
-        return (sliceFromKey(volumeKey0).layerBits & sliceFromKey(volumeKey1).layerBits) != 0L
+        return (sliceFromKey(volumeKey0).layerBits & sliceFromKey(volumeKey1).layerBits) != 0
                 &&  (patternFromKey(volumeKey0) & patternFromKey(volumeKey1)) != 0L;
+    }
+    
+    static boolean doesVolumeIncludeBit(int volumeKey, int x, int y, int z)
+    {
+        return (sliceFromKey(volumeKey).layerBits & (1 << z)) != 0
+                &&  (patternFromKey(volumeKey) & (1L << areaBitIndex(x, y))) != 0L;
     }
     
     /**

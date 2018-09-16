@@ -12,6 +12,8 @@ class BoxFinderTest
     {
         forEachBitTest();
         
+//        BoxFinderUtils.findBestExclusionBits();
+        
         assert Slice.D1_0.layerBits == 1;
         assert Slice.D1_7.layerBits == 128;
         assert Slice.D8_0.layerBits == 255;

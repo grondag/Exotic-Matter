@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
+import java.util.function.IntConsumer;
+
 import net.minecraft.util.EnumFacing;
 
 /**
@@ -23,6 +25,10 @@ public class CollisionBoxEncoder
     private static final int MIN_B_SHIFT = 12;
     private static final int MAX_A_SHIFT = 16;
     private static final int MAX_B_SHIFT = 20;
+    
+    static final int X_AXIS = EnumFacing.Axis.X.ordinal();
+    static final int Y_AXIS = EnumFacing.Axis.Y.ordinal();
+    static final int Z_AXIS = EnumFacing.Axis.Z.ordinal();
     
     /**
      * Encodes an AABB within a unit cube sliced into eights on each axis.
@@ -67,41 +73,42 @@ public class CollisionBoxEncoder
                 | (maxX << MAX_X_SHIFT) | (maxY << MAX_Y_SHIFT) | (maxZ << MAX_Z_SHIFT);
     }
     
-    static int minX(int boxKey)
-    {
-        return boxKey & 0xF;
-    }
-    
-    static int maxX(int boxKey)
-    {
-        return (boxKey >> MAX_X_SHIFT) & 0xF;
-    }
-    
-    static int minY(int boxKey)
-    {
-        return (boxKey >> MIN_Y_SHIFT) & 0xF;
-    }
-    
-    static int maxY(int boxKey)
-    {
-        return (boxKey >> MAX_Y_SHIFT) & 0xF;
-    }
-    
-    static int minZ(int boxKey)
-    {
-        return (boxKey >> MIN_Z_SHIFT) & 0xF;
-    }
-    
-    static int maxZ(int boxKey)
-    {
-        return (boxKey >> MAX_Z_SHIFT) & 0xF;
-    }
+//    static int minX(int boxKey)
+//    {
+//        return boxKey & 0xF;
+//    }
+//    
+//    static int maxX(int boxKey)
+//    {
+//        return (boxKey >> MAX_X_SHIFT) & 0xF;
+//    }
+//    
+//    static int minY(int boxKey)
+//    {
+//        return (boxKey >> MIN_Y_SHIFT) & 0xF;
+//    }
+//    
+//    static int maxY(int boxKey)
+//    {
+//        return (boxKey >> MAX_Y_SHIFT) & 0xF;
+//    }
+//    
+//    static int minZ(int boxKey)
+//    {
+//        return (boxKey >> MIN_Z_SHIFT) & 0xF;
+//    }
+//    
+//    static int maxZ(int boxKey)
+//    {
+//        return (boxKey >> MAX_Z_SHIFT) & 0xF;
+//    }
     
     static int boxVolume(int boxKey)
     {
-        return(   (maxX(boxKey) - minX(boxKey))
-                * (maxY(boxKey) - minY(boxKey))
-                * (maxZ(boxKey) - minZ(boxKey)));
+        return forBounds(boxKey, (minX, minY, minZ, maxX, maxY, maxZ) ->
+        {
+            return (maxX - minX) * (maxY - minY) * (maxZ - minZ);
+        });
     }
     
     /**
@@ -109,13 +116,19 @@ public class CollisionBoxEncoder
      */
     static int combineBoxes(int boxKey0, int boxKey1)
     {
-        return boxKeySorted(
-                Math.min(minX(boxKey0), minX(boxKey1)),
-                Math.min(minY(boxKey0), minY(boxKey1)),
-                Math.min(minZ(boxKey0), minZ(boxKey1)),
-                Math.max(maxX(boxKey0), maxX(boxKey1)),
-                Math.max(maxY(boxKey0), maxY(boxKey1)),
-                Math.max(maxZ(boxKey0), maxZ(boxKey1)));
+        return forBounds(boxKey0, (minX0, minY0, minZ0, maxX0, maxY0, maxZ0) ->
+        {
+            return forBounds(boxKey1, (minX1, minY1, minZ1, maxX1, maxY1, maxZ1) ->
+            {
+                return boxKeySorted(
+                        Math.min(minX0, minX1),
+                        Math.min(minY0, minY1),
+                        Math.min(minZ0, minZ1),
+                        Math.max(maxX0, maxX1),
+                        Math.max(maxY0, maxY1),
+                        Math.max(maxZ0, maxZ1));
+            });
+        });
     }
     
     /**
@@ -123,12 +136,19 @@ public class CollisionBoxEncoder
      */
     static boolean areIntersecting(int boxKey0, int boxKey1)
     {
-        return minX(boxKey0) < maxX(boxKey1) 
-                && maxX(boxKey0) > minX(boxKey1) 
-                && minY(boxKey0) < maxY(boxKey1) 
-                && maxY(boxKey0) > minY(boxKey1) 
-                && minZ(boxKey0) <  maxZ(boxKey1) 
-                && maxZ(boxKey0) > minZ(boxKey1);
+        return forBounds(boxKey0, (minX0, minY0, minZ0, maxX0, maxY0, maxZ0) ->
+        {
+            return forBounds(boxKey1, (minX1, minY1, minZ1, maxX1, maxY1, maxZ1) ->
+            {
+                return minX0 < maxX1 
+                        && maxX0 > minX1 
+                        && minY0 < maxY1 
+                        && maxY0 > minY1 
+                        && minZ0 <  maxZ1 
+                        && maxZ0 > minZ1
+                        ? 1 : 0;
+            });
+        }) == 1;
     }
     
     /**
@@ -137,36 +157,56 @@ public class CollisionBoxEncoder
      * 
      * There is no "front-back" - coplanar bounds should be equal if 2d min/max equal.
      */
-    private static int faceKey(EnumFacing face, int depth, int minA, int minB, int maxA, int maxB)
+    static int faceKey(int axisOrdinal, int depth, int minA, int minB, int maxA, int maxB)
     {
-        return face.getAxis().ordinal() | (depth << DEPTH_SHIFT)
+        return axisOrdinal | (depth << DEPTH_SHIFT)
                 | (minA << MIN_A_SHIFT) | (minB << MIN_B_SHIFT) 
                 | (maxA << MAX_A_SHIFT) | (maxB << MAX_B_SHIFT);
     }
     
-    static int faceKey(EnumFacing face, int boxKey)
+    static void forEachFaceKey(int boxKey, IntConsumer faceKeyConsumer)
     {
-        switch(face)
+        forBounds(boxKey, (minX, minY, minZ, maxX, maxY, maxZ) ->
         {
-        case UP:
-            return faceKey(face, maxY(boxKey), minX(boxKey), minZ(boxKey), maxX(boxKey), maxZ(boxKey));
-            
-        case DOWN:
-            return faceKey(face, minY(boxKey), minX(boxKey), minZ(boxKey), maxX(boxKey), maxZ(boxKey));
-            
-        case EAST:
-            return faceKey(face, maxX(boxKey), minY(boxKey), minZ(boxKey), maxY(boxKey), maxZ(boxKey));
-            
-        case WEST:
-            return faceKey(face, minX(boxKey), minY(boxKey), minZ(boxKey), maxY(boxKey), maxZ(boxKey));
-            
-        case SOUTH:
-            return faceKey(face, maxZ(boxKey), minX(boxKey), minY(boxKey), maxX(boxKey), maxY(boxKey));
-
-        case NORTH:
-            return faceKey(face, minZ(boxKey), minX(boxKey), minY(boxKey), maxX(boxKey), maxY(boxKey));
-        }
-        
-        throw new IndexOutOfBoundsException();
+            faceKeyConsumer.accept(faceKey(Y_AXIS, maxY, minX, minZ, maxX, maxZ));
+            faceKeyConsumer.accept(faceKey(Y_AXIS, minY, minX, minZ, maxX, maxZ));
+            faceKeyConsumer.accept(faceKey(X_AXIS, maxX, minY, minZ, maxY, maxZ));
+            faceKeyConsumer.accept(faceKey(X_AXIS, minX, minY, minZ, maxY, maxZ));
+            faceKeyConsumer.accept(faceKey(Z_AXIS, maxZ, minX, minY, maxX, maxY));
+            faceKeyConsumer.accept(faceKey(Z_AXIS, minZ, minX, minY, maxX, maxY));
+            return 0;
+        });
+    }
+    
+    @FunctionalInterface
+    public static interface BoxBoundsIntFunction
+    {
+        int accept(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
+    }
+    
+    @FunctionalInterface
+    public static interface BoxBoundsObjectFunction<V>
+    {
+        V accept(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
+    }
+    
+    static int forBounds(int boxKey, BoxBoundsIntFunction consumer)
+    {
+        return consumer.accept(boxKey & 0xF, 
+                (boxKey >> MIN_Y_SHIFT) & 0xF,
+                (boxKey >> MIN_Z_SHIFT) & 0xF,
+                (boxKey >> MAX_X_SHIFT) & 0xF,
+                (boxKey >> MAX_Y_SHIFT) & 0xF,
+                (boxKey >> MAX_Z_SHIFT) & 0xF);
+    }
+    
+    static <V> V forBoundsObject(int boxKey, BoxBoundsObjectFunction<V> consumer)
+    {
+        return consumer.accept(boxKey & 0xF, 
+                (boxKey >> MIN_Y_SHIFT) & 0xF,
+                (boxKey >> MIN_Z_SHIFT) & 0xF,
+                (boxKey >> MAX_X_SHIFT) & 0xF,
+                (boxKey >> MAX_Y_SHIFT) & 0xF,
+                (boxKey >> MAX_Z_SHIFT) & 0xF);
     }
 }

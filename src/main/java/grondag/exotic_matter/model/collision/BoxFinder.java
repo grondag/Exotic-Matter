@@ -60,7 +60,15 @@ public class BoxFinder
      */
     public void setFilled(int x, int y, int z)
     {
-        voxels[z] |= (1L << BoxFinderUtils.bitIndex(x, y));
+        voxels[z] |= (1L << BoxFinderUtils.areaBitIndex(x, y));
+    }
+    
+    /**
+     * Coordinates must be 0 - 8
+     */
+    public boolean isFilled(int x, int y, int z)
+    {
+        return (voxels[z] & (1L << BoxFinderUtils.areaBitIndex(x, y))) != 0;
     }
     
     public void setFilled(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -79,7 +87,7 @@ public class BoxFinder
     
     public void setEmpty(int x, int y, int z)
     {
-        voxels[z] &= ~(1L << BoxFinderUtils.bitIndex(x, y));
+        voxels[z] &= ~(1L << BoxFinderUtils.areaBitIndex(x, y));
     }
     
     public void setEmpty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
@@ -197,8 +205,8 @@ public class BoxFinder
         
         BoxFinderUtils.forEachBit(bits, i -> 
         {
-            final int x = BoxFinderUtils.xFromBitIndex(i);
-            final int y = BoxFinderUtils.yFromBitIndex(i);
+            final int x = BoxFinderUtils.xFromAreaBitIndex(i);
+            final int y = BoxFinderUtils.yFromAreaBitIndex(i);
             builder.addSorted(x, y, z, x + 1, y + 1, z + 1);
         });
     }
