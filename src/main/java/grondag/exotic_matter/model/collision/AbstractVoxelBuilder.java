@@ -14,12 +14,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
 {
     final float[] polyData = new float[27];
-    protected final VoxelOctree voxels = new VoxelOctree();
+    protected final VoxelOctree voxels;
     protected final ICollisionBoxListBuilder builder;
     
-    protected AbstractVoxelBuilder(ICollisionBoxListBuilder builder)
+    protected AbstractVoxelBuilder(ICollisionBoxListBuilder builder, boolean isFast)
     {
         this.builder = builder;
+        this.voxels = new VoxelOctree(isFast);
     }
     
     public void prepare()
@@ -30,6 +31,7 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
     public List<AxisAlignedBB> build()
     {
         voxels.fillInterior();
+        voxels.simplify();
         builder.clear();
         generateBoxes(builder);
         return builder.build();

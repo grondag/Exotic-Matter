@@ -5,13 +5,12 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
 {
     protected FastBoxGenerator()
     {
-        super(new JoiningBoxListBuilder());
+        super(new JoiningBoxListBuilder(), false);
     }
 
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        voxels.simplify2X();
         genBoxes(voxels, builder);
     }
 

@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 class BoxFinderTest
 {
-
     @Test
     void test()
     {
@@ -28,8 +27,6 @@ class BoxFinderTest
                 
                 long pattern =  BoxFinderUtils.patternFromKey(volumeKey);
                 assert pattern == BoxFinderUtils.AREAS[i];
-                
-                
             }
         }
         

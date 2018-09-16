@@ -6,7 +6,7 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
 {
     protected OptimalBoxGenerator()
     {
-        super(new SimpleBoxListBuilder());
+        super(new SimpleBoxListBuilder(), true);
     }
 
     final BoxFinder bf = new BoxFinder();
@@ -16,8 +16,6 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        voxels.simplify();
-        
         if(voxels.isEmpty())
             return;
         

@@ -5,6 +5,7 @@ import java.util.function.IntConsumer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -17,7 +18,7 @@ public class BoxFinderUtils
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
     //TODO: remove
-    //    private static final LongArrayList[] PATTERNS_BY_BIT = new LongArrayList[65];
+    private static final IntArrayList[][][] VOLUMES_BY_BIT = new IntArrayList[8][8][8];
 
     static final long[] EMPTY = new long[64];
     
@@ -137,39 +138,18 @@ public class BoxFinderUtils
             }
         });
         
-        int[][] countByBit = new int[2][64];
 
-        for(int i = 0; i <= 64; i++)
+        for(int x = 0; x < 8; x++)
         {
-//            PATTERNS_BY_BIT[i] = new LongArrayList();
-        }
-        final long BIT_27 = 1L << 27;
-        
-        for(int i = 0; i < AREAS.length; i++)
-        {
-            long p = AREAS[i];
-            
-            int minX = Integer.MAX_VALUE;
-            int minY = Integer.MAX_VALUE;
-            int maxX = Integer.MIN_VALUE;
-            int maxY = Integer.MIN_VALUE;
-
-            for(int bit = 0; bit < 64; bit++)
+            for(int y = 0; y < 8; y++)
             {
-                if((p & (1L << bit)) != 0)
+                for(int z = 0; z < 8; z++)
                 {
-                    int x = bit & 7;
-                    int y = (bit >>> 3) & 7;
-                    minX = Math.min(x,  minX);
-                    minY = Math.min(y,  minY);
-                    maxX = Math.max(x,  maxX);
-                    maxY = Math.max(y,  maxY);
-                    
-                    final int a = (p & BIT_27) == BIT_27 ? 1 : 0;
-                    countByBit[a][bit]++;
+                    VOLUMES_BY_BIT[x][y][z] = new IntArrayList();
                 }
             }
         }
+      
         
         IntArrayList volumes = new IntArrayList();
         for(Slice slice : Slice.values())

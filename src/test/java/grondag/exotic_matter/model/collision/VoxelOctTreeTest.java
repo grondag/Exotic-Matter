@@ -8,7 +8,13 @@ class VoxelOctTreeTest
     @Test
     void test()
     {
-        VoxelOctree vot = new VoxelOctree();
+       testDetailed();
+       testCoarse();
+    }
+    
+    private void testDetailed()
+    {
+        VoxelOctree vot = new VoxelOctree(true);
         
         assert vot.isEmpty();
 
@@ -75,5 +81,60 @@ class VoxelOctTreeTest
             if(st.hasSubnodes())
                 testBox(st);
         }
+    }
+    
+    private void testCoarse()
+    {
+        VoxelOctree vot = new VoxelOctree(false);
+        
+        assert vot.isEmpty();
+
+        testBox(vot);
+        
+        vot.clear();
+        
+        for(int x = 0; x < 8; x++)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                for(int z = 0; z < 8; z++)
+                {
+                    vot.bottom(x, y, z).setFull();
+                }
+            }
+        }
+        
+        assert vot.isFull();
+        
+        for(int x = 0; x < 8; x++)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                for(int z = 0; z < 8; z++)
+                {
+                    vot.bottom(x, y, z).clear();
+                }
+                
+            }
+        }
+        
+       assert vot.isEmpty();
+        
+       vot.clear();
+        
+        for(int x = 0; x < 8; x += 2)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                for(int z = 0; z < 8; z++)
+                {
+                    vot.bottom(x, y, z).setFull();
+                }
+            }
+        }
+        
+        vot.simplify();
+        
+        assert vot.isFull();
     }
 }

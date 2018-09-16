@@ -20,7 +20,7 @@ public class VoxelOctree implements IVoxelOctree
     /**
      * Points to indexes in voxel data that are edge voxels
      */
-    private static final int[] EXTERIOR_INDEX = new int[1352];
+    private static final int[] EXTERIOR_VOXEL_INDEX = new int[1352];
     
     /**
      * Maps x,y,z coordinates (as array index) to voxel index (array values). Use helper method to compute array index.
@@ -40,6 +40,31 @@ public class VoxelOctree implements IVoxelOctree
     private static int voxelIndex(int x, int y, int z)
     {
         return VOXEL_XYZ_INDEX[voxelPackedXYZ(x, y, z)];
+    }
+    
+    /**
+     * Points to indexes in bottom data that are edge voxels
+     */
+    private static final int[] EXTERIOR_BOTTOM_INDEX = new int[1352];
+    
+    /**
+     * Maps x,y,z coordinates (as array index) to bottom index (array values). Use helper method to compute array index.
+     */
+    private static final int[] BOTTOM_XYZ_INDEX = new int[4096];
+    
+    /**
+     * Maps bottom index (as array index) to packed xyz coordinates (array values.)
+     */
+    private static final int[] BOTTOM_XYZ_INVERSE_INDEX = new int[4096];
+    
+    private static int bottomPackedXYZ(int x, int y, int z)
+    {
+        return x | (y << 3) | (z << 6);
+    }
+    
+    private static int bottomIndex(int x, int y, int z)
+    {
+        return BOTTOM_XYZ_INDEX[bottomPackedXYZ(x, y, z)];
     }
     
     private static final float TOP_SIZE = 0.5f;
@@ -123,26 +148,63 @@ public class VoxelOctree implements IVoxelOctree
             
             if(x == 0 || x == highEdge)
             {
-                EXTERIOR_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
                 continue;
             }
             
             if(y == 0 || y == highEdge)
             {
-                EXTERIOR_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
                 continue;
             }
             
             if(z == 0 || z == highEdge)
             {
-                EXTERIOR_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
                 continue;
             }
             
         }
         assert exteriorIndex == 1352;
-    }
     
+        final float highBottomEdge = 1 - BOTTOM_SIZE;
+        int exteriorBottomIndex = 0;
+        for(int i = 0; i < 512; i++)
+        {
+            final float x = bottomOriginX(i);
+            final float y = bottomOriginY(i);
+            final float z = bottomOriginZ(i);
+    
+            int xyz = bottomPackedXYZ((int)(x / BOTTOM_SIZE), (int)(y / BOTTOM_SIZE), (int)(z / BOTTOM_SIZE));
+            if(xyz != 0)
+            {
+                assert BOTTOM_XYZ_INDEX[xyz] == 0;
+                BOTTOM_XYZ_INDEX[xyz] = i;
+            }
+            BOTTOM_XYZ_INVERSE_INDEX[i] = xyz;
+            
+            if(x == 0 || x == highBottomEdge)
+            {
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = i;
+                continue;
+            }
+            
+            if(y == 0 || y == highBottomEdge)
+            {
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = i;
+                continue;
+            }
+            
+            if(z == 0 || z == highBottomEdge)
+            {
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = i;
+                continue;
+            }
+            
+        }
+        assert exteriorBottomIndex == 296;
+    }
+
     private final long[] voxelBits = new long[64];
     private final long[] fillBits = new long[64];
     
@@ -151,8 +213,20 @@ public class VoxelOctree implements IVoxelOctree
     private final Bottom[] bottom = new Bottom[512];
     private final Voxel[] voxel = new Voxel[4096];
     
+    private final boolean isDetailed;
+    
     public VoxelOctree()
     {
+        this(true);
+    }
+    
+    /**
+     * If isDetailed,  bottom nodes have sub voxels.
+     */
+    public VoxelOctree(boolean isDetailed)
+    {
+        this.isDetailed = isDetailed;
+        
         for(int i = 0; i < 8; i++)
             top[i] = new Top(i);
         
@@ -162,8 +236,11 @@ public class VoxelOctree implements IVoxelOctree
         for(int i = 0; i < 512; i++)
             bottom[i] = new Bottom(i);
         
-        for(int i = 0; i < 4096; i++)
-            voxel[i] = new Voxel(i);
+        if(isDetailed)
+        {
+            for(int i = 0; i < 4096; i++)
+                voxel[i] = new Voxel(i);
+        }
     }
     
     public void forEachVoxel(Consumer<IVoxelOctree> consumer)
@@ -178,6 +255,11 @@ public class VoxelOctree implements IVoxelOctree
             consumer.accept(b);
     }
     
+    public IVoxelOctree bottom(int x, int y, int z)
+    {
+        return bottom[BOTTOM_XYZ_INDEX[bottomPackedXYZ(x, y, z)]];
+    }
+    
     public IVoxelOctree voxel(int x, int y, int z)
     {
         return voxel[VOXEL_XYZ_INDEX[voxelPackedXYZ(x, y, z)]];
@@ -189,8 +271,12 @@ public class VoxelOctree implements IVoxelOctree
     public void fillInterior()
     {
         System.arraycopy(ALL_FULL, 0, fillBits, 0, 64);
-        for(int i : EXTERIOR_INDEX)
-            voxel[i].floodClearFill();
+        if(isDetailed)
+            for(int i : EXTERIOR_VOXEL_INDEX)
+                voxel[i].floodClearFill();
+        else
+            for(int i : EXTERIOR_BOTTOM_INDEX)
+                bottom[i].floodClearFill();
         System.arraycopy(fillBits, 0, voxelBits, 0, 64);
     }
     
@@ -198,6 +284,14 @@ public class VoxelOctree implements IVoxelOctree
      * Makes bottom nodes that are mostly full completely full, or otherwise makes them empty.
      */
     public void simplify()
+    {
+        if(isDetailed)
+            simplifyDetailed();
+        else
+            simplifyCoarse();
+    }
+    
+    public void simplifyDetailed()
     {
         for(Bottom b : bottom)
         {
@@ -215,7 +309,7 @@ public class VoxelOctree implements IVoxelOctree
      * Makes middle nodes that are mostly full completely full, or otherwise makes them empty.
      * Used to generate fast coarse-grained collision boxes.
      */
-    public void simplify2X()
+    private void simplifyCoarse()
     {
         for(Middle m : middle)
         {
@@ -448,6 +542,12 @@ public class VoxelOctree implements IVoxelOctree
         }
         
         @Override
+        public boolean hasSubnodes()
+        {
+            return isDetailed;
+        }
+        
+        @Override
         public Voxel subNode(int index)
         {
             return voxel[this.index * 8 + index];
@@ -464,6 +564,37 @@ public class VoxelOctree implements IVoxelOctree
         
         @Override
         public final float voxelSizeHalf() { return BOTTOM_SIZE_HALF; }
+        
+        private void floodClearFill()
+        {
+            if(this.isEmpty() && (fillBits[dataIndex] & bitMask) != 0)
+            {
+                fillBits[dataIndex] &= ~bitMask;
+                
+                final int xyz = BOTTOM_XYZ_INVERSE_INDEX[this.index];
+                final int x = xyz & 7;
+                final int y = (xyz >> 3) & 7;
+                final int z = (xyz >> 6) & 7;
+                
+                if(x > 0)
+                    bottom[bottomIndex(x - 1, y, z)].floodClearFill();
+                
+                if(x < 7)
+                    bottom[bottomIndex(x + 1, y, z)].floodClearFill();    
+                
+                if(y > 0)
+                    bottom[bottomIndex(x, y - 1, z)].floodClearFill();
+                
+                if(y < 7)
+                    bottom[bottomIndex(x, y + 1, z)].floodClearFill();
+                
+                if(z > 0)
+                    bottom[bottomIndex(x, y, z - 1)].floodClearFill();
+                
+                if(z < 7)
+                    bottom[bottomIndex(x, y, z + 1)].floodClearFill();
+            }
+        }
     }
     
     private class Voxel extends AbstractSubOct
