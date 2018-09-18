@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.collision;
+package grondag.exotic_matter.model.collision.octree;
 
 import java.util.function.Consumer;
 

@@ -6,6 +6,7 @@ import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
+import grondag.exotic_matter.model.collision.octree.VoxelOctree;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 

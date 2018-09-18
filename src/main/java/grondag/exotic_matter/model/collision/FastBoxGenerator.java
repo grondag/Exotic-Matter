@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.List;
 
+import grondag.exotic_matter.model.collision.octree.IVoxelOctree;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
