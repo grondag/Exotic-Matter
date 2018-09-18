@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Random;
 
@@ -16,13 +15,11 @@ class TriangleBoxTestPerf
     }
     
     //best
-//    true count = 4999394  nanos per call: 79
-//    true count = 4999394  nanos per call: 80
-//    true count = 4999394  nanos per call: 82
+//    true count = 49995645  nanos per call: 79
     
     private void doit()
     {
-        final int samples = 10000000;
+        final int samples = 100000000;
         long elapsed = 0;
         final Random r = new Random(42);
 
