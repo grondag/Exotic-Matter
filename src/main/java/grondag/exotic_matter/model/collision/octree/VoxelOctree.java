@@ -4,6 +4,8 @@ import java.util.function.Consumer;
 
 import grondag.exotic_matter.concurrency.SimpleConcurrentCounter;
 
+import static grondag.exotic_matter.model.collision.octree.OctreeUtils.*;
+
 /**
  * Voxels of a unit cube to 1/16 (per axis) resolution navigable as an OctTree.  
  * Meant for high-performance voxelization of block models.<p>
@@ -15,71 +17,15 @@ import grondag.exotic_matter.concurrency.SimpleConcurrentCounter;
  */
 public class VoxelOctree implements IVoxelOctree
 {
-    private static final long FULL_BITS = 0xFFFFFFFFFFFFFFFFL;
-    private static final long[] ALL_FULL = new long[64];
-    private static final long[] ALL_EMPTY = new long[64];
-    
     /**
      * Points to indexes in voxel data that are edge voxels
      */
     private static final int[] EXTERIOR_VOXEL_INDEX = new int[1352];
     
     /**
-     * Maps x,y,z coordinates (as array index) to voxel index (array values). Use helper method to compute array index.
-     */
-    private static final int[] VOXEL_XYZ_INDEX = new int[4096];
-    
-    /**
-     * Maps voxel index (as array index) to packed xyz coordinates (array values.)
-     */
-    private static final int[] VOXEL_XYZ_INVERSE_INDEX = new int[4096];
-    
-    private static int voxelPackedXYZ(int x, int y, int z)
-    {
-        return x | (y << 4) | (z << 8);
-    }
-    
-    private static int voxelIndex(int x, int y, int z)
-    {
-        return VOXEL_XYZ_INDEX[voxelPackedXYZ(x, y, z)];
-    }
-    
-    /**
      * Points to indexes in bottom data that are edge voxels
      */
     private static final int[] EXTERIOR_BOTTOM_INDEX = new int[1352];
-    
-    static int xyzToBottomIndex(final int packedXYZ)
-    {
-        //coordinate values are 3 bits each: xxx, yyy, zzz
-        //voxel coordinates are interleaved: zyx zyx zyx
-        
-        // shift all bits of y, z at once to avoid separate shift ops later
-        
-        final int y = packedXYZ >> 2;
-        final int z = packedXYZ >> 4;
-        
-        return (packedXYZ & 1) | (y & 2) | (z & 4)
-         | (((packedXYZ & 2) | (y & 4) | (z & 8)) << 2)
-         | (((packedXYZ & 4) | (y & 8) | (z & 16)) << 4);
-    }
-    
-    static int bottomIndexToPackedXYZ(final int bottomIndex)
-    {
-        //coordinate values are 3 bits each: xxx, yyy, zzz
-        //voxel coordinates are interleaved: zyx zyx zyx
-        
-        final int j = bottomIndex >> 2;
-        final int k = bottomIndex >> 4;
-        return ((bottomIndex & 1) | (j & 2) | (k & 4)) 
-               | (((bottomIndex & 2) | (j & 4) | (k & 8)) << 2)
-               | (((bottomIndex & 4) | (j & 8) | (k & 16)) << 4);
-    }
-    
-    private static int bottomPackedXYZ(int x, int y, int z)
-    {
-        return x | (y << 3) | (z << 6);
-    }
     
     private static final float TOP_SIZE = 0.5f;
     private static final float MIDDLE_SIZE = TOP_SIZE * 0.5f;
@@ -137,13 +83,6 @@ public class VoxelOctree implements IVoxelOctree
     
     static
     {
-        for(int i = 0; i < 64; i++)
-        {
-            ALL_FULL[i] = FULL_BITS;
-            // yes, I know, just being clear
-            ALL_EMPTY[i] = 0;
-        }
-        
         final float highEdge = 1 - VOXEL_SIZE;
         int exteriorIndex = 0;
         for(int i = 0; i < 4096; i++)
@@ -152,29 +91,23 @@ public class VoxelOctree implements IVoxelOctree
             final float y = voxelOriginY(i);
             final float z = voxelOriginZ(i);
 
-            int xyz = voxelPackedXYZ((int)(x / VOXEL_SIZE), (int)(y / VOXEL_SIZE), (int)(z / VOXEL_SIZE));
-            if(xyz != 0)
-            {
-                assert VOXEL_XYZ_INDEX[xyz] == 0;
-                VOXEL_XYZ_INDEX[xyz] = i;
-            }
-            VOXEL_XYZ_INVERSE_INDEX[i] = xyz;
+            int xyz = packedXYZ4((int)(x / VOXEL_SIZE), (int)(y / VOXEL_SIZE), (int)(z / VOXEL_SIZE));
             
             if(x == 0 || x == highEdge)
             {
-                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = xyzToIndex4(xyz);
                 continue;
             }
             
             if(y == 0 || y == highEdge)
             {
-                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = xyzToIndex4(xyz);
                 continue;
             }
             
             if(z == 0 || z == highEdge)
             {
-                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = i;
+                EXTERIOR_VOXEL_INDEX[exteriorIndex++] = xyzToIndex4(xyz);
                 continue;
             }
             
@@ -189,23 +122,23 @@ public class VoxelOctree implements IVoxelOctree
             final float y = bottomOriginY(i);
             final float z = bottomOriginZ(i);
     
-            int xyz = bottomPackedXYZ((int)(x / BOTTOM_SIZE), (int)(y / BOTTOM_SIZE), (int)(z / BOTTOM_SIZE));
+            int xyz = packedXYZ3((int)(x / BOTTOM_SIZE), (int)(y / BOTTOM_SIZE), (int)(z / BOTTOM_SIZE));
             
             if(x == 0 || x == highBottomEdge)
             {
-                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToBottomIndex(xyz);
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToIndex3(xyz);
                 continue;
             }
             
             if(y == 0 || y == highBottomEdge)
             {
-                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToBottomIndex(xyz);
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToIndex3(xyz);
                 continue;
             }
             
             if(z == 0 || z == highBottomEdge)
             {
-                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToBottomIndex(xyz);
+                EXTERIOR_BOTTOM_INDEX[exteriorBottomIndex++] = xyzToIndex3(xyz);
                 continue;
             }
             
@@ -265,12 +198,12 @@ public class VoxelOctree implements IVoxelOctree
     
     public IVoxelOctree bottom(int x, int y, int z)
     {
-        return bottom[xyzToBottomIndex(bottomPackedXYZ(x, y, z))];
+        return bottom[xyzToIndex3(x, y, z)];
     }
     
     public IVoxelOctree voxel(int x, int y, int z)
     {
-        return voxel[VOXEL_XYZ_INDEX[voxelPackedXYZ(x, y, z)]];
+        return voxel[xyzToIndex4(x, y, z)];
     }
     
     //TODO: disable
@@ -382,62 +315,6 @@ public class VoxelOctree implements IVoxelOctree
     @Override
     public final float zCenter() { return 0.5f; }
     
-    private abstract class AbstractOct implements IVoxelOctree
-    {
-        protected final int index;
-        protected final float xCenter;
-        protected final float yCenter;
-        protected final float zCenter;
-        protected final int xMin8;
-        protected final int xMax8;
-        protected final int yMin8;
-        protected final int yMax8;
-        protected final int zMin8;
-        protected final int zMax8;
-        
-        private AbstractOct(int index, float xOrigin, float yOrigin, float zOrigin)
-        {
-            this.index = index;
-            this.xCenter = xOrigin + this.voxelSizeHalf();
-            this.yCenter = yOrigin + this.voxelSizeHalf();
-            this.zCenter = zOrigin + this.voxelSizeHalf();
-            this.xMin8 = Math.round(xOrigin * 8f);
-            this.yMin8 = Math.round(yOrigin * 8f);
-            this.zMin8 = Math.round(zOrigin * 8f);
-            final int increment = Math.round(this.voxelSize() * 8f);
-            this.xMax8 = this.xMin8 + increment;
-            this.yMax8 = this.yMin8 + increment;
-            this.zMax8 = this.zMin8 + increment;
-        }
-        
-        @Override
-        public float xCenter() { return this.xCenter; }
-
-        @Override
-        public float yCenter() { return this.yCenter; }
-
-        @Override
-        public float zCenter() { return this.zCenter; }
-        
-        @Override
-        public int xMin8() { return this.xMin8; }
-
-        @Override
-        public int xMax8() { return this.xMax8;  }
-
-        @Override
-        public int yMin8() { return this.yMin8; }
-
-        @Override
-        public int yMax8() { return this.yMax8; }
-
-        @Override
-        public int zMin8() { return this.zMin8; }
-
-        @Override
-        public int zMax8() { return this.zMax8;  }
-    }
-    
     private class Top extends AbstractOct
     {
         private Top(int index)
@@ -459,49 +336,12 @@ public class VoxelOctree implements IVoxelOctree
 
     }
     
-    private abstract class AbstractSubOct extends AbstractOct
-    {
-        protected final int dataIndex;
-        protected final long bitMask;
-        
-        protected AbstractSubOct(int index, float xOrigin, float yOrigin, float zOrigin, int dataIndex, long bitMask)
-        {
-            super(index, xOrigin, yOrigin, zOrigin);
-            this.dataIndex = dataIndex;
-            this.bitMask = bitMask;
-        }
-        
-        @Override
-        public boolean isFull()
-        {
-            return (voxelBits[dataIndex] & bitMask) == bitMask;
-        }
-        
-        @Override
-        public boolean isEmpty()
-        {
-            return (voxelBits[dataIndex] & bitMask) == 0L;
-        }
-
-        @Override
-        public void setFull()
-        {
-            voxelBits[dataIndex] |= bitMask;
-        }
-
-        @Override
-        public void clear()
-        {
-            voxelBits[dataIndex] &= ~bitMask;
-        }
-    }
-    
     private class Middle extends AbstractSubOct
     {
         
         private Middle(int index)
         {
-            super(index, middleOriginX(index), middleOriginY(index), middleOriginZ(index), index, FULL_BITS);
+            super(index, middleOriginX(index), middleOriginY(index), middleOriginZ(index), index, FULL_BITS, VoxelOctree.this.voxelBits);
         }
 
         // methods optimized for storage implementation
@@ -563,7 +403,7 @@ public class VoxelOctree implements IVoxelOctree
     {
         private Bottom(int index)
         {
-            super(index, bottomOriginX(index), bottomOriginY(index), bottomOriginZ(index), bottomDataIndex(index), bottomDataMask(index));
+            super(index, bottomOriginX(index), bottomOriginY(index), bottomOriginZ(index), bottomDataIndex(index), bottomDataMask(index), VoxelOctree.this.voxelBits);
         }
         
         @Override
@@ -598,28 +438,28 @@ public class VoxelOctree implements IVoxelOctree
                 fillBits[dataIndex] &= ~bitMask;
                 
                 final Bottom[] bottom = VoxelOctree.this.bottom;
-                final int xyz = bottomIndexToPackedXYZ(this.index);
+                final int xyz = indexToXYZ3(this.index);
                 final int x = xyz & 7;
                 final int y = (xyz >> 3) & 7;
                 final int z = (xyz >> 6) & 7;
                 
                 if(x > 0)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x - 1, y, z))].floodClearFill();
+                    bottom[xyzToIndex3(packedXYZ3(x - 1, y, z))].floodClearFill();
                 
                 if(x < 7)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x + 1, y, z))].floodClearFill();    
+                    bottom[xyzToIndex3(packedXYZ3(x + 1, y, z))].floodClearFill();    
                 
                 if(y > 0)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x, y - 1, z))].floodClearFill();
+                    bottom[xyzToIndex3(packedXYZ3(x, y - 1, z))].floodClearFill();
                 
                 if(y < 7)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x, y + 1, z))].floodClearFill();
+                    bottom[xyzToIndex3(packedXYZ3(x, y + 1, z))].floodClearFill();
                 
                 if(z > 0)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x, y, z - 1))].floodClearFill();
+                    bottom[xyzToIndex3(packedXYZ3(x, y, z - 1))].floodClearFill();
                 
                 if(z < 7)
-                    bottom[xyzToBottomIndex(bottomPackedXYZ(x, y, z + 1))].floodClearFill();
+                    bottom[xyzToIndex3(packedXYZ3(x, y, z + 1))].floodClearFill();
             }
         }
     }
@@ -628,7 +468,7 @@ public class VoxelOctree implements IVoxelOctree
     {
         private Voxel(int index)
         {
-            super(index, voxelOriginX(index), voxelOriginY(index), voxelOriginZ(index), index / 64, 0x1L << (index & 63));
+            super(index, voxelOriginX(index), voxelOriginY(index), voxelOriginZ(index), index / 64, 0x1L << (index & 63), VoxelOctree.this.voxelBits);
         }
         
         private void floodClearFill()
@@ -637,28 +477,28 @@ public class VoxelOctree implements IVoxelOctree
             {
                 fillBits[dataIndex] &= ~bitMask;
                 
-                final int xyz = VOXEL_XYZ_INVERSE_INDEX[this.index];
+                final int xyz = indexToXYZ4(this.index);
                 final int x = xyz & 0xF;
                 final int y = (xyz >> 4) & 0xF;
                 final int z = (xyz >> 8) & 0xF;
                 
                 if(x > 0)
-                    voxel[voxelIndex(x - 1, y, z)].floodClearFill();
+                    voxel[xyzToIndex4(x - 1, y, z)].floodClearFill();
                 
                 if(x < 15)
-                    voxel[voxelIndex(x + 1, y, z)].floodClearFill();    
+                    voxel[xyzToIndex4(x + 1, y, z)].floodClearFill();    
                 
                 if(y > 0)
-                    voxel[voxelIndex(x, y - 1, z)].floodClearFill();
+                    voxel[xyzToIndex4(x, y - 1, z)].floodClearFill();
                 
                 if(y < 15)
-                    voxel[voxelIndex(x, y + 1, z)].floodClearFill();
+                    voxel[xyzToIndex4(x, y + 1, z)].floodClearFill();
                 
                 if(z > 0)
-                    voxel[voxelIndex(x, y, z - 1)].floodClearFill();
+                    voxel[xyzToIndex4(x, y, z - 1)].floodClearFill();
                 
                 if(z < 15)
-                    voxel[voxelIndex(x, y, z + 1)].floodClearFill();
+                    voxel[xyzToIndex4(x, y, z + 1)].floodClearFill();
             }
         }
         
