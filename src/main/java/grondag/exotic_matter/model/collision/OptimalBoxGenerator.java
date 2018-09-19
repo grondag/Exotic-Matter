@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.withBounds8;
+
 import grondag.exotic_matter.ConfigXM;
 
 public class OptimalBoxGenerator extends AbstractVoxelBuilder
@@ -20,11 +22,10 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
             return;
         
         if(voxels.isFull())
-            builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
+            withBounds8(voxels.index(), voxels.divisionLevel(), (x0, y0, z0, x1, y1, z1) ->
+                builder.add(x0, y0, z0, x1, y1, z1));
         else
-        {
             generateBoxesInner(builder);
-        }
     }
     
     protected void generateBoxesInner(ICollisionBoxListBuilder builder)

@@ -355,43 +355,7 @@ public class VoxelOctree implements IVoxelOctree
         {
             throw new UnsupportedOperationException();
         }
-        
-        @Override
-        public int xMin8() { throw new UnsupportedOperationException(); }
-
-        @Override
-        public int xMax8() { throw new UnsupportedOperationException();  }
-
-        @Override
-        public int yMin8() { throw new UnsupportedOperationException(); }
-
-        @Override
-        public int yMax8() { throw new UnsupportedOperationException(); }
-
-        @Override
-        public int zMin8() { throw new UnsupportedOperationException(); }
-
-        @Override
-        public int zMax8() { throw new UnsupportedOperationException(); }
     }
-
-    @Override
-    public int xMin8() { return 0; }
-
-    @Override
-    public int xMax8() { return 8;  }
-
-    @Override
-    public int yMin8() { return 0; }
-
-    @Override
-    public int yMax8() { return 8; }
-
-    @Override
-    public int zMin8() { return 0; }
-
-    @Override
-    public int zMax8() { return 8; }
 
     @Override
     public float voxelRadius()  { return 0.5f; }
