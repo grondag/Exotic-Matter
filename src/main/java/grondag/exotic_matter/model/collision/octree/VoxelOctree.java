@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 import grondag.exotic_matter.concurrency.SimpleConcurrentCounter;
 
-import static grondag.exotic_matter.model.collision.octree.OctreeUtils.*;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 /**
  * Voxels of a unit cube to 1/16 (per axis) resolution navigable as an OctTree.  
@@ -170,15 +170,6 @@ public class VoxelOctree implements IVoxelOctree
     {
         return top[index];
     }
-    
-    @Override
-    public final float xCenter() { return 0.5f; }
-
-    @Override
-    public final float yCenter() { return 0.5f; }
-    
-    @Override
-    public final float zCenter() { return 0.5f; }
     
     private class Top extends AbstractOct
     {
@@ -404,4 +395,11 @@ public class VoxelOctree implements IVoxelOctree
 
     @Override
     public float voxelRadius()  { return 0.5f; }
+
+    @Override
+    public int index() { return 0; }
+
+    @Override
+    public int divisionLevel() { return 0; }
+
 }

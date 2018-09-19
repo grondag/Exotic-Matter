@@ -1,14 +1,11 @@
 package grondag.exotic_matter.model.collision.octree;
 
-import static grondag.exotic_matter.model.collision.octree.OctreeUtils.*;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 abstract class AbstractOct implements IVoxelOctree
 {
     protected final int index;
     protected final int divisionLevel;
-    protected final float xCenter;
-    protected final float yCenter;
-    protected final float zCenter;
     protected final int xMin8;
     protected final int xMax8;
     protected final int yMin8;
@@ -20,17 +17,13 @@ abstract class AbstractOct implements IVoxelOctree
     {
         this.index = index;
         this.divisionLevel = divisionLevel;
-        final float size = OctreeUtils.voxelSize(divisionLevel);
-        final float halfSize = size * 0.5f;
+        final float size = OctreeCoordinates.voxelSize(divisionLevel);
         final int xyz = indexToXYZ(index, divisionLevel);
         final int mask = (1 << divisionLevel) - 1;
         final float xOrigin = (xyz & mask) * size;
         final float yOrigin = ((xyz >> divisionLevel) & mask) * size;
         final float zOrigin = ((xyz >> divisionLevel * 2) & mask) * size;
         
-        this.xCenter = xOrigin + halfSize;
-        this.yCenter = yOrigin + halfSize;
-        this.zCenter = zOrigin + halfSize;
         this.xMin8 = Math.round(xOrigin * 8f);
         this.yMin8 = Math.round(yOrigin * 8f);
         this.zMin8 = Math.round(zOrigin * 8f);
@@ -43,17 +36,14 @@ abstract class AbstractOct implements IVoxelOctree
     @Override
     public final float voxelRadius()
     {
-        return OctreeUtils.voxelRadius(divisionLevel);
+        return OctreeCoordinates.voxelRadius(divisionLevel);
     }
     
     @Override
-    public float xCenter() { return this.xCenter; }
+    public int index() { return this.index; }
 
     @Override
-    public float yCenter() { return this.yCenter; }
-
-    @Override
-    public float zCenter() { return this.zCenter; }
+    public int divisionLevel() { return this.divisionLevel; }
     
     @Override
     public int xMin8() { return this.xMin8; }

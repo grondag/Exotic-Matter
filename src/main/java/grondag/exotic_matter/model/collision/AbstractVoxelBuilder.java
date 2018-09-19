@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.collision;
 
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -9,6 +10,8 @@ import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
+
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 /**
  * Base class for octree-based collision box generators.
@@ -62,12 +65,16 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
     protected void acceptTriangleInner(IVoxelOctree v)
     {
         final float[] data = polyData;
-        if(TriangleBoxTest.triBoxOverlap(v.xCenter(), v.yCenter(), v.zCenter(), v.voxelRadius(), data))
+        withCenter(v.index(), v.divisionLevel(), (x, y, z) -> 
         {
-            if(v.hasSubnodes())
-                v.forEach(sv -> acceptTriangleInner(sv));
-            else
-                v.setFull();
-        }
+            if(TriangleBoxTest.triBoxOverlap(x, y, x, v.voxelRadius(), data))
+            {
+                if(v.hasSubnodes())
+                    v.forEach(sv -> acceptTriangleInner(sv));
+                else
+                    v.setFull();
+            }
+        });
+        
     }
 }

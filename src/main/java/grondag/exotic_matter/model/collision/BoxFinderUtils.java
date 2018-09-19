@@ -1,13 +1,10 @@
 package grondag.exotic_matter.model.collision;
 
-import java.util.ArrayList;
 import java.util.function.IntConsumer;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -171,60 +168,6 @@ public class BoxFinderUtils
 //        VOLUME_FILTERS = createVolumeFilters();
     }
     
-    static ArrayList<VolumeFilter> createVolumeFilters()
-    {
-        final ArrayList<VolumeFilter> filters = new ArrayList<>();
-        final IntOpenHashSet volumeKeys = new IntOpenHashSet(VOLUME_KEYS);
-        final IntOpenHashSet availableBits = new IntOpenHashSet();
-        
-        for(int i = 0; i < 512; i++)
-            availableBits.add(i);
-
-        while(volumeKeys.size() > 1000)
-            filters.add(findBestFilter(volumeKeys, availableBits));
-        
-        filters.add(new VolumeFilter(-1, -1, -1, volumeKeys.toIntArray()));
-        
-        return filters;
-    }
-    
-    static VolumeFilter findBestFilter(IntOpenHashSet volumeKeys, IntOpenHashSet availableBits)
-    {
-        IntArrayList bestList = new IntArrayList();
-        int bestBitIndex = -1;
-        
-        IntArrayList tryList = new IntArrayList();
-        
-        IntIterator itBit = availableBits.iterator();
-        while(itBit.hasNext())
-        {
-            final int bitIndex = itBit.nextInt();
-            tryList.clear();
-            
-            IntIterator itVol = volumeKeys.iterator();
-            while(itVol.hasNext() && tryList.size() <= 1001)
-            {
-                int v = itVol.nextInt();
-                if(doesVolumeIncludeBit(v, bitIndex & 7, (bitIndex >> 3) & 7, (bitIndex >> 6) & 7))
-                    tryList.add(v);
-            }
-            
-            if(tryList.size() < 1001 && tryList.size() > bestList.size())
-            {
-                bestBitIndex = bitIndex;
-                bestList.clear();
-                bestList.addAll(tryList);
-            }
-        }
-        
-        assert bestBitIndex != -1;
-        
-        volumeKeys.removeAll(bestList);
-        availableBits.rem(bestBitIndex);
-        
-        return new VolumeFilter(bestBitIndex & 7, (bestBitIndex >> 3) & 7, (bestBitIndex >> 6) & 7, bestList.toIntArray());
-        
-    }
     
     static void findBestExclusionBits()
     {
@@ -490,20 +433,11 @@ public class BoxFinderUtils
         return (bitIndex >>> 3) & 7;
     }
     
-    @FunctionalInterface
-    interface IBoundsTest
-    {
-        /**
-         * Max values are inclusive.
-         */
-        int apply(int xMin, int yMin, int xMax, int yMax);
-    }
-
     /**
      * Single-pass, bitwise derivation of x, y bounds for given area pattern. 
      * Area does not have to be fully populated to work.
      */
-    static int testAreaBounds(long areaPattern, IBoundsTest test)
+    static int testAreaBounds(long areaPattern, IAreaBoundsIntFunction test)
     {
         if(areaPattern == 0L)
         {

@@ -178,19 +178,7 @@ public class CollisionBoxEncoder
         });
     }
     
-    @FunctionalInterface
-    public static interface BoxBoundsIntFunction
-    {
-        int accept(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
-    }
-    
-    @FunctionalInterface
-    public static interface BoxBoundsObjectFunction<V>
-    {
-        V accept(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
-    }
-    
-    static int forBounds(int boxKey, BoxBoundsIntFunction consumer)
+    static int forBounds(int boxKey, IBoxBoundsIntFunction consumer)
     {
         return consumer.accept(boxKey & 0xF, 
                 (boxKey >> MIN_Y_SHIFT) & 0xF,
@@ -200,7 +188,7 @@ public class CollisionBoxEncoder
                 (boxKey >> MAX_Z_SHIFT) & 0xF);
     }
     
-    static <V> V forBoundsObject(int boxKey, BoxBoundsObjectFunction<V> consumer)
+    static <V> V forBoundsObject(int boxKey, IBoxBoundsObjectFunction<V> consumer)
     {
         return consumer.accept(boxKey & 0xF, 
                 (boxKey >> MIN_Y_SHIFT) & 0xF,

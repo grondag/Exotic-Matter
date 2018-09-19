@@ -155,9 +155,6 @@ public interface IVoxelOctree
         return result;
     }
     
-    public float xCenter();
-    public float yCenter();
-    public float zCenter();
     public float voxelRadius();
     
 //    public default float xMin() { return xCenter() - voxelSizeHalf(); }
@@ -177,4 +174,8 @@ public interface IVoxelOctree
     public int yMax8();
     public int zMin8();
     public int zMax8();
+
+    public int index();
+    
+    public int divisionLevel();
 }

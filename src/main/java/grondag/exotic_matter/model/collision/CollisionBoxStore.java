@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.collision;
 
 import grondag.exotic_matter.cache.IntSimpleCacheLoader;
 import grondag.exotic_matter.cache.IntSimpleLoadingCache;
-import grondag.exotic_matter.model.collision.CollisionBoxEncoder.BoxBoundsObjectFunction;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
@@ -18,7 +17,7 @@ public class CollisionBoxStore
         return boxCache.get(boxKey);
     }
     
-    static final BoxBoundsObjectFunction<AxisAlignedBB> boxMaker = (minX, minY, minZ, maxX, maxY, maxZ) ->
+    static final IBoxBoundsObjectFunction<AxisAlignedBB> boxMaker = (minX, minY, minZ, maxX, maxY, maxZ) ->
     {
         return new AxisAlignedBB(minX / 8f, minY / 8f, minZ / 8f, 
                 maxX / 8f, maxY / 8f, maxZ / 8f);

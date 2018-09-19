@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.collision.octree;
 
 import java.util.Arrays;
 
-public class OctreeUtils
+public class OctreeCoordinates
 {
     public static final long FULL_BITS = 0xFFFFFFFFFFFFFFFFL;
     public static final long[] ALL_FULL = new long[64];
@@ -269,5 +269,16 @@ public class OctreeUtils
     static float voxelRadius(int divisionLevel)
     {
         return 0.5f / (1 << divisionLevel);
+    }
+    
+    public static void withCenter(final int index, final int divisionLevel, Float3Consumer consumer)
+    {
+        final int xyz = indexToXYZ(index, divisionLevel);
+        final float d = OctreeCoordinates.voxelSize(divisionLevel);
+        final int mask = (1 << divisionLevel) - 1;
+        consumer.accept(
+                ((xyz & mask) + 0.5f) * d,
+                (((xyz >> divisionLevel) & mask) + 0.5f) * d,
+                (((xyz >> divisionLevel * 2) & mask) + 0.5f) * d);
     }
 }
