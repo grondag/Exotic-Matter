@@ -6,6 +6,7 @@ import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
+import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelOctree;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -408,7 +409,15 @@ public class BoxFinder
         voxels.forEachBottom(v -> 
         {
             if(v.isFull())
+            {
+                OctreeCoordinates.forXYZ3(v.index(), (x, y, z) ->
+                {
+                    assert(x == v.xMin8());
+                    assert(y == v.yMin8());
+                    assert(z == v.zMin8());
+                });
                 setFilled(v.xMin8(), v.yMin8(), v.zMin8());
+            }
         });
     }
     

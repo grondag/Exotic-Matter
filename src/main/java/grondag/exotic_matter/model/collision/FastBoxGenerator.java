@@ -7,6 +7,8 @@ import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
+
 public class FastBoxGenerator extends AbstractVoxelBuilder
 {
     protected FastBoxGenerator()
@@ -25,7 +27,18 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
         if(voxels.isEmpty())
             return;
         if(voxels.isFull())
+        {
+            withBounds8(voxels.index(), voxels.divisionLevel(), (x0, y0, z0, x1, y1, z1) ->
+            {
+                assert x0 == voxels.xMin8();
+                assert y0 == voxels.yMin8();
+                assert z0 == voxels.zMin8();
+                assert x1 == voxels.xMax8();
+                assert y1 == voxels.yMax8();
+                assert z1 == voxels.zMax8();
+            });
             builder.add(voxels.xMin8(), voxels.yMin8(), voxels.zMin8(), voxels.xMax8(), voxels.yMax8(), voxels.zMax8());
+        }
         else if(voxels.hasSubnodes())
             voxels.forEach(v -> genBoxes(v, builder));
     }

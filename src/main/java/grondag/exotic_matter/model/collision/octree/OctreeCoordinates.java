@@ -3,6 +3,8 @@ package grondag.exotic_matter.model.collision.octree;
 
 import java.util.Arrays;
 
+import grondag.exotic_matter.model.collision.IBoxBoundsIntConsumer;
+
 public class OctreeCoordinates
 {
     public static final long FULL_BITS = 0xFFFFFFFFFFFFFFFFL;
@@ -183,7 +185,7 @@ public class OctreeCoordinates
     /**
      * Gives packed 3-bit Cartesian coordinates from octree index w/ division level 3
      */
-    static int indexToXYZ3(final int i3)
+    public static int indexToXYZ3(final int i3)
     {
         //coordinate values are 3 bits each: xxx, yyy, zzz
         //voxel coordinates are interleaved: zyx zyx zyx
@@ -193,6 +195,16 @@ public class OctreeCoordinates
         return ((i3 & 1) | (j & 2) | (k & 4)) 
                | (((i3 & 2) | (j & 4) | (k & 8)) << 2)
                | (((i3 & 4) | (j & 8) | (k & 16)) << 4);
+    }
+    
+    public static void forXYZ3(final int i3, Int3Consumer consumer)
+    {
+        final int j = i3 >> 2;
+        final int k = i3 >> 4;
+       consumer.accept(
+               (i3 & 1) | (j & 2) | (k & 4),
+               ((i3 & 2) | (j & 4) | (k & 8)) >> 1,
+               ((i3 & 4) | (j & 8) | (k & 16)) >> 2);
     }
     
     /**
@@ -233,6 +245,7 @@ public class OctreeCoordinates
     
     static int xyzToIndex4(int x, int y, int z)
     {
+        // PERF: avoid packing/unpacking
         return xyzToIndex4(packedXYZ4(x, y, z));
     }
     
@@ -279,6 +292,34 @@ public class OctreeCoordinates
         consumer.accept(
                 ((xyz & mask) + 0.5f) * d,
                 (((xyz >> divisionLevel) & mask) + 0.5f) * d,
-                (((xyz >> divisionLevel * 2) & mask) + 0.5f) * d);
+                (((xyz >> (divisionLevel * 2)) & mask) + 0.5f) * d);
+    }
+    
+    public static void withXYZ(final int index, final int divisionLevel, Int3Consumer consumer)
+    {
+        final int xyz = indexToXYZ(index, divisionLevel);
+        final int mask = (1 << divisionLevel) - 1;
+        consumer.accept(
+                xyz & mask,
+                (xyz >> divisionLevel) & mask,
+                (xyz >> (divisionLevel * 2)) & mask);
+    }
+    
+    /**
+     * Gives numerators of AABB coordinates aligned to 1/8 divisions.
+     * Meant only for division levels 0-3. (Level 4 is 1/16)
+     */
+    public static void withBounds8(final int index, final int divisionLevel, IBoxBoundsIntConsumer consumer)
+    {
+        final int xyz = indexToXYZ(index, divisionLevel);
+        final int mask = (1 << divisionLevel) - 1;
+        final int x = xyz & mask;
+        final int y = (xyz >> divisionLevel) & mask;
+        final int z = (xyz >> (divisionLevel * 2)) & mask;
+        final int f = 1 << (3 - divisionLevel);
+        
+        consumer.accept(
+                x * f, y * f, z * f,
+                (x + 1) * f, (y + 1) * f, (z + 1) * f);
     }
 }
