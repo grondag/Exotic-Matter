@@ -67,7 +67,7 @@ public abstract class AbstractVoxelBuilder implements Consumer<IPolygon>
         final float[] data = polyData;
         withCenter(v.index(), v.divisionLevel(), (x, y, z) -> 
         {
-            if(TriangleBoxTest.triBoxOverlap(x, y, x, v.voxelRadius(), data))
+            if(TriangleBoxTest.triBoxOverlap(x, y, z, v.voxelRadius(), data))
             {
                 if(v.hasSubnodes())
                     v.forEach(sv -> acceptTriangleInner(sv));
