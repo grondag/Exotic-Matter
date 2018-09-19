@@ -158,15 +158,14 @@ public interface IVoxelOctree
     public float xCenter();
     public float yCenter();
     public float zCenter();
-    public float voxelSize();
-    public float voxelSizeHalf();
+    public float voxelRadius();
     
-    public default float xMin() { return xCenter() - voxelSizeHalf(); }
-    public default float xMax() { return xCenter() + voxelSizeHalf(); }
-    public default float yMin() { return yCenter() - voxelSizeHalf(); }
-    public default float yMax() { return yCenter() + voxelSizeHalf(); }
-    public default float zMin() { return zCenter() - voxelSizeHalf(); }
-    public default float zMax() { return zCenter() + voxelSizeHalf(); }
+//    public default float xMin() { return xCenter() - voxelSizeHalf(); }
+//    public default float xMax() { return xCenter() + voxelSizeHalf(); }
+//    public default float yMin() { return yCenter() - voxelSizeHalf(); }
+//    public default float yMax() { return yCenter() + voxelSizeHalf(); }
+//    public default float zMin() { return zCenter() - voxelSizeHalf(); }
+//    public default float zMax() { return zCenter() + voxelSizeHalf(); }
     
     /**
      * These return values of 0-8 representing 1/8 split of unit cube.

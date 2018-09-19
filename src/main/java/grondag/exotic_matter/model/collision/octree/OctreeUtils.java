@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.collision.octree;
 
+
 import java.util.Arrays;
 
 public class OctreeUtils
@@ -8,9 +9,157 @@ public class OctreeUtils
     public static final long[] ALL_FULL = new long[64];
     public static final long[] ALL_EMPTY = new long[64];
     
+    /**
+     * Indexes to face voxels in division level 4
+     */
+    static final int[] EXTERIOR_INDEX_4 = new int[1352];
+    
+    /**
+     * Indexes to face voxels in division level 3
+     */
+    static final int[] EXTERIOR_INDEX_3 = new int[1352];
+    
     static
     {
         Arrays.fill(ALL_FULL, FULL_BITS);
+        
+        int exteriorIndex = 0;
+        for(int i = 0; i < 4096; i++)
+        {
+            int xyz = indexToXYZ4(i);
+            final int x = xyz & 15;
+            final int y = (xyz >> 4) & 15;
+            final int z = (xyz >> 8) & 15;
+            
+            if(x == 0 || x == 15)
+            {
+                EXTERIOR_INDEX_4[exteriorIndex++] = xyzToIndex4(xyz);
+                continue;
+            }
+            
+            if(y == 0 || y == 15)
+            {
+                EXTERIOR_INDEX_4[exteriorIndex++] = xyzToIndex4(xyz);
+                continue;
+            }
+            
+            if(z == 0 || z == 15)
+            {
+                EXTERIOR_INDEX_4[exteriorIndex++] = xyzToIndex4(xyz);
+                continue;
+            }
+            
+        }
+        assert exteriorIndex == 1352;
+    
+        int exteriorBottomIndex = 0;
+        for(int i = 0; i < 512; i++)
+        {
+            int xyz = indexToXYZ3(i);
+            final int x = xyz & 7;
+            final int y = (xyz >> 3) & 7;
+            final int z = (xyz >> 6) & 7;
+            
+            if(x == 0 || x == 7)
+            {
+                EXTERIOR_INDEX_3[exteriorBottomIndex++] = xyzToIndex3(xyz);
+                continue;
+            }
+            
+            if(y == 0 || y == 7)
+            {
+                EXTERIOR_INDEX_3[exteriorBottomIndex++] = xyzToIndex3(xyz);
+                continue;
+            }
+            
+            if(z == 0 || z == 7)
+            {
+                EXTERIOR_INDEX_3[exteriorBottomIndex++] = xyzToIndex3(xyz);
+                continue;
+            }
+            
+        }
+        assert exteriorBottomIndex == 296;
+    }
+    
+    static int xyzToIndex(final int xyz, final int divisionLevel)
+    {
+        switch(divisionLevel)
+        {
+            case 0:
+                return 0;
+                
+            case 1:
+                return xyz;
+                
+            case 2:
+                return xyzToIndex2(xyz);
+        
+            case 3:
+                return xyzToIndex3(xyz);
+                
+            case 4:
+                return xyzToIndex4(xyz);
+        }
+        return 0;
+    }
+    
+    static int indexToXYZ(final int index, final int divisionLevel)
+    {
+        switch(divisionLevel)
+        {
+            case 0:
+                return 0;
+                
+            case 1:
+                return index;
+                
+            case 2:
+                return indexToXYZ2(index);
+        
+            case 3:
+                return indexToXYZ3(index);
+                
+            case 4:
+                return indexToXYZ4(index);
+        }
+        return 0;
+    }
+    
+    /**
+     * Gives octree index w/ division level 2 from packed 2-bit Cartesian coordinates
+     */
+    static int xyzToIndex2(final int xyz2)
+    {
+        final int y = xyz2 >> 1;
+        final int z = xyz2 >> 2;
+        
+        return (xyz2 & 1) | (y & 2) | (z & 4)
+         | (((xyz2 & 2) | (y & 4) | (z & 8)) << 2);
+    }
+    
+    /**
+     * Gives packed 2-bit Cartesian coordinates from octree index w/ division level 2
+     */
+    static int indexToXYZ2(final int i2)
+    {
+        final int j = i2 >> 2;
+        return ((i2 & 1) | (j & 2)) 
+               | (((i2 & 2) | (j & 4)) << 1)
+               | (((i2 & 4) | (j & 8)) << 2);
+    }
+    
+    /**
+     * Packed 2-bit Cartesian coordinates
+     */
+    static int packedXYZ2(int x, int y, int z)
+    {
+        return x | (y << 2) | (z << 4);
+    }
+    
+    static int xyzToIndex2(int x, int y, int z)
+    {
+        return xyzToIndex2(packedXYZ2(x, y, z));
     }
     
     /**
@@ -110,5 +259,15 @@ public class OctreeUtils
     static int packedXYZ4(int x, int y, int z)
     {
         return x | (y << 4) | (z << 8);
+    }
+    
+    static float voxelSize(int divisionLevel)
+    {
+        return 1f / (1 << divisionLevel);
+    }
+    
+    static float voxelRadius(int divisionLevel)
+    {
+        return 0.5f / (1 << divisionLevel);
     }
 }

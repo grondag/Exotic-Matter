@@ -6,9 +6,9 @@ abstract class AbstractSubOct extends AbstractOct
     protected final long bitMask;
     protected final long voxelBits[];
     
-    protected AbstractSubOct(int index, float xOrigin, float yOrigin, float zOrigin, int dataIndex, long bitMask, long[] voxelBits)
+    protected AbstractSubOct(int index, int divisionLevel, int dataIndex, long bitMask, long[] voxelBits)
     {
-        super(index, xOrigin, yOrigin, zOrigin);
+        super(index, divisionLevel);
         this.dataIndex = dataIndex;
         this.bitMask = bitMask;
         this.voxelBits = voxelBits;

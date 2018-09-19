@@ -1,8 +1,11 @@
 package grondag.exotic_matter.model.collision.octree;
 
+import static grondag.exotic_matter.model.collision.octree.OctreeUtils.*;
+
 abstract class AbstractOct implements IVoxelOctree
 {
     protected final int index;
+    protected final int divisionLevel;
     protected final float xCenter;
     protected final float yCenter;
     protected final float zCenter;
@@ -13,19 +16,34 @@ abstract class AbstractOct implements IVoxelOctree
     protected final int zMin8;
     protected final int zMax8;
     
-    AbstractOct(int index, float xOrigin, float yOrigin, float zOrigin)
+    AbstractOct(int index, int divisionLevel)
     {
         this.index = index;
-        this.xCenter = xOrigin + this.voxelSizeHalf();
-        this.yCenter = yOrigin + this.voxelSizeHalf();
-        this.zCenter = zOrigin + this.voxelSizeHalf();
+        this.divisionLevel = divisionLevel;
+        final float size = OctreeUtils.voxelSize(divisionLevel);
+        final float halfSize = size * 0.5f;
+        final int xyz = indexToXYZ(index, divisionLevel);
+        final int mask = (1 << divisionLevel) - 1;
+        final float xOrigin = (xyz & mask) * size;
+        final float yOrigin = ((xyz >> divisionLevel) & mask) * size;
+        final float zOrigin = ((xyz >> divisionLevel * 2) & mask) * size;
+        
+        this.xCenter = xOrigin + halfSize;
+        this.yCenter = yOrigin + halfSize;
+        this.zCenter = zOrigin + halfSize;
         this.xMin8 = Math.round(xOrigin * 8f);
         this.yMin8 = Math.round(yOrigin * 8f);
         this.zMin8 = Math.round(zOrigin * 8f);
-        final int increment = Math.round(this.voxelSize() * 8f);
+        final int increment = Math.round(size * 8f);
         this.xMax8 = this.xMin8 + increment;
         this.yMax8 = this.yMin8 + increment;
         this.zMax8 = this.zMin8 + increment;
+    }
+    
+    @Override
+    public final float voxelRadius()
+    {
+        return OctreeUtils.voxelRadius(divisionLevel);
     }
     
     @Override
