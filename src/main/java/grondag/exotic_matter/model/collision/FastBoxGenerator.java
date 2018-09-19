@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.collision.octree.IVoxelOctree;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -9,7 +10,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
-public class FastBoxGenerator extends AbstractVoxelBuilder
+public class FastBoxGenerator extends AbstractVoxelBuilder implements Consumer<IPolygon>
 {
     protected FastBoxGenerator()
     {
@@ -29,9 +30,16 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
         if(voxels.isFull())
             withBounds8(voxels.index(), voxels.divisionLevel(), (x0, y0, z0, x1, y1, z1) ->
                 builder.add(x0, y0, z0, x1, y1, z1));
-        else if(voxels.hasSubnodes())
+        else if(voxels.divisionLevel() < 3)
             voxels.forEach(v -> genBoxes(v, builder));
     }
+    
+    @Override
+    public void accept(@SuppressWarnings("null") IPolygon poly)
+    {
+        super.accept(poly, 3);
+    }
+
 
     //TODO: remove below - here for profiling
     
@@ -48,25 +56,18 @@ public class FastBoxGenerator extends AbstractVoxelBuilder
         // TODO Auto-generated method stub
         return super.build();
     }
-
+    
     @Override
-    public void accept(IPolygon poly)
+    protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2, int maxDivisionLevel)
     {
         // TODO Auto-generated method stub
-        super.accept(poly);
+        super.acceptTriangle(v0, v1, v2, maxDivisionLevel);
     }
 
     @Override
-    protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
+    protected void acceptTriangleInner(IVoxelOctree v, int maxDivisionLevel)
     {
         // TODO Auto-generated method stub
-        super.acceptTriangle(v0, v1, v2);
-    }
-
-    @Override
-    protected void acceptTriangleInner(IVoxelOctree v)
-    {
-        // TODO Auto-generated method stub
-        super.acceptTriangleInner(v);
+        super.acceptTriangleInner(v, maxDivisionLevel);
     }
 }

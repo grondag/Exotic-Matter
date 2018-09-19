@@ -12,12 +12,6 @@ abstract class AbstractOct implements IVoxelOctree
     }
     
     @Override
-    public final float voxelRadius()
-    {
-        return OctreeCoordinates.voxelRadius(divisionLevel);
-    }
-    
-    @Override
     public int index() { return this.index; }
 
     @Override

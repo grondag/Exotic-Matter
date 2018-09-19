@@ -25,7 +25,7 @@ public class VoxelOctree implements IVoxelOctree
     private final Bottom[] bottom = new Bottom[512];
     private final Voxel[] voxel = new Voxel[4096];
     
-    private final boolean isDetailed;
+    private final int maxDivisionLevel;
     
     public VoxelOctree()
     {
@@ -37,7 +37,7 @@ public class VoxelOctree implements IVoxelOctree
      */
     public VoxelOctree(boolean isDetailed)
     {
-        this.isDetailed = isDetailed;
+        maxDivisionLevel = isDetailed ? 4 : 3;
         
         for(int i = 0; i < 8; i++)
             top[i] = new Top(i);
@@ -77,6 +77,19 @@ public class VoxelOctree implements IVoxelOctree
         return voxel[xyzToIndex4(x, y, z)];
     }
     
+    @Override
+    public void forEach(Consumer<IVoxelOctree> consumer)
+    {
+        consumer.accept(this.subNode(0));
+        consumer.accept(this.subNode(1));
+        consumer.accept(this.subNode(2));
+        consumer.accept(this.subNode(3));
+        consumer.accept(this.subNode(4));
+        consumer.accept(this.subNode(5));
+        consumer.accept(this.subNode(6));
+        consumer.accept(this.subNode(7));
+    }
+    
     //TODO: disable
     SimpleConcurrentCounter interiorFillPerf = new SimpleConcurrentCounter("interiorFillPerf", 1000);
     
@@ -86,7 +99,7 @@ public class VoxelOctree implements IVoxelOctree
     public void fillInterior()
     {
         System.arraycopy(ALL_FULL, 0, fillBits, 0, 64);
-        if(isDetailed)
+        if(maxDivisionLevel == 4)
             for(int i : EXTERIOR_INDEX_4)
                 voxel[i].floodClearFill();
         else
@@ -104,7 +117,7 @@ public class VoxelOctree implements IVoxelOctree
      */
     public void simplify()
     {
-        if(isDetailed)
+        if(maxDivisionLevel == 4)
             simplifyDetailed();
         else
             simplifyCoarse();
@@ -250,12 +263,6 @@ public class VoxelOctree implements IVoxelOctree
         }
         
         @Override
-        public boolean hasSubnodes()
-        {
-            return isDetailed;
-        }
-        
-        @Override
         public Voxel subNode(int index)
         {
             return voxel[this.index * 8 + index];
@@ -337,12 +344,6 @@ public class VoxelOctree implements IVoxelOctree
                     voxel[xyzToIndex4(x, y, z + 1)].floodClearFill();
             }
         }
-        
-        @Override
-        public boolean hasSubnodes()
-        {
-            return false;
-        }
 
         @Override
         public boolean isMostlyFull()
@@ -356,9 +357,6 @@ public class VoxelOctree implements IVoxelOctree
             throw new UnsupportedOperationException();
         }
     }
-
-    @Override
-    public float voxelRadius()  { return 0.5f; }
 
     @Override
     public int index() { return 0; }

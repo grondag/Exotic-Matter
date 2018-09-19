@@ -274,12 +274,12 @@ public class OctreeCoordinates
         return x | (y << 4) | (z << 8);
     }
     
-    static float voxelSize(int divisionLevel)
+    public static float voxelSize(int divisionLevel)
     {
         return 1f / (1 << divisionLevel);
     }
     
-    static float voxelRadius(int divisionLevel)
+    public static float voxelRadius(int divisionLevel)
     {
         return 0.5f / (1 << divisionLevel);
     }

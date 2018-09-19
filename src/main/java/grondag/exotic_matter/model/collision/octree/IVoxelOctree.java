@@ -138,25 +138,6 @@ public interface IVoxelOctree
         }
     }
     
-    /**
-     * Returns a byte (0-255) value with each bit indicating if the
-     * subnode corresponding to bit ordinal is full.
-     */
-    public default int shapeBits()
-    {
-        int result = this.subNode(0).isFull() ? 1 : 0;
-        if(this.subNode(1).isFull()) result |= 2;
-        if(this.subNode(2).isFull()) result |= 4;
-        if(this.subNode(3).isFull()) result |= 8;
-        if(this.subNode(4).isFull()) result |= 16;
-        if(this.subNode(5).isFull()) result |= 32;
-        if(this.subNode(6).isFull()) result |= 64;
-        if(this.subNode(7).isFull()) result |= 128;
-        return result;
-    }
-    
-    public float voxelRadius();
-    
     public int index();
     
     public int divisionLevel();

@@ -2,9 +2,12 @@ package grondag.exotic_matter.model.collision;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.withBounds8;
 
-import grondag.exotic_matter.ConfigXM;
+import java.util.function.Consumer;
 
-public class OptimalBoxGenerator extends AbstractVoxelBuilder
+import grondag.exotic_matter.ConfigXM;
+import grondag.exotic_matter.model.primitives.IPolygon;
+
+public class OptimalBoxGenerator extends AbstractVoxelBuilder implements Consumer<IPolygon>
 {
     protected OptimalBoxGenerator()
     {
@@ -71,5 +74,11 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder
 //        {
 //            bf.addBox(bf.maximalVolumes[i], builder);
 //        }
+    }
+
+    @Override
+    public void accept(@SuppressWarnings("null") IPolygon poly)
+    {
+        super.accept(poly, 4);
     }
 }

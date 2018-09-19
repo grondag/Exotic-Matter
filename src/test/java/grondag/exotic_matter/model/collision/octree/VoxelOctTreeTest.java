@@ -81,7 +81,7 @@ class VoxelOctTreeTest
 //            assert st.yMax() <= t.yMax();
 //            assert st.zMin() >= t.zMin();
 //            assert st.zMax() <= t.zMax();
-            if(st.hasSubnodes())
+            if(st.divisionLevel() < 4)
                 testBox(st);
         }
     }
