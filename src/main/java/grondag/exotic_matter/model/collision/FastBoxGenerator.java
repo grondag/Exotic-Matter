@@ -65,11 +65,4 @@ public class FastBoxGenerator extends AbstractVoxelBuilder implements Consumer<I
         // TODO Auto-generated method stub
         super.acceptTriangle(v0, v1, v2, maxDivisionLevel);
     }
-
-    @Override
-    protected void acceptTriangleInner(IVoxelOctree v, int maxDivisionLevel)
-    {
-        // TODO Auto-generated method stub
-        super.acceptTriangleInner(v, maxDivisionLevel);
-    }
 }

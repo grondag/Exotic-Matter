@@ -1,8 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
 
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.voxelRadius;
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.withCenter;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 import java.util.List;
 
@@ -58,24 +57,21 @@ public abstract class AbstractVoxelBuilder
     {
         final float[] data = polyData;
         TriangleBoxTest.packPolyData(v0, v1, v2, data);
-        acceptTriangleInner(voxels, maxDivisionLevel);
-    }
-    
-    protected void acceptTriangleInner(IVoxelOctree v, int maxDivisionLevel)
-    {
-        final float[] data = polyData;
-        withCenter(v.index(), v.divisionLevel(), (x, y, z) -> 
+        voxels.visit((index, divisionLevel, isLeaf) ->
         {
-            if(TriangleBoxTest.triBoxOverlap(x, y, z, voxelRadius(v.divisionLevel()), data))
+            return testCenter(index, divisionLevel, (x, y, z) -> 
             {
-                if(v.divisionLevel() < maxDivisionLevel)
+                if(TriangleBoxTest.triBoxOverlap(x, y, z, voxelRadius(divisionLevel), data))
                 {
-                    v.forEach(sv -> acceptTriangleInner(sv, maxDivisionLevel));
+                    if(isLeaf)
+                    {
+                        voxels.setFull(index, divisionLevel);
+                        return false;
+                    }
+                    else return true;
                 }
-                else
-                    v.setFull();
-            }
+                else return false;
+            });
         });
-        
     }
 }

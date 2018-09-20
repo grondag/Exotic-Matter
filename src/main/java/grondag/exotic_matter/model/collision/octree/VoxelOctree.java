@@ -339,10 +339,47 @@ public class VoxelOctree implements IVoxelOctree
                 bits[i] = 0;
     }
     
-    @Override
     public void setFull()
     {
-        System.arraycopy(ALL_FULL, 0, voxelBits, 0, 64);
+        setFull(0, 0);
+    }
+    
+    public void setFull(int index, int divisionLevel)
+    {
+        //TODO: will need to handle different array sizes
+        switch(divisionLevel)
+        {
+            case 0:
+            {
+                System.arraycopy(ALL_FULL, 0, voxelBits, 0, 64);
+                return;
+            }
+            
+            case 1:
+            {
+                System.arraycopy(ALL_FULL, 0, voxelBits, index * 8, 8);
+                return;
+            }
+            
+            case 2:
+                voxelBits[index] = -1L;
+                return;
+                
+            case 3:
+            {
+                final long mask = 0xFFL << (8 * (index & 7));
+                voxelBits[index >> 3] |= mask;
+                return;
+            }  
+            case 4:
+            {
+                final long mask = 1L << (index & 63);
+                voxelBits[index >> 6] |= mask;
+                return;
+            }
+        }
+        assert false : "Bad division level";
+        return;
     }
 
     @Override
@@ -363,13 +400,6 @@ public class VoxelOctree implements IVoxelOctree
         {
             return middle[this.index * 8 + index];
         }
-
-        @Override
-        public void setFull()
-        {
-         // should never be used at this level
-            throw new UnsupportedOperationException();
-        }
     }
     
     private class Middle extends AbstractSubOct
@@ -378,12 +408,6 @@ public class VoxelOctree implements IVoxelOctree
         private Middle(int index)
         {
             super(index, 2, index, FULL_BITS, VoxelOctree.this.voxelBits);
-        }
-
-        @Override
-        public void setFull()
-        {
-            voxelBits[index] = FULL_BITS;
         }
         
         @Override

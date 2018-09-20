@@ -17,14 +17,6 @@ public interface IVoxelOctree
     }
     
     /**
-     * Marks node/voxel as full.
-     * In higher nodes this is a recursive operation - all subnodes and ultimately all voxels are marked full. <p>
-     * 
-     * Note - default implementation is for parent nodes - must be overridden at voxel level.
-     */
-    public void setFull();
-    
-    /**
      * If has subnodes returns node at given address.
      * If this node is a voxel, throws an exception.
      */

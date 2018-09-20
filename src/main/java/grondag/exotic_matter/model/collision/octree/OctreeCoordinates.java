@@ -295,6 +295,17 @@ public class OctreeCoordinates
                 (((xyz >> (divisionLevel * 2)) & mask) + 0.5f) * d);
     }
     
+    public static boolean testCenter(final int index, final int divisionLevel, Float3Test test)
+    {
+        final int xyz = indexToXYZ(index, divisionLevel);
+        final float d = OctreeCoordinates.voxelSize(divisionLevel);
+        final int mask = (1 << divisionLevel) - 1;
+        return test.apply(
+                ((xyz & mask) + 0.5f) * d,
+                (((xyz >> divisionLevel) & mask) + 0.5f) * d,
+                (((xyz >> (divisionLevel * 2)) & mask) + 0.5f) * d);
+    }
+    
     public static void withXYZ(final int index, final int divisionLevel, Int3Consumer consumer)
     {
         final int xyz = indexToXYZ(index, divisionLevel);

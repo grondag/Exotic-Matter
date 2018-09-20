@@ -31,7 +31,7 @@ class VoxelOctTreeTest
             {
                 for(int z = 0; z < 16; z++)
                 {
-                    vot.voxel(x, y, z).setFull();
+                    vot.setFull(OctreeCoordinates.xyzToIndex4(x, y, z), 4);
                 }
             }
         }
@@ -60,7 +60,7 @@ class VoxelOctTreeTest
             {
                 for(int z = 0; z < 16; z++)
                 {
-                    vot.voxel(x, y, z).setFull();
+                    vot.setFull(OctreeCoordinates.xyzToIndex4(x, y, z), 4);
                 }
             }
         }
@@ -102,7 +102,7 @@ class VoxelOctTreeTest
             {
                 for(int z = 0; z < 8; z++)
                 {
-                    vot.bottom(x, y, z).setFull();
+                    vot.setFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
                 }
             }
         }
@@ -131,7 +131,7 @@ class VoxelOctTreeTest
             {
                 for(int z = 0; z < 8; z++)
                 {
-                    vot.bottom(x, y, z).setFull();
+                    vot.setFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
                 }
             }
         }
