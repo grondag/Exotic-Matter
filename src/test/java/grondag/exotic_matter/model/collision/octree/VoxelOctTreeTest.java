@@ -21,7 +21,7 @@ class VoxelOctTreeTest
         
         assert vot.isEmpty();
 
-        testBox(vot);
+        testBox(vot, 4);
         
         vot.clear();
         
@@ -70,7 +70,7 @@ class VoxelOctTreeTest
         assert vot.isFull();
     }
     
-    private void testBox(IVoxelOctree t)
+    private void testBox(IVoxelOctree t, int maxDiv)
     {
         for(int i = 0; i < 8; i++)
         {
@@ -81,8 +81,8 @@ class VoxelOctTreeTest
 //            assert st.yMax() <= t.yMax();
 //            assert st.zMin() >= t.zMin();
 //            assert st.zMax() <= t.zMax();
-            if(st.divisionLevel() < 4)
-                testBox(st);
+            if(st.divisionLevel() < maxDiv)
+                testBox(st, maxDiv);
         }
     }
     
@@ -92,7 +92,7 @@ class VoxelOctTreeTest
         
         assert vot.isEmpty();
 
-        testBox(vot);
+        testBox(vot, 3);
         
         vot.clear();
         

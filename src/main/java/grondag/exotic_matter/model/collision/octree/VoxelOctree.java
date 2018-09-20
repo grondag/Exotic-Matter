@@ -233,6 +233,13 @@ public class VoxelOctree implements IVoxelOctree
         {
             return middle[this.index * 8 + index];
         }
+
+        @Override
+        public void clear()
+        {
+            // should never be used at this level
+            throw new UnsupportedOperationException();
+        }
     }
     
     private class Middle extends AbstractSubOct

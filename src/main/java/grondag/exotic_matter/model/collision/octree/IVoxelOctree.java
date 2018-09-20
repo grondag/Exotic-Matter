@@ -69,10 +69,7 @@ public interface IVoxelOctree
      * 
      * Note - default implementation is for parent nodes - must be overridden at voxel level.
      */
-    public default void clear()
-    {
-        this.forEach(n -> n.clear());
-    }
+    public void clear();
     
     /**
      * True if at least 50% of voxels are completely full. 
