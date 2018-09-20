@@ -75,7 +75,7 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder implements Consume
     }
 
     @Override
-    public void accept(IPolygon poly)
+    public void accept(@SuppressWarnings("null") IPolygon poly)
     {
         super.accept(poly, 4);
     }

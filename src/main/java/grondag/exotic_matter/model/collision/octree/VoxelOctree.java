@@ -18,11 +18,6 @@ public class VoxelOctree
     private final long[] voxelBits = new long[64];
     private final long[] fillBits = new long[64];
     
-    private final Top[] top = new Top[8];
-    private final Middle[] middle = new Middle[64];
-    private final Bottom[] bottom = new Bottom[512];
-    private final Voxel[] voxel = new Voxel[4096];
-    
     private final int maxDivisionLevel;
     
     public VoxelOctree()
@@ -36,21 +31,6 @@ public class VoxelOctree
     public VoxelOctree(boolean isDetailed)
     {
         maxDivisionLevel = isDetailed ? 4 : 3;
-        
-        for(int i = 0; i < 8; i++)
-            top[i] = new Top(i);
-        
-        for(int i = 0; i < 64; i++)
-            middle[i] = new Middle(i);
-        
-        for(int i = 0; i < 512; i++)
-            bottom[i] = new Bottom(i);
-        
-        if(isDetailed)
-        {
-            for(int i = 0; i < 4096; i++)
-                voxel[i] = new Voxel(i);
-        }
     }
     
     protected static boolean isEmpty(int index, int divisionLevel, long[] bits)
@@ -264,13 +244,13 @@ public class VoxelOctree
     {
         interiorFillPerf.startRun();
         for(int i : EXTERIOR_INDEX_3)
-            floodClearFill3(i);
+            floodClearFill3(i, fillBits, voxelBits);
         interiorFillPerf.endRun();
     }
     
-    private void floodClearFill3(int index)
+    private static void floodClearFill3(final int index, final long[] fillBits, final long[] voxelBits)
     {
-        final long mask = 0xFFL << (8 * (index & 7));
+        final long mask = 0xFFL << ((index & 7) << 3);
         final int wordIndex = index >> 3;
         if((fillBits[wordIndex] & mask) != 0 && (voxelBits[wordIndex] & mask) == 0)
         {
@@ -282,29 +262,64 @@ public class VoxelOctree
             final int z = (xyz >> 6) & 7;
             
             if(x > 0)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x - 1, y, z)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x - 1, y, z)), fillBits, voxelBits);
             
             if(x < 7)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x + 1, y, z)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x + 1, y, z)), fillBits, voxelBits);
             
             if(y > 0)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x, y - 1, z)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y - 1, z)), fillBits, voxelBits);
             
             if(y < 7)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x, y + 1, z)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y + 1, z)), fillBits, voxelBits);
             
             if(z > 0)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z - 1)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z - 1)), fillBits, voxelBits);
             
             if(z < 7)
-                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z + 1)));
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z + 1)), fillBits, voxelBits);
         }
     }
+    
     
     private void fillInteriorDetailed()
     {
         for(int i : EXTERIOR_INDEX_4)
-            voxel[i].floodClearFill();
+            floodClearFill4(i);
+    }
+    
+    private void floodClearFill4(int index)
+    {
+        final long mask = 0x1L << (index & 63);
+        final int wordIndex = index >> 6;
+        
+        if((fillBits[wordIndex] & mask) != 0 && (voxelBits[wordIndex] & mask) == 0)
+        {
+            fillBits[wordIndex] &= ~mask;
+            
+            final int xyz = indexToXYZ4(index);
+            final int x = xyz & 0xF;
+            final int y = (xyz >> 4) & 0xF;
+            final int z = (xyz >> 8) & 0xF;
+            
+            if(x > 0)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x - 1, y, z)));
+            
+            if(x < 15)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x + 1, y, z)));
+            
+            if(y > 0)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x, y - 1, z)));
+            
+            if(y < 15)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x, y + 1, z)));
+            
+            if(z > 0)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x, y, z - 1)));
+            
+            if(z < 15)
+                floodClearFill4(xyzToIndex4(packedXYZ4(x, y, z + 1)));
+        }
     }
     
     /**
@@ -402,82 +417,5 @@ public class VoxelOctree
         }
         assert false : "Bad division level";
         return;
-    }
-    
-    private class Top extends AbstractOct
-    {
-        private Top(int index)
-        {
-            super(index, 1);
-        }
-
-    }
-    
-    private class Middle extends AbstractSubOct
-    {
-        
-        private Middle(int index)
-        {
-            super(index, 2, index, FULL_BITS, VoxelOctree.this.voxelBits);
-        }
-    }
-
-    static int bottomDataIndex(int bottomIndex)
-    {
-        return bottomIndex >> 3;
-    }
-    
-    static long bottomDataMask(int bottomIndex)
-    {
-        return 0xFFL << ((bottomIndex & 7) * 8);
-    }
-    
-    private class Bottom extends AbstractSubOct
-    {
-        private Bottom(int index)
-        {
-            super(index, 3, bottomDataIndex(index), bottomDataMask(index), VoxelOctree.this.voxelBits);
-        }
-        
-  
-    }
-    
-    private class Voxel extends AbstractSubOct
-    {
-        private Voxel(int index)
-        {
-            super(index, 4, index / 64, 0x1L << (index & 63), VoxelOctree.this.voxelBits);
-        }
-        
-        private void floodClearFill()
-        {
-            if(isEmpty(this.index, 4) && (fillBits[dataIndex] & bitMask) != 0)
-            {
-                fillBits[dataIndex] &= ~bitMask;
-                
-                final int xyz = indexToXYZ4(this.index);
-                final int x = xyz & 0xF;
-                final int y = (xyz >> 4) & 0xF;
-                final int z = (xyz >> 8) & 0xF;
-                
-                if(x > 0)
-                    voxel[xyzToIndex4(x - 1, y, z)].floodClearFill();
-                
-                if(x < 15)
-                    voxel[xyzToIndex4(x + 1, y, z)].floodClearFill();    
-                
-                if(y > 0)
-                    voxel[xyzToIndex4(x, y - 1, z)].floodClearFill();
-                
-                if(y < 15)
-                    voxel[xyzToIndex4(x, y + 1, z)].floodClearFill();
-                
-                if(z > 0)
-                    voxel[xyzToIndex4(x, y, z - 1)].floodClearFill();
-                
-                if(z < 15)
-                    voxel[xyzToIndex4(x, y, z + 1)].floodClearFill();
-            }
-        }
     }
 }
