@@ -53,12 +53,7 @@ public class VoxelOctree
         }
     }
     
-    public boolean isEmpty()
-    {
-        return isEmpty(0, 0);
-    }
-    
-    public boolean isEmpty(int index, int divisionLevel)
+    protected static boolean isEmpty(int index, int divisionLevel, long[] bits)
     {
         // 64 words
         // div 0 - all long words 0 - 63                    
@@ -73,7 +68,6 @@ public class VoxelOctree
         // div 2 - byte within long word xyz : xyz          
         // div 3 - bit within long world xyz : xyz xyz      
         
-        final long[] bits = this.voxelBits;
         //TODO: will need to handle different array sizes
         switch(divisionLevel)
         {
@@ -109,6 +103,16 @@ public class VoxelOctree
         }
         assert false : "Bad division level";
         return false;
+    }
+    
+    public boolean isEmpty()
+    {
+        return isEmpty(0, 0);
+    }
+    
+    public boolean isEmpty(int index, int divisionLevel)
+    {
+        return isEmpty(index, divisionLevel, voxelBits);
     }
     
     public void clear()
@@ -154,14 +158,8 @@ public class VoxelOctree
         return;
     }
     
-    public boolean isFull()
+    protected static boolean isFull(int index, int divisionLevel, long[] bits)
     {
-        return isFull(0, 0);
-    }
-    
-    public boolean isFull(int index, int divisionLevel)
-    {
-        final long[] bits = this.voxelBits;
         //TODO: will need to handle different array sizes
         switch(divisionLevel)
         {
@@ -197,6 +195,16 @@ public class VoxelOctree
         }
         assert false : "Bad division level";
         return false;
+    }
+    
+    public boolean isFull()
+    {
+        return isFull(0, 0);
+    }
+    
+    public boolean isFull(int index, int divisionLevel)
+    {
+        return isFull(index, divisionLevel, this.voxelBits);
     }
     
     public void visit(IOctreeVisitor visitor)
@@ -246,16 +254,57 @@ public class VoxelOctree
     {
         System.arraycopy(ALL_FULL, 0, fillBits, 0, 64);
         if(maxDivisionLevel == 4)
-            for(int i : EXTERIOR_INDEX_4)
-                voxel[i].floodClearFill();
+            fillInteriorDetailed();
         else
-        {
-            interiorFillPerf.startRun();
-            for(int i : EXTERIOR_INDEX_3)
-                bottom[i].floodClearFill();
-            interiorFillPerf.endRun();
-        }
+            fillInteriorCoarse();
         System.arraycopy(fillBits, 0, voxelBits, 0, 64);
+    }
+    
+    private void fillInteriorCoarse()
+    {
+        interiorFillPerf.startRun();
+        for(int i : EXTERIOR_INDEX_3)
+            floodClearFill3(i);
+        interiorFillPerf.endRun();
+    }
+    
+    private void floodClearFill3(int index)
+    {
+        final long mask = 0xFFL << (8 * (index & 7));
+        final int wordIndex = index >> 3;
+        if((fillBits[wordIndex] & mask) != 0 && (voxelBits[wordIndex] & mask) == 0)
+        {
+            fillBits[wordIndex] &= ~mask;
+            
+            final int xyz = indexToXYZ3(index);
+            final int x = xyz & 7;
+            final int y = (xyz >> 3) & 7;
+            final int z = (xyz >> 6) & 7;
+            
+            if(x > 0)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x - 1, y, z)));
+            
+            if(x < 7)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x + 1, y, z)));
+            
+            if(y > 0)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y - 1, z)));
+            
+            if(y < 7)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y + 1, z)));
+            
+            if(z > 0)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z - 1)));
+            
+            if(z < 7)
+                floodClearFill3(xyzToIndex3(packedXYZ3(x, y, z + 1)));
+        }
+    }
+    
+    private void fillInteriorDetailed()
+    {
+        for(int i : EXTERIOR_INDEX_4)
+            voxel[i].floodClearFill();
     }
     
     /**
@@ -390,37 +439,7 @@ public class VoxelOctree
             super(index, 3, bottomDataIndex(index), bottomDataMask(index), VoxelOctree.this.voxelBits);
         }
         
-        private void floodClearFill()
-        {
-            if((fillBits[dataIndex] & bitMask) != 0 && isEmpty(this.index, this.divisionLevel))
-            {
-                fillBits[dataIndex] &= ~bitMask;
-                
-                final Bottom[] bottom = VoxelOctree.this.bottom;
-                final int xyz = indexToXYZ3(this.index);
-                final int x = xyz & 7;
-                final int y = (xyz >> 3) & 7;
-                final int z = (xyz >> 6) & 7;
-                
-                if(x > 0)
-                    bottom[xyzToIndex3(packedXYZ3(x - 1, y, z))].floodClearFill();
-                
-                if(x < 7)
-                    bottom[xyzToIndex3(packedXYZ3(x + 1, y, z))].floodClearFill();    
-                
-                if(y > 0)
-                    bottom[xyzToIndex3(packedXYZ3(x, y - 1, z))].floodClearFill();
-                
-                if(y < 7)
-                    bottom[xyzToIndex3(packedXYZ3(x, y + 1, z))].floodClearFill();
-                
-                if(z > 0)
-                    bottom[xyzToIndex3(packedXYZ3(x, y, z - 1))].floodClearFill();
-                
-                if(z < 7)
-                    bottom[xyzToIndex3(packedXYZ3(x, y, z + 1))].floodClearFill();
-            }
-        }
+  
     }
     
     private class Voxel extends AbstractSubOct
