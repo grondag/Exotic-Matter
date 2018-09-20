@@ -5,7 +5,6 @@ import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 import java.util.List;
 
-import grondag.exotic_matter.model.collision.octree.IVoxelOctree;
 import grondag.exotic_matter.model.collision.octree.VoxelOctree;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;

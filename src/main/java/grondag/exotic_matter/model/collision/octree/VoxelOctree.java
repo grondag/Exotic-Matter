@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.collision.octree;
 
-import java.util.function.Consumer;
-
 import grondag.exotic_matter.concurrency.SimpleConcurrentCounter;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
@@ -15,7 +13,7 @@ import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
  * implemented as a straightforward array of bits (as longs).
  * This is simple and performant for our particular use case.
  */
-public class VoxelOctree implements IVoxelOctree
+public class VoxelOctree
 {
     private final long[] voxelBits = new long[64];
     private final long[] fillBits = new long[64];
@@ -463,11 +461,4 @@ public class VoxelOctree implements IVoxelOctree
             }
         }
     }
-
-    @Override
-    public int index() { return 0; }
-
-    @Override
-    public int divisionLevel() { return 0; }
-
 }

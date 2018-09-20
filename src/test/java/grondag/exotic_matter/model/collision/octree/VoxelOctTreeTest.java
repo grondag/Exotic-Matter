@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.collision.octree;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.model.collision.octree.IVoxelOctree;
 import grondag.exotic_matter.model.collision.octree.VoxelOctree;
 
 class VoxelOctTreeTest

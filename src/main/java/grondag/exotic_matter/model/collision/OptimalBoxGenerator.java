@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.collision;
 
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.withBounds8;
-
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.ConfigXM;

@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.collision.octree;
 
-abstract class AbstractOct implements IVoxelOctree
+abstract class AbstractOct
 {
     protected final int index;
     protected final int divisionLevel;
@@ -10,10 +10,4 @@ abstract class AbstractOct implements IVoxelOctree
         this.index = index;
         this.divisionLevel = divisionLevel;
     }
-    
-    @Override
-    public int index() { return this.index; }
-
-    @Override
-    public int divisionLevel() { return this.divisionLevel; }
 }

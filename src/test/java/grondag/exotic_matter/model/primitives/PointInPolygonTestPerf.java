@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
