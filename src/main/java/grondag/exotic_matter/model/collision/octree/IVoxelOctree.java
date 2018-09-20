@@ -17,42 +17,6 @@ public interface IVoxelOctree
     }
     
     /**
-     * In bottom node this simply means each voxel is present.
-     * In higher nodes means all subnodes and ultimately all voxels are filled.<p>
-     * 
-     * Note - default implementation is for parent nodes - must be overridden at voxel level.
-     */
-    public default boolean isFull()
-    {
-        return this.subNode(0).isFull()
-                && this.subNode(1).isFull()
-                && this.subNode(2).isFull()
-                && this.subNode(3).isFull()
-                && this.subNode(4).isFull()
-                && this.subNode(5).isFull()
-                && this.subNode(6).isFull()
-                && this.subNode(7).isFull();
-    }
-    
-    /**
-     * In bottom node this simply means no voxels is filled.
-     * In higher nodes means no subnodes and ultimately no voxels are filled.<p>
-     * 
-     * Note - default implementation is for parent nodes - must be overridden at voxel level.
-     */
-    public default boolean isEmpty()
-    {
-        return this.subNode(0).isEmpty()
-                && this.subNode(1).isEmpty()
-                && this.subNode(2).isEmpty()
-                && this.subNode(3).isEmpty()
-                && this.subNode(4).isEmpty()
-                && this.subNode(5).isEmpty()
-                && this.subNode(6).isEmpty()
-                && this.subNode(7).isEmpty();
-    }
-    
-    /**
      * Marks node/voxel as full.
      * In higher nodes this is a recursive operation - all subnodes and ultimately all voxels are marked full. <p>
      * 
@@ -69,44 +33,6 @@ public interface IVoxelOctree
      */
     public void clear();
     
-    /**
-     * True if at least 50% of voxels are completely full. 
-     * For lowest (voxel) nodes, is equivalent to {@link #isFull()}
-     * @return
-     */
-    public default boolean isMostlyFull()
-    {
-        int count = 0;
-        
-        if(this.subNode(0).isFull())
-            count++;
-        
-        if(this.subNode(1).isFull())
-            count++;
-        
-        if(this.subNode(2).isFull())
-            count++;
-        
-        if(this.subNode(3).isFull())
-            if(++count == 4) return true;
-        
-        if(this.subNode(4).isFull())
-            if(++count == 4) return true;
-        
-        if(count < 1) return false;
-        
-        if(this.subNode(5).isFull())
-            if(++count == 4) return true;
-
-        if(count < 2) return false;
-
-        if(this.subNode(6).isFull())
-            if(++count == 4) return true;
-        
-        if(count < 3) return false;
-        
-        return this.subNode(7).isFull();
-    }
     
     /**
      * If has subnodes returns node at given address.

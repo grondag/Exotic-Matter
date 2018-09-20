@@ -19,7 +19,7 @@ class VoxelOctTreeTest
     {
         VoxelOctree vot = new VoxelOctree(true);
         
-        assert vot.isEmpty();
+        assert vot.isEmpty(0, 0);
 
         testBox(vot, 4);
         
@@ -36,7 +36,7 @@ class VoxelOctTreeTest
             }
         }
         
-        assert vot.isFull();
+        assert vot.isFull(0, 0);
         
         for(int x = 0; x < 16; x++)
         {
@@ -50,7 +50,7 @@ class VoxelOctTreeTest
             }
         }
         
-       assert vot.isEmpty();
+       assert vot.isEmpty(0, 0);
         
        vot.clear();
         
@@ -67,7 +67,7 @@ class VoxelOctTreeTest
         
         vot.simplify();
         
-        assert vot.isFull();
+        assert vot.isFull(0, 0);
     }
     
     private void testBox(IVoxelOctree t, int maxDiv)
@@ -90,7 +90,7 @@ class VoxelOctTreeTest
     {
         VoxelOctree vot = new VoxelOctree(false);
         
-        assert vot.isEmpty();
+        assert vot.isEmpty(0, 0);
 
         testBox(vot, 3);
         
@@ -107,7 +107,7 @@ class VoxelOctTreeTest
             }
         }
         
-        assert vot.isFull();
+        assert vot.isFull(0, 0);
         
         for(int x = 0; x < 8; x++)
         {
@@ -121,7 +121,7 @@ class VoxelOctTreeTest
             }
         }
         
-       assert vot.isEmpty();
+       assert vot.isEmpty(0, 0);
         
        vot.clear();
         
@@ -138,6 +138,6 @@ class VoxelOctTreeTest
         
         vot.simplify();
         
-        assert vot.isFull();
+        assert vot.isFull(0, 0);
     }
 }

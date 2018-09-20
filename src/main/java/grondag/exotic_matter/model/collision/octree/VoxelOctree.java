@@ -55,6 +55,99 @@ public class VoxelOctree implements IVoxelOctree
         }
     }
     
+    public boolean isEmpty(int index, int divisionLevel)
+    {
+        // 64 words
+        // div 0 - all long words 0 - 63                    
+        // div 1 - some long words - xyz | 0 - 7            
+        // div 2 - one long word - xyz xyz                  
+        // div 3 - byte within long word xyz xyz : xyz      
+        // div 4 - bit within long world xyz xyz : xyz xyz  
+        
+        // 8 words
+        // div 0 - all long words 0 - 7                     
+        // div 1 - one long word - xyz                      
+        // div 2 - byte within long word xyz : xyz          
+        // div 3 - bit within long world xyz : xyz xyz      
+        
+        final long[] bits = this.voxelBits;
+        //TODO: will need to handle different array sizes
+        switch(divisionLevel)
+        {
+            case 0:
+            {
+                for(int i = 0; i < 64; i++)
+                    if(bits[i] != 0)  return false;
+                return true;
+            }
+            
+            case 1:
+            {
+                final int min = index * 8;
+                final int max = min + 8;
+                for(int i = min; i < max; i++)
+                    if(bits[i] != 0)  return false;
+                return true;
+            }
+            
+            case 2:
+                return bits[index] == 0;
+                
+            case 3:
+            {
+                final long mask = 0xFFL << (8 * (index & 7));
+                return (bits[index >> 3] & mask) == 0;
+            }  
+            case 4:
+            {
+                final long mask = 1L << (index & 63);
+                return (bits[index >> 6] & mask) == 0;
+            }
+        }
+        assert false : "Bad division level";
+        return false;
+    }
+    
+    public boolean isFull(int index, int divisionLevel)
+    {
+        final long[] bits = this.voxelBits;
+        //TODO: will need to handle different array sizes
+        switch(divisionLevel)
+        {
+            case 0:
+            {
+                for(int i = 0; i < 64; i++)
+                    if(bits[i] != -1L)  return false;
+                return true;
+            }
+            
+            case 1:
+            {
+                final int min = index * 8;
+                final int max = min + 8;
+                for(int i = min; i < max; i++)
+                    if(bits[i] != -1L)  return false;
+                return true;
+            }
+            
+            case 2:
+                return bits[index] == -1L;
+                
+            case 3:
+            {
+                final long mask = 0xFFL << (8 * (index & 7));
+                return (bits[index >> 3] & mask) == mask;
+            }  
+            case 4:
+            {
+                final long mask = 1L << (index & 63);
+                return (bits[index >> 6] & mask) == mask;
+            }
+        }
+        assert false : "Bad division level";
+        return false;
+    }
+    
     public void forEachVoxel(Consumer<IVoxelOctree> consumer)
     {
         for(Voxel v : voxel)
@@ -162,17 +255,31 @@ public class VoxelOctree implements IVoxelOctree
     
     public void simplifyDetailed()
     {
-        for(Bottom b : bottom)
+        final long[] bits = this.voxelBits;
+        
+        for(int i = 0; i < 64; i++)
         {
-            if(b.isEmpty() || b.isFull())
-                continue;
-            
-            if(b.isMostlyFull())
-                b.setFull();
-            else
-                b.clear();
+            long b = simplifyDetailedInner(bits[i], 0);
+            b = simplifyDetailedInner(b, 1);
+            b = simplifyDetailedInner(b, 2);
+            b = simplifyDetailedInner(b, 3);
+            b = simplifyDetailedInner(b, 4);
+            b = simplifyDetailedInner(b, 5);
+            b = simplifyDetailedInner(b, 6);
+            b = simplifyDetailedInner(b, 7);
+            bits[i] = b;
         }
     }
+    
+    private long simplifyDetailedInner(long bits, int shift)
+    {
+        long mask = 0xFFL << (shift * 8);
+        if(Long.bitCount((bits & mask)) >= 4)
+            return bits | mask;
+        else
+            return bits &= ~mask;
+    }
+      
     
     /**
      * Makes middle nodes that are mostly full completely full, or otherwise makes them empty.
@@ -180,29 +287,15 @@ public class VoxelOctree implements IVoxelOctree
      */
     private void simplifyCoarse()
     {
-        for(Middle m : middle)
-        {
-            if(m.isEmpty() || m.isFull())
-                continue;
-            
-            if(m.isMostlyFull())
-                m.setFull();
+        final long[] bits = this.voxelBits;
+        
+        for(int i = 0; i < 64; i++)
+            if(Long.bitCount(bits[i]) >= 32)
+                bits[i] = -1L;
             else
-                m.clear();
-        }
+                bits[i] = 0;
     }
     
-    @Override
-    public boolean isFull()
-    {
-        for(int i = 0; i < 64; i++)
-        {
-            if(voxelBits[i] != FULL_BITS)
-                return false;
-        }
-        return true;
-    }
-
     @Override
     public void setFull()
     {
@@ -257,26 +350,6 @@ public class VoxelOctree implements IVoxelOctree
             super(index, 2, index, FULL_BITS, VoxelOctree.this.voxelBits);
         }
 
-        // methods optimized for storage implementation
-        
-        @Override
-        public boolean isMostlyFull()
-        {
-            return Long.bitCount(voxelBits[index]) >= 32;
-        }
-
-        @Override
-        public boolean isFull()
-        {
-            return voxelBits[index] == FULL_BITS;
-        }
-        
-        @Override
-        public boolean isEmpty()
-        {
-            return voxelBits[index] == 0;
-        }
-
         @Override
         public void setFull()
         {
@@ -319,15 +392,9 @@ public class VoxelOctree implements IVoxelOctree
             return voxel[this.index * 8 + index];
         }
         
-        @Override
-        public boolean isMostlyFull()
-        {
-            return Long.bitCount(voxelBits[dataIndex] & bitMask) >= 4;
-        }
-        
         private void floodClearFill()
         {
-            if((fillBits[dataIndex] & bitMask) != 0 && this.isEmpty())
+            if((fillBits[dataIndex] & bitMask) != 0 && isEmpty(this.index, this.divisionLevel))
             {
                 fillBits[dataIndex] &= ~bitMask;
                 
@@ -367,7 +434,7 @@ public class VoxelOctree implements IVoxelOctree
         
         private void floodClearFill()
         {
-            if(this.isEmpty() && (fillBits[dataIndex] & bitMask) != 0)
+            if(isEmpty(this.index, 4) && (fillBits[dataIndex] & bitMask) != 0)
             {
                 fillBits[dataIndex] &= ~bitMask;
                 
@@ -394,12 +461,6 @@ public class VoxelOctree implements IVoxelOctree
                 if(z < 15)
                     voxel[xyzToIndex4(x, y, z + 1)].floodClearFill();
             }
-        }
-
-        @Override
-        public boolean isMostlyFull()
-        {
-            return isFull();
         }
 
         @Override

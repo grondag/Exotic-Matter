@@ -408,7 +408,7 @@ public class BoxFinder
         clear();
         voxels.forEachBottom(v -> 
         {
-            if(v.isFull())
+            if(voxels.isFull(v.index(), v.divisionLevel()))
                 OctreeCoordinates.forXYZ3(v.index(), (x, y, z) -> setFilled(x, y, z));
         });
     }

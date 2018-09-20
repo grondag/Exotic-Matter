@@ -20,18 +20,20 @@ public class FastBoxGenerator extends AbstractVoxelBuilder implements Consumer<I
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        genBoxes(voxels, builder);
-    }
-
-    private void genBoxes(IVoxelOctree voxels, ICollisionBoxListBuilder builder)
-    {
-        if(voxels.isEmpty())
-            return;
-        if(voxels.isFull())
-            withBounds8(voxels.index(), voxels.divisionLevel(), (x0, y0, z0, x1, y1, z1) ->
-                builder.add(x0, y0, z0, x1, y1, z1));
-        else if(voxels.divisionLevel() < 3)
-            voxels.forEach(v -> genBoxes(v, builder));
+        voxels.visit((index, divisionLevel, isLeaf) ->
+        {
+            if(voxels.isEmpty(index, divisionLevel))
+                return false;
+            
+            if(voxels.isFull(index, divisionLevel))
+            {
+                withBounds8(index, divisionLevel, (x0, y0, z0, x1, y1, z1) ->
+                    builder.add(x0, y0, z0, x1, y1, z1));
+                return false;
+            }
+            
+            return true;
+        });
     }
     
     @Override

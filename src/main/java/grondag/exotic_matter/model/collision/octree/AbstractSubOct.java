@@ -13,18 +13,6 @@ abstract class AbstractSubOct extends AbstractOct
         this.bitMask = bitMask;
         this.voxelBits = voxelBits;
     }
-    
-    @Override
-    public boolean isFull()
-    {
-        return (voxelBits[dataIndex] & bitMask) == bitMask;
-    }
-    
-    @Override
-    public boolean isEmpty()
-    {
-        return (voxelBits[dataIndex] & bitMask) == 0L;
-    }
 
     @Override
     public void setFull()
