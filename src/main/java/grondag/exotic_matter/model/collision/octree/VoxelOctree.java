@@ -240,6 +240,13 @@ public class VoxelOctree implements IVoxelOctree
             // should never be used at this level
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public void setFull()
+        {
+         // should never be used at this level
+            throw new UnsupportedOperationException();
+        }
     }
     
     private class Middle extends AbstractSubOct

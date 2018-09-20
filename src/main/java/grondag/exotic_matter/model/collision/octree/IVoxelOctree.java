@@ -58,10 +58,8 @@ public interface IVoxelOctree
      * 
      * Note - default implementation is for parent nodes - must be overridden at voxel level.
      */
-    public default void setFull()
-    {
-        this.forEach(n -> n.setFull());
-    }
+    public void setFull();
+    
     
     /**
      * Marks node/voxel as empty.
