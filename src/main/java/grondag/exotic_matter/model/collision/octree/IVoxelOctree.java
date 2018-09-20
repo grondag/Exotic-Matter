@@ -24,16 +24,6 @@ public interface IVoxelOctree
      */
     public void setFull();
     
-    
-    /**
-     * Marks node/voxel as empty.
-     * In higher nodes this is a recursive operation - all subnodes and ultimately all voxels are cleared.
-     * 
-     * Note - default implementation is for parent nodes - must be overridden at voxel level.
-     */
-    public void clear();
-    
-    
     /**
      * If has subnodes returns node at given address.
      * If this node is a voxel, throws an exception.

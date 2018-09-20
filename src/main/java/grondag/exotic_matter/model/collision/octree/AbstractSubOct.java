@@ -19,10 +19,4 @@ abstract class AbstractSubOct extends AbstractOct
     {
         voxelBits[dataIndex] |= bitMask;
     }
-
-    @Override
-    public void clear()
-    {
-        voxelBits[dataIndex] &= ~bitMask;
-    }
 }

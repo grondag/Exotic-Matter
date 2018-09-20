@@ -108,6 +108,49 @@ public class VoxelOctree implements IVoxelOctree
         return false;
     }
     
+    public void clear()
+    {
+        clear(0, 0);
+    }
+    
+    public void clear(int index, int divisionLevel)
+    {
+        //TODO: will need to handle different array sizes
+        switch(divisionLevel)
+        {
+            case 0:
+            {
+                System.arraycopy(ALL_EMPTY, 0, voxelBits, 0, 64);
+                return;
+            }
+            
+            case 1:
+            {
+                System.arraycopy(ALL_EMPTY, 0, voxelBits, index * 8, 8);
+                return;
+            }
+            
+            case 2:
+                voxelBits[index] = 0;
+                return;
+                
+            case 3:
+            {
+                final long mask = 0xFFL << (8 * (index & 7));
+                voxelBits[index >> 3] &= ~mask;
+                return;
+            }  
+            case 4:
+            {
+                final long mask = 1L << (index & 63);
+                voxelBits[index >> 6] &= ~mask;
+                return;
+            }
+        }
+        assert false : "Bad division level";
+        return;
+    }
+    
     public boolean isFull(int index, int divisionLevel)
     {
         final long[] bits = this.voxelBits;
@@ -303,12 +346,6 @@ public class VoxelOctree implements IVoxelOctree
     }
 
     @Override
-    public void clear()
-    {
-        System.arraycopy(ALL_EMPTY, 0, voxelBits, 0, 64);
-    }
-    
-    @Override
     public Top subNode(int index)
     {
         return top[index];
@@ -325,13 +362,6 @@ public class VoxelOctree implements IVoxelOctree
         public Middle subNode(int index)
         {
             return middle[this.index * 8 + index];
-        }
-
-        @Override
-        public void clear()
-        {
-            // should never be used at this level
-            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -354,12 +384,6 @@ public class VoxelOctree implements IVoxelOctree
         public void setFull()
         {
             voxelBits[index] = FULL_BITS;
-        }
-
-        @Override
-        public void clear()
-        {
-            voxelBits[index] = 0;
         }
         
         @Override
