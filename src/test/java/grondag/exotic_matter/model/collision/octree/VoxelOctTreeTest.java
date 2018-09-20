@@ -21,8 +21,6 @@ class VoxelOctTreeTest
         
         assert vot.isEmpty(0, 0);
 
-        testBox(vot, 4);
-        
         vot.clear();
         
         for(int x = 0; x < 16; x++)
@@ -70,30 +68,12 @@ class VoxelOctTreeTest
         assert vot.isFull(0, 0);
     }
     
-    private void testBox(IVoxelOctree t, int maxDiv)
-    {
-        for(int i = 0; i < 8; i++)
-        {
-            IVoxelOctree st = t.subNode(i);
-//            assert st.xMin() >= t.xMin();
-//            assert st.xMax() <= t.xMax();
-//            assert st.yMin() >= t.yMin();
-//            assert st.yMax() <= t.yMax();
-//            assert st.zMin() >= t.zMin();
-//            assert st.zMax() <= t.zMax();
-            if(st.divisionLevel() < maxDiv)
-                testBox(st, maxDiv);
-        }
-    }
-    
     private void testCoarse()
     {
         VoxelOctree vot = new VoxelOctree(false);
         
         assert vot.isEmpty(0, 0);
 
-        testBox(vot, 3);
-        
         vot.clear();
         
         for(int x = 0; x < 8; x++)

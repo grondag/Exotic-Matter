@@ -55,6 +55,11 @@ public class VoxelOctree implements IVoxelOctree
         }
     }
     
+    public boolean isEmpty()
+    {
+        return isEmpty(0, 0);
+    }
+    
     public boolean isEmpty(int index, int divisionLevel)
     {
         // 64 words
@@ -151,6 +156,11 @@ public class VoxelOctree implements IVoxelOctree
         return;
     }
     
+    public boolean isFull()
+    {
+        return isFull(0, 0);
+    }
+    
     public boolean isFull(int index, int divisionLevel)
     {
         final long[] bits = this.voxelBits;
@@ -191,28 +201,6 @@ public class VoxelOctree implements IVoxelOctree
         return false;
     }
     
-    public void forEachVoxel(Consumer<IVoxelOctree> consumer)
-    {
-        for(Voxel v : voxel)
-            consumer.accept(v);
-    }
-    
-    public void forEachBottom(Consumer<IVoxelOctree> consumer)
-    {
-        for(Bottom b : bottom)
-            consumer.accept(b);
-    }
-    
-    public IVoxelOctree bottom(int x, int y, int z)
-    {
-        return bottom[xyzToIndex3(x, y, z)];
-    }
-    
-    public IVoxelOctree voxel(int x, int y, int z)
-    {
-        return voxel[xyzToIndex4(x, y, z)];
-    }
-    
     public void visit(IOctreeVisitor visitor)
     {
         if(visitor.visit(0, 0, false))
@@ -248,19 +236,6 @@ public class VoxelOctree implements IVoxelOctree
             visitInner(i + 6, d, visitor);
             visitInner(i + 7, d, visitor);
         }
-    }
-    
-    @Override
-    public void forEach(Consumer<IVoxelOctree> consumer)
-    {
-        consumer.accept(this.subNode(0));
-        consumer.accept(this.subNode(1));
-        consumer.accept(this.subNode(2));
-        consumer.accept(this.subNode(3));
-        consumer.accept(this.subNode(4));
-        consumer.accept(this.subNode(5));
-        consumer.accept(this.subNode(6));
-        consumer.accept(this.subNode(7));
     }
     
     //TODO: disable
@@ -381,12 +356,6 @@ public class VoxelOctree implements IVoxelOctree
         assert false : "Bad division level";
         return;
     }
-
-    @Override
-    public Top subNode(int index)
-    {
-        return top[index];
-    }
     
     private class Top extends AbstractOct
     {
@@ -395,11 +364,6 @@ public class VoxelOctree implements IVoxelOctree
             super(index, 1);
         }
 
-        @Override
-        public Middle subNode(int index)
-        {
-            return middle[this.index * 8 + index];
-        }
     }
     
     private class Middle extends AbstractSubOct
@@ -408,12 +372,6 @@ public class VoxelOctree implements IVoxelOctree
         private Middle(int index)
         {
             super(index, 2, index, FULL_BITS, VoxelOctree.this.voxelBits);
-        }
-        
-        @Override
-        public Bottom subNode(int index)
-        {
-            return bottom[this.index * 8 + index];
         }
     }
 
@@ -432,12 +390,6 @@ public class VoxelOctree implements IVoxelOctree
         private Bottom(int index)
         {
             super(index, 3, bottomDataIndex(index), bottomDataMask(index), VoxelOctree.this.voxelBits);
-        }
-        
-        @Override
-        public Voxel subNode(int index)
-        {
-            return voxel[this.index * 8 + index];
         }
         
         private void floodClearFill()
@@ -509,12 +461,6 @@ public class VoxelOctree implements IVoxelOctree
                 if(z < 15)
                     voxel[xyzToIndex4(x, y, z + 1)].floodClearFill();
             }
-        }
-
-        @Override
-        public IVoxelOctree subNode(int index)
-        {
-            throw new UnsupportedOperationException();
         }
     }
 

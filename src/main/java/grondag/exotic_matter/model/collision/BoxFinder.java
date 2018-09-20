@@ -406,11 +406,9 @@ public class BoxFinder
     void loadVoxels(VoxelOctree voxels)
     {
         clear();
-        voxels.forEachBottom(v -> 
-        {
-            if(voxels.isFull(v.index(), v.divisionLevel()))
-                OctreeCoordinates.forXYZ3(v.index(), (x, y, z) -> setFilled(x, y, z));
-        });
+        for(int i = 0; i < 512; i++)
+            if(voxels.isFull(i, 3))
+                OctreeCoordinates.forXYZ3(i, (x, y, z) -> setFilled(x, y, z));
     }
     
     void calcCombined()

@@ -21,12 +21,12 @@ public class OptimalBoxGenerator extends AbstractVoxelBuilder implements Consume
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        if(voxels.isEmpty(0, 0))
+        if(voxels.isEmpty())
             return;
         
-        if(voxels.isFull(0, 0))
-            withBounds8(voxels.index(), voxels.divisionLevel(), (x0, y0, z0, x1, y1, z1) ->
-                builder.add(x0, y0, z0, x1, y1, z1));
+        if(voxels.isFull())
+            builder.add(0, 0, 0, 8, 8, 8);
+        
         else
             generateBoxesInner(builder);
     }

@@ -8,38 +8,6 @@ import java.util.function.Consumer;
  */
 public interface IVoxelOctree
 {
-    /**
-     * True if nodes have sub nodes, false if nodes represent the 1/16 voxels.
-     */
-    public default boolean hasSubnodes()
-    {
-        return true;
-    }
-    
-    /**
-     * If has subnodes returns node at given address.
-     * If this node is a voxel, throws an exception.
-     */
-    public IVoxelOctree subNode(int index);
-    
-    /**
-     * Applies consumer to each subnode if has subnodes.
-     * Has no effect otherwise.
-     */
-    public default void forEach(Consumer<IVoxelOctree> consumer)
-    {
-        if(this.hasSubnodes())
-        {
-            consumer.accept(this.subNode(0));
-            consumer.accept(this.subNode(1));
-            consumer.accept(this.subNode(2));
-            consumer.accept(this.subNode(3));
-            consumer.accept(this.subNode(4));
-            consumer.accept(this.subNode(5));
-            consumer.accept(this.subNode(6));
-            consumer.accept(this.subNode(7));
-        }
-    }
     
     public int index();
     
