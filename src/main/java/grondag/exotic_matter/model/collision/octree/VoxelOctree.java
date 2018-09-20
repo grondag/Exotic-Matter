@@ -77,6 +77,43 @@ public class VoxelOctree implements IVoxelOctree
         return voxel[xyzToIndex4(x, y, z)];
     }
     
+    public void visit(IOctreeVisitor visitor)
+    {
+        if(visitor.visit(0, 0, false))
+        {
+            visitInner(0, 1, visitor);
+            visitInner(1, 1, visitor);
+            visitInner(2, 1, visitor);
+            visitInner(3, 1, visitor);
+            visitInner(4, 1, visitor);
+            visitInner(5, 1, visitor);
+            visitInner(6, 1, visitor);
+            visitInner(7, 1, visitor);
+        }
+    }
+    
+    /**
+     * Never called for leaf nodes.
+     */
+    private void visitInner(int index, int divisionLevel, IOctreeVisitor visitor)
+    {
+        final boolean leaf = divisionLevel == this.maxDivisionLevel;
+        if(visitor.visit(index, divisionLevel, leaf) & !leaf)
+        {
+            final int d = divisionLevel + 1;
+            final int i = index << 3;
+            
+            visitInner(i, d, visitor);
+            visitInner(i + 1, d, visitor);
+            visitInner(i + 2, d, visitor);
+            visitInner(i + 3, d, visitor);
+            visitInner(i + 4, d, visitor);
+            visitInner(i + 5, d, visitor);
+            visitInner(i + 6, d, visitor);
+            visitInner(i + 7, d, visitor);
+        }
+    }
+    
     @Override
     public void forEach(Consumer<IVoxelOctree> consumer)
     {

@@ -44,7 +44,7 @@ public abstract class AbstractVoxelBuilder
     
     protected abstract void generateBoxes(ICollisionBoxListBuilder builder);
     
-    public void accept(@SuppressWarnings("null") IPolygon poly, int maxDivisionLevel)
+    public void accept(IPolygon poly, int maxDivisionLevel)
     {
         Vertex[] v  = poly.vertexArray();
         
