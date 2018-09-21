@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.function.IntConsumer;
 
+import grondag.exotic_matter.varia.functions.IAreaBoundsIntFunction;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;

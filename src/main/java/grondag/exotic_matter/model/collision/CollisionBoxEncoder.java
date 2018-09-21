@@ -2,6 +2,8 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.function.IntConsumer;
 
+import grondag.exotic_matter.varia.functions.IBoxBoundsIntFunction;
+import grondag.exotic_matter.varia.functions.IBoxBoundsObjectFunction;
 import net.minecraft.util.EnumFacing;
 
 /**

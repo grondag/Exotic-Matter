@@ -3,7 +3,10 @@ package grondag.exotic_matter.model.collision.octree;
 
 import java.util.Arrays;
 
-import grondag.exotic_matter.model.collision.IBoxBoundsIntConsumer;
+import grondag.exotic_matter.varia.functions.Float3Consumer;
+import grondag.exotic_matter.varia.functions.Float3Test;
+import grondag.exotic_matter.varia.functions.IBoxBoundsIntConsumer;
+import grondag.exotic_matter.varia.functions.Int3Consumer;
 
 public class OctreeCoordinates
 {

@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.collision.octree;
+package grondag.exotic_matter.varia.functions;
 
 @FunctionalInterface
 public interface Float3Consumer

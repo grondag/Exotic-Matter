@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.collision;
 
 import grondag.exotic_matter.cache.IntSimpleCacheLoader;
 import grondag.exotic_matter.cache.IntSimpleLoadingCache;
+import grondag.exotic_matter.varia.functions.IBoxBoundsObjectFunction;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**

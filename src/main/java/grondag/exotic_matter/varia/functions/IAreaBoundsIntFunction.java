@@ -1,7 +1,7 @@
-package grondag.exotic_matter.model.collision;
+package grondag.exotic_matter.varia.functions;
 
 @FunctionalInterface
-interface IAreaBoundsIntFunction
+public interface IAreaBoundsIntFunction
 {
     /**
      * Max values are inclusive.
