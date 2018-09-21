@@ -4,11 +4,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.collision.octree.VoxelOctree8;
+import grondag.exotic_matter.model.collision.octree.VoxelVolume;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
-
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
 public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> implements Consumer<IPolygon>
 {
@@ -20,19 +19,9 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        voxels.visit((index, divisionLevel, isLeaf) ->
+        VoxelVolume.forEachSimpleVoxel(voxels, (x, y, z) ->
         {
-            if(voxels.isEmpty(index, divisionLevel))
-                return false;
-            
-            if(voxels.isFull(index, divisionLevel))
-            {
-                withBounds8(index, divisionLevel, (x0, y0, z0, x1, y1, z1) ->
-                    builder.add(x0, y0, z0, x1, y1, z1));
-                return false;
-            }
-            
-            return true;
+            builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
         });
     }
     

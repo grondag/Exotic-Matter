@@ -131,82 +131,91 @@ public class VoxelOctree8 extends AbstractVoxelOctree
     //TODO: disable
     SimpleConcurrentCounter interiorFillPerf = new SimpleConcurrentCounter("interiorFillPerf", 1000);
     
+    // TODO: remove when implemented in 16X
+    @Override
+    public void simplify()
+    {
+        // noop
+    }
+    
     /**
      * Fills all interior voxels not reachable from an exterior voxel that is already clear.
+     * 
+     * TODO: remove when implemented in 16X
      */
     @Override
     public void fillInterior()
     {
-        long[] a = new long[8];
-        long[] b = new long[8];
-        
-        VoxelVolume.loadVolume8(this, a);
-        
-        for(int x = 0; x < 8; x++)
-        {
-            for(int y = 0; y < 8; y++)
-            {
-                for(int z = 0; z < 8; z++)
-                {
-                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  a) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
-                }
-            }
-        }
-        
-        VoxelVolume.fillVolume8(a, b);
-        
-        System.arraycopy(ALL_FULL, 0, fillBits, 0, 8);
-//        interiorFillPerf.startRun();
-        for(int i : EXTERIOR_INDEX_3)
-            fillInteriorInner(i, fillBits, voxelBits);
-//        interiorFillPerf.endRun();
-        System.arraycopy(fillBits, 0, voxelBits, 0, 8);
-        
-        for(int x = 0; x < 8; x++)
-        {
-            for(int y = 0; y < 8; y++)
-            {
-                for(int z = 0; z < 8; z++)
-                {
-                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  b) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
-                }
-            }
-        }
+//        long[] a = new long[8];
+//        long[] b = new long[8];
+//        
+//        VoxelVolume.loadVolume8(this, a);
+//        
+//        for(int x = 0; x < 8; x++)
+//        {
+//            for(int y = 0; y < 8; y++)
+//            {
+//                for(int z = 0; z < 8; z++)
+//                {
+//                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  a) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
+//                }
+//            }
+//        }
+//        
+//        VoxelVolume.fillVolume8(a, b);
+//        
+//        System.arraycopy(ALL_FULL, 0, fillBits, 0, 8);
+////        interiorFillPerf.startRun();
+//        for(int i : EXTERIOR_INDEX_3)
+//            fillInteriorInner(i, fillBits, voxelBits);
+////        interiorFillPerf.endRun();
+//        System.arraycopy(fillBits, 0, voxelBits, 0, 8);
+//        
+//        for(int x = 0; x < 8; x++)
+//        {
+//            for(int y = 0; y < 8; y++)
+//            {
+//                for(int z = 0; z < 8; z++)
+//                {
+//                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  b) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
+//                }
+//            }
+//        }
     }
     
-    private static void fillInteriorInner(final int index, final long[] fillBits, final long[] voxelBits)
-    {
-        final long mask = 0x1L << (index & 63);
-        final int wordIndex = index >> 6;
-        
-        if((fillBits[wordIndex] & mask) != 0 && (voxelBits[wordIndex] & mask) == 0)
-        {
-            fillBits[wordIndex] &= ~mask;
-            
-            final int xyz = indexToXYZ3(index);
-            final int x = xyz & 7;
-            final int y = (xyz >> 3) & 7;
-            final int z = (xyz >> 6) & 7;
-            
-            if(x > 0)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x - 1, y, z)), fillBits, voxelBits);
-            
-            if(x < 7)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x + 1, y, z)), fillBits, voxelBits);
-            
-            if(y > 0)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y - 1, z)), fillBits, voxelBits);
-            
-            if(y < 7)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y + 1, z)), fillBits, voxelBits);
-            
-            if(z > 0)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y, z - 1)), fillBits, voxelBits);
-            
-            if(z < 7)
-                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y, z + 1)), fillBits, voxelBits);
-        }
-    }
+//    private static void fillInteriorInner(final int index, final long[] fillBits, final long[] voxelBits)
+//    {
+//        final long mask = 0x1L << (index & 63);
+//        final int wordIndex = index >> 6;
+//        
+//        if((fillBits[wordIndex] & mask) != 0 && (voxelBits[wordIndex] & mask) == 0)
+//        {
+//            fillBits[wordIndex] &= ~mask;
+//            
+//            final int xyz = indexToXYZ3(index);
+//            final int x = xyz & 7;
+//            final int y = (xyz >> 3) & 7;
+//            final int z = (xyz >> 6) & 7;
+//            
+//            if(x > 0)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x - 1, y, z)), fillBits, voxelBits);
+//            
+//            if(x < 7)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x + 1, y, z)), fillBits, voxelBits);
+//            
+//            if(y > 0)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y - 1, z)), fillBits, voxelBits);
+//            
+//            if(y < 7)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y + 1, z)), fillBits, voxelBits);
+//            
+//            if(z > 0)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y, z - 1)), fillBits, voxelBits);
+//            
+//            if(z < 7)
+//                fillInteriorInner(xyzToIndex3(packedXYZ3(x, y, z + 1)), fillBits, voxelBits);
+//        }
+//    }
     
     @Override
     public void setFull(int index, int divisionLevel)

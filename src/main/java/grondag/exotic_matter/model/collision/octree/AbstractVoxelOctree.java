@@ -86,7 +86,7 @@ public abstract class AbstractVoxelOctree
     /**
      * Makes leaf nodes that are mostly full completely full, or otherwise makes them empty.
      */
-    public final void simplify()
+    public void simplify()
     {
         final long[] bits = this.voxelBits;
         
