@@ -3,13 +3,14 @@ package grondag.exotic_matter.model.collision;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.ConfigXM;
+import grondag.exotic_matter.model.collision.octree.VoxelOctree16;
 import grondag.exotic_matter.model.primitives.IPolygon;
 
-public class OptimalBoxGenerator extends AbstractVoxelBuilder implements Consumer<IPolygon>
+public class OptimalBoxGenerator extends AbstractVoxelBuilder<VoxelOctree16> implements Consumer<IPolygon>
 {
     protected OptimalBoxGenerator()
     {
-        super(new SimpleBoxListBuilder(), true);
+        super(new SimpleBoxListBuilder(), new VoxelOctree16());
     }
 
     final BoxFinder bf = new BoxFinder();

@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.collision.octree;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.model.collision.octree.VoxelOctree;
+import grondag.exotic_matter.model.collision.octree.VoxelOctree16;
 
 class VoxelOctTreeTest
 {
@@ -16,7 +16,7 @@ class VoxelOctTreeTest
     
     private void testDetailed()
     {
-        VoxelOctree vot = new VoxelOctree(true);
+        VoxelOctree16 vot = new VoxelOctree16();
         
         assert vot.isEmpty(0, 0);
 
@@ -69,7 +69,7 @@ class VoxelOctTreeTest
     
     private void testCoarse()
     {
-        VoxelOctree vot = new VoxelOctree(false);
+        VoxelOctree8 vot = new VoxelOctree8();
         
         assert vot.isEmpty(0, 0);
 

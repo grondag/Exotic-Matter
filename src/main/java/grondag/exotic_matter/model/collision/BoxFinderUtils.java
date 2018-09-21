@@ -749,4 +749,43 @@ public class BoxFinderUtils
             break;
         }
     }
+    
+    public static int bitCount8(int byteValue)
+    {
+        return bitCount4(byteValue & 0xF) + bitCount4((byteValue >>> 4) & 0xF);
+    }
+    
+    public static int bitCount4(int halfByteValue)
+    {
+        switch(halfByteValue)
+        {
+        case 0:
+            return 0;
+            
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            return 1;
+            
+        case 3:
+        case 5:
+        case 6:
+        case 9:
+        case 10:
+        case 12:
+            return 2;
+            
+        case 7:
+        case 11:
+        case 13:
+        case 14:
+            return 3;
+
+        case 15:
+            return 4;
+        }
+        assert false : "bad bitcount4 value";
+        return 0;
+    }
 }

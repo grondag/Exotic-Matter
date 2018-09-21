@@ -3,17 +3,18 @@ package grondag.exotic_matter.model.collision;
 import java.util.List;
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.collision.octree.VoxelOctree8;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
 
-public class FastBoxGenerator extends AbstractVoxelBuilder implements Consumer<IPolygon>
+public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> implements Consumer<IPolygon>
 {
     protected FastBoxGenerator()
     {
-        super(new JoiningBoxListBuilder(), false);
+        super(new JoiningBoxListBuilder(), new VoxelOctree8());
     }
 
     @Override

@@ -1,11 +1,12 @@
 package grondag.exotic_matter.model.collision;
 
 
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.testCenter;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.voxelRadius;
 
 import java.util.List;
 
-import grondag.exotic_matter.model.collision.octree.VoxelOctree;
+import grondag.exotic_matter.model.collision.octree.AbstractVoxelOctree;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
@@ -14,16 +15,16 @@ import net.minecraft.util.math.AxisAlignedBB;
 /**
  * Base class for octree-based collision box generators.
  */
-public abstract class AbstractVoxelBuilder
+public abstract class AbstractVoxelBuilder<T extends AbstractVoxelOctree>
 {
     final float[] polyData = new float[27];
-    protected final VoxelOctree voxels;
+    protected final T voxels;
     protected final ICollisionBoxListBuilder builder;
     
-    protected AbstractVoxelBuilder(ICollisionBoxListBuilder builder, boolean isFast)
+    protected AbstractVoxelBuilder(ICollisionBoxListBuilder builder, T voxels)
     {
         this.builder = builder;
-        this.voxels = new VoxelOctree(isFast);
+        this.voxels = voxels;
     }
     
     public void prepare()
