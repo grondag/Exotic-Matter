@@ -137,12 +137,41 @@ public class VoxelOctree8 extends AbstractVoxelOctree
     @Override
     public void fillInterior()
     {
+        long[] a = new long[8];
+        long[] b = new long[8];
+        
+        VoxelVolume.loadVolume8(this, a);
+        
+        for(int x = 0; x < 8; x++)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                for(int z = 0; z < 8; z++)
+                {
+                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  a) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
+                }
+            }
+        }
+        
+        VoxelVolume.fillVolume8(a, b);
+        
         System.arraycopy(ALL_FULL, 0, fillBits, 0, 8);
 //        interiorFillPerf.startRun();
         for(int i : EXTERIOR_INDEX_3)
             fillInteriorInner(i, fillBits, voxelBits);
 //        interiorFillPerf.endRun();
         System.arraycopy(fillBits, 0, voxelBits, 0, 8);
+        
+        for(int x = 0; x < 8; x++)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                for(int z = 0; z < 8; z++)
+                {
+                    assert VoxelVolume.isSet(packedXYZ3(x, y, z),  b) == this.isFull(OctreeCoordinates.xyzToIndex3(x, y, z), 3);
+                }
+            }
+        }
     }
     
     private static void fillInteriorInner(final int index, final long[] fillBits, final long[] voxelBits)
