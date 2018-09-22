@@ -15,17 +15,17 @@ class VoxelVolumeTest
     void test()
     {
         fillTestDirect();
-//        fillTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
-//        perfTest();
+        fillTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
+        perfTest();
     }
     
     void fillTestDirect()
@@ -61,7 +61,7 @@ class VoxelVolumeTest
         data[6] = section;
         data[7] = cap;
         
-        VoxelVolume.fillVolume8New(data);
+        VoxelVolume.fillVolume8(data);
         outputCarvedLayers(data);
         assert data[8] == 0;
         assert data[9] == cap;
@@ -167,10 +167,15 @@ class VoxelVolumeTest
     }
     
     
-    // best
+    // best - prior algorithm - suspect diff total due to error was in prior
 //    Avg nanos = 21119, check total = 8598240
 //    Avg nanos = 21184, check total = 8598240
 //    Avg nanos = 21163, check total = 8598240
+    
+    // best - current bitwise fill algorithm
+//    Avg nanos = 13282, check total = 9307710
+//    Avg nanos = 13269, check total = 9307710
+//    Avg nanos = 13180, check total = 9307710
     
     void perfTest()
     {
