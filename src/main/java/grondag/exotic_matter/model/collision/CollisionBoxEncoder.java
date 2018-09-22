@@ -13,12 +13,12 @@ import net.minecraft.util.EnumFacing;
 public class CollisionBoxEncoder
 {
     @SuppressWarnings("unused")
-    private static final int MIN_X_SHIFT = 0;
-    private static final int MIN_Y_SHIFT = 4;
-    private static final int MIN_Z_SHIFT = 8;
-    private static final int MAX_X_SHIFT = 12;
-    private static final int MAX_Y_SHIFT = 16;
-    private static final int MAX_Z_SHIFT = 20;
+    static final int MIN_X_SHIFT = 0;
+    static final int MIN_Y_SHIFT = 4;
+    static final int MIN_Z_SHIFT = 8;
+    static final int MAX_X_SHIFT = 12;
+    static final int MAX_Y_SHIFT = 16;
+    static final int MAX_Z_SHIFT = 20;
 
     @SuppressWarnings("unused")
     private static final int AXIS_SHIFT = 0;

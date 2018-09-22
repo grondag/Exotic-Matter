@@ -1,8 +1,6 @@
 package grondag.exotic_matter.model.collision;
 
-import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.X_AXIS;
-import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.Y_AXIS;
-import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.Z_AXIS;
+import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.*;
 
 import java.util.function.IntConsumer;
 
@@ -41,16 +39,11 @@ public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
      */
     static int faceKey(int axisOrdinal, int depth, int minA, int minB, int maxA, int maxB)
     {
-        int result = minA
+        return minA
                 | (minB << MIN_B_SHIFT) 
                 | ((maxA - 1) << MAX_A_SHIFT) 
                 | ((maxB - 1) << MAX_B_SHIFT)
                 | ((axisOrdinal * 3 + depth) << AXIS_DEPTH_SHIFT);
-        
-        //TODO: remove
-        assert result >= 0 && result < MAX_FACE_KEYS;
-        
-        return result;
     }
     
     static void forEachFaceKey(int boxKey, IntConsumer faceKeyConsumer)
@@ -142,36 +135,32 @@ public class JoiningBoxListBuilder implements ICollisionBoxListBuilder
     @Override
     public void add(final int boxKey)
     {
-        CollisionBoxEncoder.forBounds(boxKey, (minX, minY, minZ, maxX, maxY, maxZ) ->
-        {
-            final int x0 = minX >>> 1;
-            final int y0 = minY >>> 1;
-            final int z0 = minZ >>> 1;
-            final int x1 = maxX >>> 1;
-            final int y1 = maxY >>> 1;
-            final int z1 = maxZ >>> 1;
+        final int x0 = (boxKey >> (MIN_X_SHIFT + 1)) & 0x7;
+        final int y0 = (boxKey >> (MIN_Y_SHIFT + 1)) & 0x7;
+        final int z0 = (boxKey >> (MIN_Z_SHIFT + 1)) & 0x7;
+        final int x1 = (boxKey >> (MAX_X_SHIFT + 1)) & 0x7;
+        final int y1 = (boxKey >> (MAX_Y_SHIFT + 1)) & 0x7;
+        final int z1 = (boxKey >> (MAX_Z_SHIFT + 1)) & 0x7;
+        
+        if(y1 != 4 && tryCombine(boxKey, faceKey(Y_AXIS, y1 - 1, x0, z0, x1, z1)))
+            return;
+        
+        if(y0 != 0 && tryCombine(boxKey, faceKey(Y_AXIS, y0 - 1, x0, z0, x1, z1)))
+            return;
+        
+        if(x1 != 4 && tryCombine(boxKey, faceKey(X_AXIS, x1 - 1, y0, z0, y1, z1)))
+            return;
+        
+        if(x0 != 0 && tryCombine(boxKey, faceKey(X_AXIS, x0 - 1, y0, z0, y1, z1)))
+            return;
+        
+        if(z1 != 4 && tryCombine(boxKey, faceKey(Z_AXIS, z1 - 1, x0, y0, x1, y1)))
+            return;
+        
+        if(z0 != 0 && tryCombine(boxKey, faceKey(Z_AXIS, z0 - 1, x0, y0, x1, y1)))
+            return;
             
-            if(y1 != 4 && tryCombine(boxKey, faceKey(Y_AXIS, y1 - 1, x0, z0, x1, z1)))
-                return 0;
-            
-            if(y0 != 0 && tryCombine(boxKey, faceKey(Y_AXIS, y0 - 1, x0, z0, x1, z1)))
-                return 0;
-            
-            if(x1 != 4 && tryCombine(boxKey, faceKey(X_AXIS, x1 - 1, y0, z0, y1, z1)))
-                return 0;
-            
-            if(x0 != 0 && tryCombine(boxKey, faceKey(X_AXIS, x0 - 1, y0, z0, y1, z1)))
-                return 0;
-            
-            if(z1 != 4 && tryCombine(boxKey, faceKey(Z_AXIS, z1 - 1, x0, y0, x1, y1)))
-                return 0;
-            
-            if(z0 != 0 && tryCombine(boxKey, faceKey(Z_AXIS, z0 - 1, x0, y0, x1, y1)))
-                return 0;
-            
-            addBox(boxKey);
-            return 0;
-        });
+        addBox(boxKey);
     }
 
     boolean tryCombine(int boxKey, int faceKey)
