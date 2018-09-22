@@ -14,18 +14,28 @@ class VoxelVolumeTest
     @Test
     void test()
     {
+        
+        for(int i = 0; i < 512; i++)
+        {
+            System.out.println(i + ", " + OctreeCoordinates.indexToXYZ3(i));
+        }
+        
+        
         fillTestDirect();
         fillTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
-        perfTest();
+        while(true)
+            perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+        
+        
     }
     
     void fillTestDirect()
@@ -172,10 +182,10 @@ class VoxelVolumeTest
 //    Avg nanos = 21184, check total = 8598240
 //    Avg nanos = 21163, check total = 8598240
     
-    // best - current bitwise fill algorithm
-//    Avg nanos = 12768, check total = 9307710
-//    Avg nanos = 12839, check total = 9307710
-//    Avg nanos = 12667, check total = 9307710
+    // best - current bitwise fill algorithm w/ hard-coded bitwise load logic
+//    Avg nanos = 7593, check total = 9307710
+//    Avg nanos = 7438, check total = 9307710
+//    Avg nanos = 7624, check total = 9307710
     
     void perfTest()
     {

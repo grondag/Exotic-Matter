@@ -27,6 +27,11 @@ public abstract class AbstractVoxelOctree
     
     abstract public void clear(int index, int divisionLevel);
     
+    public final long[] rawBits()
+    {
+        return voxelBits;
+    }
+    
     public final void clear()
     {
         clear(0, 0);
@@ -53,33 +58,71 @@ public abstract class AbstractVoxelOctree
         setFull(0, 0);
     }
     
+    private static final ThreadLocal<int[]> stackHolder = new ThreadLocal<int[]>()
+    {
+        @Override
+        protected int[] initialValue()
+        {
+            return new int[512];
+        }
+    };
+    
     public final void visit(IOctreeVisitor visitor)
     {
-        if(visitor.visit(0, 0, false))
-            visitNodes(0, 1, visitor);
+        if(!visitor.visit(0, 0, false))
+            return;
+        
+        final int[] stack = stackHolder.get();
+        int stackPointer = 7;
+        addSubNodesToStack(1 << 16, 0, stack);
+        
+        while(stackPointer >= 0)
+        {
+            final int address = stack[stackPointer--];
+            final int divisionLevel = address >> 16;
+            final int index = address & 0xFFFF;
+            final boolean leaf = divisionLevel == maxDivisionLevel;
+            if(visitor.visit(index, divisionLevel, leaf) & !leaf)
+            {
+                addSubNodesToStack(((divisionLevel + 1) << 16) | (index << 3), stackPointer + 1, stack);
+                stackPointer += 8;
+            }
+        }
     }
     
-    protected final void visitNodes(final int startingIndex, final int divisionLevel, IOctreeVisitor visitor)
+    protected final void addSubNodesToStack(final int startingNodeIndex, final int firstStackIndex, int[] stack)
     {
-        visitInner(startingIndex, divisionLevel, visitor);
-        visitInner(startingIndex + 1, divisionLevel, visitor);
-        visitInner(startingIndex + 2, divisionLevel, visitor);
-        visitInner(startingIndex + 3, divisionLevel, visitor);
-        visitInner(startingIndex + 4, divisionLevel, visitor);
-        visitInner(startingIndex + 5, divisionLevel, visitor);
-        visitInner(startingIndex + 6, divisionLevel, visitor);
-        visitInner(startingIndex + 7, divisionLevel, visitor);
+        stack[firstStackIndex] = startingNodeIndex;
+        stack[firstStackIndex + 1] = startingNodeIndex + 1;
+        stack[firstStackIndex + 2] = startingNodeIndex + 2;
+        stack[firstStackIndex + 3] = startingNodeIndex + 3;
+        stack[firstStackIndex + 4] = startingNodeIndex + 4;
+        stack[firstStackIndex + 5] = startingNodeIndex + 5;
+        stack[firstStackIndex + 6] = startingNodeIndex + 6;
+        stack[firstStackIndex + 7] = startingNodeIndex + 7;
     }
     
-    /**
-     * Never called for leaf nodes.
-     */
-    private final void visitInner(int index, int divisionLevel, IOctreeVisitor visitor)
-    {
-        final boolean leaf = divisionLevel == maxDivisionLevel;
-        if(visitor.visit(index, divisionLevel, leaf) & !leaf)
-            visitNodes(index << 3, divisionLevel + 1, visitor);
-    }
+//    protected final void visitNodes(final int startingIndex, final int divisionLevel, IOctreeVisitor visitor)
+//    {
+//        visitInner(startingIndex, divisionLevel, visitor);
+//        visitInner(startingIndex + 1, divisionLevel, visitor);
+//        visitInner(startingIndex + 2, divisionLevel, visitor);
+//        visitInner(startingIndex + 3, divisionLevel, visitor);
+//        visitInner(startingIndex + 4, divisionLevel, visitor);
+//        visitInner(startingIndex + 5, divisionLevel, visitor);
+//        visitInner(startingIndex + 6, divisionLevel, visitor);
+//        visitInner(startingIndex + 7, divisionLevel, visitor);
+//    }
+//    
+//    /**
+//     * Never called for leaf nodes.
+//     */
+//    private final void visitInner(int index, int divisionLevel, IOctreeVisitor visitor)
+//    {
+//        final boolean leaf = divisionLevel == maxDivisionLevel;
+//        if(visitor.visit(index, divisionLevel, leaf) & !leaf)
+//            visitNodes(index << 3, divisionLevel + 1, visitor);
+//    }
     
     public abstract void fillInterior();
     
