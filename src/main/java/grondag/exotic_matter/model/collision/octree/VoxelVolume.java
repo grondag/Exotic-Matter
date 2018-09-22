@@ -92,7 +92,8 @@ public class VoxelVolume
     {
         final long[] data = workBits.get();
         loadVolume(voxels, data);
-        fillVolume8(data);
+//        fillVolume8(data);
+        fillVolume8New(data);
         forEachSimpleVoxelInner(data, consumer);
         System.arraycopy(ALL_EMPTY, 0, data, 0, 16);
     }
@@ -114,6 +115,24 @@ public class VoxelVolume
             }
         }
     }
+    
+    final static int X_MAX = 7;
+    final static int Y_MAX = 7 << 3;
+    final static int Z_MAX = 7 << 6;
+    
+    final static int X_INC = 1;
+    final static int Y_INC = 1 << 3;
+    final static int Z_INC = 1 << 6;
+    
+    final static int X_BIT = 1;
+    final static int Y_BIT = 2;
+    final static int Z_BIT = 4;
+    
+    final static int XY_BITS = X_BIT | Y_BIT;
+    final static int XZ_BITS = X_BIT | Z_BIT;
+    final static int YZ_BITS = Y_BIT | Z_BIT;
+    
+    final static int XYZ_BITS = X_BIT | Y_BIT | Z_BIT;
     
     /**
      * Fills all interior voxels not reachable from an exterior voxel that is already clear.
@@ -137,25 +156,193 @@ public class VoxelVolume
         {
             for(int j = 1; j < 7; j++)
             {
-                if(isClear(packedXYZ3(i, 0, j), data))
-                    floodFill8(packedXYZ3(i, 1, j), data);
+                int base = packedXYZ3(i, 0, j);
+                if(isClear(base, data))
+                    floodFill8(base + Y_INC, data);
                 
-                if(isClear(packedXYZ3(i, 7, j), data))
-                    floodFill8(packedXYZ3(i, 6, j), data);
+                base += Y_MAX;
+                if(isClear(base, data))
+                    floodFill8(base - Y_INC, data);
                 
-                if(isClear(packedXYZ3(i, j, 0), data))
-                    floodFill8(packedXYZ3(i, j, 1), data);
+                base = packedXYZ3(i, j, 0);
+                if(isClear(base, data))
+                    floodFill8(base + Z_INC, data);
                 
-                if(isClear(packedXYZ3(i, j, 7), data))
-                    floodFill8(packedXYZ3(i, j, 6), data);
+                base += Z_MAX;
+                if(isClear(base, data))
+                    floodFill8(base - Z_INC, data);
                 
-                if(isClear(packedXYZ3(0, i, j), data))
-                    floodFill8(packedXYZ3(1, i, j), data);
+                base = packedXYZ3(0, i, j);
+                if(isClear(base, data))
+                    floodFill8(base + X_INC, data);
                 
-                if(isClear(packedXYZ3(7, i,  j), data))
-                    floodFill8(packedXYZ3(6, i, j), data);
+                base += X_MAX;
+                if(isClear(base, data))
+                    floodFill8(base - X_INC, data);
             }
         }
+    }
+   
+    static final long INTERIOR_MASK_XY = 0x007E7E7E7E7E7E00L;
+
+    
+    /**
+     * Fast bitwise exterior carve operation.
+     */
+    static void fillVolume8New(long[] data)
+    {
+        // during processing, 1 bits in high words represent open voxels
+        
+        // open voxels in Z end slices are definitely open
+        data[8] = ~data[0];
+        
+        // any voxels accessible from edge of x,y slice are also open
+        data[9] = ~(data[1] | INTERIOR_MASK_XY);
+        data[10] = ~(data[2] | INTERIOR_MASK_XY);
+        data[11] = ~(data[3] | INTERIOR_MASK_XY);
+        data[12] = ~(data[4] | INTERIOR_MASK_XY);
+        data[13] = ~(data[5] | INTERIOR_MASK_XY);
+        data[14] = ~(data[6] | INTERIOR_MASK_XY);
+        
+        data[15] = ~data[7];
+        
+        boolean didUpdate = true;
+        
+        while(didUpdate)
+            didUpdate = fillZ(data) || fillXY(data);
+        
+        // PERF: could avoid this when done by inverting during read
+        for(int i = 8; i < 16; i++)
+            data[i] = ~data[i];
+    }
+    
+    /**
+     * Exploits fact that coarse (8x8x8) voxels for a single
+     * Z-axis slice fit within a single long word.
+     */
+    static boolean fillXY(long[] data)
+    {
+        boolean didFill = false;
+        for(int index = 0; index < 8; index++)
+        {
+            // get carved current state
+            long opens = data[8 + index];
+            
+            // if no open voxels, nothing to propagate
+            if(opens == 0L) continue;
+            
+            // propagate open voxels left, right, up and down, ignoring voxels already open in current state
+            opens = ((opens << 1) | (opens >>> 1) | (opens << 8) | (opens >>> 8)) & ~opens;
+                
+            // if nothing new to carve, move on
+            if(opens == 0L) continue;
+                
+            // remove voxels that are solid in template
+            opens &= ~data[index];
+                
+            // if nothing new to carve, move on
+            if(opens == 0L) continue;
+                
+            // finally, propagate open voxels into carved results
+            data[8 + index] |= opens;
+            didFill = true;
+        }
+        return didFill;
+    }
+    
+    
+    static boolean fillZ(long[] data)
+    {
+        boolean didUpdate = false;
+        for(int z = 0; z < 5; z++)
+        {
+            // get open voxels in previous and following layer, ignoring voxels already open in this layer
+            long opens = (data[8 + z] | data[10 + z]) & ~data[9 + z];
+            
+            // if no open voxels, nothing to propagate into this layer
+            if(opens == 0L) continue;
+            
+            // remove voxels that are solid in template
+            opens &= ~data[1 + z];
+            
+            // if nothing new to carve, move on
+            if(opens == 0L) continue;
+            
+            // finally, propagate open voxels into target layer
+            data[9 + z] |= opens;
+            
+            didUpdate = true;
+        }
+        return didUpdate;
+    }
+    
+    /**
+     * Returns shell slice with voxels cleared according to rules
+     */
+    static long fillXY(long xySlice)
+    {
+        // example input
+        // XXXXXXXX--
+        // XXXXXXXX--
+        // ----XXXXXX
+        // ----XXXXXX
+        // ----XXXXXX
+        // --XXXXXX--
+        // --XXXXXX--
+        
+        // outside edges always match input
+        long result = xySlice | INTERIOR_MASK_XY;
+        
+        // result is now this
+        // XXXXXXXX--
+        // XXXXXXXXX-
+        // -XXXXXXXXX
+        // -XXXXXXXXX
+        // -XXXXXXXXX
+        // -XXXXXXXX-
+        // --XXXXXX--
+        
+        
+        // mask outside and shift in
+        // top first
+        
+        long opens = ~result;
+        // gives this
+        // --------XX
+        // ---------X
+        // X---------
+        // X---------
+        // X---------
+        // X--------X
+        // XX------XX
+        long openMask = (opens & 0x7E000000000000L) >>> 8;
+        openMask |= ((opens & 0x7E) << 8);
+        openMask |= ((opens & 0x0080808080808000L) >>> 1);
+        openMask |= ((opens & 0x0001010101010100L) << 1);
+        
+        // mask looks like this now
+        // ----------
+        // --------X-
+        // -X--------
+        // -X--------
+        // -X------X-
+        // ----------
+        // ----------
+        
+        // if open in previous radius and also open in shell then is open
+        // in our example, mask still looks the same
+        openMask &= ~xySlice;
+        
+        // if no more can be open check for convex fill
+        if(openMask == 0) return fillXYInner(result);
+        
+        result &= ~(openMask | xySlice);
+        return result;
+    }
+    
+    static long fillXYInner(long partialFill)
+    {
+        return 0;
     }
     
     /**
@@ -163,7 +350,7 @@ public class VoxelVolume
      */
     static void floodFill8(int index, long[] data)
     {
-        if(isClear(index, data) && isSet(index + 512, data))
+        if(isSet(index + 512, data) && isClear(index, data))
         {
             clearBit(index + 512, data);
             
