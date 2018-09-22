@@ -173,9 +173,9 @@ class VoxelVolumeTest
 //    Avg nanos = 21163, check total = 8598240
     
     // best - current bitwise fill algorithm
-//    Avg nanos = 13282, check total = 9307710
-//    Avg nanos = 13269, check total = 9307710
-//    Avg nanos = 13180, check total = 9307710
+//    Avg nanos = 12768, check total = 9307710
+//    Avg nanos = 12839, check total = 9307710
+//    Avg nanos = 12667, check total = 9307710
     
     void perfTest()
     {

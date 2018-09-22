@@ -59,16 +59,16 @@ public abstract class AbstractVoxelOctree
             visitNodes(0, 1, visitor);
     }
     
-    protected final void visitNodes(int startingIndex, int divisionLevel, IOctreeVisitor visitor)
+    protected final void visitNodes(final int startingIndex, final int divisionLevel, IOctreeVisitor visitor)
     {
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
-        visitInner(startingIndex++, divisionLevel, visitor);
         visitInner(startingIndex, divisionLevel, visitor);
+        visitInner(startingIndex + 1, divisionLevel, visitor);
+        visitInner(startingIndex + 2, divisionLevel, visitor);
+        visitInner(startingIndex + 3, divisionLevel, visitor);
+        visitInner(startingIndex + 4, divisionLevel, visitor);
+        visitInner(startingIndex + 5, divisionLevel, visitor);
+        visitInner(startingIndex + 6, divisionLevel, visitor);
+        visitInner(startingIndex + 7, divisionLevel, visitor);
     }
     
     /**
