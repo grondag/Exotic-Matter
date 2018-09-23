@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.collision;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 import it.unimi.dsi.fastutil.ints.IntCollection;
@@ -15,7 +13,7 @@ public interface ICollisionBoxListBuilder
     void clear();
    
 
-    default List<AxisAlignedBB> build()
+    default ImmutableList<AxisAlignedBB> build()
     {
         IntCollection boxes = boxes();
         if(boxes.isEmpty())

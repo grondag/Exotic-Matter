@@ -2,8 +2,9 @@ package grondag.exotic_matter.model.collision;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.ALL_EMPTY;
 
-import java.util.List;
 import java.util.function.Consumer;
+
+import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume;
@@ -163,7 +164,7 @@ public class FastBoxGenerator implements Consumer<IPolygon>
         div1(polyData, voxelBits);
     }
 
-    public final List<AxisAlignedBB> build()
+    public final ImmutableList<AxisAlignedBB> build()
     {
         builder.clear();
         final long[] data = this.voxelBits;

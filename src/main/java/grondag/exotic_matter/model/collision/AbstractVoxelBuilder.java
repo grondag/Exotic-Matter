@@ -4,7 +4,7 @@ package grondag.exotic_matter.model.collision;
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.testCenter;
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.voxelRadius;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.collision.octree.AbstractVoxelOctree;
 import grondag.exotic_matter.model.primitives.IPolygon;
@@ -32,7 +32,7 @@ public abstract class AbstractVoxelBuilder<T extends AbstractVoxelOctree>
         voxels.clear();
     }
     
-    public List<AxisAlignedBB> build()
+    public ImmutableList<AxisAlignedBB> build()
     {
         voxels.fillInterior();
         voxels.simplify();

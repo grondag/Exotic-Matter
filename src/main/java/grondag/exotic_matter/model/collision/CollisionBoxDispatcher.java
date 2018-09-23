@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
 import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
@@ -45,7 +47,7 @@ public class CollisionBoxDispatcher
                 }
             };
     
-    private static final ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>> modelBounds = new ObjectSimpleLoadingCache<ISuperModelState, List<AxisAlignedBB>>(new CollisionBoxLoader(),  0xFFF);
+    private static final ObjectSimpleLoadingCache<ISuperModelState, OptimizingBoxList> modelBounds = new ObjectSimpleLoadingCache<ISuperModelState, OptimizingBoxList>(new CollisionBoxLoader(),  0xFFF);
 
     private static ThreadLocal<FastBoxGenerator> fastBoxGen = new ThreadLocal<FastBoxGenerator>()
     {
@@ -56,9 +58,9 @@ public class CollisionBoxDispatcher
         }
     };
     
-    public static List<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
+    public static ImmutableList<AxisAlignedBB> getCollisionBoxes(ISuperModelState modelState)
     {
-        return modelBounds.get(modelState.geometricState());
+        return modelBounds.get(modelState.geometricState()).getList();
     }
     
     /**
@@ -70,14 +72,14 @@ public class CollisionBoxDispatcher
         QUEUE.clear();
     }
     
-    private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, List<AxisAlignedBB>>
+    private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, OptimizingBoxList>
     {
         //TODO: disable
         static AtomicInteger runCounter = new AtomicInteger();
         static AtomicLong totalNanos = new AtomicLong();
         
         @Override
-        public List<AxisAlignedBB> load(ISuperModelState key)
+        public OptimizingBoxList load(ISuperModelState key)
         {
             final long start = System.nanoTime();
             

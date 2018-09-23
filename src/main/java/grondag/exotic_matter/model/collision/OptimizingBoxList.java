@@ -5,26 +5,26 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ForwardingList;
+import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class OptimizingBoxList extends ForwardingList<AxisAlignedBB> implements Runnable
+public class OptimizingBoxList implements Runnable
 {
     // singleton is fine because called from a single thread
     private static final OptimalBoxGenerator boxGen = new OptimalBoxGenerator();
     
-    private List<AxisAlignedBB> wrapped;
+    private ImmutableList<AxisAlignedBB> wrapped;
     private @Nullable ISuperModelState modelState;
     
-    OptimizingBoxList(List<AxisAlignedBB> initialList, ISuperModelState modelState)
+    OptimizingBoxList(ImmutableList<AxisAlignedBB> initialList, ISuperModelState modelState)
     {
         this.wrapped = initialList;
         this.modelState = modelState;
     }
     
-    @Override
-    protected List<AxisAlignedBB> delegate()
+    protected ImmutableList<AxisAlignedBB> getList()
     {
         return wrapped;
     }
