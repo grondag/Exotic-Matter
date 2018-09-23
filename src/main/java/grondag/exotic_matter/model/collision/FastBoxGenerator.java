@@ -6,65 +6,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
-import grondag.exotic_matter.model.collision.octree.VoxelOctree8;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> implements Consumer<IPolygon>
+public class FastBoxGenerator implements Consumer<IPolygon>
 {
-    private final long[] voxelBits = new long[16];
-    
-    protected FastBoxGenerator()
-    {
-        super(new JoiningBoxListBuilder(), new VoxelOctree8());
-    }
-
-    @Override
-    protected void generateBoxes(ICollisionBoxListBuilder builder)
-    {
-        final long[] data = this.voxelBits;
-        VoxelVolume.fillVolume8(data);
-        VoxelVolume.forEachSimpleVoxelInner(data, (x, y, z) ->
-        {
-            builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
-        });
-    }
-    
-    @SuppressWarnings("null")
-    @Override
-    public void accept(IPolygon poly)
-    {
-        super.accept(poly, 3);
-    }
-
-
-    
-    @Override
-    public void prepare()
-    {
-        // TODO: do this after build and prevent a call
-        System.arraycopy(ALL_EMPTY, 0, voxelBits, 0, 16);
-    }
-
-    @Override
-    public List<AxisAlignedBB> build()
-    {
-        builder.clear();
-        generateBoxes(builder);
-        return builder.build();
-    }
-    
-    @Override
-    protected final void acceptTriangle(Vertex v0, Vertex v1, Vertex v2, int maxDivisionLevel)
-    {
-        final float[] data = polyData;
-        TriangleBoxTest.packPolyData(v0, v1, v2, data);
-        div1(polyData, voxelBits);
-    }
-    
     // diameters
     static final float D1 = 0.5f;
     static final float D2 = D1 * 0.5f;
@@ -189,5 +138,44 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
     {
         final int xyz = OctreeCoordinates.indexToXYZ3(voxelIndex3);
         voxelBits[xyz >> 6] |= (1L << (xyz & 63));
+    }
+    
+    private final long[] voxelBits = new long[16];
+    private final float[] polyData = new float[36];
+    private final JoiningBoxListBuilder builder = new JoiningBoxListBuilder();
+
+    @SuppressWarnings("null")
+    @Override
+    public final void accept(IPolygon poly)
+    {
+        Vertex[] v  = poly.vertexArray();
+        
+        acceptTriangle(v[0], v[1], v[2]);
+        
+        if(poly.vertexCount() == 4)
+            acceptTriangle(v[0], v[2], v[3]);
+    }
+
+    protected final void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
+    {
+        final float[] data = polyData;
+        TriangleBoxTest.packPolyData(v0, v1, v2, data);
+        div1(polyData, voxelBits);
+    }
+
+    public final List<AxisAlignedBB> build()
+    {
+        builder.clear();
+        final long[] data = this.voxelBits;
+        VoxelVolume.fillVolume8(data);
+        VoxelVolume.forEachSimpleVoxelInner(data, (x, y, z) ->
+        {
+            builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
+        });
+        
+        // prep for next use
+        System.arraycopy(ALL_EMPTY, 0, data, 0, 16);
+        
+        return builder.build();
     }
 }

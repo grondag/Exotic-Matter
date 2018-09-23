@@ -15,7 +15,8 @@ class TriangleBoxTestPerf
     }
     
     //best
-//    true count = 49995645  nanos per call: 79
+//    true count = 49995645  nanos per call: ~60
+    // might be at timer resolution
     
     private void doit()
     {
@@ -23,7 +24,7 @@ class TriangleBoxTestPerf
         long elapsed = 0;
         final Random r = new Random(42);
 
-        final float[] polyData = new float[27];
+        final float[] polyData = new float[36];
         int trueCount = 0;
         
         for(int i = 0; i < samples; i++)

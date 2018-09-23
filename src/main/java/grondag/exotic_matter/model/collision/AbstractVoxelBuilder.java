@@ -17,7 +17,7 @@ import net.minecraft.util.math.AxisAlignedBB;
  */
 public abstract class AbstractVoxelBuilder<T extends AbstractVoxelOctree>
 {
-    final float[] polyData = new float[27];
+    final float[] polyData = new float[36];
     protected final T voxels;
     protected final ICollisionBoxListBuilder builder;
     
