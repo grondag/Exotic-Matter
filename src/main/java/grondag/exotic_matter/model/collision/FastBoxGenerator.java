@@ -1,11 +1,10 @@
 package grondag.exotic_matter.model.collision;
 
-import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.*;
+import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.ALL_EMPTY;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelOctree8;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume;
@@ -16,6 +15,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> implements Consumer<IPolygon>
 {
+    private final long[] voxelBits = new long[16];
+    
     protected FastBoxGenerator()
     {
         super(new JoiningBoxListBuilder(), new VoxelOctree8());
@@ -24,7 +25,9 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
     @Override
     protected void generateBoxes(ICollisionBoxListBuilder builder)
     {
-        VoxelVolume.forEachSimpleVoxel(voxels, (x, y, z) ->
+        final long[] data = this.voxelBits;
+        VoxelVolume.fillVolume8(data);
+        VoxelVolume.forEachSimpleVoxelInner(data, (x, y, z) ->
         {
             builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
         });
@@ -38,107 +41,29 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
     }
 
 
-    //TODO: remove below - here for profiling
     
     @Override
     public void prepare()
     {
-        // TODO Auto-generated method stub
-        super.prepare();
+        // TODO: do this after build and prevent a call
+        System.arraycopy(ALL_EMPTY, 0, voxelBits, 0, 16);
     }
 
     @Override
     public List<AxisAlignedBB> build()
     {
-        // TODO Auto-generated method stub
-        return super.build();
+        builder.clear();
+        generateBoxes(builder);
+        return builder.build();
     }
-    
-    private final long[] voxelBits = new long[16];
     
     @Override
     protected final void acceptTriangle(Vertex v0, Vertex v1, Vertex v2, int maxDivisionLevel)
     {
         final float[] data = polyData;
         TriangleBoxTest.packPolyData(v0, v1, v2, data);
-        
-        final long[] bits = voxelBits;
-        System.arraycopy(voxels.rawBits(), 0, bits, 0, 8);
-        
-        div1(polyData, bits);
-        
-        //TODO: remove below here
-        voxels.visit((index, divisionLevel, isLeaf) ->
-        {
-            return testCenter(index, divisionLevel, (x, y, z) -> 
-            {
-                if(TriangleBoxTest.triBoxOverlap(x, y, z, voxelRadius(divisionLevel), data))
-                {
-                    if(isLeaf)
-                    {
-                        voxels.setFull(index, divisionLevel);
-                        return false;
-                    }
-                    else return true;
-                }
-                else return false;
-            });
-        });
-        
-//        long[] check = new long[16];
-//        VoxelVolume.loadVolume(voxels, check);
-        
-        long[] check = voxels.rawBits();
-        
-        for(int i = 0; i < 8; i++)
-        {
-            if(check[i] != bits[i])
-            {
-
-                ExoticMatter.INSTANCE.info("OLD METHOD TRACE");
-                ExoticMatter.INSTANCE.info("========================");
-                voxels.visit((index, divisionLevel, isLeaf) ->
-                {
-                    return testCenter(index, divisionLevel, (x, y, z) -> 
-                    {
-                        if(TriangleBoxTest.triBoxOverlap(x, y, z, voxelRadius(divisionLevel), data))
-                        {
-                            if(isLeaf)
-                            {
-                                voxels.setFull(index, divisionLevel);
-                                ExoticMatter.INSTANCE.info("%d level %d @ %f, %f, %f -> set full", index, divisionLevel, x, y, z);
-                                return false;
-                            }
-                            else 
-                            {
-                                ExoticMatter.INSTANCE.info("%d level %d @ %f, %f, %f -> recurse", index, divisionLevel, x, y, z);
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            ExoticMatter.INSTANCE.info("%d level %d @ %f, %f, %f -> abandon", index, divisionLevel, x, y, z);
-                            return false;
-                        }
-                    });
-                });
-                
-                ExoticMatter.INSTANCE.info("");
-                ExoticMatter.INSTANCE.info("NEW METHOD TRACE");
-                ExoticMatter.INSTANCE.info("========================");
-                doLog = true;
-                
-           //     System.arraycopy(ALL_EMPTY, 0, bits, 0, 16);
-                div1(polyData, bits);
-                
-                doLog = false;
-                
-                ExoticMatter.INSTANCE.info("");
-            }
-        }
+        div1(polyData, voxelBits);
     }
-    
-    public static boolean doLog = false;
     
     // diameters
     static final float D1 = 0.5f;
@@ -201,9 +126,6 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
         final float y1 = y0 + D2;
         final float z1 = z0 + D2;
         
-        if(doLog)
-            ExoticMatter.INSTANCE.info("DIV2 %d ( %d ) @ %f, %f, %f -> set full", baseIndex, baseIndex >> 6,  x0, y0, z0);
-        
         if(TriangleBoxTest.triBoxOverlap(a0, b0, c0, R2, polyData))
             div3(baseIndex + 000, x0, y0, z0, polyData, voxelBits);
         
@@ -238,9 +160,6 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
         final float c0 = z0 + CLOW3;
         final float c1 = z0 + CHIGH3;
         
-        if(doLog)
-            ExoticMatter.INSTANCE.info("DIV3 %d ( %d, %d ) @ %f, %f, %f -> set full", baseIndex, baseIndex >> 6, (baseIndex >> 6) & 7,  x0, y0, z0);
-
         if(TriangleBoxTest.triBoxOverlap(a0, b0, c0, R3, polyData))
             setVoxelBit(baseIndex + 00, voxelBits);
         
@@ -268,12 +187,7 @@ public class FastBoxGenerator extends AbstractVoxelBuilder<VoxelOctree8> impleme
     
     static void setVoxelBit(int voxelIndex3, long[] voxelBits)
     {
-//        final int xyz = OctreeCoordinates.indexToXYZ3(voxelIndex3);
-//        voxelBits[xyz >> 6] |= (1L << (xyz & 63));
-        
-        if(doLog)
-            ExoticMatter.INSTANCE.info("SET %d ( %d, %d, %d )", voxelIndex3, voxelIndex3 >> 6, (voxelIndex3 >> 6) & 7,  voxelIndex3 & 7);
-
-        voxelBits[voxelIndex3 >> 6] |= (1L << (voxelIndex3 & 63));
+        final int xyz = OctreeCoordinates.indexToXYZ3(voxelIndex3);
+        voxelBits[xyz >> 6] |= (1L << (xyz & 63));
     }
 }

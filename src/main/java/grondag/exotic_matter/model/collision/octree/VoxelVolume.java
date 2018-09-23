@@ -201,7 +201,7 @@ public class VoxelVolume
         System.arraycopy(ALL_EMPTY, 0, data, 0, 16);
     }
     
-    static void forEachSimpleVoxelInner(long[] data, Int3Consumer consumer)
+    public static void forEachSimpleVoxelInner(long[] data, Int3Consumer consumer)
     {
         for(int x = 0; x < 8; x += 2)
         {
@@ -229,7 +229,7 @@ public class VoxelVolume
      * To ensure low garbage, requires array be sized to hold two sets of results.
      * Expects source data in lower half.  Output is in upper half.
      */
-    static void fillVolume8(long[] data)
+    public static void fillVolume8(long[] data)
     {
         // during processing, 1 bits in high words represent open voxels
         
