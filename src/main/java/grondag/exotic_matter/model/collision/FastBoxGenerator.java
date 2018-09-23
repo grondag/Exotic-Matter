@@ -168,7 +168,7 @@ public class FastBoxGenerator implements Consumer<IPolygon>
         builder.clear();
         final long[] data = this.voxelBits;
         VoxelVolume.fillVolume8(data);
-        VoxelVolume.forEachSimpleVoxelInner(data, (x, y, z) ->
+        VoxelVolume.forEachSimpleVoxel(data, (x, y, z) ->
         {
             builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
         });
