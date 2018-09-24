@@ -266,12 +266,6 @@ public interface ISuperBlock extends IBlockItemRegistrator
 
     ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player);
 
-    /**
-     * Used by NiceBlockHighligher to know if custom hit box rendering is needed. Actual event handling is in that class. 
-     * Won't be called unless custom collision handler is available.
-     */
-    List<AxisAlignedBB> getSelectionBoundingBoxes(World worldIn, BlockPos pos, IBlockState state);
-
     ItemStack getStackFromBlock(IBlockState state, IBlockAccess world, BlockPos pos);
 
     IBlockState getStateFromMeta(int meta);

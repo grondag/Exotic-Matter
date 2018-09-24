@@ -830,17 +830,6 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         return getStackFromBlock(goodState, world, pos);
     }
    
-    /**
-     * Used by NiceBlockHighligher to know if custom hit box rendering is needed. Actual event handling is in that class. 
-     * Won't be called unless custom collision handler is available.
-     */
-    @Override
-    public List<AxisAlignedBB> getSelectionBoundingBoxes(World worldIn, BlockPos pos, IBlockState state)
-    {
-        ISuperModelState modelState = SuperBlockWorldAccess.access(worldIn).getModelState(this, state, pos, true);
-        return modelState.collisionBoxes(pos);
-    }
-
     @Override
     public ItemStack getStackFromBlock(IBlockState state, IBlockAccess world, BlockPos pos)
     {
