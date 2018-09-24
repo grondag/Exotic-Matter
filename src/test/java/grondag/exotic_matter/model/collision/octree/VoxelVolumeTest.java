@@ -41,7 +41,7 @@ class VoxelVolumeTest
         data[6] = section;
         data[7] = cap;
         
-        VoxelVolume8.fillVolume8(data);
+        VoxelVolume8.fillVolume(data);
         outputCarvedLayers(data);
         assert data[8] == 0;
         assert data[9] == cap;

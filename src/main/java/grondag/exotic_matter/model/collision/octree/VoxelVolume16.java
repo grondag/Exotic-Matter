@@ -3,11 +3,11 @@ package grondag.exotic_matter.model.collision.octree;
 import grondag.exotic_matter.varia.functions.Int3Consumer;
 
 /**
- * Operations on Cartesian representation of 8x8x8 voxels in unit cube
+ * Operations on Cartesian representation of 16x16x16 voxels in unit cube
  * that can happen more efficiently that way. (Filling, mostly)
  *
  */
-public class VoxelVolume8
+public class VoxelVolume16
 {
     public static void forEachSimpleVoxel(long[] data, Int3Consumer consumer)
     {
