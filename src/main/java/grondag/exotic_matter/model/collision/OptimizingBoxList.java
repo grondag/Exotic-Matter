@@ -1,10 +1,7 @@
 package grondag.exotic_matter.model.collision;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ForwardingList;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.state.ISuperModelState;

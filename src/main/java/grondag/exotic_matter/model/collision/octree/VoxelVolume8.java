@@ -7,7 +7,7 @@ import grondag.exotic_matter.varia.functions.Int3Consumer;
  * that can happen more efficiently that way. (Filling, mostly)
  *
  */
-public class VoxelVolume
+public class VoxelVolume8
 {
     public static void forEachSimpleVoxel(long[] data, Int3Consumer consumer)
     {

@@ -7,12 +7,30 @@ import java.util.function.Consumer;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
-import grondag.exotic_matter.model.collision.octree.VoxelVolume;
+import grondag.exotic_matter.model.collision.octree.VoxelVolume8;
 import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
+/**
+ * Generates non-intersecting collision boxes for a model within a single block
+ * at 1/4 block distance (per axis).<p>
+ * 
+ * Identifies which voxels intersects with polys in the block mesh to build
+ * a shell at 1/8 resolution, then fills the shell interior and outputs 1/4 voxels
+ * that are at least half full. <p>
+ * 
+ * Output voxels sharing a face joined together by {@link JoiningBoxListBuilder}.
+ * No other attempt is made to reduce box count - instead relying on the low 
+ * resolution to keep box counts reasonable. <p>
+ * 
+ * During the shell identification, voxels are addressed using Octree coordinates
+ * but those coordinates are never saved to state (exist only in the call stack.)
+ * When leaf nodes are identified, voxel bits are set using Cartesian coordinates
+ * converted from octree coordinates because Cartesian representation is better
+ * (or at least as good) for the subsequent simplification, fill and output operations.
+ */
 public class FastBoxGenerator implements Consumer<IPolygon>
 {
     // diameters
@@ -168,8 +186,8 @@ public class FastBoxGenerator implements Consumer<IPolygon>
     {
         builder.clear();
         final long[] data = this.voxelBits;
-        VoxelVolume.fillVolume8(data);
-        VoxelVolume.forEachSimpleVoxel(data, (x, y, z) ->
+        VoxelVolume8.fillVolume8(data);
+        VoxelVolume8.forEachSimpleVoxel(data, (x, y, z) ->
         {
             builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
         });
