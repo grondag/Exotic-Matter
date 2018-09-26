@@ -12,7 +12,6 @@ public interface ICollisionBoxListBuilder
     
     void clear();
    
-
     default ImmutableList<AxisAlignedBB> build()
     {
         IntCollection boxes = boxes();
@@ -56,6 +55,11 @@ public interface ICollisionBoxListBuilder
         return boxes().size();
     }
 
+    default boolean isEmpty()
+    {
+        return boxes().isEmpty();
+    }
+    
     void add(int boxKey);
 
 }

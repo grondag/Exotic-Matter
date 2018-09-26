@@ -178,8 +178,12 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         final long[] data = this.voxelBits;
         VoxelVolume16.fillVolume(data);
         bf.clear();
-        VoxelVolume16.forEachSimpleVoxel(data, (x, y, z) -> bf.setFilled(x, y, z));
+        VoxelVolume16.forEachSimpleVoxel(data, 4, (x, y, z) -> bf.setFilled(x, y, z));
         
+        // handle very small meshes that don't half-fill any simple voxels; avoid having no collision boxes
+        if(bf.isEmpty())
+            VoxelVolume16.forEachSimpleVoxel(data, 1, (x, y, z) -> bf.setFilled(x, y, z));
+            
         // prep for next use
         System.arraycopy(ALL_EMPTY, 0, data, 0, 64);
         

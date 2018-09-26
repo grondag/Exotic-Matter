@@ -37,6 +37,18 @@ public class BoxFinder
         System.arraycopy(EMPTY, 0, voxels, 0, 8);
     }
     
+    public boolean isEmpty()
+    {
+        return voxels[0] == 0
+                && voxels[1] == 0
+                && voxels[2] == 0
+                && voxels[3] == 0
+                && voxels[4] == 0
+                && voxels[5] == 0
+                && voxels[6] == 0
+                && voxels[7] == 0;
+    }
+    
     /**
      * Saves voxel data to given array.   Array must be >= 8 in length.
      * Load with {@link #restoreFrom(long[])}.

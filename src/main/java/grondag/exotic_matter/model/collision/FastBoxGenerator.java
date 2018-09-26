@@ -154,10 +154,11 @@ public class FastBoxGenerator extends AbstractBoxGenerator
         builder.clear();
         final long[] data = this.voxelBits;
         VoxelVolume8.fillVolume(data);
-        VoxelVolume8.forEachSimpleVoxel(data, (x, y, z) ->
-        {
-            builder.addSorted(x, y, z, x + 2, y + 2, z + 2);
-        });
+        VoxelVolume8.forEachSimpleVoxel(data, 4, (x, y, z) -> builder.addSorted(x, y, z, x + 2, y + 2, z + 2));
+        
+        // handle very small meshes that don't half-fill any simple voxels; avoid having no collision boxes
+        if(builder.isEmpty())
+            VoxelVolume8.forEachSimpleVoxel(data, 1, (x, y, z) -> builder.addSorted(x, y, z, x + 2, y + 2, z + 2));
         
         // prep for next use
         System.arraycopy(ALL_EMPTY, 0, data, 0, 16);

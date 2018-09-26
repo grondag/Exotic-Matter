@@ -9,7 +9,7 @@ import grondag.exotic_matter.varia.functions.Int3Consumer;
  */
 public class VoxelVolume8
 {
-    public static void forEachSimpleVoxel(long[] data, Int3Consumer consumer)
+    public static void forEachSimpleVoxel(long[] data, final int minVoxelCount, Int3Consumer consumer)
     {
         for(int x = 0; x < 8; x += 2)
         {
@@ -20,7 +20,7 @@ public class VoxelVolume8
                 for(int z = 0; z < 8; z += 2)
                 {
                     int count = Long.bitCount(data[z + 8] & mask) + Long.bitCount(data[z + 9] & mask);
-                    if(count >= 4)
+                    if(count >= minVoxelCount)
                         consumer.accept(x, y, z);
                 }
             }
