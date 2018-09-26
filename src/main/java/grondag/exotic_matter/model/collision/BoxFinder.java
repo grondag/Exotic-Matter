@@ -6,8 +6,6 @@ import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
-import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
-import grondag.exotic_matter.model.collision.octree.VoxelOctree16;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -401,14 +399,6 @@ public class BoxFinder
             builder.add(minX, minY, slice.min, maxX + 1, maxY + 1, slice.max + 1);
             return 0;
         });
-    }
-    
-    void loadVoxels(VoxelOctree16 voxels)
-    {
-        clear();
-        for(int i = 0; i < 512; i++)
-            if(voxels.isFull(i, 3))
-                OctreeCoordinates.forXYZ3(i, (x, y, z) -> setFilled(x, y, z));
     }
     
     void calcCombined()

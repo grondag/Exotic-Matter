@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.collision.octree;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.ExoticMatter;

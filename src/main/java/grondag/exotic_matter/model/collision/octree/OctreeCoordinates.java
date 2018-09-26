@@ -255,7 +255,7 @@ public class OctreeCoordinates
     /**
      * Gives packed 4-bit Cartesian coordinates from octree index w/ division level 4
      */
-    static int indexToXYZ4(final int i4)
+    public static int indexToXYZ4(final int i4)
     {
         //coordinate values are 4 bits each: xxxx, yyyy, zzzz
         //voxel coordinates are interleaved: zyx zyx zyx zyx

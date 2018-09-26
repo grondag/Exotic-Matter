@@ -2,13 +2,10 @@ package grondag.exotic_matter.model.collision;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.ALL_EMPTY;
 
-import java.util.function.Consumer;
-
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume8;
-import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
 import grondag.exotic_matter.model.primitives.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -31,28 +28,8 @@ import net.minecraft.util.math.AxisAlignedBB;
  * converted from octree coordinates because Cartesian representation is better
  * (or at least as good) for the subsequent simplification, fill and output operations.
  */
-public class FastBoxGenerator implements Consumer<IPolygon>
+public class FastBoxGenerator extends AbstractBoxGenerator
 {
-    // diameters
-    static final float D1 = 0.5f;
-    static final float D2 = D1 * 0.5f;
-    static final float D3 = D2 * 0.5f;
-    
-    // radii
-    static final float R1 = D1 * 0.5f;
-    static final float R2 = D2 * 0.5f;
-    static final float R3 = D3 * 0.5f;
-    
-    // center offsets, low and high
-    static final float CLOW1 = 0.25f;
-    static final float CHIGH1 = CLOW1 + D1;
-    
-    static final float CLOW2 = CLOW1 * 0.5f;
-    static final float CHIGH2 = CLOW2 + D2;
-    
-    static final float CLOW3 = CLOW2 * 0.5f;
-    static final float CHIGH3 = CLOW3 + D3;
-    
     private static void div1(final float[] polyData, final long[] voxelBits)
     {
         if(TriangleBoxTest.triBoxOverlap(CLOW1, CLOW1, CLOW1, R1, polyData))
@@ -163,18 +140,8 @@ public class FastBoxGenerator implements Consumer<IPolygon>
     private final float[] polyData = new float[36];
     private final JoiningBoxListBuilder builder = new JoiningBoxListBuilder();
 
-    @SuppressWarnings("null")
-    @Override
-    public final void accept(IPolygon poly)
-    {
-        Vertex[] v  = poly.vertexArray();
-        
-        acceptTriangle(v[0], v[1], v[2]);
-        
-        if(poly.vertexCount() == 4)
-            acceptTriangle(v[0], v[2], v[3]);
-    }
 
+    @Override
     protected final void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
     {
         final float[] data = polyData;

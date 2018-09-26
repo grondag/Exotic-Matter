@@ -14,14 +14,14 @@ public class VoxelVolume16
         {
             for(int y = 0; y < 16; y += 2)
             {
-                final long mask = 0b0000001100000011L << (x + (y & 3) * 16);
+                final long mask = 0b00000000000000110000000000000011L << (x + (y & 3) * 16);
                 
                 for(int z = 0; z < 16; z += 2)
                 {
                     int i = ((z << 2) | (y >> 2));
-                    int count = Long.bitCount(data[i + 64] & mask) + Long.bitCount(data[i + 65] & mask);
+                    int count = Long.bitCount(data[i + 64] & mask) + Long.bitCount(data[i + 68] & mask);
                     if(count >= 4)
-                        consumer.accept(x, y, z);
+                        consumer.accept(x >> 1, y >> 1, z >> 1);
                 }
             }
         }
@@ -131,7 +131,6 @@ public class VoxelVolume16
         for(int z = 1; z < 15; z++)
         {
             compoundNotOrMask(data, z, data, z + 16, INTERIOR_MASK_XY, 0);
-            VoxelVolume16Test.outputLayer(data, z + 16);
         }
         
         final long[] temp = utilityWord.get();

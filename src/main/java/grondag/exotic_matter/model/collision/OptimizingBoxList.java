@@ -31,7 +31,6 @@ public class OptimizingBoxList implements Runnable
     public void run()
     {
         final OptimalBoxGenerator generator = boxGen;
-        generator.prepare();
         modelState.getShape().meshFactory().produceShapeQuads(modelState, generator);
         wrapped = generator.build();
 //        ExoticMatter.INSTANCE.info("Optimization completed, queue depth = %d", CollisionBoxDispatcher.QUEUE.size());
