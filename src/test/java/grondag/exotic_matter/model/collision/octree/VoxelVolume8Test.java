@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.ExoticMatter;
 
-class VoxelVolumeTest
+class VoxelVolume8Test
 {
 
     @Test

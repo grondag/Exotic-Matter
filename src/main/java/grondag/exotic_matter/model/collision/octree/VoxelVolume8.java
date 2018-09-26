@@ -54,10 +54,7 @@ public class VoxelVolume8
         
         data[15] = ~data[7];
         
-        boolean didUpdate = true;
-        
-        while(didUpdate)
-            didUpdate = fillZ(data) || fillXY(data);
+        while(fill(data)) {}
         
         // flip carved bits to represent filled voxels instead of open
         // needed by the output routine, which looks for set bits
@@ -69,59 +66,35 @@ public class VoxelVolume8
      * Exploits fact that coarse (8x8x8) voxels for a single
      * Z-axis slice fit within a single long word.
      */
-    static boolean fillXY(long[] data)
+    static boolean fill(long[] data)
     {
         boolean didFill = false;
-        for(int index = 0; index < 8; index++)
+        
+        // note no need to do end slices - will always match initial input
+        for(int z = 1; z <= 6; z++)
         {
             // get carved current state
-            long opens = data[8 + index];
+            long opens = data[8 + z];
             
-            // if no open voxels, nothing to propagate
-            if(opens == 0L) continue;
+            // propagate voxels in previous and following layer
+            opens |= (data[z + 7] | data[z + 9]);
             
-            // propagate open voxels left, right, up and down, ignoring voxels already open in current state
-            opens = ((opens << 1) | (opens >>> 1) | (opens << 8) | (opens >>> 8)) & ~opens;
-                
-            // if nothing new to carve, move on
-            if(opens == 0L) continue;
-                
+            // propagate open voxels left, right, up and down
+            opens |= ((opens << 1) | (opens >>> 1) | (opens << 8) | (opens >>> 8));
+            
+            // remove voxels that are already carved
+            opens &= ~data[8 + z];
+
             // remove voxels that are solid in template
-            opens &= ~data[index];
+            opens &= ~data[z];
                 
             // if nothing new to carve, move on
             if(opens == 0L) continue;
                 
             // finally, propagate open voxels into carved results
-            data[8 + index] |= opens;
+            data[8 + z] |= opens;
             didFill = true;
         }
         return didFill;
-    }
-    
-    
-    static boolean fillZ(long[] data)
-    {
-        boolean didUpdate = false;
-        for(int z = 0; z < 5; z++)
-        {
-            // get open voxels in previous and following layer, ignoring voxels already open in this layer
-            long opens = (data[8 + z] | data[10 + z]) & ~data[9 + z];
-            
-            // if no open voxels, nothing to propagate into this layer
-            if(opens == 0L) continue;
-            
-            // remove voxels that are solid in template
-            opens &= ~data[1 + z];
-            
-            // if nothing new to carve, move on
-            if(opens == 0L) continue;
-            
-            // finally, propagate open voxels into target layer
-            data[9 + z] |= opens;
-            
-            didUpdate = true;
-        }
-        return didUpdate;
     }
 }
