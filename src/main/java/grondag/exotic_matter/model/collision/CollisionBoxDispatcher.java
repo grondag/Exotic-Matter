@@ -7,13 +7,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.cache.ObjectSimpleCacheLoader;
 import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.state.ISuperModelState;
@@ -73,14 +71,13 @@ public class CollisionBoxDispatcher
     
     private static class CollisionBoxLoader implements ObjectSimpleCacheLoader<ISuperModelState, OptimizingBoxList>
     {
-        //TODO: disable
-        static AtomicInteger runCounter = new AtomicInteger();
-        static AtomicLong totalNanos = new AtomicLong();
+//        static AtomicInteger runCounter = new AtomicInteger();
+//        static AtomicLong totalNanos = new AtomicLong();
         
         @Override
         public OptimizingBoxList load(ISuperModelState key)
         {
-            final long start = System.nanoTime();
+//            final long start = System.nanoTime();
             
             final FastBoxGenerator generator = fastBoxGen.get();
             key.getShape().meshFactory().produceShapeQuads(key, generator);
@@ -89,13 +86,13 @@ public class CollisionBoxDispatcher
             OptimizingBoxList result = new OptimizingBoxList(generator.build(), key);
             EXEC.execute(result);
             
-            long total = totalNanos.addAndGet(System.nanoTime() - start);
-            if(runCounter.incrementAndGet() == 100)
-            {
-                ExoticMatter.INSTANCE.info("Avg fast collision box nanos, past 100 samples = %d", total / 100);
-                runCounter.addAndGet(-100);
-                totalNanos.addAndGet(-total);
-            }
+//            long total = totalNanos.addAndGet(System.nanoTime() - start);
+//            if(runCounter.incrementAndGet() == 100)
+//            {
+//                ExoticMatter.INSTANCE.info("Avg fast collision box nanos, past 100 samples = %d", total / 100);
+//                runCounter.addAndGet(-100);
+//                totalNanos.addAndGet(-total);
+//            }
             
             return result;
         }
