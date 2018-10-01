@@ -108,7 +108,7 @@ public interface IPaintedQuad extends IPipelinedQuad
     
     int layerCount();
 
-    IPaintableVertex getPaintableVertex(int i);
+    @Nullable IPaintableVertex getPaintableVertex(int i);
     
     /**
      * Returns true if this polygon is convex.
