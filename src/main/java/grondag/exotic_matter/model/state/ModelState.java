@@ -994,6 +994,7 @@ public class ModelState implements ISuperModelState
                 && this.layerBitsOuter == o.layerBitsOuter;
     }
 
+    // PERF: bottleneck for Pyroclasm
     @Override
     public ISuperModelState geometricState()
     {
