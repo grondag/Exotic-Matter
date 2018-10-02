@@ -9,6 +9,7 @@ import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.terrain.TerrainState;
 import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -64,7 +65,7 @@ public class WorldStateCache extends AbstractWorldStateCache
         this.nibbles.clear();
     }
 
-    //TODO: maybe don't remove the whole thing?
+    //PERF: maybe don't remove the whole thing?
     @Override
     protected void invalidateNibble(int chunkX, int nibbleY, int chunkZ)
     {
@@ -95,17 +96,16 @@ public class WorldStateCache extends AbstractWorldStateCache
         return this.getNibble(pos).getTerrainState(this, pos);
     }
 
-    @SuppressWarnings("null")
     @Override
     public IBlockState getBlockState(BlockPos pos)
     {
-        return world.getBlockState(pos);
+        IBlockAccess world = this.world;
+        return world == null ? Blocks.AIR.getDefaultState() : world.getBlockState(pos);
     }
     
-    @SuppressWarnings("null")
     @Override
     public IBlockState getBlockState(long packedBlockPos)
     {
-        return world.getBlockState(PackedBlockPos.unpack(packedBlockPos));
+        return getBlockState(PackedBlockPos.unpack(packedBlockPos));
     }
 }
