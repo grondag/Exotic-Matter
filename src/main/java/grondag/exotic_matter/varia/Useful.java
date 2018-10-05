@@ -38,6 +38,8 @@ public class Useful
     
     public static final int DISTANCE_SORTED_CIRCULAR_OFFSETS_MAX_RADIUS = 64;
     
+    public static final int DISTANCE_SORTED_CIRCULAR_OFFSETS_COUNT;
+    
     static
     {
         // need to use a hash bc fill2dCircleInPlaneXZ does not guarantee uniqueness.
@@ -60,7 +62,8 @@ public class Useful
                 return Integer.compare(o1.getY(), o2.getY());
             }});
         
-        DISTANCE_SORTED_CIRCULAR_OFFSETS = offsetList.toArray(new Vec3i[offsetList.size()]);
+        DISTANCE_SORTED_CIRCULAR_OFFSETS_COUNT = offsetList.size();
+        DISTANCE_SORTED_CIRCULAR_OFFSETS = offsetList.toArray(new Vec3i[DISTANCE_SORTED_CIRCULAR_OFFSETS_COUNT]);
     }
     
     /**

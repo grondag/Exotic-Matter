@@ -199,8 +199,8 @@ public class PackedBlockPos
         return 0;
     }
 
-    public static final void unpackTo(long packedBlockPos, MutableBlockPos targetPos)
+    public static final MutableBlockPos unpackTo(long packedBlockPos, MutableBlockPos targetPos)
     {
-        targetPos.setPos(getX(packedBlockPos), getY(packedBlockPos), getZ(packedBlockPos));
+        return targetPos.setPos(getX(packedBlockPos), getY(packedBlockPos), getZ(packedBlockPos));
     }
 }
