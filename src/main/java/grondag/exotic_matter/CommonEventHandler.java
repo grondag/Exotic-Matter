@@ -126,14 +126,13 @@ public class CommonEventHandler
 
     }
     
-    @SuppressWarnings("null")
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<Entity> event)
     {
         if(event.getObject() instanceof EntityPlayer)
         {
             if (!event.getObject().hasCapability(ModifierKeys.CAP_INSTANCE, null)) {
-                event.addCapability(new ResourceLocation(TheOneProbe.MODID, "PlayerCaps"), new ModifierKeys());
+                event.addCapability(new ResourceLocation(ExoticMatter.MODID, "PlayerCaps"), new ModifierKeys());
             }
         }
     }
