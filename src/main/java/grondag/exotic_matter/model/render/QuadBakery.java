@@ -172,14 +172,11 @@ public class QuadBakery
             }
         }
         
-        
-        return format == ITEM_ALTERNATE //DefaultVertexFormats.ITEM
-                ? new BakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, true, format)
+        BakedQuad quad = format == ITEM_ALTERNATE
+                ? new CachedBakedQuad(vertexData, -1, raw.getActualFace(), textureSprite, true, format)
                 : new LitBakedQuad(vertexData, normalData, -1, raw.getActualFace(), textureSprite, true, format, glowBits);
         
-                //TODO: restore quad caching
-//        return QuadCache.INSTANCE.getCachedQuad(new CachedBakedQuad(vertexData, raw.getNominalFace(), textureSprite, applyDiffuseLighting, 
-//                format));
+        return QuadCache.INSTANCE.getCachedQuad(quad);
     }
     
     public static void applyTextureRotation(IPaintableQuad raw, float[][] uvData)

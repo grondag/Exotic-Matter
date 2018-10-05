@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import grondag.exotic_matter.ConfigXM;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -14,7 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class QuadCache
 {
     public static final QuadCache INSTANCE = new QuadCache();
-    public final LoadingCache<CachedBakedQuad, CachedBakedQuad> cache; 
+    public final LoadingCache<BakedQuad, BakedQuad> cache; 
 
     public QuadCache()        
     {
@@ -28,11 +29,11 @@ public class QuadCache
             builder = builder.recordStats();
         }
 
-        this.cache = builder.build(new CacheLoader<CachedBakedQuad, CachedBakedQuad>()
+        this.cache = builder.build(new CacheLoader<BakedQuad, BakedQuad>()
         {
 
             @Override
-            public @Nonnull CachedBakedQuad load(@Nonnull CachedBakedQuad key) throws Exception
+            public @Nonnull BakedQuad load(@Nonnull BakedQuad key) throws Exception
             {
                 return key;
             }
@@ -40,11 +41,8 @@ public class QuadCache
 
     }
 
-    public CachedBakedQuad getCachedQuad(CachedBakedQuad quadIn)
+    public BakedQuad getCachedQuad(BakedQuad quadIn)
     {
         return this.cache.getUnchecked(quadIn);
     }
-
-
-
 }

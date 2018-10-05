@@ -106,6 +106,7 @@ public class LitBakedQuad extends BakedQuad
     
     private final int glowBits;
     private final float[][] normals;
+    private int hash = 0;
     
     public LitBakedQuad(int[] vertexDataIn, float[][] normals, int tintIndexIn, @Nullable EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format, int glowBits)
     {
@@ -179,6 +180,78 @@ public class LitBakedQuad extends BakedQuad
         return (this.glowBits >> (vertexIndex * 4)) & 0xF;
     }
     
+    @Override
+    public int hashCode()
+    {
+        int hash = this.hash;
+        
+        if(hash == 0)
+        {
+            hash = 1;
+            for (int i = 0; i < this.vertexData.length; i++) {
+                hash = 31 * hash + this.vertexData[i];
+            }
+            hash = 31 * hash + (this.format == null ? 0 : this.format.hashCode());
+            hash = 31 * hash + (this.sprite == null ? 0 : this.sprite.hashCode());
     
+            int otherStuff = this.applyDiffuseLighting ? 1 : 0;
+            otherStuff |= this.face == null ? 0 : this.face.ordinal() << 1;
+            otherStuff |= this.glowBits << 4;
+            otherStuff |= this.tintIndex << 8;
+    
+            hash = 31 * hash + otherStuff;
+            
+            for(float[] n: this.normals)
+            {
+                hash = 31 * hash + Float.floatToRawIntBits(n[0]);
+                hash = 31 * hash + Float.floatToRawIntBits(n[1]);
+                hash = 31 * hash + Float.floatToRawIntBits(n[2]);
+            }
+            
+            this.hash = hash;
+        }
+        return hash;
+    }
+    
+    @Override
+    public boolean equals(@Nullable Object other)
+    {
+        if(other instanceof LitBakedQuad)
+        {
+            LitBakedQuad otherQuad = (LitBakedQuad)other;
+            
+            if(!(this.format == otherQuad.format
+                    &&  this.sprite == otherQuad.sprite
+                    &&  this.face == otherQuad.face
+                    &&  this.applyDiffuseLighting == otherQuad.applyDiffuseLighting
+                    &&  this.tintIndex == otherQuad.tintIndex)) return false;
+                    
+            final int[] v1 = this.vertexData;
+            final int[] v2 = otherQuad.vertexData;
+            if(v1.length != v2.length) return false;
+            
+            for (int i = 0; i < v1.length; i++) 
+            {
+                if(v1[i] != v2[i]) return false;
+            }
+            
+            final float[][] n1 = this.normals;
+            final float[][] n2 = otherQuad.normals;
+            if(n1.length != n2.length) return false;
+            
+            for (int i = 0; i < n1.length; i++) 
+            {
+                if(n1[i][0] != n2[i][0]) return false;
+                if(n1[i][1] != n2[i][1]) return false;
+                if(n1[i][2] != n2[i][2]) return false;
+            }
+            
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     
 }

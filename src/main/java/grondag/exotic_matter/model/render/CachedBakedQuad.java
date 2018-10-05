@@ -12,27 +12,34 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class CachedBakedQuad extends BakedQuad
 {
-    public CachedBakedQuad(int[] vertexDataIn, EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format)
+    private int hash = 0;
+    
+    public CachedBakedQuad(int[] vertexDataIn, int tint, EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format)
     {
-        super(vertexDataIn, -1, faceIn, spriteIn, applyDiffuseLighting, format);
+        super(vertexDataIn, tint, faceIn, spriteIn, applyDiffuseLighting, format);
     }
 
     @Override
     public int hashCode()
     {
-        int hash = 1;
-        for (int i = 0; i < this.vertexData.length; i++) {
-            hash = 31 * hash + this.vertexData[i];
-        }
-        hash = 31 * hash + (this.format == null ? 0 : this.format.hashCode());
-        hash = 31 * hash + (this.sprite == null ? 0 : this.sprite.hashCode());
-
-        int otherStuff = this.applyDiffuseLighting ? 1 : 0;
-        otherStuff |= this.face == null ? 0 : this.face.ordinal() << 1;
-        otherStuff |= this.tintIndex << 4;
-
-        hash = 31 * hash + otherStuff;
+        int hash = this.hash;
         
+        if(hash == 0)
+        {
+            hash = 1;
+            for (int i = 0; i < this.vertexData.length; i++) {
+                hash = 31 * hash + this.vertexData[i];
+            }
+            hash = 31 * hash + (this.format == null ? 0 : this.format.hashCode());
+            hash = 31 * hash + (this.sprite == null ? 0 : this.sprite.hashCode());
+    
+            int otherStuff = this.applyDiffuseLighting ? 1 : 0;
+            otherStuff |= this.face == null ? 0 : this.face.ordinal() << 1;
+            otherStuff |= this.tintIndex << 4;
+    
+            hash = 31 * hash + otherStuff;
+            this.hash = hash;
+        }
         return hash;
     }
     
