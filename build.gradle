@@ -19,9 +19,6 @@ buildscript {
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'maven-publish'
-
 // see https://github.com/passsy/gradle-GitVersioner
 ext.gitVersioner = [
         defaultBranch           : "master",  // default "master"
@@ -45,8 +42,10 @@ apply from: 'https://raw.githubusercontent.com/passsy/gradle-GitVersioner/master
 // variable `gitVersionName` can be used everywhere to get the revision name
 println("versionName: $gitVersionName") // output: "versionName: 1083-dm4(6)-SNAPSHOT"
 
-ext.buildnumber = 0
-project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : project.ext.gitHash
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
+apply plugin: 'maven'
 
 version = "mc${minecraft_version}-${mod_version}.${gitVersionName}-${release_type}"
 group= "grondag" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -97,10 +96,7 @@ uploadArchives {
     repositories {
         mavenDeployer {
             repository(url: "https://grondag-repo.appspot.com") {
-	            credentials {
-		            username "$mavenUser"
-		            password "$mavenPassword"
-        		}
+	            authentication(userName: "admin", password: "${maven_password}")
             }
             pom.version = project.version
             pom.artifactId = project.archivesBaseName
