@@ -289,6 +289,7 @@ texture.bigtex=Varied BigTex Test Texture
 texture.noise_strong=Strong Noise
 texture.noise_moderate=Moderate Noise
 texture.noise_subtle=Subtle Noise
+texture.border_smooth_blended=Smooth Blended Edges
 
 #SUBSTANCES
 material.default=Shaped Stone

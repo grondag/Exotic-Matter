@@ -106,7 +106,6 @@ uploadArchives {
 }
 
 repositories {
-
 	maven { // CTM & TOP
 		url "http://maven.tterrag.com/"
 	}

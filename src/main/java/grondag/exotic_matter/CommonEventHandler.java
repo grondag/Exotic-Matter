@@ -4,24 +4,11 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import grondag.exotic_matter.block.BlockSubstance;
 import grondag.exotic_matter.block.SuperModelBlock;
-import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.init.IBlockItemRegistrator;
-import grondag.exotic_matter.init.ModShapes;
-import grondag.exotic_matter.model.color.BlockColorMapProvider;
-import grondag.exotic_matter.model.color.Chroma;
-import grondag.exotic_matter.model.color.ColorMap.EnumColorMap;
-import grondag.exotic_matter.model.color.Hue;
-import grondag.exotic_matter.model.color.Luminance;
-import grondag.exotic_matter.model.mesh.SquareColumnMeshFactory;
-import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.model.state.ISuperModelState;
-import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.player.ModifierKeys;
 import grondag.exotic_matter.simulator.Simulator;
 import grondag.exotic_matter.simulator.WorldTaskManager;
-import mcjty.theoneprobe.TheOneProbe;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -73,56 +60,54 @@ public class CommonEventHandler
     {
         SuperModelBlock.registerSuperModelBlocks(event);
         
-        //FIXME:  remove all of these
+//        ISuperModelState workingModel;
+//        workingModel = new ModelState();
+//        workingModel.setShape(ModShapes.CSGTEST);
+//        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_GRANITE);
+//        workingModel.setColorRGB(PaintLayer.BASE, 0xFF9B898C);
+//        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BIGTEX_SLATE);
+//        workingModel.setColorRGB(PaintLayer.CUT, 0xFF7F9BA6);
         
-        ISuperModelState workingModel;
-        workingModel = new ModelState();
-        workingModel.setShape(ModShapes.CSGTEST);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_GRANITE);
-        workingModel.setColorRGB(PaintLayer.BASE, 0xFF9B898C);
-        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BIGTEX_SLATE);
-        workingModel.setColorRGB(PaintLayer.CUT, 0xFF7F9BA6);
+//        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
+//        workingModel.setColorRGB(PaintLayer.LAMP, 0xFFD5E9FF);
+//        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
-        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
-        workingModel.setColorRGB(PaintLayer.LAMP, 0xFFD5E9FF);
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("csgtest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+//        workingModel = new ModelState();
+//        workingModel.setShape(ModShapes.CUBE);
+//        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_WEATHERED_STONE);
+//        workingModel.setColorRGB(PaintLayer.BASE, 0xEBF0F5);
+//        workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.DECAL_SOFT_SKINNY_DIAGONAL_RIDGES_RANDOM);
+//        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFFFFFF);
+//        workingModel.setTranslucent(PaintLayer.MIDDLE, true);
+//        workingModel.setAlpha(PaintLayer.MIDDLE, 0x18);
+//        workingModel.setEmissive(PaintLayer.MIDDLE, true);
+//        workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_LOGIC);
+//        workingModel.setColorRGB(PaintLayer.OUTER, 0xD7FFFF);
+//        workingModel.setTranslucent(PaintLayer.OUTER, true);
+//        workingModel.setEmissive(PaintLayer.OUTER, true);
+//        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("blocktest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
-        workingModel = new ModelState();
-        workingModel.setShape(ModShapes.CUBE);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BIGTEX_WEATHERED_STONE);
-        workingModel.setColorRGB(PaintLayer.BASE, 0xEBF0F5);
-        workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.DECAL_SOFT_SKINNY_DIAGONAL_RIDGES_RANDOM);
-        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFFFFFF);
-        workingModel.setTranslucent(PaintLayer.MIDDLE, true);
-        workingModel.setAlpha(PaintLayer.MIDDLE, 0x18);
-        workingModel.setEmissive(PaintLayer.MIDDLE, true);
-        workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_LOGIC);
-        workingModel.setColorRGB(PaintLayer.OUTER, 0xD7FFFF);
-        workingModel.setTranslucent(PaintLayer.OUTER, true);
-        workingModel.setEmissive(PaintLayer.OUTER, true);
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("blocktest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
+//        workingModel = new ModelState();
+//        workingModel.setShape(ModShapes.SPHERE);
+//        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
+//        workingModel.setColorRGB(PaintLayer.BASE, 0xBBC3C4);
+//        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
         
-        workingModel = new ModelState();
-        workingModel.setShape(ModShapes.SPHERE);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
-        workingModel.setColorRGB(PaintLayer.BASE, 0xBBC3C4);
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("spheretest"), BlockSubstance.DEFAULT, workingModel).setCreativeTab(ExoticMatter.tabMod));
-        
-        workingModel = new ModelState();
-        workingModel.setShape(ModShapes.COLUMN_SQUARE);
-        SquareColumnMeshFactory.setCutCount(3, workingModel);
-        SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
-        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
-        workingModel.setColorRGB(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
-        
-        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_SUBTLE);
-        workingModel.setColorRGB(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
-        
-        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.WHITE);
-        workingModel.setEmissive(PaintLayer.LAMP, true);
-        workingModel.setColorRGB(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT).getColor(EnumColorMap.LAMP));
-        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel)
-            .setCreativeTab(ExoticMatter.tabMod));
+//        workingModel = new ModelState();
+//        workingModel.setShape(ModShapes.COLUMN_SQUARE);
+//        SquareColumnMeshFactory.setCutCount(3, workingModel);
+//        SquareColumnMeshFactory.setCutsOnEdge(true, workingModel);
+//        workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
+//        workingModel.setColorRGB(PaintLayer.BASE, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
+//        
+//        workingModel.setTexture(PaintLayer.CUT, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_SUBTLE);
+//        workingModel.setColorRGB(PaintLayer.CUT, BlockColorMapProvider.INSTANCE.getColorMap(Hue.COBALT, Chroma.WHITE, Luminance.BRILLIANT).getColor(EnumColorMap.BASE));
+//        
+//        workingModel.setTexture(PaintLayer.LAMP, grondag.exotic_matter.init.ModTextures.WHITE);
+//        workingModel.setEmissive(PaintLayer.LAMP, true);
+//        workingModel.setColorRGB(PaintLayer.LAMP, BlockColorMapProvider.INSTANCE.getColorMap(Hue.CYAN, Chroma.RICH, Luminance.BRIGHT).getColor(EnumColorMap.LAMP));
+//        event.getRegistry().register(new SuperSimpleBlock(ExoticMatter.INSTANCE.prefixName("coltest"), BlockSubstance.DEFAULT, workingModel)
+//            .setCreativeTab(ExoticMatter.tabMod));
 
     }
     
