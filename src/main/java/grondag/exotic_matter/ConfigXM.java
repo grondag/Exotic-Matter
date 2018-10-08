@@ -55,7 +55,7 @@ public class ConfigXM
 
         //TODO: get rid of this and use assertions instead
         @Comment("Set true to enable tracing output for block model state.  Can spam the log quite a bit, so leave false unless having problems.")
-        public boolean debugModelState = true;
+        public boolean debugModelState = false;
 
         @Comment({"Maximum number of block states checked before placing virtual blocks.",
             " Try smaller values if placing large multi-block regions is causing FPS problems.",
@@ -125,7 +125,7 @@ public class ConfigXM
         @Comment({"If true, Dynamic flow block (volcanic lava and basalt) will not render faces occulded by adjacent flow blocks.",
             " True is harder on CPU and easier on your graphics card/chip.  Experiment if you have FPS problems.",
         " Probably won't matter on systems with both a fast CPU and fast graphics."})
-        public boolean enableFaceCullingOnFlowBlocks = false;
+        public boolean enableFaceCullingOnFlowBlocks = true;
     
         @Comment("Debug Feature: draw block boundaries for non-cubic blocks.")
         public boolean debugDrawBlockBoundariesForNonCubicBlocks = false;
@@ -140,7 +140,7 @@ public class ConfigXM
         public boolean debugOutputColorAtlas = false;
 
         @Comment("Debug feature: draw quad outlines and vertex normals for the block currently being looked at.")
-        public boolean debugDrawQuadsOutlinesAndNormals = true;
+        public boolean debugDrawQuadsOutlinesAndNormals = false;
 
         @Comment("Debug Feature: collision boxes drown without depth, colorized and inset. Used for seeing collision box generation problems.")
         public boolean debugCollisionBoxes;
