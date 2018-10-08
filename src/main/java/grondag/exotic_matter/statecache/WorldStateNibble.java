@@ -1,5 +1,7 @@
 package grondag.exotic_matter.statecache;
 
+import java.util.Arrays;
+
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.block.ISuperBlock;
@@ -9,7 +11,6 @@ import grondag.exotic_matter.terrain.TerrainState;
 import grondag.exotic_matter.world.PackedBlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import scala.actors.threadpool.Arrays;
 
 
 /**

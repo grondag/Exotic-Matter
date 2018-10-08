@@ -2,11 +2,11 @@ package grondag.exotic_matter.model.collision;
 
 import static grondag.exotic_matter.model.collision.CollisionBoxEncoder.*;
 
+import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import scala.actors.threadpool.Arrays;
 
 /**
  * Accumulates immutable, low-garbage (via cache) lists of collision boxes 
