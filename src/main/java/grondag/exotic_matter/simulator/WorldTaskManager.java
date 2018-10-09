@@ -83,6 +83,17 @@ public class WorldTaskManager
     }
     
     /**
+     * Runs the task if called from the server thread. Otherwise enques for immediate execution on next tick.
+     */
+    public static void runOrEnqueueImmediate(Runnable task)
+    {
+        if(FMLCommonHandler.instance().getMinecraftServerInstance().isCallingFromMinecraftThread())
+            task.run();
+        else
+            immediateTasks.offer(task);
+    }
+    
+    /**
      * Use to send packets during next world tick if not running on server thread. 
      * Don't think network wrapper supports concurrent access.
      * 

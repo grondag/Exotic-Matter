@@ -6,7 +6,6 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.world.PackedChunkPos;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
@@ -29,10 +28,13 @@ public class ChunkLoader
     
     public static void clear()
     {
-        currentTicket = null;
-        chunksUsedThisTicket = 0;
-        retainedChunks.clear();
-        retainedCount.clear();
+        WorldTaskManager.runOrEnqueueImmediate(() -> 
+        {
+            currentTicket = null;
+            chunksUsedThisTicket = 0;
+            retainedChunks.clear();
+            retainedCount.clear();
+        }); 
     }
     
     public static void retainChunk(World world, int x, int z)
@@ -42,35 +44,28 @@ public class ChunkLoader
     
     public static void retainChunk(World world, long packedChunkPos)
     {
-        if(currentTicket == null || (chunksUsedThisTicket >= currentTicket.getChunkListDepth()))
+        WorldTaskManager.runOrEnqueueImmediate(() -> 
         {
-            // Note use of library mod instance instead of volcano mod instance
-            // the simulator is the reload listener and is registered under the library mod
-            // It will simply throw away all tickets on reload.
-            currentTicket = ForgeChunkManager.requestTicket(ExoticMatter.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
-            chunksUsedThisTicket = 0;
-        }
-        
-        boolean isNew;
-        synchronized(retainedChunks)
-        {
-            isNew = (retainedCount.addTo(packedChunkPos, 1) == 0);
-                    
-            if(isNew) retainedChunks.put(packedChunkPos, currentTicket);
-        }
-        
-        if(isNew)
-        {
-            ForgeChunkManager.forceChunk(currentTicket, PackedChunkPos.unpackChunkPos(packedChunkPos));
+            Ticket t = currentTicket;
             
-            //FIXME: remove
-            ChunkPos pos = PackedChunkPos.unpackChunkPos(packedChunkPos);
-            if(pos.getXStart() > 32000 || pos.getXStart() < -32000)
-                ExoticMatter.INSTANCE.info("boop!");
-            ExoticMatter.INSTANCE.info("Force loaded chunk @ %d, %d", pos.getXStart(), pos.getZStart());
+            if(t == null || (chunksUsedThisTicket >= t.getChunkListDepth()))
+            {
+                // Note use of library mod instance instead of volcano mod instance
+                // the simulator is the reload listener and is registered under the library mod
+                // It will simply throw away all tickets on reload.
+                t = ForgeChunkManager.requestTicket(ExoticMatter.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
+                currentTicket = t;
+                chunksUsedThisTicket = 0;
+            }
             
-            chunksUsedThisTicket++;
-        }
+            if(retainedCount.addTo(packedChunkPos, 1) == 0)
+            {
+                retainedChunks.put(packedChunkPos, t);
+                ForgeChunkManager.forceChunk(t, PackedChunkPos.unpackChunkPos(packedChunkPos));
+                chunksUsedThisTicket++;
+            }
+        });
+        
     }
 
     public static void releaseChunk(World world, int x, int z)
@@ -80,24 +75,15 @@ public class ChunkLoader
     
     public static void releaseChunk(World world, long packedChunkPos)
     {
-        
-        Ticket t = null;
-        
-        synchronized(retainedChunks)
+        WorldTaskManager.runOrEnqueueImmediate(() -> 
         {
             if(retainedCount.addTo(packedChunkPos, -1) == 1)
             {
-                t = retainedChunks.remove(packedChunkPos);
+                Ticket t = retainedChunks.remove(packedChunkPos);
+                
+                if(t != null)
+                    ForgeChunkManager.unforceChunk(t, PackedChunkPos.unpackChunkPos(packedChunkPos));
             }
-        }
-        
-        if(t != null)
-        {
-            ForgeChunkManager.unforceChunk(t, PackedChunkPos.unpackChunkPos(packedChunkPos));
-            
-            //FIXME: remove
-            ChunkPos pos = PackedChunkPos.unpackChunkPos(packedChunkPos);
-            ExoticMatter.INSTANCE.info("Released force loaded chunk @ %d, %d", pos.getXStart(), pos.getZStart());
-        }
+        });
     }
 }
