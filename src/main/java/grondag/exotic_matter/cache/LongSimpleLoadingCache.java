@@ -107,6 +107,7 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
         LongCacheState<V> backupState = this.backupState.get();
         
         final V result = backupState == null ? loader.load(key) : loadFromBackup(backupState, key);
+        assert result != null;
         
         do
         {
