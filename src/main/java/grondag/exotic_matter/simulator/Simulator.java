@@ -310,7 +310,6 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     @Override
     public void deserializeNBT(@Nullable NBTTagCompound nbt)
     {
-        ExoticMatter.INSTANCE.info("Simulator read from NBT");
         this.assignedNumbersAuthority.deserializeNBT(nbt);
         this.lastSimTick = nbt.getInteger(NBT_TAG_LAST_TICK);
         this.worldTickOffset = nbt.getLong(NBT_TAG_WORLD_TICK_OFFSET);
@@ -319,7 +318,6 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
     @Override
     public void serializeNBT(NBTTagCompound nbt)
     {
-        ExoticMatter.INSTANCE.info("saving simulation state");
         this.assignedNumbersAuthority.serializeNBT(nbt);
         nbt.setInteger(NBT_TAG_LAST_TICK, lastSimTick);
         nbt.setLong(NBT_TAG_WORLD_TICK_OFFSET, worldTickOffset);
