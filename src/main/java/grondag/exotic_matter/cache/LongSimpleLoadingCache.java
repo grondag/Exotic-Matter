@@ -52,6 +52,7 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
             if(value == null)
             {
                 value = loader.load(0);
+                assert value != null;
                 if(localState.zeroValue.compareAndSet(null, value))
                 {
                     return value;

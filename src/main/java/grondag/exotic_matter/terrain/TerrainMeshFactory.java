@@ -224,9 +224,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // that case but can produce incorrect normals in rare cases that will cause
         // shading on top face to be visibly mismatched to neighbors.
 //            cacheAttempts.incrementAndGet();
-        final Collection<IPolygon> polys = this.modelCache.get(key);
-        assert polys != null : "Got null terrain mesh - not expected.";
-        polys.forEach(wrapped);
+        this.modelCache.get(key).forEach(wrapped);
     }
     
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
@@ -323,10 +321,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // order here is important
         // terrain has to come first in order to preserve normals when 
         // top terrain face quads are co-planar with cube quads
-       return CSGMesh.intersect(
+        final Collection<IPolygon> result = CSGMesh.intersect(
                 terrainNode,
                 cubeNode
                 );
+        
+        assert result != null : "Got null terrain mesh - not expected.";
+        
+        return result;
     }
 
 //    private static LongOpenHashSet hitMap = new LongOpenHashSet();
