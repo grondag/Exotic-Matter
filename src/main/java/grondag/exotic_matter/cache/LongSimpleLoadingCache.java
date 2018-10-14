@@ -70,9 +70,14 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
         
         do
         {
-            if(localState.keys[position] == key) return localState.values[position];
+            if(localState.keys[position] == key) 
+            {
+                assert localState.values[position] != null;
+                return localState.values[position];
+            }
             
-            if(localState.keys[position] == 0) return load(localState, key, position);
+            if(localState.keys[position] == 0)
+                return load(localState, key, position);
             
             position = (position + 1) & positionMask;
             
@@ -126,7 +131,11 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
             }
             
             // small chance another thread added our value before we got our lock
-            if(currentKey == key) return localState.values[position];
+            if(currentKey == key) 
+            {
+                assert localState.values[position] != null;
+                return localState.values[position];
+            }
             
             position = (position + 1) & positionMask;
             
@@ -141,7 +150,7 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
             this.activeState = newState;
             this.backupMissCount.set(0);
         }
-        
+        assert result != null;
         return result;
     }
     
