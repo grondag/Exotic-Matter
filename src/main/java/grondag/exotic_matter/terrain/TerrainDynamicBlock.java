@@ -259,11 +259,4 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock, 
             }
         }
     }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean isTranslucent(IBlockState state)
-    {
-        return super.isTranslucent(state);
-    }
 }

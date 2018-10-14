@@ -5,8 +5,6 @@ import grondag.exotic_matter.model.varia.WorldLightOpacity;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * For worldgen blocks and other blocks that cannot be configured by user.
@@ -61,12 +59,5 @@ public class SuperSimpleBlock extends SuperBlock implements ISuperBlock
     protected WorldLightOpacity worldLightOpacity(IBlockState state)
     {
         return this.worldLightOpacity;
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean isTranslucent(IBlockState state)
-    {
-        return super.isTranslucent(state);
     }
 }
