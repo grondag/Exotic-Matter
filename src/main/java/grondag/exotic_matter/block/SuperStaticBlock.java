@@ -6,7 +6,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
-public class SuperStaticBlock extends SuperBlockPlus implements ISuperBlock
+public class SuperStaticBlock extends SuperBlockPlus
 {
     private final BlockSubstance substance;
     private final boolean isGeometryFullCube;

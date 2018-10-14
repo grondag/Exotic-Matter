@@ -30,8 +30,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.event.RegistryEvent.Register;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * User-configurable HardScience building blocks.<br><br>
@@ -48,7 +46,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * 
  *
  */
-public class SuperModelBlock extends SuperBlockPlus implements ISuperBlock
+public class SuperModelBlock extends SuperBlockPlus  
 {
     private static final ModelState DEFAULT_MODEL_STATE;
     
@@ -300,13 +298,6 @@ public class SuperModelBlock extends SuperBlockPlus implements ISuperBlock
     protected WorldLightOpacity worldLightOpacity(IBlockState state)
     {
         return this.worldLightOpacity;
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean isTranslucent(IBlockState state)
-    {
-        return super.isTranslucent(state);
     }
 }
 
