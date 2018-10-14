@@ -27,7 +27,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
+public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock, ISuperBlock
 {
     private final boolean isFiller;
     
@@ -195,5 +195,12 @@ public class TerrainStaticBlock extends SuperStaticBlock implements IHotBlock
         // FIXME: is this right?  Retest after vertex normals are fixed
         // prevent filler blocks from blocking light to height block below
         return this.isFiller ? 0 : super.getLightOpacity(state, world, pos);
+    }
+    
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean isTranslucent(IBlockState state)
+    {
+        return super.isTranslucent(state);
     }
 }

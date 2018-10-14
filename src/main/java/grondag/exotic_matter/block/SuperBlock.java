@@ -1141,7 +1141,6 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     {
         return this.worldLightOpacity(state) != WorldLightOpacity.SOLID;
     }
-
     
     @Override
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn)

@@ -20,7 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.property.IExtendedBlockState;
 
 /** base class for tile entity blocks */
-public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityProvider
+public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityProvider, ISuperBlock
 {
     /**
      * Prevent concurrency weirdness in {@link #getTileEntityReliably(World, BlockPos)}

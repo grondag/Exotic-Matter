@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.BlockSubstance;
+import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.SuperSimpleBlock;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import net.minecraft.block.Block;
@@ -15,8 +16,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TerrainCubicBlock extends SuperSimpleBlock implements IHotBlock
+public class TerrainCubicBlock extends SuperSimpleBlock implements IHotBlock, ISuperBlock
 {
 
     public TerrainCubicBlock(String blockName, BlockSubstance substance, ISuperModelState defaultModelState)
@@ -95,4 +98,10 @@ public class TerrainCubicBlock extends SuperSimpleBlock implements IHotBlock
         return false;
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean isTranslucent(IBlockState state)
+    {
+        return super.isTranslucent(state);
+    }
 }

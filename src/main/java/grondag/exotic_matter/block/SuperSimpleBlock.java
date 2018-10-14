@@ -11,7 +11,7 @@ import net.minecraft.world.IBlockAccess;
  * @author grondag
  *
  */
-public class SuperSimpleBlock extends SuperBlock
+public class SuperSimpleBlock extends SuperBlock implements ISuperBlock
 {
     protected final BlockSubstance substance;
     private final boolean isGeometryFullCube;
