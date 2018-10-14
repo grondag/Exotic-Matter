@@ -563,9 +563,10 @@ public interface IPlacementItem
             ISuperModelState modelState = SuperBlockStackHelper.getStackModelState(stack);
             if(modelState == null) return null;
 
-            ISuperBlock targetBlock = ((ISuperBlock)((ItemBlock)stack.getItem()).getBlock());
+            Block targetBlock = ((ItemBlock)stack.getItem()).getBlock();
+            final ISuperBlock sBlock = (ISuperBlock)targetBlock;
             
-            if(!targetBlock.isVirtual() && targetBlock instanceof SuperModelBlock)
+            if(!sBlock.isVirtual() && targetBlock instanceof SuperModelBlock)
             {
                 BlockSubstance substance = SuperBlockStackHelper.getStackSubstance(stack);
                 if(substance == null) return null;
@@ -574,7 +575,7 @@ public interface IPlacementItem
             
             int meta = modelState.metaUsage() == MetaUsage.NONE 
                     ? 0 
-                    : Math.min(targetBlock.getMetaCount() - 1, stack.getMetadata());
+                    : Math.min(sBlock.getMetaCount() - 1, stack.getMetadata());
             
             return targetBlock.getStateFromMeta(meta);
         }

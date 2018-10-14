@@ -3,10 +3,10 @@ package grondag.exotic_matter.model.varia;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.particle.ParticleDigging;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -31,7 +31,7 @@ public class ParticleDiggingSuperBlock extends ParticleDigging
         this.particleGreen = ((color >> 8) & 0xFF) / 255f;
         this.particleBlue = (color & 0xFF) / 255f;
         
-        ISuperBlock block = (ISuperBlock)state.getBlock();
+        Block block = state.getBlock();
         this.particleAlpha = block.isTranslucent(state) ? ((color >> 24) & 0xFF) / 255f : 1f;
         ITexturePalette tex = modelState.getTexture(PaintLayer.BASE);
         this.particleTexture = tex.getSampleSprite();

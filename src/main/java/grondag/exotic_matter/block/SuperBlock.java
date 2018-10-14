@@ -175,7 +175,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
             if(blockState.getBlock() instanceof SuperBlock)
             {
                 // if the block at given position is somehow also a SuperBlock, call particle handler for it
-                ((ISuperBlock)(blockState.getBlock())).addDestroyEffects(world, pos, manager);
+                ((blockState.getBlock())).addDestroyEffects(world, pos, manager);
             }
             else
             {
@@ -214,7 +214,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
             if(blockState.getBlock() instanceof SuperBlock)
             {
                 // if the block at given position is somehow also a SuperBlock, call particle handler for it
-                ((ISuperBlock)(blockState.getBlock())).addHitEffects(blockState, world, target, manager);
+                ((blockState.getBlock())).addHitEffects(blockState, world, target, manager);
             }
             else
             {
@@ -604,8 +604,8 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
     {
         return SuperBlockWorldAccess.access(worldIn).computeModelState(this, state, pos, true).getCollisionBoundingBox();
     }
-
-     /** 
+    
+    /** 
      * Returns an instance of the default model state for this block.
      * Because model states are mutable, every call returns a new instance.
      */
