@@ -18,6 +18,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /** base class for tile entity blocks */
 public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityProvider, ISuperBlock
@@ -178,6 +180,13 @@ public abstract class SuperBlockPlus extends SuperBlock implements ITileEntityPr
         {
             ((SuperTileEntity)blockTE).readModNBT(ItemHelper.getOrCreateStackTag(stack));
         }
+    }
+    
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean isTranslucent(IBlockState state)
+    {
+        return super.isTranslucent(state);
     }
     
 }
