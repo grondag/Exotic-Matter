@@ -31,7 +31,6 @@ public class CollisionBoxDispatcher
                 {
                     Thread thread = new Thread(r, "Exotic Matter Collision Box Optimizer - " + count.getAndIncrement());
                     thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
                     return thread;
                 }
             })
