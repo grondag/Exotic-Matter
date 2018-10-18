@@ -40,11 +40,14 @@ public class OptimizingBoxList implements Runnable
         double trueVolume = generator.prepare();
         if(trueVolume == 0)
             assert oldSize == 0 : "Fast collision box non-empty but detailed is empty";
-        else
+        else if(trueVolume != -1)
         {
-            if(oldSize > ConfigXM.BLOCKS.collisionBoxBudget || Math.abs(trueVolume - oldVolume) > 1.0 / OptimalBoxGenerator.VOXEL_VOLUME)
+            if(oldSize > ConfigXM.BLOCKS.collisionBoxBudget || Math.abs(trueVolume - oldVolume) > OptimalBoxGenerator.VOXEL_VOLUME * 2)
                 wrapped = generator.build();
         }
+//        if((CollisionBoxDispatcher.QUEUE.size() & 0xFF) == 0)
+//            System.out.println("Queue depth = " + CollisionBoxDispatcher.QUEUE.size());
+        
         modelState = null;
     }
 }

@@ -236,13 +236,14 @@ public class BoxFinder
     void findDisjointSets()
     {
         disjointSets.clear();
-        visitedSets.clear();
+        
         final int limit = this.volumeCount;
         
         for(int i = 0; i < limit; i++)
         {
-            tryDisjoint2(i, 0L, 0L);
+            tryDisjoint(i, 0L, 0L);
         }
+        visitedSets.clear();
     }
     
     /**
@@ -255,7 +256,7 @@ public class BoxFinder
      * as a disjoint set and returns false.
      * 
      */
-    private boolean tryDisjoint2(int volIndex, long membersIn, long combinedIntersectsIn)
+    private boolean tryDisjoint(int volIndex, long membersIn, long combinedIntersectsIn)
     {
         final long volMask = (1L << volIndex);
         
@@ -281,7 +282,7 @@ public class BoxFinder
                 boolean[] didRecurse = new boolean[1];
                 BitHelper.forEachBit(candidates, i ->  
                 {
-                    if(i != volIndex && tryDisjoint2(i, members, combinedIntersects))
+                    if(i != volIndex && tryDisjoint(i, members, combinedIntersects))
                         didRecurse[0] = true;
                 });
                 if(didRecurse[0])
@@ -370,6 +371,7 @@ public class BoxFinder
         }
         
         populateIntersects();
+        classifyVolumeIntersections();
         findDisjointSets();
         
         final LongIterator it = disjointSets.iterator();
@@ -590,6 +592,7 @@ public class BoxFinder
     }
     
     long noIntersectMask = 0;
+    
     /**
      * Finds volumes that do not intersect with any other volume.
      */

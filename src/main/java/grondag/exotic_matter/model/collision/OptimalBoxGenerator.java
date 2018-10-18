@@ -179,7 +179,9 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
      * Returns voxel volume of loaded mesh after simplification. Simplification level is estimated
      * based on the count of maximal bounding volumes vs the budget per mesh.
      * Call after inputing mesh via {@link #accept(grondag.exotic_matter.model.primitives.IPolygon)}
-     * and before calling {@link #build()}.
+     * and before calling {@link #build()} <p>.
+     * 
+     * Returns -1 if mesh isn't appropriate for optimization.
      */
     public final double prepare()
     {
@@ -195,6 +197,9 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         // prep for next use
         System.arraycopy(ALL_EMPTY, 0, data, 0, 64);
         
+        bf.calcCombined();
+        bf.populateMaximalVolumes();
+        
         // find maximal volumes to enable estimate of simplification level
         int overage = bf.volumeCount - ConfigXM.BLOCKS.collisionBoxBudget;
         
@@ -206,10 +211,15 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
             // which are the other two factors that showed predictive value. It makes some intuitive sense but
             // I don't really know how/why it works and don't care enough to figure it out right now.
             int simplification = (int) Math.round(-0.0108 * overage * overage + 0.7006 * overage + 0.5012);
-            while(simplification-- > 0 && bf.simplify())
-            {
-            }
+            while(simplification-- > 0 && bf.simplify()) {}
+            
+            bf.calcCombined();
+            bf.populateMaximalVolumes();
+            if(bf.volumeCount > 16) 
+                return -1;
         }
+        
+       
         
         bf.saveTo(snapshot);
         int voxelCount = 0;
