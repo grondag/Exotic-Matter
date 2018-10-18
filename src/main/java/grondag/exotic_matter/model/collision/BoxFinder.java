@@ -6,6 +6,7 @@ import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
+import grondag.exotic_matter.varia.BitHelper;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -25,10 +26,19 @@ public class BoxFinder
     final int[] maximalVolumes = new int[64];
     
     int volumeCount = 0;
+    /**
+     * Bitmask for the number of volumes we have.  Set when volumeCount is set.
+     */
+    long volumeMask = 0;
     
     final long[] intersects = new long[64];
     
     final LongOpenHashSet disjointSets = new LongOpenHashSet();
+    
+    /**
+     * Tuples that have already been recursed and therefore don't need to be checked again
+     */
+    final LongOpenHashSet visitedSets = new LongOpenHashSet();
     
     final int[] volumeScores = new int[64];
     
@@ -193,29 +203,29 @@ public class BoxFinder
     public void outputBoxes(ICollisionBoxListBuilder builder)
     {
         while(outputBest(builder)) {};
-        outputRemainers(builder);
+        outputRemainders(builder);
     }
     
-    void outputRemainers(ICollisionBoxListBuilder builder)
+    void outputRemainders(ICollisionBoxListBuilder builder)
     {
-        outputRemainerInner(0, builder);
-        outputRemainerInner(1, builder);
-        outputRemainerInner(2, builder);
-        outputRemainerInner(3, builder);
-        outputRemainerInner(4, builder);
-        outputRemainerInner(5, builder);
-        outputRemainerInner(6, builder);
-        outputRemainerInner(7, builder);
+        outputRemaindersInner(0, builder);
+        outputRemaindersInner(1, builder);
+        outputRemaindersInner(2, builder);
+        outputRemaindersInner(3, builder);
+        outputRemaindersInner(4, builder);
+        outputRemaindersInner(5, builder);
+        outputRemaindersInner(6, builder);
+        outputRemaindersInner(7, builder);
     }
     
-    void outputRemainerInner(int z, ICollisionBoxListBuilder builder)
+    void outputRemaindersInner(int z, ICollisionBoxListBuilder builder)
     {
         final long bits = voxels[z];
         
         if(bits == 0L)
             return;
         
-        BoxFinderUtils.forEachBit(bits, i -> 
+        BitHelper.forEachBit(bits, i -> 
         {
             final int x = BoxFinderUtils.xFromAreaBitIndex(i);
             final int y = BoxFinderUtils.yFromAreaBitIndex(i);
@@ -226,12 +236,12 @@ public class BoxFinder
     void findDisjointSets()
     {
         disjointSets.clear();
-        
+        visitedSets.clear();
         final int limit = this.volumeCount;
         
         for(int i = 0; i < limit; i++)
         {
-            tryDisjoint(i, 0L, 0L);
+            tryDisjoint2(i, 0L, 0L);
         }
     }
     
@@ -245,32 +255,51 @@ public class BoxFinder
      * as a disjoint set and returns false.
      * 
      */
-    private boolean tryDisjoint(int index, long members, long combinedIntersects)
+    private boolean tryDisjoint2(int volIndex, long membersIn, long combinedIntersectsIn)
     {
-        final long joins = intersects[index];
-        final long mId = (1L << index);
-        if((mId & (combinedIntersects | members)) == 0)
+        final long volMask = (1L << volIndex);
+        
+        // no need to check volumes that don't intersect
+        if((volMask & noIntersectMask) != 0) 
+            return false;
+        
+        if((volMask & (combinedIntersectsIn | membersIn)) == 0)
         {
-            combinedIntersects |= joins;
-            members |= mId;
-            final int limit = this.volumeCount;
+            final long members = membersIn | volMask;
+            
+            // don't explore if been here already
+            // returning true here lets caller know this isn't a leaf
+            if(!visitedSets.add(members))
+                return true;
+            
+            final long combinedIntersects = combinedIntersectsIn | intersects[volIndex] | volMask;
+            final long candidates = (~combinedIntersects) & this.volumeMask & (~noIntersectMask); 
             boolean isLeaf = true;
-            for(int i = 0; i  < limit; i++)
+            if(candidates != 0)
             {
-                if(i != index && tryDisjoint(i, members, combinedIntersects))
+                // array to allow update in lambda
+                boolean[] didRecurse = new boolean[1];
+                BitHelper.forEachBit(candidates, i ->  
+                {
+                    if(i != volIndex && tryDisjoint2(i, members, combinedIntersects))
+                        didRecurse[0] = true;
+                });
+                if(didRecurse[0])
                     isLeaf = false;
             }
             if(isLeaf)
-                disjointSets.add(members);
+            {
+                // add non-intersecting volumes to every disjoint set
+                disjointSets.add(members | noIntersectMask);
+            }
             return true;
         }
         else return false;
     }
     
-    
     private void outputDisjointSet(long disjointSet, ICollisionBoxListBuilder builder)
     {
-        BoxFinderUtils.forEachBit(disjointSet, i -> 
+        BitHelper.forEachBit(disjointSet, i -> 
         {
             int k = maximalVolumes[i];
             addBox(k, builder);
@@ -288,7 +317,7 @@ public class BoxFinder
     void explainDisjointSet(long disjointSet)
     {
         ExoticMatter.INSTANCE.info("Disjoint Set Info: Box Count = %d, Score = %d", Long.bitCount(disjointSet), scoreOfDisjointSet(disjointSet));
-        BoxFinderUtils.forEachBit(disjointSet, i -> 
+        BitHelper.forEachBit(disjointSet, i -> 
         {
             explainVolume(i);
         });
@@ -309,14 +338,14 @@ public class BoxFinder
     {
         final int volKey = maximalVolumes[volIndex];
         StringBuilder b = new StringBuilder();
-        BoxFinderUtils.forEachBit(intersects[volIndex], i ->
+        BitHelper.forEachBit(intersects[volIndex], i ->
         {
             if(b.length() != 0)
                 b.append(", ");
             b.append(i);
         });
         final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
-        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternFromKey(volKey), (minX, minY, maxX, maxY) ->
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volKey), (minX, minY, maxX, maxY) ->
         {
             ExoticMatter.INSTANCE.info("Box w/ %d volume @ %d, %d,%d to %d, %d, %d  score = %d  intersects = %s  volKey = %d", BoxFinderUtils.volumeFromKey(volKey), 
                     minX, minY, slice.min, maxX, maxY, slice.max, volumeScores[volIndex], b.toString(), volKey);
@@ -341,10 +370,7 @@ public class BoxFinder
         }
         
         populateIntersects();
-        
         findDisjointSets();
-        
-       
         
         final LongIterator it = disjointSets.iterator();
         long bestSet = it.nextLong();
@@ -398,14 +424,14 @@ public class BoxFinder
     {
         final SetScoreAccumulator counter = this.setScoreCounter;
         counter.prepare();
-        BoxFinderUtils.forEachBit(set, setScoreCounter);
+        BitHelper.forEachBit(set, setScoreCounter);
         return counter.total;
     }
 
     void addBox(int volumeKey, ICollisionBoxListBuilder builder)
     {
         Slice slice = BoxFinderUtils.sliceFromKey(volumeKey);
-        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternFromKey(volumeKey), (minX, minY, maxX, maxY) ->
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volumeKey), (minX, minY, maxX, maxY) ->
         {
             setEmpty(minX, minY, slice.min, maxX, maxY, slice.max);
             builder.add(minX, minY, slice.min, maxX + 1, maxY + 1, slice.max + 1);
@@ -468,7 +494,7 @@ public class BoxFinder
         final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
         final long pattern = BoxFinderUtils.patternFromKey(volKey);
         
-        return BoxFinderUtils.testAreaBounds(pattern, (minX, minY, maxX, maxY) ->
+        return BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volKey), (minX, minY, maxX, maxY) ->
         {
             if(slice.min > 0 && isVolumePresent(pattern, BoxFinderUtils.sliceByMinMax(slice.min - 1, slice.max)))
                 return 1;
@@ -517,7 +543,7 @@ public class BoxFinder
                     break;
             }
         }
-        
+        this.volumeMask = (1L << this.volumeCount) - 1;
 //        for(int i = 0; i < volumeCount; i++)
 //        {
 //            for(int j = 0; j < volumeCount; j++)
@@ -557,10 +583,27 @@ public class BoxFinder
                     // to simply update both halves while we're here.
                     intersects[i] |= (1L << j);
                     intersects[j] |= (1L << i);
-                    
+//                    intersectCount++;
                 }
             }
         }
+    }
+    
+    long noIntersectMask = 0;
+    /**
+     * Finds volumes that do not intersect with any other volume.
+     */
+    void classifyVolumeIntersections()
+    {
+        final long[] intersects = this.intersects;
+        final int limit = this.volumeCount;
+        noIntersectMask = 0;
+        for(int i = 1; i < limit; i++)
+        {
+            if(intersects[i] == 0)
+                noIntersectMask |= (1L << i);
+        }
+//        ExoticMatter.INSTANCE.info("noIntersectCount = %d", Long.bitCount(noIntersectMask));
     }
     
     boolean isVolumePresent(int volKey)
@@ -629,7 +672,7 @@ public class BoxFinder
         for(int i = 0; i < limit; i++)
         {
             counter.prepare(maximalVolumes[i]);
-            BoxFinderUtils.forEachBit(intersects[i], counter);
+            BitHelper.forEachBit(intersects[i], counter);
             scores[i] = counter.total;
         }
         

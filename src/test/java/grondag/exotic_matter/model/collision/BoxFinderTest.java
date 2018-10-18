@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.collision;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
+import grondag.exotic_matter.varia.BitHelper;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 class BoxFinderTest
@@ -10,9 +11,28 @@ class BoxFinderTest
     @Test
     void test()
     {
-        forEachBitTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
+//        perfTest();
         
-//        BoxFinderUtils.findBestExclusionBits();
+        logicTest();
+     
+    }
+    
+    private void logicTest()
+    {
+   forEachBitTest();
         
         assert Slice.D1_0.layerBits == 1;
         assert Slice.D1_7.layerBits == 128;
@@ -32,25 +52,6 @@ class BoxFinderTest
             }
         }
         
-//        for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)
-//        {
-//            long pattern =  BoxFinderUtils.AREAS[i];
-//            final int iFinal = i;
-//            BoxFinderUtils.findAreaBounds(pattern, (minX, minY, maxX, maxY) ->
-//            {
-//                int oldMinX = BoxFinderUtils.MIN_X[iFinal];
-//                int oldMaxX = BoxFinderUtils.MAX_X[iFinal];
-//                int oldMinY = BoxFinderUtils.MIN_Y[iFinal];
-//                int oldMaxY = BoxFinderUtils.MAX_Y[iFinal];
-//                assert minX == oldMinX;
-//                assert maxX == oldMaxX;
-//                assert minY == oldMinY;
-//                assert maxY == oldMaxY;
-//            });
-//        }
-//        
-//        boundPerfTest();
-        
         long[] snapshot = new long[8];
         
         BoxFinder bf = new BoxFinder();
@@ -67,9 +68,8 @@ class BoxFinderTest
         {
             for(int i = 0; i < BoxFinderUtils.AREAS.length; i++)
             {
-                final long pattern = BoxFinderUtils.AREAS[i];
                 final int p = i;
-                BoxFinderUtils.testAreaBounds(pattern, (minX, minY, maxX, maxY) -> 
+                BoxFinderUtils.testAreaBounds(p, (minX, minY, maxX, maxY) -> 
                 {
                     bf.clear();
                     bf.setFilled(minX, minY, slice.min, maxX, maxY, slice.max);
@@ -223,17 +223,31 @@ class BoxFinderTest
         bf.findDisjointSets();
         assert bf.disjointSets.size() == 6;
         bf.explainDisjointSets();
-        
-        
     }
     
-    
-    
+//    private void perfTest()
+//    {
+//        final ModelState workingModel = new ModelState();
+//        workingModel.setShape(ModShapes.TERRAIN_HEIGHT);
+//        workingModel.setTexture(PaintLayer.BASE, ModTextures.BIGTEX_TEST_SINGLE);
+//        workingModel.setColorRGB(PaintLayer.BASE, BlockColorMapProvider.COLOR_BASALT);
+//        workingModel.setTexture(PaintLayer.CUT, ModTextures.BIGTEX_TEST_SINGLE);
+//        workingModel.setColorRGB(PaintLayer.CUT, BlockColorMapProvider.COLOR_BASALT);
+//        workingModel.setTerrainStateKey(8522383571036711L);
+//        
+//        final OptimalBoxGenerator boxGen = new OptimalBoxGenerator();
+//        
+//        workingModel.getShape().meshFactory().produceShapeQuads(workingModel, boxGen);
+//        long start = System.nanoTime();
+//        boxGen.build();
+//        System.out.println("Boxgen duration (ms) = " + ((System.nanoTime() - start) / 1000000f)); 
+//    }
+
     void forEachBitTest()
     {
         IntArrayList results = new IntArrayList();
         
-        BoxFinderUtils.forEachBit(0xFFFFFFFFFFFFFFFFL, i -> results.add(i));
+        BitHelper.forEachBit(0xFFFFFFFFFFFFFFFFL, i -> results.add(i));
         
         assert results.size() == 64;
         

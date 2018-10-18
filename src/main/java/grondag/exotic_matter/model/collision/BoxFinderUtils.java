@@ -1,7 +1,6 @@
 package grondag.exotic_matter.model.collision;
 
-import java.util.function.IntConsumer;
-
+import grondag.exotic_matter.varia.BitHelper;
 import grondag.exotic_matter.varia.functions.IAreaBoundsIntFunction;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
@@ -17,13 +16,12 @@ public class BoxFinderUtils
 {
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
-
+    static final short[] BOUNDS;
+    
     static final long[] EMPTY = new long[64];
     
     static final Slice[][] lookupMinMax = new Slice[8][8];
     
-    //TODO: remove
-//    static final ArrayList<VolumeFilter> VOLUME_FILTERS;
     
     /**
      * Max is inclusive and equal to max attribute of slice.
@@ -139,6 +137,17 @@ public class BoxFinderUtils
             }
         });
         
+        BOUNDS = new short[AREAS.length];
+        for(int i = 0; i < AREAS.length; i++)
+        {
+            long pattern = AREAS[i];
+            long xBits = pattern | (pattern >>> 32);
+            xBits |= xBits >>> 16;
+            xBits |= xBits >>> 8;
+            xBits &= 0xFFL;
+            BOUNDS[i] = (short)(minX(xBits) | (maxX(xBits) << 3) | (minY(pattern) << 6) | (maxY(pattern) << 9));
+        }
+        
         IntArrayList volumes = new IntArrayList();
         for(Slice slice : Slice.values())
         {
@@ -188,7 +197,7 @@ public class BoxFinderUtils
             final long pattern = patternFromKey(k);
             final int vFinal = v;
             
-            forEachBit(pattern, i ->  
+            BitHelper.forEachBit(pattern, i ->  
             {
                 final int x = xFromAreaBitIndex(i);
                 final int y = yFromAreaBitIndex(i);
@@ -341,9 +350,9 @@ public class BoxFinderUtils
         if(actorSlice.max >= targetSlice.min && actorSlice.max < targetSlice.max)
             result++;
 
-        result += testAreaBounds(patternFromKey(targetVolIndex), (targetMinX, targetMinY, targetMaxX, targetMaxY) ->
+        result += testAreaBounds(patternIndexFromKey(targetVolIndex), (targetMinX, targetMinY, targetMaxX, targetMaxY) ->
         {
-            return testAreaBounds(patternFromKey(actorVolIndex), (actorMinX, actorMinY, actorMaxX, actorMaxY) ->
+            return testAreaBounds(patternIndexFromKey(actorVolIndex), (actorMinX, actorMinY, actorMaxX, actorMaxY) ->
             {
                 int n = 0;
                 if(actorMinX > targetMinX && actorMinX <= targetMaxX)
@@ -434,34 +443,23 @@ public class BoxFinderUtils
         return (bitIndex >>> 3) & 7;
     }
     
+    
     /**
-     * Single-pass, bitwise derivation of x, y bounds for given area pattern. 
-     * Area does not have to be fully populated to work.
+     * Single-pass lookup of x, y bounds for given area index. 
      */
-    static int testAreaBounds(long areaPattern, IAreaBoundsIntFunction test)
+    static int testAreaBounds(int areaIndex, IAreaBoundsIntFunction test)
     {
-        if(areaPattern == 0L)
-        {
-            assert false : "Bad (zero) argument to findAreaBounds";
-            return 0;
-        }
+        final int bounds = BOUNDS[areaIndex];
         
-        long xBits = 0;
-        
-        xBits = areaPattern | (areaPattern >>> 32);
-        xBits |= xBits >>> 16;
-        xBits |= xBits >>> 8;
-        xBits &= 0xFFL;
-        
-        return test.apply(minX(xBits), minY(areaPattern), maxX(xBits), maxY(areaPattern));
+        return test.apply(bounds & 7, (bounds >> 6) & 7, (bounds >> 3) & 7, (bounds >> 9) & 7);
     }
     
     /**
      * For testing. 
      */
-    static boolean doAreaBoundsMatch(long areaPattern, int minX, int minY, int maxX, int maxY)
+    static boolean doAreaBoundsMatch(int areaIndex, int minX, int minY, int maxX, int maxY)
     {
-        return testAreaBounds(areaPattern, (x0, y0, x1, y1) ->
+        return testAreaBounds(areaIndex, (x0, y0, x1, y1) ->
         {
             return (x0 == minX && y0 == minY && x1 == maxX && y1 == maxY) ? 1 : 0;
         }) == 1;
@@ -597,7 +595,7 @@ public class BoxFinderUtils
     static boolean areVolumesSame(int volumeKey, int x0, int y0, int z0, int x1, int y1, int z1)
     {
         return sliceFromKey(volumeKey).min == z0 & sliceFromKey(volumeKey).max == z1
-                &&  doAreaBoundsMatch(patternFromKey(volumeKey), x0, y0, x1, y1);
+                &&  doAreaBoundsMatch(patternIndexFromKey(volumeKey), x0, y0, x1, y1);
     }
 
     /**
@@ -627,166 +625,5 @@ public class BoxFinderUtils
     
         final long smallPattern =  patternFromKey(smallKey);
         return ((patternFromKey(bigKey) & smallPattern) == smallPattern);
-    }
-    
-    static void forEachBit(long bits, IntConsumer consumer)
-    {
-        if(bits != 0)
-        {
-            forEachBit32((int)(bits & 0xFFFFFFFFL), 0, consumer);
-            forEachBit32((int)((bits >>> 32) & 0xFFFFFFFFL), 32, consumer);
-        }
-    }
-    
-    private static void forEachBit32(int bits, int baseIndex, IntConsumer consumer)
-    {
-        if(bits != 0)
-        {
-            forEachBit16((bits & 0xFFFF), baseIndex, consumer);
-            forEachBit16(((bits >>> 16) & 0xFFFF), baseIndex + 16, consumer);
-        }
-    }
-    
-    private static void forEachBit16(int bits, int baseIndex, IntConsumer consumer)
-    {
-        if(bits != 0)
-        {
-            forEachBit8((bits & 0xFF), baseIndex, consumer);
-            forEachBit8(((bits >>> 8) & 0xFF), baseIndex + 8, consumer);
-        }
-    }
-    
-    private static void forEachBit8(int bits, int baseIndex, IntConsumer consumer)
-    {
-        if(bits != 0)
-        {
-            forEachBit4((bits & 0xF), baseIndex, consumer);
-            forEachBit4(((bits >>> 4) & 0xF), baseIndex + 4, consumer);
-        }
-    }
-    
-    private static void forEachBit4(int bits, int baseIndex, IntConsumer consumer)
-    {
-        switch(bits)
-        {
-        case 0:
-            break;
-            
-        case 1:
-            consumer.accept(baseIndex);
-            break;
-            
-        case 2:
-            consumer.accept(baseIndex + 1);
-            break;
-            
-        case 3:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 1);
-            break;
-            
-        case 4:
-            consumer.accept(baseIndex + 2);
-            break;
-            
-        case 5:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 2);
-            break;
-
-        case 6:
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 2);
-            break;
-        
-        case 7:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 2);
-            break;
-
-        case 8:
-            consumer.accept(baseIndex + 3);
-            break;
-
-        case 9:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 3);
-            break;
-            
-        case 10:
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 3);
-            break;
-
-        case 11:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 3);        
-            break;
-
-        case 12:
-            consumer.accept(baseIndex + 2);
-            consumer.accept(baseIndex + 3);
-            break;
-
-        case 13:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 2);
-            consumer.accept(baseIndex + 3);
-            break;
-
-        case 14:
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 2);
-            consumer.accept(baseIndex + 3);
-            break;
-        
-        case 15:
-            consumer.accept(baseIndex);
-            consumer.accept(baseIndex + 1);
-            consumer.accept(baseIndex + 2);
-            consumer.accept(baseIndex + 3);
-            break;
-        }
-    }
-    
-    public static int bitCount8(int byteValue)
-    {
-        return bitCount4(byteValue & 0xF) + bitCount4((byteValue >>> 4) & 0xF);
-    }
-    
-    public static int bitCount4(int halfByteValue)
-    {
-        switch(halfByteValue)
-        {
-        case 0:
-            return 0;
-            
-        case 1:
-        case 2:
-        case 4:
-        case 8:
-            return 1;
-            
-        case 3:
-        case 5:
-        case 6:
-        case 9:
-        case 10:
-        case 12:
-            return 2;
-            
-        case 7:
-        case 11:
-        case 13:
-        case 14:
-            return 3;
-
-        case 15:
-            return 4;
-        }
-        assert false : "bad bitcount4 value";
-        return 0;
     }
 }

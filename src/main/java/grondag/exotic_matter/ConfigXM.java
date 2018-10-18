@@ -75,13 +75,16 @@ public class ConfigXM
             " Reduces memory consumption and may improve render performance but may also result in minor visual defects."})
         public boolean simplifyTerrainBlockGeometry = true;
         
-        @Comment({"Maximum number of procedurally generated collision boxes for blocks that use then.",
+        @Comment({"Approximate maximum number of procedurally generated collision boxes for blocks that use then.",
             " This is the budget for *optimal* boxes, which are generated in a separate-low priority thread.",
             " This means there isn't much penalty for using more detailed collision boxes and allowing more ",
             " detailed boxes can result in more accurate view tracing and projectile/entity collisions.",
             " It is made configurable in case some future physics mod does collision processing and has ",
             " performance issues with the larger numbers.  Smaller number are still pretty good. The generator",
-            " logic finds the best possible set of collision boxes (with 1/8 resolution) with the given budget."})
+            " logic finds the best possible set of collision boxes (with 1/8 resolution) with the given budget.",
+            "",
+            "Very little (no) testing has been done with non-default values.  It is therefore STRONGLY recommended",
+            "to leave this value as-is unless you have a specific and worthwhile reason to change it."})
         @RangeInt(min = 4, max = 64)
         public int collisionBoxBudget = 8;
 

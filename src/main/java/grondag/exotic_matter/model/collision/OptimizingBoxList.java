@@ -4,7 +4,9 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public class OptimizingBoxList implements Runnable
@@ -32,8 +34,17 @@ public class OptimizingBoxList implements Runnable
     {
         final OptimalBoxGenerator generator = boxGen;
         modelState.getShape().meshFactory().produceShapeQuads(modelState, generator);
-        wrapped = generator.build();
-//        ExoticMatter.INSTANCE.info("Optimization completed, queue depth = %d", CollisionBoxDispatcher.QUEUE.size());
+
+        final int oldSize = wrapped.size();
+        double oldVolume = Useful.volumeAABB(wrapped);
+        double trueVolume = generator.prepare();
+        if(trueVolume == 0)
+            assert oldSize == 0 : "Fast collision box non-empty but detailed is empty";
+        else
+        {
+            if(oldSize > ConfigXM.BLOCKS.collisionBoxBudget || Math.abs(trueVolume - oldVolume) > 1.0 / OptimalBoxGenerator.VOXEL_VOLUME)
+                wrapped = generator.build();
+        }
         modelState = null;
     }
 }

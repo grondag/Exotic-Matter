@@ -61,5 +61,19 @@ public interface ICollisionBoxListBuilder
     }
     
     void add(int boxKey);
-
+    
+    default long checkSum()
+    {
+        IntCollection boxes = boxes();
+        if(boxes.isEmpty())
+            return 0;
+        else
+        {
+            long result = 0;
+            IntIterator it = boxes.iterator();
+            while(it.hasNext())
+                result += it.nextInt();
+            return result;
+        }
+    }
 }

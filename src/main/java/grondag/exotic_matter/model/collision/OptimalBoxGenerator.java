@@ -156,13 +156,14 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         final int xyz = OctreeCoordinates.indexToXYZ4(voxelIndex4);
         voxelBits[xyz >> 6] |= (1L << (xyz & 63));
     }
+
+    public static final double VOXEL_VOLUME = 1.0 / 8 / 8 / 8;
     
     private final long[] voxelBits = new long[128];
     private final float[] polyData = new float[36];
     private final SimpleBoxListBuilder builder = new SimpleBoxListBuilder();
     final long[] snapshot = new long[8];
     final BoxFinder bf = new BoxFinder();
-    
     
     @Override
     protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
@@ -172,9 +173,16 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         div1(polyData, voxelBits);        
     }
 
-    public final ImmutableList<AxisAlignedBB> build()
+    
+    
+    /**
+     * Returns voxel volume of loaded mesh after simplification. Simplification level is estimated
+     * based on the count of maximal bounding volumes vs the budget per mesh.
+     * Call after inputing mesh via {@link #accept(grondag.exotic_matter.model.primitives.IPolygon)}
+     * and before calling {@link #build()}.
+     */
+    public final double prepare()
     {
-        builder.clear();
         final long[] data = this.voxelBits;
         VoxelVolume16.fillVolume(data);
         bf.clear();
@@ -187,47 +195,34 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         // prep for next use
         System.arraycopy(ALL_EMPTY, 0, data, 0, 64);
         
-        bf.saveTo(snapshot);
-        bf.outputBoxes(builder);
-
-        while(builder.size() > ConfigXM.BLOCKS.collisionBoxBudget)
-        {
-            bf.restoreFrom(snapshot);
-            
-            if(!bf.simplify())
-                break;
-            
-            bf.saveTo(snapshot);
-            builder.clear();
-            bf.outputBoxes(builder);
-            
-            // debug code to view/trace initial disjoint set selection in optimal simplification
-//            if(builder.size() <= ConfigXM.BLOCKS.collisionBoxBudget)
-//            {
-//                ExoticMatter.INSTANCE.info("FINAL BOX STRUCTURE REPORT");
-//                ExoticMatter.INSTANCE.info("=============================================");
-//                bf.restoreFrom(snapshot);
-//                bf.calcCombined();
-//                bf.populateMaximalVolumes();
-//                bf.populateIntersects();
-//                bf.scoreMaximalVolumes();
-//                bf.explainMaximalVolumes();
-//                bf.findDisjointSets();
-//                bf.explainDisjointSets();
-//            }
-        }
-
-        // debug code to view/trace maximal volumes
-//        bf.restoreFrom(snapshot);
-//        bf.calcCombined();
-//        bf.populateMaximalVolumes();
-//        builder.clear();
-//        int limit  = bf.volumeCount;
-//        for(int i = 0; i < limit; i++)
-//        {
-//            bf.addBox(bf.maximalVolumes[i], builder);
-//        }
+        // find maximal volumes to enable estimate of simplification level
+        int overage = bf.volumeCount - ConfigXM.BLOCKS.collisionBoxBudget;
         
+        if(overage > 0)
+        {
+            // this estimation is empirically determined by fitting a curve using perfect (brute force incremental)
+            // simplification outcomes and overage counts based on starting volume count when volume budget = 8.
+            // R = 0.895 with this estimator, and it is slightly better than intersection counts and volume scores
+            // which are the other two factors that showed predictive value. It makes some intuitive sense but
+            // I don't really know how/why it works and don't care enough to figure it out right now.
+            int simplification = (int) Math.round(-0.0108 * overage * overage + 0.7006 * overage + 0.5012);
+            while(simplification-- > 0 && bf.simplify())
+            {
+            }
+        }
+        
+        bf.saveTo(snapshot);
+        int voxelCount = 0;
+        for(long bits : snapshot)
+            voxelCount += Long.bitCount(bits);
+        
+        return voxelCount * VOXEL_VOLUME;
+    }
+    
+    public final ImmutableList<AxisAlignedBB> build()
+    {
+        builder.clear();
+        bf.outputBoxes(builder);
         return builder.build();
     }
 }
