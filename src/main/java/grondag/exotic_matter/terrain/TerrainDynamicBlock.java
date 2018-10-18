@@ -86,13 +86,10 @@ public class TerrainDynamicBlock extends SuperSimpleBlock implements IHotBlock
 
         // up face isn't reliably covered due to nature of block topology - one quadrant could be cut off
         // and other could simply be flat due to differences in neighbor height and face simplification
-        if(neighborState.getBlock() instanceof TerrainDynamicBlock)
+        if(side == EnumFacing.UP && neighborState.getBlock() instanceof TerrainDynamicBlock)
         {
             TerrainState tState = SuperBlockWorldAccess.access(blockAccess).terrainState(neighborState, mpos);
-            if(side == EnumFacing.UP)
                 return !tState.isFullCube();
-            else
-                return tState.isEmpty();
         }
         
         if(ConfigXM.RENDER.enableFaceCullingOnFlowBlocks && TerrainBlockHelper.isFlowBlock(neighborState.getBlock()))
