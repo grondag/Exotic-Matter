@@ -7,8 +7,6 @@ import java.util.function.IntConsumer;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
 import grondag.exotic_matter.varia.BitHelper;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -127,83 +125,6 @@ public class BoxFinder
             }            
         }
     }
-    
-    final long [] SIMPLE_SORTER = new long[BoxFinderUtils.VOLUME_COUNT_4_PLUS];
-    final IntOpenHashSet SIMPLIFIED = new IntOpenHashSet();
-    final IntArrayList SIMPLE_LIST = new IntArrayList();
-    
-    static final long MAX_KEY = (long)Integer.MAX_VALUE;
-    
-//    /**
-//     * Finds the maximal volume that encloses the largest number of maximal volumes
-//     * for the smallest number of voxel inaccuracies and then fills that volume.
-//     */
-//    boolean simplify(int iterations)
-//    {
-//        calcCombined();
-//        populateMaximalVolumes();
-//        
-//        int currentVolume = filledVoxelCount();
-//        
-//        final long [] sorter = SIMPLE_SORTER;
-//        final IntOpenHashSet simplified = SIMPLIFIED;
-//        simplified.clear();
-//        
-//        for(int v = 0; v < BoxFinderUtils.VOLUME_COUNT_4_PLUS; v++)
-//        {
-//            int n = simplificationScore(BoxFinderUtils.VOLUME_KEYS[v]);
-//            if(n <= 0)
-//            {
-//                sorter[v] = Long.MAX_VALUE;
-//                continue;
-//            }
-//            
-//            // using inverted simplification score to get natural sort order
-//            long packed = ((MAX_KEY - n) << 32) | v;
-////            assert (int)(packed & 0xFFFFFFL) == v;
-//            sorter[v] = packed;
-//        }
-//        
-//        LongArrays.mergeSort(sorter);
-//        
-//        int i = 0;
-//        outer:
-//        while(iterations > 0 && i < BoxFinderUtils.VOLUME_COUNT_4_PLUS)
-//        {
-//            long packed = sorter[i++];
-//            if(packed == Long.MAX_VALUE)
-//                break;
-//            
-//            int candidateVolume = BoxFinderUtils.VOLUME_KEYS[(int)(packed & 0xFFFFFF)];
-//            
-//            // we don't want to introduce new splits, so only consider volumes
-//            // that fully include previously selected volume, or do not intersect with any.
-//            IntIterator it = simplified.iterator();
-//            while(it.hasNext())
-//            {
-//                int prevVolume = it.nextInt();
-//                if(BoxFinderUtils.doVolumesIntersect(prevVolume, candidateVolume))
-//                {
-//                    if(BoxFinderUtils.isVolumeIncluded(candidateVolume, prevVolume))
-//                        // if new volume fully includes previous, no need to continue tracking previous
-//                        it.remove();
-//                    else
-//                        // intersect but not fully inclduded, implies a split so don't use
-//                        continue outer;
-//                }
-//            }
-//            simplified.add(candidateVolume);
-//            
-//            this.fillVolume(candidateVolume);
-//            int newVolume = filledVoxelCount();
-//            if(newVolume > currentVolume)
-//            {
-//                currentVolume = newVolume;
-//                iterations--;
-//            }
-//        }
-//        return iterations == 0;
-//    }
     
     boolean simplify(int iterations)
     {
