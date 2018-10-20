@@ -192,7 +192,7 @@ class BoxFinderTest
         bf.explainDisjointSets();
         
         bf.restoreFrom(snapshot);
-        assert bf.simplify();
+        assert bf.simplify(1);
         
         bf.calcCombined();
         bf.populateMaximalVolumes();

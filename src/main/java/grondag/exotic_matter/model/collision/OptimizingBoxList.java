@@ -35,6 +35,8 @@ public class OptimizingBoxList implements Runnable
         final OptimalBoxGenerator generator = boxGen;
         modelState.getShape().meshFactory().produceShapeQuads(modelState, generator);
 
+//        generator.generateCalibrationOutput();
+        
         final int oldSize = wrapped.size();
         double oldVolume = Useful.volumeAABB(wrapped);
         double trueVolume = generator.prepare();

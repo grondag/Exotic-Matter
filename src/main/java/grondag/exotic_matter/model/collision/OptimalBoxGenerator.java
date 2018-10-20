@@ -172,8 +172,6 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         TriangleBoxTest.packPolyData(v0, v1, v2, data);
         div1(polyData, voxelBits);        
     }
-
-    
     
     /**
      * Returns voxel volume of loaded mesh after simplification. Simplification level is estimated
@@ -205,21 +203,12 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         
         if(overage > 0)
         {
-            // this estimation is empirically determined by fitting a curve using perfect (brute force incremental)
-            // simplification outcomes and overage counts based on starting volume count when volume budget = 8.
-            // R = 0.895 with this estimator, and it is slightly better than intersection counts and volume scores
-            // which are the other two factors that showed predictive value. It makes some intuitive sense but
-            // I don't really know how/why it works and don't care enough to figure it out right now.
-            int simplification = (int) Math.round(-0.0108 * overage * overage + 0.7006 * overage + 0.5012);
-            while(simplification-- > 0 && bf.simplify()) {}
-            
+            bf.simplify(overage);
             bf.calcCombined();
             bf.populateMaximalVolumes();
             if(bf.volumeCount > 16) 
                 return -1;
         }
-        
-       
         
         bf.saveTo(snapshot);
         int voxelCount = 0;
@@ -228,6 +217,79 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
         
         return voxelCount * VOXEL_VOLUME;
     }
+    
+//    /**
+//     * Call after prepare but before build.
+//     * Only for use in dev environment.
+//     */
+//    public final void generateCalibrationOutput()
+//    {
+//        final long[] data = this.voxelBits;
+//        final long[] savedData = new long[128];
+//        System.arraycopy(data, 0, savedData, 0, 128);
+//        
+//        VoxelVolume16.fillVolume(data);
+//        bf.clear();
+//        VoxelVolume16.forEachSimpleVoxel(data, 4, (x, y, z) -> bf.setFilled(x, y, z));
+//        
+//        // handle very small meshes that don't half-fill any simple voxels; avoid having no collision boxes
+//        if(bf.isEmpty())
+//            VoxelVolume16.forEachSimpleVoxel(data, 1, (x, y, z) -> bf.setFilled(x, y, z));
+//        
+//        bf.saveTo(snapshot);
+//        builder.clear();
+//        
+//        bf.calcCombined();
+//        bf.populateMaximalVolumes();
+//        bf.populateIntersects();
+//        
+//        // find maximal volumes to enable estimate of simplification level
+//        int volCount = bf.volumeCount;
+//        int intersectionCount = 0;
+//        for(long vi : bf.intersects)
+//        {
+//            intersectionCount += Long.bitCount(vi);
+//        }
+//        intersectionCount /= 2;
+//        int startingVoxels = bf.filledVoxelCount();
+//        
+//        bf.outputBoxes(builder);
+//
+//        if(builder.size() > ConfigXM.BLOCKS.collisionBoxBudget)
+//        {
+//            int simplificationLevel = 1;
+//            while(true)
+//            {
+//                bf.restoreFrom(snapshot);
+//                
+//                if(bf.simplify(simplificationLevel))
+//                {
+//                    int voxDiff = bf.filledVoxelCount() - startingVoxels;
+//                    
+//                    builder.clear();
+//                    bf.outputBoxes(builder);
+//                    if(builder.size() <= ConfigXM.BLOCKS.collisionBoxBudget)
+//                    {
+//                        ExoticMatter.INSTANCE.info("%d, %d, %d, %d, %d, %d",
+//                                volCount,
+//                                intersectionCount,
+//                                startingVoxels,
+//                                voxDiff,
+//                                simplificationLevel,
+//                                builder.size()
+//                                );
+//                        break;
+//                    }
+//                    else
+//                        simplificationLevel++;
+//                }
+//                else assert false : "Unable to simplify below target volume count";
+//                
+//            }
+//        }
+//        System.arraycopy(savedData, 0, data, 0, 128);
+//        builder.clear();
+//    }
     
     public final ImmutableList<AxisAlignedBB> build()
     {

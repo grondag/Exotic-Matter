@@ -22,6 +22,11 @@ public class BoxFinderUtils
     
     static final Slice[][] lookupMinMax = new Slice[8][8];
     
+    /**
+     * How many volumes are at least 4 voxels in volume.
+     * Will come first in {@link #VOLUME_KEYS}
+     */
+    static final int VOLUME_COUNT_4_PLUS;
     
     /**
      * Max is inclusive and equal to max attribute of slice.
@@ -78,6 +83,10 @@ public class BoxFinderUtils
         
         public final int depth;
         public final int min;
+        
+        /**
+         * INCLUSIVE
+         */
         public final int max;
         
         /** 
@@ -175,7 +184,18 @@ public class BoxFinderUtils
             }
         });
         
-//        VOLUME_FILTERS = createVolumeFilters();
+        int countFourPlus = 0;
+        for(int i = 0; i < VOLUME_KEYS.length; i++)
+        {
+            if(volumeFromKey(VOLUME_KEYS[i]) < 4)
+            {
+                if(countFourPlus == 0)
+                    countFourPlus = i;
+            }
+            else
+                assert countFourPlus == 0: "volumes not in volume descending order";
+        }
+        VOLUME_COUNT_4_PLUS = countFourPlus;
     }
     
     
@@ -625,5 +645,40 @@ public class BoxFinderUtils
     
         final long smallPattern =  patternFromKey(smallKey);
         return ((patternFromKey(bigKey) & smallPattern) == smallPattern);
+    }
+    
+    /**
+     * Returns number of voxels the exist in both of the given volumes, if any.
+     */
+    static int intersectingVoxelCount(int vol0, int vol1)
+    {
+        int sliceBits = sliceFromKey(vol0).layerBits & sliceFromKey(vol1).layerBits;
+        if(sliceBits == 0)
+            return 0;
+        
+        return Long.bitCount(sliceBits) * Long.bitCount(patternFromKey(vol0) & patternFromKey(vol1));
+    }
+    
+    /**
+     * Returns number of voxels the exist in minimum volume encompassing both given volumes.
+     */
+    static int unionVoxelCount(int vol0, int vol1)
+    {
+        Slice s0 = sliceFromKey(vol0);
+        Slice s1 = sliceFromKey(vol1);
+        // +1 because max is inclusive
+        int sliceBits = Math.max(s0.max, s1.max) - Math.min(s0.min, s1.min) + 1;
+       
+        int areaBits = testAreaBounds(patternIndexFromKey(vol0), (minX0, minY0, maxX0, maxY0) ->
+        {
+            return testAreaBounds(patternIndexFromKey(vol1), (minX1, minY1, maxX1, maxY1) ->
+            {
+                final int x =  Math.max(maxX0, maxX1) - Math.min(minX0, minX1) + 1;
+                final int y =  Math.max(maxY0, maxY1) - Math.min(minY0, minY1) + 1;
+                return x * y;
+            });
+        });
+        
+        return areaBits * sliceBits;
     }
 }
