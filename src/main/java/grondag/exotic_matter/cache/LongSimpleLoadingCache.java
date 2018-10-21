@@ -72,8 +72,16 @@ public class LongSimpleLoadingCache<V> implements ISimpleLoadingCache
         {
             if(localState.keys[position] == key) 
             {
-                assert localState.values[position] != null;
-                return localState.values[position];
+                V result = localState.values[position];
+                // rare but because array members aren't volatile
+                // can have the key from another thread but not the value (yet)
+                if(result == null)
+                {
+                    V[] values = localState.values;
+                    result = values[position];
+                    assert result != null;
+                }
+                return result;
             }
             
             if(localState.keys[position] == 0)
