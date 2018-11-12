@@ -154,6 +154,7 @@ public interface IPaintedQuad extends IPipelinedQuad
         for(int i = 0; i < 4; i++)
         {
             IPaintableVertex v = this.getPaintableVertex(i);
+            @SuppressWarnings("null")
             Vec3f n = v.normal();
             if(n == null)
                 n =  fn;
@@ -188,18 +189,32 @@ public interface IPaintedQuad extends IPipelinedQuad
         }
     }
     
+    /**
+     * INTERNAL USE ONLY
+     */
+    static final ThreadLocal<float[][][]> uvArray = new ThreadLocal<float[][][]>()
+    {
+        @Override
+        protected float[][][] initialValue()
+        {
+            return new float[3][4][2];
+        }
+    };
+    
+    /**
+     * WARNING: returned result is thread-local, do not let it escape.
+     */
+    @SuppressWarnings("null")
     static float[][][] getUVData(IPaintedQuad mainPoly)
     {
         final int layerCount = mainPoly.layerCount();
         
-        // UGLY: frequent execution - consider thread-local to avoid excessive garbage?
-        final float[][][] uvData = new float[layerCount][4][2];
+        final float[][][] uvData = uvArray.get();
         
         for(int n = 0; n < layerCount; n++)
         {
             IPaintableQuad poly = mainPoly.getSubQuad(n);
             
-            @SuppressWarnings("null")
             final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(poly.getTextureName());
             
             final float minU = poly.getMinU();
