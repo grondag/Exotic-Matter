@@ -149,7 +149,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
         
         // by default bulkResource manager will give us a .png extension
         // we use .jpg for larger textures, so strip this off and go case by case
-        String baseName = location.getResourcePath().substring(0, location.getResourcePath().length() - 4);
+        String baseName = location.getPath().substring(0, location.getPath().length() - 4);
         
         this.setFramesTextureData(new ArrayList<int[][]>(1));
         // allows set(0) to work
@@ -164,7 +164,7 @@ public class CompressedAnimatedSprite extends EnhancedSprite
         {
             try
             {
-                ResourceLocation frameLoc = new ResourceLocation(location.getResourceDomain(), baseName.concat("_" + frameIndex + ".jpg"));
+                ResourceLocation frameLoc = new ResourceLocation(location.getNamespace(), baseName.concat("_" + frameIndex + ".jpg"));
 
                 // confirm start frame loads
                 if(frameIndex == 0)

@@ -175,7 +175,7 @@ public class DomainManager implements ISimulationTopNode
         if(tag == null) return;
         
         NBTTagList nbtDomains = tag.getTagList(NBT_DOMAIN_MANAGER_DOMAINS, 10);
-        if( nbtDomains != null && !nbtDomains.hasNoTags())
+        if( nbtDomains != null && !nbtDomains.isEmpty())
         {
             for (int i = 0; i < nbtDomains.tagCount(); ++i)
             {
@@ -185,7 +185,7 @@ public class DomainManager implements ISimulationTopNode
         }
         
         NBTTagCompound nbtPlayerDomains = tag.getCompoundTag(NBT_DOMAIN_PLAYER_DOMAINS);
-        if(nbtPlayerDomains != null && !nbtPlayerDomains.hasNoTags())
+        if(nbtPlayerDomains != null && !nbtPlayerDomains.isEmpty())
         {
             for(String playerName : nbtPlayerDomains.getKeySet())
             {
@@ -195,7 +195,7 @@ public class DomainManager implements ISimulationTopNode
         }
         
         NBTTagCompound nbtActiveDomains = tag.getCompoundTag(NBT_DOMAIN_ACTIVE_DOMAINS);
-        if(nbtActiveDomains != null && !nbtActiveDomains.hasNoTags())
+        if(nbtActiveDomains != null && !nbtActiveDomains.isEmpty())
         {
             for(String playerName : nbtActiveDomains.getKeySet())
             {

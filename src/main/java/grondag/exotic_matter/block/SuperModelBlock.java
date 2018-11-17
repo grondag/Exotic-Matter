@@ -94,25 +94,25 @@ public class SuperModelBlock extends SuperBlockPlus
                 // mundane non-cube
                 SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][0]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, false)
-                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                            .setTranslationKey("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
                 event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][0]);
                 
                 // mundane cube
                 SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][1]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, false, true)
-                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                            .setTranslationKey("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
                 event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][0][1]);
                 
                 // hypermatter non-cube
                 SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][0]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, false)
-                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                            .setTranslationKey("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
                 event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][0]);
                 
                 // hypermatter cube
                 SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][1]
                         = (SuperModelBlock) new SuperModelBlock("supermodel" + superModelIndex++, Material.ROCK, blockRenderMode, opacity, true, true)
-                            .setUnlocalizedName("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
+                            .setTranslationKey("super_model_block").setCreativeTab(ExoticMatter.tabMod); //all superblocks have same display name
                 event.getRegistry().register(SuperModelBlock.superModelBlocks[blockRenderMode.ordinal][opacity.ordinal()][1][1]);
                 
             }

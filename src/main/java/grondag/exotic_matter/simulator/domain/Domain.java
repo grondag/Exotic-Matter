@@ -217,7 +217,7 @@ public class Domain implements IReadWriteNBT, IDirtListenerProvider, IIdentified
         this.name = tag.getString(NBT_DOMAIN_NAME);
         
         NBTTagList nbtUsers = tag.getTagList(NBT_DOMAIN_USERS, 10);
-        if( nbtUsers != null && !nbtUsers.hasNoTags())
+        if( nbtUsers != null && !nbtUsers.isEmpty())
         {
             for (int i = 0; i < nbtUsers.tagCount(); ++i)
             {

@@ -122,7 +122,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
         setResistance(50);
         
         this.setRegistryName(blockName);
-        this.setUnlocalizedName(blockName);
+        this.setTranslationKey(blockName);
         this.associatedBlock = this;
         
         this.lightOpacity = 0;
@@ -583,7 +583,7 @@ public abstract class SuperBlock extends Block implements IProbeInfoAccessor, IS
      */
     @Override
     @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getBlockLayer()
+    public BlockRenderLayer getRenderLayer()
     {
         return BlockRenderLayer.SOLID;
     }

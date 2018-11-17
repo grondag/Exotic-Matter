@@ -67,7 +67,7 @@ public class ExoticMatter implements IGrondagMod
     {
         @Override
         @SideOnly(Side.CLIENT)
-        public @Nonnull ItemStack getTabIconItem() 
+        public @Nonnull ItemStack createIcon() 
         {
             return SuperModelBlock.findAppropriateSuperModelBlock(BlockSubstance.DEFAULT, new ModelState()).getSubItems().get(0);
         }

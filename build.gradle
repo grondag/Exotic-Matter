@@ -62,7 +62,7 @@ compileJava {
 minecraft {
     version = "${minecraft_version}-${forge_version}"
     runDir = "run"
-    mappings = "snapshot_20171003"
+    mappings = "stable_39"
     useDepAts = true
     
     clientJvmArgs += '-Dfml.coreMods.load=grondag.acuity.FMLPlugin'

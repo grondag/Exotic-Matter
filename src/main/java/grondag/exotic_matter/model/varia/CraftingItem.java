@@ -25,7 +25,7 @@ public class CraftingItem extends Item implements IItemModelRegistrant
         this.modelState.setColorRGB(PaintLayer.BASE, 
                 BlockColorMapProvider.INSTANCE.getColorMap(colorIndex).getColor(EnumColorMap.BASE));
         this.setRegistryName(name);
-        this.setUnlocalizedName(name);
+        this.setTranslationKey(name);
     }
 
     @Override

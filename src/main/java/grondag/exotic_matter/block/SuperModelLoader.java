@@ -29,13 +29,13 @@ public class SuperModelLoader implements ICustomModelLoader
     @Override
     public boolean accepts(@Nonnull ResourceLocation modelLocation)
     {
-        return modelLocation.getResourceDomain().equals(ExoticMatter.MODID) && modelLocation.getResourcePath().contains(SuperDispatcher.RESOURCE_BASE_NAME);
+        return modelLocation.getNamespace().equals(ExoticMatter.MODID) && modelLocation.getPath().contains(SuperDispatcher.RESOURCE_BASE_NAME);
     }
 
     @Override
     public IModel loadModel(@Nonnull ResourceLocation modelLocation) throws Exception
     {
-        return SuperDispatcher.INSTANCE.getDelegate(modelLocation.getResourcePath());
+        return SuperDispatcher.INSTANCE.getDelegate(modelLocation.getPath());
     }
 
 }

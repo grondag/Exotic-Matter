@@ -141,7 +141,7 @@ public class CommonEventHandler
         
         for(Map.Entry<ResourceLocation, Block> entry: blockReg.getEntries())
         {
-            if(entry.getKey().getResourceDomain().equals(modID) && entry.getValue() instanceof IBlockItemRegistrator)
+            if(entry.getKey().getNamespace().equals(modID) && entry.getValue() instanceof IBlockItemRegistrator)
             {
                 ((IBlockItemRegistrator)entry.getValue()).registerItems(itemReg);
             }

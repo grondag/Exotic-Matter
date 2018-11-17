@@ -188,14 +188,14 @@ public class WorldHelper
         switch(onFace)
         {
         case DOWN:
-            return EnumFacing.getHorizontal((relativeUp(player, onFace).getHorizontalIndex() + 1) & 0x3)
+            return EnumFacing.byHorizontalIndex((relativeUp(player, onFace).getHorizontalIndex() + 1) & 0x3)
                     .getOpposite();
             
         case UP:
-            return EnumFacing.getHorizontal((relativeUp(player, onFace).getHorizontalIndex() + 1) & 0x3);
+            return EnumFacing.byHorizontalIndex((relativeUp(player, onFace).getHorizontalIndex() + 1) & 0x3);
             
         default:
-            return  EnumFacing.getHorizontal((player.getAdjustedHorizontalFacing().getHorizontalIndex() + 1) & 0x3)
+            return  EnumFacing.byHorizontalIndex((player.getAdjustedHorizontalFacing().getHorizontalIndex() + 1) & 0x3)
                     .getOpposite();
         
         }
