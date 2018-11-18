@@ -166,7 +166,7 @@ public interface IPaintedQuad extends IPipelinedQuad
                 glow = v.glow();
             }
             
-            switch(uvData.length)
+            switch(this.layerCount())
             {
             case 1:
                 vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x, n.y, n.z, v.color(), uvData[0][i][0], uvData[0][i][1]);

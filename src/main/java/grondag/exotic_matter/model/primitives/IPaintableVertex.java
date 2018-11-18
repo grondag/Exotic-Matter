@@ -4,11 +4,7 @@ import javax.annotation.Nullable;
 
 public interface IPaintableVertex
 {
-    default IPaintableVertex forTextureLayer(int layer)
-    {
-        assert layer == 0;
-        return this;
-    }
+    IPaintableVertex forTextureLayer(int layer);
     
     short glow();
 

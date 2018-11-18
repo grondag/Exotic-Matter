@@ -339,4 +339,16 @@ public class Vertex extends Vec3f implements IPaintableVertex
     {
         return this.normal;
     }
+    
+    @Override
+    public IPaintableVertex forTextureLayer(int layer)
+    {
+        switch(layer)
+        {
+        case 0:
+            return this;
+        default:
+            throw new IndexOutOfBoundsException();
+        }
+    }
 }
