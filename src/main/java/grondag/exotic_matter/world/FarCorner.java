@@ -46,9 +46,10 @@ public enum FarCorner
         this.face2 = face2;
         this.face3 = face3;
         this.bitFlag = 1 << (NeighborBlocks.FACE_FLAGS.length + BlockCorner.values().length + this.ordinal());
-        this.superOrdinal = this.ordinal() + EnumFacing.values().length + BlockCorner.values().length;
+        // 6 is number of possible faces
+        this.superOrdinal = this.ordinal() + 6 + BlockCorner.values().length;
 
-          Vec3i v1 = face1.getDirectionVec();
+        Vec3i v1 = face1.getDirectionVec();
         Vec3i v2 = face2.getDirectionVec();
         Vec3i v3 = face3.getDirectionVec();
         this.directionVector = new Vec3i(v1.getX() + v2.getX() + v3.getX(), v1.getY() + v2.getY() + v3.getY(), v1.getZ() + v2.getZ() + v3.getZ());

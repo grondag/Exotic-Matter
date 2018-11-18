@@ -17,11 +17,12 @@ public class SimpleJoin
     public static byte getIndex(NeighborBlocks.NeighborTestResults testResults)
     {
         byte j = 0;
-        for(EnumFacing face : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
+            final EnumFacing face = EnumFacing.VALUES[i];
             if(testResults.result(face))
             {
-                j |= NeighborBlocks.FACE_FLAGS[face.ordinal()];
+                j |= NeighborBlocks.FACE_FLAGS[i];
             }
         }
         return j;

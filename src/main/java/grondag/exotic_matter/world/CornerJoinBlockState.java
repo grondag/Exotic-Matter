@@ -9,7 +9,7 @@ public class CornerJoinBlockState
     /** join state considering only direct neighbors */
     public final SimpleJoin simpleJoin;
     
-    private byte faceJoinIndex[] = new byte[EnumFacing.values().length];
+    private byte faceJoinIndex[] = new byte[EnumFacing.VALUES.length];
     
     CornerJoinBlockState(int index, SimpleJoin simpleJoin)
     {

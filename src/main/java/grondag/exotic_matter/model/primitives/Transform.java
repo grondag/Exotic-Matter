@@ -221,7 +221,7 @@ public class Transform
      * of the output (mapped) face in the provided list.<p>
      * 
      * Equivalently, list containing results of calling {@link #rotateFace(ISuperModelState, EnumFacing)}
-     * for each face in {@link EnumFacing#values()} in order.
+     * for each face in Enum order.
      */
     public static FaceMap getFaceMap(ISuperModelState modelState)
     {

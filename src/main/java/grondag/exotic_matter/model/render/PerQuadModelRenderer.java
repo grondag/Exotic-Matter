@@ -126,8 +126,10 @@ public class PerQuadModelRenderer extends BlockModelRenderer
                 }
             }
         }
-        for(EnumFacing side : EnumFacing.values())
+        
+        for(int i = 0; i < 6; i++)
         {
+            final EnumFacing side = EnumFacing.VALUES[i];
             quads = model.getQuads(state, side, rand);
             if(!quads.isEmpty())
             {

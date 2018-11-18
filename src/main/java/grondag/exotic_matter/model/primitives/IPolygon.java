@@ -484,8 +484,9 @@ public interface IPolygon extends IPaintableQuad
         // semantic face will be right most of the time
         if(this.isOnFace(nominalFace, QuadHelper.EPSILON)) return nominalFace;
 
-        for(EnumFacing f : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
+            final EnumFacing f = EnumFacing.VALUES[i];
             if(f != nominalFace && this.isOnFace(f, QuadHelper.EPSILON)) return f;
         }
         return null;

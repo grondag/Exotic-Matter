@@ -12,7 +12,7 @@ import net.minecraft.util.EnumFacing;
 
 public class CubicQuadPainterBorders extends CubicQuadPainter
 {
-    protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.values().length][CornerJoinFaceState.values().length];
+    protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.VALUES.length][CornerJoinFaceState.values().length];
 
     /** Texture offsets */
     private final static int TEXTURE_BOTTOM_LEFT_RIGHT = 0;
@@ -87,7 +87,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     
     static
     {
-        for(EnumFacing face: EnumFacing.values())
+        for(EnumFacing face: EnumFacing.VALUES)
         {
             //First one will only be used if we are rendering in solid layer.
             FACE_INPUTS[face.ordinal()][CornerJoinFaceState.ALL_NO_CORNERS.ordinal()] = NO_BORDER;

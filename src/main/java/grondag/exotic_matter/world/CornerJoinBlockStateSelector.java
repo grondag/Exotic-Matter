@@ -44,24 +44,25 @@ public class CornerJoinBlockStateSelector
     private final int firstIndex;
     private final SimpleJoin simpleJoin;
     
-    private CornerJoinFaceSelector faceSelector[] = new CornerJoinFaceSelector[EnumFacing.values().length];
+    private CornerJoinFaceSelector faceSelector[] = new CornerJoinFaceSelector[6];
     
     private CornerJoinBlockStateSelector(SimpleJoin baseJoinState, int firstIndex)
     {
         this.firstIndex = firstIndex;
         this.simpleJoin = baseJoinState;
-        for(EnumFacing face : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
-            faceSelector[face.ordinal()] = new CornerJoinFaceSelector(face, baseJoinState);
+            final EnumFacing face = EnumFacing.VALUES[i];
+            faceSelector[i] = new CornerJoinFaceSelector(face, baseJoinState);
         }
     }
 
     private int getStateCount()
     {
         int count = 1;
-        for(EnumFacing face : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
-            count *= faceSelector[face.ordinal()].faceCount;
+            count *= faceSelector[i].faceCount;
         }
         return count;
     }
@@ -70,12 +71,12 @@ public class CornerJoinBlockStateSelector
     {
         int index = 0;
         int shift = 1;
-        for(EnumFacing face : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
-            if(faceSelector[face.ordinal()].faceCount > 1)
+            if(faceSelector[i].faceCount > 1)
             {
-                index += shift * faceSelector[face.ordinal()].getIndexFromNeighbors(tests);
-                shift *= faceSelector[face.ordinal()].faceCount;
+                index += shift * faceSelector[i].getIndexFromNeighbors(tests);
+                shift *= faceSelector[i].faceCount;
             }
         }
         return index + firstIndex;
@@ -88,17 +89,18 @@ public class CornerJoinBlockStateSelector
         
         CornerJoinBlockState retVal = new CornerJoinBlockState(index, simpleJoin);
         
-        for(EnumFacing face : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
-            if(faceSelector[face.ordinal()].faceCount == 1)
+            final EnumFacing face = EnumFacing.VALUES[i];
+            if(faceSelector[i].faceCount == 1)
             {
-                retVal.setFaceJoinState(face, faceSelector[face.ordinal()].getFaceJoinFromIndex(0));
+                retVal.setFaceJoinState(face, faceSelector[i].getFaceJoinFromIndex(0));
             }
             else
             {
-                int faceIndex = (localIndex / shift) % faceSelector[face.ordinal()].faceCount;
-                retVal.setFaceJoinState(face, faceSelector[face.ordinal()].getFaceJoinFromIndex(faceIndex));
-                shift *= faceSelector[face.ordinal()].faceCount;
+                int faceIndex = (localIndex / shift) % faceSelector[i].faceCount;
+                retVal.setFaceJoinState(face, faceSelector[i].getFaceJoinFromIndex(faceIndex));
+                shift *= faceSelector[i].faceCount;
             }
         }       
 

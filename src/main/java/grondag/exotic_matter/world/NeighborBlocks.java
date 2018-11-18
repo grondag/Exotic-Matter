@@ -422,8 +422,9 @@ public class NeighborBlocks
         {
             String retval = "";
             
-            for(EnumFacing face : EnumFacing.values())
+            for(int i = 0; i < 6; i++)
             {
+                final EnumFacing face = EnumFacing.VALUES[i];
                 retval += face.toString() + "=" + this.result(face) + " ";
             }
 

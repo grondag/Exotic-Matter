@@ -73,7 +73,7 @@ public enum BlockCorner
         this.face2 = face2;
         this.modelRotation = modelRotation;
         this.bitFlag = 1 << (NeighborBlocks.FACE_FLAGS.length + this.ordinal());
-        this.superOrdinal = EnumFacing.values().length + this.ordinal();
+        this.superOrdinal = EnumFacing.VALUES.length + this.ordinal();
         boolean hasX = (face1.getAxis() == EnumFacing.Axis.X || face2.getAxis() == EnumFacing.Axis.X);
         boolean hasY = (face1.getAxis() == EnumFacing.Axis.Y || face2.getAxis() == EnumFacing.Axis.Y);
         this.orthogonalAxis = hasX && hasY ? EnumFacing.Axis.Z : hasX ? EnumFacing.Axis.Y : EnumFacing.Axis.X;

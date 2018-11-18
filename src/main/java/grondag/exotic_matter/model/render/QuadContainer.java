@@ -101,9 +101,10 @@ public class QuadContainer
         
         if(occlusionHash == null)
         {
-            occlusionHash = new int[EnumFacing.values().length];
-            for(EnumFacing f : EnumFacing.values())
+            occlusionHash = new int[6];
+            for(int i = 0; i < 6; i++)
             {
+                final EnumFacing f = EnumFacing.VALUES[i];
                 occlusionHash[f.ordinal()] = computeOcclusionHash(f);
                 this.occlusionHash = occlusionHash;
             }

@@ -55,8 +55,9 @@ public class QuadHelper
         
         double minDiff = 0.0F;
     
-        for (EnumFacing f : EnumFacing.values())
+        for(int i = 0; i < 6; i++)
         {
+            final EnumFacing f = EnumFacing.VALUES[i];
             Vec3f faceNormal = new Vec3f(f.getDirectionVec());
             float diff = normal.dotProduct(faceNormal);
     

@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing;
 
 public class CubicQuadPainterMasonry extends CubicQuadPainter
 {
-    protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.values().length][SimpleJoinFaceState.values().length];
+    protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.VALUES.length][SimpleJoinFaceState.values().length];
 
     protected final SimpleJoin bjs;
     
@@ -61,7 +61,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     static
     {
         // mapping is unusual in that a join indicates a border IS present on texture
-        for(EnumFacing face: EnumFacing.values()){
+        for(EnumFacing face: EnumFacing.VALUES){
             FACE_INPUTS[face.ordinal()][SimpleJoinFaceState.NONE.ordinal()] = null; //new ImmutableList.Builder<BakedQuad>().build(); // NO BORDER
             FACE_INPUTS[face.ordinal()][SimpleJoinFaceState.NO_FACE.ordinal()] = null; //new ImmutableList.Builder<BakedQuad>().build(); // NO BORDER
             
