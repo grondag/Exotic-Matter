@@ -17,6 +17,9 @@ public enum Chroma
     INTENSE_ACCENT(80),
     ULTRA_ACCENT(90);
 
+    public static final Chroma[] VALUES = Chroma.values();
+    public static final int COUNT = VALUES.length;
+    
     public final double value;
 
     private Chroma(double chromaValue)

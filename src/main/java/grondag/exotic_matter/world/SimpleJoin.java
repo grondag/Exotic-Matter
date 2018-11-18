@@ -19,8 +19,7 @@ public class SimpleJoin
         byte j = 0;
         for(int i = 0; i < 6; i++)
         {
-            final EnumFacing face = EnumFacing.VALUES[i];
-            if(testResults.result(face))
+            if(testResults.result(EnumFacing.VALUES[i]))
             {
                 j |= NeighborBlocks.FACE_FLAGS[i];
             }
