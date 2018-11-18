@@ -14,6 +14,9 @@ public enum Luminance
     DARK(27),
     EXTRA_DARK(13);
 
+    public static final Luminance[] VALUES = Luminance.values();
+    public static final int COUNT = VALUES.length;
+    
     public final double value;
 
     private Luminance(double luminanceValue)

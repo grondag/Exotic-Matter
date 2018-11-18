@@ -20,7 +20,7 @@ public class BlockColorMapProvider
     
     // note: can't be static because must come after Hue static initializaiton
     private final ColorMap[] validColors;
-    private final ColorMap[][][] allColors = new ColorMap[Hue.COUNT][Chroma.COUNT][Luminance.values().length];
+    private final ColorMap[][][] allColors = new ColorMap[Hue.COUNT][Chroma.COUNT][Luminance.COUNT];
     protected BlockColorMapProvider()
     {
         
@@ -31,8 +31,10 @@ public class BlockColorMapProvider
         {
             final Hue hue = Hue.VALUES[h];
             
-            for(Luminance luminance : Luminance.values())
+            for(int l = 0; l < Luminance.COUNT; l++)
             {
+                final Luminance luminance = Luminance.VALUES[l];
+                
                 for(int c = 0 ; c < Chroma.COUNT; c++)
                 {
                     final Chroma chroma = Chroma.VALUES[c];
@@ -52,8 +54,10 @@ public class BlockColorMapProvider
         }
         
         // pure neutrals
-        for(Luminance luminance : Luminance.values())
+        for(int l = 0; l < Luminance.COUNT; l++)
         {
+            final Luminance luminance = Luminance.VALUES[l];
+            
             Color testColor = Color.fromHCL(Hue.BLUE.hueDegrees(), Chroma.PURE_NETURAL.value, luminance.value, EnumHCLFailureMode.REDUCE_CHROMA);
             
             if(testColor.IS_VISIBLE)
@@ -63,7 +67,7 @@ public class BlockColorMapProvider
 
                 for(int h = 0; h < Hue.COUNT; h++)
                 {
-                    allColors[h][Chroma.PURE_NETURAL.ordinal()][luminance.ordinal()] = newMap;
+                    allColors[h][Chroma.PURE_NETURAL.ordinal()][l] = newMap;
                 }
             }
         }
