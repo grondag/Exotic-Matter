@@ -19,17 +19,18 @@ public class BlockColorMapProvider
     public static final int  COLOR_LAVA = INSTANCE.getMostest(Hue.ROSE).getColor(EnumColorMap.BASE);
     
     // note: can't be static because must come after Hue static initializaiton
-    public final int hueCount = Hue.values().length;
     private final ColorMap[] validColors;
-    private final ColorMap[][][] allColors = new ColorMap[hueCount][Chroma.COUNT][Luminance.values().length];
+    private final ColorMap[][][] allColors = new ColorMap[Hue.COUNT][Chroma.COUNT][Luminance.values().length];
     protected BlockColorMapProvider()
     {
         
         ArrayList<ColorMap> colorMaps = new ArrayList<ColorMap>(allColors.length);
         int i=0;
-
-        for(Hue hue: Hue.values())
+        
+        for(int h = 0; h < Hue.COUNT; h++)
         {
+            final Hue hue = Hue.VALUES[h];
+            
             for(Luminance luminance : Luminance.values())
             {
                 for(int c = 0 ; c < Chroma.COUNT; c++)
@@ -60,9 +61,9 @@ public class BlockColorMapProvider
                 ColorMap newMap = ColorMap.makeColorMap(Hue.BLUE, Chroma.PURE_NETURAL, luminance, i++);
                 colorMaps.add(newMap);
 
-                for(Hue hue: Hue.values())
+                for(int h = 0; h < Hue.COUNT; h++)
                 {
-                    allColors[hue.ordinal()][Chroma.PURE_NETURAL.ordinal()][luminance.ordinal()] = newMap;
+                    allColors[h][Chroma.PURE_NETURAL.ordinal()][luminance.ordinal()] = newMap;
                 }
             }
         }

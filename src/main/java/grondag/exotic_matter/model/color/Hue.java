@@ -76,6 +76,9 @@ public enum Hue
      */
     private static final double HUE_SALT = 0;
 
+    public static Hue[] VALUES = Hue.values();
+    public static int COUNT = VALUES.length;
+    
     private int hueSample = 0;
 
     public double hueDegrees()
