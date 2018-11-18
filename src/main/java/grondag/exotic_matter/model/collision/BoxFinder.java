@@ -21,7 +21,7 @@ public class BoxFinder
 {
     private long[] voxels = new long[8];
     
-    private long[] combined = new long[Slice.values().length];
+    private long[] combined = new long[BoxFinderUtils.SLICE_COUNT];
     
     final int[] maximalVolumes = new int[64];
     
@@ -260,6 +260,29 @@ public class BoxFinder
         outputRemaindersInner(7, builder);
     }
     
+    private class RemaindersConsumer implements IntConsumer
+    {
+        ICollisionBoxListBuilder builder;
+        int z;
+        
+        RemaindersConsumer prepare(int z, ICollisionBoxListBuilder builder)
+        {
+            this.z = z;
+            this.builder = builder;
+            return this;
+        }
+        
+        @Override
+        public void accept(int i)
+        {
+            final int x = BoxFinderUtils.xFromAreaBitIndex(i);
+            final int y = BoxFinderUtils.yFromAreaBitIndex(i);
+            builder.addSorted(x, y, z, x + 1, y + 1, z + 1);            
+        }
+    };
+    
+    private final RemaindersConsumer remaindersConsumer = new RemaindersConsumer();
+    
     void outputRemaindersInner(int z, ICollisionBoxListBuilder builder)
     {
         final long bits = voxels[z];
@@ -267,12 +290,7 @@ public class BoxFinder
         if(bits == 0L)
             return;
         
-        BitHelper.forEachBit(bits, i -> 
-        {
-            final int x = BoxFinderUtils.xFromAreaBitIndex(i);
-            final int y = BoxFinderUtils.yFromAreaBitIndex(i);
-            builder.addSorted(x, y, z, x + 1, y + 1, z + 1);
-        });
+        BitHelper.forEachBit(bits, remaindersConsumer.prepare(z, builder));
     }
     
     void findDisjointSets()
@@ -577,8 +595,10 @@ public class BoxFinder
 //        Arrays.fill(volumes, 0, 64, 0);
         
         // PERF: use an exclusion test voxel hash to reduce search universe 
-        for(int v : BoxFinderUtils.VOLUME_KEYS)
+        for(int i = 0; i < BoxFinderUtils.VOLUME_COUNT; i++)
         {
+            final int v = BoxFinderUtils.VOLUME_KEYS[i];
+            
             if(isVolumePresent(v) && isVolumeMaximal(v))
             {
                 final int c = this.volumeCount++;

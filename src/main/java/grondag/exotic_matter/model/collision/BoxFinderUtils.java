@@ -16,6 +16,7 @@ public class BoxFinderUtils
 {
     static final long[] AREAS;
     static final int[] VOLUME_KEYS;
+    static final int VOLUME_COUNT;
     static final short[] BOUNDS;
     
     static final long[] EMPTY = new long[64];
@@ -111,9 +112,12 @@ public class BoxFinderUtils
         }
     }
     
+    private static final Slice[] SLICES = Slice.values();
+    public static final int SLICE_COUNT = SLICES.length;
+    
     static
     {
-        for(Slice slice : Slice.values())
+        for(Slice slice : SLICES)
         {
             lookupMinMax[slice.min][slice.max] = slice;
         }
@@ -184,8 +188,10 @@ public class BoxFinderUtils
             }
         });
         
+        VOLUME_COUNT = VOLUME_KEYS.length;
+        
         int countFourPlus = 0;
-        for(int i = 0; i < VOLUME_KEYS.length; i++)
+        for(int i = 0; i < VOLUME_COUNT; i++)
         {
             if(volumeFromKey(VOLUME_KEYS[i]) < 4)
             {
@@ -590,7 +596,7 @@ public class BoxFinderUtils
 
     static Slice sliceFromKey(int volumeKey)
     {
-        return Slice.values()[(volumeKey & 63)];
+        return SLICES[(volumeKey & 63)];
     }
 
     /**
