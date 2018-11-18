@@ -7,6 +7,7 @@ import java.util.function.IntConsumer;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.collision.BoxFinderUtils.Slice;
 import grondag.exotic_matter.varia.BitHelper;
+import grondag.exotic_matter.varia.functions.IAreaBoundsIntFunction;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -338,14 +339,16 @@ public class BoxFinder
             boolean isLeaf = true;
             if(candidates != 0)
             {
-                // array to allow update in lambda
-                boolean[] didRecurse = new boolean[1];
-                BitHelper.forEachBit(candidates, i ->  
+                boolean didRecurse = false;
+                // not using lambda here to avoid mem alloc
+                for(int i = 0; i < this.volumeCount; i++) 
                 {
-                    if(i != volIndex && tryDisjoint(i, members, combinedIntersects))
-                        didRecurse[0] = true;
-                });
-                if(didRecurse[0])
+                    if(i != volIndex 
+                            && ((candidates & (1L << i)) != 0) 
+                            && tryDisjoint(i, members, combinedIntersects))
+                        didRecurse = true;
+                }
+                if(didRecurse)
                     isLeaf = false;
             }
             if(isLeaf)
@@ -358,13 +361,29 @@ public class BoxFinder
         else return false;
     }
     
-    private void outputDisjointSet(long disjointSet, ICollisionBoxListBuilder builder)
+    private class OutputConsumer implements IntConsumer
     {
-        BitHelper.forEachBit(disjointSet, i -> 
+        ICollisionBoxListBuilder builder;
+        
+        OutputConsumer prepare(ICollisionBoxListBuilder builder)
+        {
+            this.builder = builder;
+            return this;
+        }
+        
+        @Override
+        public void accept(int i)
         {
             int k = maximalVolumes[i];
-            addBox(k, builder);
-        });
+            addBox(k, builder);            
+        }
+    };
+    
+    final OutputConsumer outputConsumer = new OutputConsumer();
+    
+    private void outputDisjointSet(long disjointSet, ICollisionBoxListBuilder builder)
+    {
+        BitHelper.forEachBit(disjointSet, outputConsumer.prepare(builder));
     }
     
     void explainDisjointSets()
@@ -490,15 +509,31 @@ public class BoxFinder
         return counter.total;
     }
 
-    void addBox(int volumeKey, ICollisionBoxListBuilder builder)
+    private class AddBoxConsumer implements IAreaBoundsIntFunction
     {
-        Slice slice = BoxFinderUtils.sliceFromKey(volumeKey);
-        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volumeKey), (minX, minY, maxX, maxY) ->
+        Slice slice;
+        ICollisionBoxListBuilder builder;
+        
+        AddBoxConsumer prepare(int volumeKey, ICollisionBoxListBuilder builder)
+        {
+            slice = BoxFinderUtils.sliceFromKey(volumeKey);
+            this.builder = builder;
+            return this;
+        }
+        
+        @Override
+        public int apply(int minX, int minY, int maxX, int maxY)
         {
             setEmpty(minX, minY, slice.min, maxX, maxY, slice.max);
             builder.add(minX, minY, slice.min, maxX + 1, maxY + 1, slice.max + 1);
-            return 0;
-        });
+            return 0;        }
+    }
+    
+    private final AddBoxConsumer addBoxConsumer = new AddBoxConsumer();
+    
+    void addBox(int volumeKey, ICollisionBoxListBuilder builder)
+    {
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volumeKey), addBoxConsumer.prepare(volumeKey, builder));
     }
     
     void calcCombined()
@@ -548,15 +583,20 @@ public class BoxFinder
         combined[Slice.D8_0.ordinal()] = combined[Slice.D7_0.ordinal()] & voxels[7];
     }
     
-    /**
-     * True if volume cannot be expanded along any axis.
-     */
-    boolean isVolumeMaximal(int volKey)
+    private class VolumeMaximalConsumer implements IAreaBoundsIntFunction
     {
-        final Slice slice = BoxFinderUtils.sliceFromKey(volKey);
-        final long pattern = BoxFinderUtils.patternFromKey(volKey);
+        Slice slice;
+        long pattern;
         
-        return BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(volKey), (minX, minY, maxX, maxY) ->
+        VolumeMaximalConsumer prepare(int volKey)
+        {
+            slice = BoxFinderUtils.sliceFromKey(volKey);
+            pattern = BoxFinderUtils.patternFromKey(volKey);
+            return this;
+        }
+        
+        @Override
+        public int apply(int minX, int minY, int maxX, int maxY)
         {
             if(slice.min > 0 && isVolumePresent(pattern, BoxFinderUtils.sliceByMinMax(slice.min - 1, slice.max)))
                 return 1;
@@ -576,8 +616,19 @@ public class BoxFinder
             if(maxY < 7 && isVolumePresent((pattern << 8) | pattern, slice))
                 return 1;
             
-            return 0;
-        }) == 0;
+            return 0;       }
+    }
+    
+    private final VolumeMaximalConsumer volumeMaximalConsumer = new VolumeMaximalConsumer();
+    
+    /**
+     * True if volume cannot be expanded along any axis.
+     */
+    boolean isVolumeMaximal(int volKey)
+    {
+        return BoxFinderUtils.testAreaBounds(
+                BoxFinderUtils.patternIndexFromKey(volKey), 
+                volumeMaximalConsumer.prepare(volKey)) == 0;
     }
     
     @FunctionalInterface
@@ -692,20 +743,35 @@ public class BoxFinder
         }
     }
     
-    /**
-     * Fills voxels the exist in minimum volume encompassing both given volumes.
-     */
-    void fillUnion(int vol0, int vol1)
+    private class FillUnionConsumer implements IAreaBoundsIntFunction
     {
-        Slice s0 = BoxFinderUtils.sliceFromKey(vol0);
-        Slice s1 = BoxFinderUtils.sliceFromKey(vol1);
+        Slice s0;
+        Slice s1
+        ;
         // +1 because max is inclusive
-        final int minZ = Math.min(s0.min, s1.min);
-        final int maxZ = Math.max(s0.max, s1.max);
-       
-        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(vol0), (minX0, minY0, maxX0, maxY0) ->
+        int minZ;
+        int maxZ;
+        int innerPattern;
+        
+        int minX0, minY0, maxX0, maxY0;
+        
+        FillUnionConsumer prepare(int vol0, int vol1)
         {
-            return BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(vol1), (minX1, minY1, maxX1, maxY1) ->
+            s0 = BoxFinderUtils.sliceFromKey(vol0);
+            s1 = BoxFinderUtils.sliceFromKey(vol1);
+            // +1 because max is inclusive
+            minZ = Math.min(s0.min, s1.min);
+            maxZ = Math.max(s0.max, s1.max);
+            
+            this.innerPattern = BoxFinderUtils.patternIndexFromKey(vol1);
+            
+            return this;
+        }
+        
+        private class FillUnionConsumerInner implements IAreaBoundsIntFunction
+        {
+            @Override
+            public int apply(int minX1, int minY1, int maxX1, int maxY1)
             {
                 final int minX =  Math.min(minX0, minX1);
                 final int maxX =  Math.max(maxX0, maxX1);
@@ -722,8 +788,32 @@ public class BoxFinder
                     }
                 }
                 return 0;
-            });
-        });
+            }
+            
+        }
+        
+        private final FillUnionConsumerInner inner = new FillUnionConsumerInner();
+        
+        @Override
+        public int apply(int minX0, int minY0, int maxX0, int maxY0)
+        {
+            this.minX0 = minX0;
+            this.minY0 = minY0;
+            this.maxX0 = maxX0;
+            this.maxY0 = maxY0;
+            
+            return BoxFinderUtils.testAreaBounds(innerPattern, inner);
+        }
+    }
+    
+    private final FillUnionConsumer fillUnionConsumer = new FillUnionConsumer();
+    
+    /**
+     * Fills voxels the exist in minimum volume encompassing both given volumes.
+     */
+    void fillUnion(int vol0, int vol1)
+    {
+        BoxFinderUtils.testAreaBounds(BoxFinderUtils.patternIndexFromKey(vol0), fillUnionConsumer.prepare(vol0, vol1));
     }
     
     int countFilledVoxels(int volKey)
