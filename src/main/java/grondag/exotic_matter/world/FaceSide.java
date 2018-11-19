@@ -9,8 +9,8 @@ public enum FaceSide
     LEFT(EnumFacing.WEST, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.WEST),
     RIGHT(EnumFacing.EAST, EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST);
     
-    // for a given face, which face is at the position identified by this enum? 
-    private final EnumFacing RELATIVE_LOOKUP[] = new EnumFacing[6];
+    public static final FaceSide[] VALUES = FaceSide.values();
+    public static final int COUNT = VALUES.length;
     
     // find the side for a given face orthogonal to a face
     private final static FaceSide FACE_LOOKUP[][] = new FaceSide[6][6];
@@ -44,6 +44,9 @@ public enum FaceSide
     {
         return FACE_LOOKUP[onFace.ordinal()][sideFace.ordinal()];
     }
+    
+    // for a given face, which face is at the position identified by this enum? 
+    private final EnumFacing RELATIVE_LOOKUP[] = new EnumFacing[6];
     
     private FaceSide(EnumFacing up, EnumFacing down, EnumFacing east, EnumFacing west, EnumFacing north, EnumFacing south)
     {

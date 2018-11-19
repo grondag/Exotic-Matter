@@ -17,7 +17,7 @@ public enum HorizontalFace
     
     static
     {
-        for(HorizontalFace hFace : VALUES)
+        for(HorizontalFace hFace : HorizontalFace.values())
         {
             HORIZONTAL_FACE_LOOKUP[hFace.face.ordinal()] = hFace;
         }
