@@ -265,18 +265,12 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public void setVertexNormal(int index, float x, float y, float z)
+    public void setVertexNormal(int index, Vec3f normal)
     {
         if(index < this.vertexCount)
         {
-            this.setVertex(index, ((Vertex)this.getVertex(index)).withNormal(x, y, z));
+            this.setVertex(index, ((Vertex)this.getVertex(index)).withNormal(normal));
         }
-    }
-    
-    @Override
-    public void setVertexNormal(int index, Vec3f normal)
-    {
-        this.setVertexNormal(index, normal.x, normal.y, normal.z);
     }
 
     /**
@@ -379,7 +373,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)getVertex(i);
-            this.setVertex(i, v.withXYZ(v.pos.x * scale + c, v.pos.y * scale + c, v.pos.z * scale + c));
+            this.setVertex(i, v.withXYZ(v.pos.x() * scale + c, v.pos.y() * scale + c, v.pos.z() * scale + c));
         }
     }
 
@@ -402,7 +396,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount; i++)
         {
             Vertex vertex = (Vertex)this.getVertex(i);
-            Vector4f temp = new Vector4f(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1);
+            Vector4f temp = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1);
             matrix.transform(temp);
             this.setVertex(i, vertex.withXYZ((float)temp.x, (float)temp.y, (float)temp.z));
         }

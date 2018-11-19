@@ -306,9 +306,9 @@ public class MeshHelper
     {
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
-        final float xEnd = origin.x + xSize;
-        final float yEnd = origin.y + ySize;
-        final float zEnd = origin.z + zSize;
+        final float xEnd = origin.x() + xSize;
+        final float yEnd = origin.y() + ySize;
+        final float zEnd = origin.z() + zSize;
         
         IMutablePolygon quad = template.mutableCopy(4);
         quad.setLockUV(false);
@@ -317,9 +317,9 @@ public class MeshHelper
         quad.setMinV(0);
         quad.setMaxV(zSize);
         quad.setNominalFace(EnumFacing.UP);
-        quad.addVertex(0, xEnd, yEnd, origin.z, 0, 0, 0xFFFFFFFF, 0, 1, 0);
-        quad.addVertex(1, origin.x, yEnd, origin.z, 0, 0, 0xFFFFFFFF, 0, 1, 0);
-        quad.addVertex(2, origin.x, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(0, xEnd, yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(1, origin.x(), yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.addVertex(2, origin.x(), yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
         quad.addVertex(3, xEnd, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
 //        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         builder.add(quad);

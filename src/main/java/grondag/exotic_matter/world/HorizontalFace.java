@@ -10,19 +10,22 @@ public enum HorizontalFace
     SOUTH(EnumFacing.SOUTH),
     WEST(EnumFacing.WEST);
 
-    public final EnumFacing face;
-
-    public final Vec3i directionVector;
-
+    public static final HorizontalFace[] VALUES = HorizontalFace.values();
+    public static final int COUNT = VALUES.length;
+    
     private static final HorizontalFace HORIZONTAL_FACE_LOOKUP[] = new HorizontalFace[6];
     
     static
     {
-        for(HorizontalFace hFace : HorizontalFace.values())
+        for(HorizontalFace hFace : VALUES)
         {
             HORIZONTAL_FACE_LOOKUP[hFace.face.ordinal()] = hFace;
         }
     }
+    
+    public final EnumFacing face;
+
+    public final Vec3i directionVector;
 
     private HorizontalFace(EnumFacing face)
     {

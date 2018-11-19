@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
 
 public class QuadHelper
 {
@@ -49,7 +50,7 @@ public class QuadHelper
         return glOrder ? red  | green << 8 | blue << 16 | alpha << 24 : red << 16 | green << 8 | blue | alpha << 24;
     }
     
-    public static EnumFacing computeFaceForNormal(Vec3f normal)
+    public static EnumFacing computeFaceForNormal(final float x, final float y, final float z)
     {
         EnumFacing result = null;
         
@@ -58,8 +59,8 @@ public class QuadHelper
         for(int i = 0; i < 6; i++)
         {
             final EnumFacing f = EnumFacing.VALUES[i];
-            Vec3f faceNormal = Vec3f.create(f.getDirectionVec());
-            float diff = normal.dotProduct(faceNormal);
+            Vec3i faceNormal = f.getDirectionVec();
+            float diff = Vec3Function.dotProduct(faceNormal.getX(), faceNormal.getY(), faceNormal.getZ(), x, y, z);
     
             if (diff >= 0.0 && diff > minDiff)
             {
@@ -78,9 +79,14 @@ public class QuadHelper
         }
     }
 
+    public static EnumFacing computeFaceForNormal(Vec3f normal)
+    {
+        return computeFaceForNormal(normal.x(), normal.y(), normal.z());
+    }
+    
     public static EnumFacing computeFaceForNormal(Vector4f normal)
     {
-        return computeFaceForNormal(Vec3f.create(normal.x, normal.y, normal.z));
+        return computeFaceForNormal(normal.x, normal.y, normal.z);
     }
 
     /** returns the face that is normally the "top" of the given face */

@@ -33,13 +33,13 @@ public class Vertex implements IPaintableVertex
         @Override
         public Vertex withColorGlow(Vertex vertex, int colorIn, int glowIn)
         {
-            return newVertex(vertex.pos.x, vertex.pos.y, vertex.pos.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn);
+            return newVertex(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), vertex.u, vertex.v, colorIn, vertex.normal, glowIn);
         }
 
         @Override
         public Vertex withUV(Vertex vertex, float uNew, float vNew)
         {
-            return newVertex(vertex.pos.x, vertex.pos.y, vertex.pos.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow);
+            return newVertex(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), uNew, vNew, vertex.color, vertex.normal, vertex.glow);
         }
 
         @Override
@@ -86,21 +86,16 @@ public class Vertex implements IPaintableVertex
     @SuppressWarnings("null")
     public final Vertex flipped()
     {
+        //TODO: should normal already be mutable?
         return this.normal == null
                 ? this
-                : factory().withGeometry(this, this.pos.x, this.pos.y, this.pos.z, this.normal.inverse());
-    }
-    
-    /** returns copy of this vertex with given normal */
-    public final Vertex withNormal(float normalXIn, float normalYIn, float normalZIn)
-    {
-        return factory().withGeometry(this, this.pos.x, this.pos.y, this.pos.z, Vec3f.create(normalXIn, normalYIn, normalZIn));
+                : factory().withGeometry(this, this.pos.x(), this.pos.y(), this.pos.z(), this.normal.mutableCopy().invert());
     }
     
     /** returns copy of this vertex with given normal */
     public final Vertex withNormal(Vec3f normal)
     {
-        return factory().withGeometry(this, this.pos.x, this.pos.y, this.pos.z, normal);
+        return factory().withGeometry(this, this.pos.x(), this.pos.y(), this.pos.z(), normal);
     }
     
     @Override
@@ -125,7 +120,7 @@ public class Vertex implements IPaintableVertex
     public final Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
     {
 
-        Vector4f tmp = new Vector4f(this.pos.x, this.pos.y, this.pos.z, 1f);
+        Vector4f tmp = new Vector4f(this.pos.x(), this.pos.y(), this.pos.z(), 1f);
 
         matrix.transform(tmp);
         if (rescaleToUnitCube && Math.abs(tmp.w - 1f) > 1e-5)
@@ -140,7 +135,7 @@ public class Vertex implements IPaintableVertex
         else
         {
             @SuppressWarnings("null")
-            Vector4f tmpNormal = new Vector4f(this.normal.x, this.normal.y, this.normal.z, 1f);
+            Vector4f tmpNormal = new Vector4f(this.normal.x(), this.normal.y(), this.normal.z(), 1f);
             matrix.transform(tmpNormal);
             float normScale= (float) (1/Math.sqrt(tmpNormal.x*tmpNormal.x + tmpNormal.y*tmpNormal.y + tmpNormal.z*tmpNormal.z));
             return factory().withGeometry(this, tmp.x, tmp.y, tmp.z, Vec3f.create(tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale));
@@ -158,22 +153,22 @@ public class Vertex implements IPaintableVertex
         switch(face)
         {
         case UP:
-            return this.pos.y - 1;
+            return this.pos.y() - 1;
 
         case DOWN:
-            return - this.pos.y;
+            return - this.pos.y();
             
         case EAST:
-            return this.pos.x - 1;
+            return this.pos.x() - 1;
 
         case WEST:
-            return -this.pos.x;
+            return -this.pos.x();
 
         case NORTH:
-            return -this.pos.z;
+            return -this.pos.z();
             
         case SOUTH:
-            return this.pos.z - 1;
+            return this.pos.z() - 1;
 
         default:
             // make compiler shut up about unhandled case
@@ -191,9 +186,9 @@ public class Vertex implements IPaintableVertex
      */
     public final boolean isCsgEqual(Vertex vertexIn)
     {
-        return Math.abs(vertexIn.pos.x - this.pos.x) < QuadHelper.EPSILON
-                && Math.abs(vertexIn.pos.y - this.pos.y) < QuadHelper.EPSILON
-                && Math.abs(vertexIn.pos.z - this.pos.z) < QuadHelper.EPSILON;
+        return Math.abs(vertexIn.pos.x() - this.pos.x()) < QuadHelper.EPSILON
+                && Math.abs(vertexIn.pos.y() - this.pos.y()) < QuadHelper.EPSILON
+                && Math.abs(vertexIn.pos.z() - this.pos.z()) < QuadHelper.EPSILON;
     }
 
     /**
@@ -206,14 +201,14 @@ public class Vertex implements IPaintableVertex
     {
         float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
         if(ab < QuadHelper.EPSILON * 5) return false;
-        float bThis = Useful.distance(this.pos.x, this.pos.y, this.pos.z, x1, y1, z1);
-        float aThis = Useful.distance(x0, y0, z0, this.pos.x, this.pos.y, this.pos.z);
+        float bThis = Useful.distance(this.pos.x(), this.pos.y(), this.pos.z(), x1, y1, z1);
+        float aThis = Useful.distance(x0, y0, z0, this.pos.x(), this.pos.y(), this.pos.z());
         return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);
     }
 
     public final boolean isOnLine(Vertex v0, Vertex v1)
     {
-        return this.isOnLine(v0.pos.x, v0.pos.y, v0.pos.z, v1.pos.x, v1.pos.y, v1.pos.z);
+        return this.isOnLine(v0.pos.x(), v0.pos.y(), v0.pos.z(), v1.pos.x(), v1.pos.y(), v1.pos.z());
     }
 
     public final boolean hasNormal()
@@ -235,9 +230,9 @@ public class Vertex implements IPaintableVertex
         // 2 +(1 - 2) * 0 = 2
         // 2 +(1 - 2) * 1 = 1
         
-        final float newX = this.pos.x + (otherVertex.pos.x - this.pos.x) * otherWeight;
-        final float newY = this.pos.y + (otherVertex.pos.y - this.pos.y) * otherWeight;
-        final float newZ = this.pos.z + (otherVertex.pos.z - this.pos.z) * otherWeight;
+        final float newX = this.pos.x() + (otherVertex.pos.x() - this.pos.x()) * otherWeight;
+        final float newY = this.pos.y() + (otherVertex.pos.y() - this.pos.y()) * otherWeight;
+        final float newZ = this.pos.z() + (otherVertex.pos.z() - this.pos.z()) * otherWeight;
         
         final Vec3f thisNormal = this.normal;
         final Vec3f otherNormal = otherVertex.normal;
@@ -248,9 +243,9 @@ public class Vertex implements IPaintableVertex
         }
         else
         {
-            final float normX = thisNormal.x + (otherNormal.x - thisNormal.x) * otherWeight;
-            final float normY = thisNormal.y + (otherNormal.y - thisNormal.y) * otherWeight;
-            final float normZ = thisNormal.z + (otherNormal.z - thisNormal.z) * otherWeight;
+            final float normX = thisNormal.x() + (otherNormal.x() - thisNormal.x()) * otherWeight;
+            final float normY = thisNormal.y() + (otherNormal.y() - thisNormal.y()) * otherWeight;
+            final float normZ = thisNormal.z() + (otherNormal.z() - thisNormal.z()) * otherWeight;
             final float normScale= (float) (1/Math.sqrt(normX*normX + normY*normY + normZ*normZ));
             
             return factory().interpolate(newX, newY, newZ, Vec3f.create(normX * normScale, normY * normScale, normZ * normScale), this, otherVertex, otherWeight);
@@ -265,25 +260,25 @@ public class Vertex implements IPaintableVertex
         switch(face)
         {
             case EAST:
-                return this.withUV((1 - this.pos.z), (1 - this.pos.y));
+                return this.withUV((1 - this.pos.z()), (1 - this.pos.y()));
                 
             case WEST:
-                return this.withUV(this.pos.z, (1 - this.pos.y));
+                return this.withUV(this.pos.z(), (1 - this.pos.y()));
                 
             case NORTH:
-                return this.withUV((1 - this.pos.x), (1 - this.pos.y));
+                return this.withUV((1 - this.pos.x()), (1 - this.pos.y()));
                 
             case SOUTH:
-                return this.withUV(this.pos.x, (1 - this.pos.y));
+                return this.withUV(this.pos.x(), (1 - this.pos.y()));
                 
             case DOWN:
-                return this.withUV(this.pos.x, (1 - this.pos.z));
+                return this.withUV(this.pos.x(), (1 - this.pos.z()));
                 
             case UP:
             default:
                 // our default semantic for UP is different than MC
                 // "top" is north instead of south
-                return this.withUV(this.pos.x, this.pos.z);
+                return this.withUV(this.pos.x(), this.pos.z());
         }
     }
 
@@ -320,19 +315,19 @@ public class Vertex implements IPaintableVertex
     @Override
     public float x()
     {
-        return this.pos.x;
+        return this.pos.x();
     }
     
     @Override
     public float y()
     {
-        return this.pos.y;
+        return this.pos.y();
     }
     
     @Override
     public float z()
     {
-        return this.pos.z;
+        return this.pos.z();
     }
     
     @Override

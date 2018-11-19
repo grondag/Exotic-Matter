@@ -16,7 +16,8 @@ public class CSGPlanPerf
     {
         Random r = new Random(45);
         
-        CSGPlane plane = new CSGPlane(Vec3f.create(r.nextFloat(), r.nextFloat(), r.nextFloat()).normalize(), r.nextFloat());
+        Vec3f vec = new Vec3f.Mutable(r.nextFloat(), r.nextFloat(), r.nextFloat()).normalize().toImmutable();
+        CSGPlane plane = new CSGPlane(vec, r.nextFloat());
         
         for(int i = 0; i < 200000000; i++)
         {

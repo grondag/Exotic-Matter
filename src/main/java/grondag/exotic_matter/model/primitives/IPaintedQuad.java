@@ -169,16 +169,16 @@ public interface IPaintedQuad extends IPipelinedQuad
             switch(this.layerCount())
             {
             case 1:
-                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x, n.y, n.z, v.color(), uvData[0][i][0], uvData[0][i][1]);
+                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x(), n.y(), n.z(), v.color(), uvData[0][i][0], uvData[0][i][1]);
                 break;
                 
             case 2:
-                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x, n.y, n.z, v.color(), uvData[0][i][0], uvData[0][i][1],
+                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x(), n.y(), n.z(), v.color(), uvData[0][i][0], uvData[0][i][1],
                         v.forTextureLayer(1).color(), uvData[1][i][0], uvData[1][i][1]);
                 break;
             
             case 3:
-                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x, n.y, n.z, v.color(), uvData[0][i][0], uvData[0][i][1],
+                vertexLighter.acceptVertex(v.x(), v.y(), v.z(), n.x(), n.y(), n.z(), v.color(), uvData[0][i][0], uvData[0][i][1],
                         v.forTextureLayer(1).color(), uvData[1][i][0], uvData[1][i][1],
                         v.forTextureLayer(2).color(), uvData[2][i][0], uvData[2][i][1]);
                 break;

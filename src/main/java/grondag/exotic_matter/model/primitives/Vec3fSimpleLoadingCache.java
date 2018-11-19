@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.cache.ISimpleLoadingCache;
 import grondag.exotic_matter.varia.Useful;
 
-
 class Vec3fSimpleLoadingCache
 {
     static final Vec3fSimpleLoadingCache INSTANCE = new Vec3fSimpleLoadingCache(0x80000);
@@ -23,8 +22,6 @@ class Vec3fSimpleLoadingCache
     private final AtomicReference<Vec3fCacheState> backupState = new AtomicReference<Vec3fCacheState>();
     
     private final Object writeLock = new Object();
-
-    
     
     private Vec3fSimpleLoadingCache(int maxSize)
     {
@@ -65,7 +62,7 @@ class Vec3fSimpleLoadingCache
             if(check == null)
                 return load(localState, x, y, z, position);
             
-            else if(check.x == x && check.y == y && check.z == z)
+            else if(check.x() == x && check.y() == y && check.z() == z)
                 return check;
             
             position = (position + 1) & positionMask;
@@ -78,7 +75,7 @@ class Vec3fSimpleLoadingCache
         do
         {
             Vec3f v = backup.values[position];
-            if(v != null && v.x == x && v.y == y && v.z == z)
+            if(v != null && v.x() == x && v.y() == y && v.z() == z)
                 return v;
             
             if(v == null)
@@ -118,7 +115,7 @@ class Vec3fSimpleLoadingCache
             }
             
             // small chance another thread added our value before we got our lock
-            if(currentKey.x == result.x && currentKey.y == result.y && currentKey.z == result.z) 
+            if(currentKey.x() == result.x() && currentKey.y() == result.y() && currentKey.z() == result.z()) 
                 return currentKey;
             
             position = (position + 1) & positionMask;

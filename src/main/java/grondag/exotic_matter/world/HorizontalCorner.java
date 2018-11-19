@@ -9,10 +9,9 @@ public enum HorizontalCorner
     SOUTH_EAST(HorizontalFace.SOUTH, HorizontalFace.EAST),
     SOUTH_WEST(HorizontalFace.SOUTH, HorizontalFace.WEST);
 
-    public final HorizontalFace face1;
-    public final HorizontalFace face2;
-
-    public final Vec3i directionVector;
+    public static final HorizontalCorner[] VALUES = HorizontalCorner.values();
+    public static final int COUNT = VALUES.length;
+    
     private static final HorizontalCorner[][] HORIZONTAL_CORNER_LOOKUP = new HorizontalCorner[4][4];
     
     static
@@ -23,6 +22,11 @@ public enum HorizontalCorner
             HORIZONTAL_CORNER_LOOKUP[corner.face2.ordinal()][corner.face1.ordinal()] = corner;
         }
     }
+    
+    public final HorizontalFace face1;
+    public final HorizontalFace face2;
+
+    public final Vec3i directionVector;
 
     private HorizontalCorner(HorizontalFace face1, HorizontalFace face2)
     {

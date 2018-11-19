@@ -1,7 +1,8 @@
 package grondag.exotic_matter.model.primitives;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3i;
 
 public class Vec3f
 {
@@ -24,14 +25,9 @@ public class Vec3f
         return Vec3fSimpleLoadingCache.INSTANCE.get(x, y, z);
     }
     
-    public static Vec3f create(Vec3i vec)
-    {
-        return create(vec.getX(), vec.getY(), vec.getZ());
-    }
-    
-    public final float x;
-    public final float y;
-    public final float z;
+    protected float x;
+    protected float y;
+    protected float z;
     
     Vec3f(float x, float y, float z)
     {
@@ -41,15 +37,14 @@ public class Vec3f
 //        initCount.incrementAndGet();
     }
     
-    public final Vec3f normalize()
+    public final float dotProduct(float xIn, float yIn, float zIn)
     {
-        float mag = MathHelper.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-        return mag < 1.0E-4F ? ZERO : create(this.x / mag, this.y / mag, this.z / mag);
+        return Vec3Function.dotProduct(this.x, this.y, this.z, xIn, yIn, zIn);
     }
-
+    
     public final float dotProduct(Vec3f vec)
     {
-        return this.x * vec.x + this.y * vec.y + this.z * vec.z;
+        return dotProduct(vec.x, vec.y, vec.z);
     }
 
     /**
@@ -59,40 +54,10 @@ public class Vec3f
     {
         return create(this.y * vec.z - this.z * vec.y, this.z * vec.x - this.x * vec.z, this.x * vec.y - this.y * vec.x);
     }
-
-    public final Vec3f subtract(Vec3f vec)
-    {
-        return this.subtract(vec.x, vec.y, vec.z);
-    }
-
-    public final Vec3f subtract(float x, float y, float z)
-    {
-        return this.addVector(-x, -y, -z);
-    }
-
-    public final Vec3f add(Vec3f vec)
-    {
-        return this.addVector(vec.x, vec.y, vec.z);
-    }
     
-    public final Vec3f addVector(float x, float y, float z)
+    public final float length()
     {
-        return create(this.x + x, this.y + y, this.z + z);
-    }
-    
-    public final Vec3f scale(float factor)
-    {
-        return create(this.x * factor, this.y * factor, this.z * factor);
-    }
-    
-    public final Vec3f inverse()
-    {
-        return create(-this.x, -this.y, -this.z);
-    }
-    
-    public final float lengthVector()
-    {
-        return MathHelper.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+        return MathHelper.sqrt(lengthSquared());
     }
 
     public final float lengthSquared()
@@ -100,13 +65,147 @@ public class Vec3f
         return this.x * this.x + this.y * this.y + this.z * this.z;
     }
     
+    public boolean isMutable()
+    {
+        return false;
+    }
+    
     // PERF - avoid this
     public final float[] toArray()
     {
         float[] retVal = new float[3];
-        retVal[0] = this.x;
-        retVal[1] = this.y;
-        retVal[2] = this.z;
+        retVal[0] = this.x();
+        retVal[1] = this.y();
+        retVal[2] = this.z();
         return retVal;
+    }
+
+    public final float x()
+    {
+        return x;
+    }
+
+    public final float y()
+    {
+        return y;
+    }
+
+    public final float z()
+    {
+        return z;
+    }
+    
+    public Mutable mutableCopy()
+    {
+        return new Mutable(x, y, z);
+    }
+    
+    public static class Mutable extends Vec3f
+    {
+        private static final ArrayBlockingQueue<Mutable> POOL = new ArrayBlockingQueue<>(1024);
+        
+        public static Mutable claim()
+        {
+            Mutable result = POOL.poll();
+            
+            if(result == null)
+                result = new Mutable(0, 0, 0);
+            
+            return result;
+        }
+        
+        public static void release(Mutable vec)
+        {
+            POOL.offer(vec);
+        }
+        
+        public Mutable(float x, float y, float z)
+        {
+            super(x, y, z);
+        }
+        
+        public Mutable load(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            return this;
+        }
+        
+        public final Mutable load(Vec3f fromVec)
+        {
+            this.x = fromVec.x;
+            this.y = fromVec.y;
+            this.z = fromVec.z;
+            return this;
+        }
+        
+        @Override
+        public boolean isMutable()
+        {
+            return true;
+        }
+        
+        public final Vec3f toImmutable()
+        {
+            return create(x, y, z);
+        }
+        
+        public final Mutable subtract(Vec3f vec)
+        {
+            return this.subtract(vec.x, vec.y, vec.z);
+        }
+
+        public final Mutable subtract(float x, float y, float z)
+        {
+            return this.addVector(-x, -y, -z);
+        }
+
+        public final Mutable add(Vec3f vec)
+        {
+            return this.addVector(vec.x, vec.y, vec.z);
+        }
+        
+        public final Mutable addVector(float x, float y, float z)
+        {
+            this.x += x;
+            this.y += y;
+            this.z += z;
+            return this;
+        }
+        
+        public final Mutable scale(float factor)
+        {
+            this.x *= factor;
+            this.y *= factor;
+            this.z *= factor;
+            return this;
+        }
+        
+        public final Mutable invert()
+        {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+            return this;
+        }
+        
+        public final Mutable normalize()
+        {
+            final float mag = length();
+            if(mag < 1.0E-4F)
+            {
+                x = 0;
+                y = 0;
+                z = 0;
+            }
+            else
+            {
+                this.x /= mag;
+                this.y /= mag;
+                this.z /= mag;
+            }
+            return this;
+        }
     }
 }

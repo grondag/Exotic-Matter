@@ -238,13 +238,13 @@ public class PointInPolygonTest
             @Override
             protected final float x(Vec3f pointIn)
             {
-                return pointIn.y;
+                return pointIn.y();
             }
 
             @Override
             protected final float y(Vec3f pointIn)
             {
-                return pointIn.z;
+                return pointIn.z();
             }
         },
         
@@ -253,13 +253,13 @@ public class PointInPolygonTest
             @Override
             protected final float x(Vec3f pointIn)
             {
-                return pointIn.x;
+                return pointIn.x();
             }
 
             @Override
             protected final float y(Vec3f pointIn)
             {
-                return pointIn.z;
+                return pointIn.z();
             }
         },
         
@@ -268,13 +268,13 @@ public class PointInPolygonTest
             @Override
             protected final float x(Vec3f pointIn)
             {
-                return pointIn.x;
+                return pointIn.x();
             }
 
             @Override
             protected final float y(Vec3f pointIn)
             {
-                return pointIn.y;
+                return pointIn.y();
             }
         };
 
@@ -284,12 +284,12 @@ public class PointInPolygonTest
          */
         static DiscardAxis get(Vec3f normal)
         {
-            final float absX = Math.abs(normal.x);
-            final float absY = Math.abs(normal.y);
+            final float absX = Math.abs(normal.x());
+            final float absY = Math.abs(normal.y());
             if(absX > absY)
-                return absX > Math.abs(normal.z) ? X : Z;
+                return absX > Math.abs(normal.z()) ? X : Z;
             else // y  >=  x
-                return absY > Math.abs(normal.z) ? Y : Z;
+                return absY > Math.abs(normal.z()) ? Y : Z;
         }
 
         /**
@@ -297,12 +297,12 @@ public class PointInPolygonTest
          */
         protected float x (Vec3f pointIn)
         {
-            return pointIn.x;
+            return pointIn.x();
         }
         
         protected float y (Vec3f pointIn)
         {
-            return pointIn.y;
+            return pointIn.y();
         }
     }
 }

@@ -51,7 +51,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             .withIgnoreDepthForRandomization(true)
             .withEnabledLayers(PaintLayer.BASE, PaintLayer.LAMP, PaintLayer.MIDDLE)
             .build();
-    
+
     private static final Surface SURFACE_SIDE = Surface.builder(SurfaceTopology.CUBIC)
             .withEnabledLayers(PaintLayer.CUT, PaintLayer.LAMP, PaintLayer.OUTER)
             .withAllowBorders(false)
@@ -99,11 +99,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         @Override
         public Collection<IPolygon> load(long key)
         {
-//            cacheMisses.incrementAndGet();
+            //            cacheMisses.incrementAndGet();
             return createShapeQuads(new TerrainState(key < 0 ? -key : key, 0), key < 0);
         }
     }
-    
+
     static
     {
         IMutablePolygon templateBuilder = new PolyImpl(4);
@@ -112,7 +112,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         templateBuilder.setSurfaceInstance(SURFACE_TOP);
         // default - need to change for sides and bottom
         templateBuilder.setNominalFace(EnumFacing.UP);
-//        templateBuilder.setTag("template");
+        //        templateBuilder.setTag("template");
         template = templateBuilder;
 
         for(int i = 0; i < 5; i++)
@@ -122,45 +122,45 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             qBottom.setSurfaceInstance(SURFACE_SIDE);
             qBottom.setNominalFace(EnumFacing.DOWN);        
             qBottom.setupFaceQuad(0, 0, 1, 1, getBottomY(i-2), EnumFacing.NORTH);
-//            qBottom.setTag("bottom-" + i);
+            //            qBottom.setTag("bottom-" + i);
             bottoms[i] = qBottom;
-            
-//            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-simple-" + i);
+
+            //            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-simple-" + i);
 
             terrainNodesSimple[i] = CSGNode.create(ImmutableList.of(qBottom));
 
-//            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-hybrid-" + i);
-            
+            //            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-hybrid-" + i);
+
             terrainNodesHybrid[i] = CSGNode.create(ImmutableList.of(qBottom), false);
 
             //            terrainNodesComplex[i] = CSGNode.create(ImmutableList.of(qBottom), true);
 
         }
         List<IPolygon> cubeQuads = cubeQuads();
-        
-//        cubeQuads.forEach(q -> q.setTag("cube-simple-" + q.getNominalFace().toString()));
+
+        //        cubeQuads.forEach(q -> q.setTag("cube-simple-" + q.getNominalFace().toString()));
         cubeNodeSimple = CSGNode.create(cubeQuads);
-        
+
         cubeQuads = cubeQuads();
-//        cubeQuads.forEach(q -> q.setTag("cube-hybrid" + q.getNominalFace().toString()));
+        //        cubeQuads.forEach(q -> q.setTag("cube-hybrid" + q.getNominalFace().toString()));
         cubeNodeHybrid  = CSGNode.create(cubeQuads, false);
-        
+
         //        this.cubeNodeComplex  = CSGNode.create(cubeQuads, true);
     }
-    
-//    private final AtomicInteger cacheAttempts = new AtomicInteger(0);
-//    private final AtomicInteger cacheMisses = new AtomicInteger(0);
-//    
-//    public void reportCacheHits()
-//    {
-//        final int attempts = cacheAttempts.get();
-//        final int hits = attempts - cacheMisses.get();
-//        System.out.println(String.format("Terrain cache hits: %d / %d (%f percent)", hits, attempts, 100f * hits / attempts ));
-//        System.out.println(String.format("Cache capacity = %d, maxfill = %d", modelCache.capacity, modelCache.maxFill));
-//        cacheMisses.set(0);
-//        cacheAttempts.set(0);
-//    }
-    
+
+    //    private final AtomicInteger cacheAttempts = new AtomicInteger(0);
+    //    private final AtomicInteger cacheMisses = new AtomicInteger(0);
+    //    
+    //    public void reportCacheHits()
+    //    {
+    //        final int attempts = cacheAttempts.get();
+    //        final int hits = attempts - cacheMisses.get();
+    //        System.out.println(String.format("Terrain cache hits: %d / %d (%f percent)", hits, attempts, 100f * hits / attempts ));
+    //        System.out.println(String.format("Cache capacity = %d, maxfill = %d", modelCache.capacity, modelCache.maxFill));
+    //        cacheMisses.set(0);
+    //        cacheAttempts.set(0);
+    //    }
+
     private static int getIndexForState(TerrainState state)
     {
         return state.getYOffset() + 2;
@@ -175,519 +175,517 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         return -2 - yOffset;
     }
 
+
+    //  private static LongOpenHashSet hitMap = new LongOpenHashSet();
+    //  private static AtomicInteger tryCount = new AtomicInteger();
+    //  private static AtomicInteger hitCount = new AtomicInteger();
+    //  
+    //  public static void reportAndClearHitCount()
+    //  {
+    //      synchronized(hitMap)
+    //      {
+    //          ExoticMatter.INSTANCE.info("Terrain geometry potential cache hit rate = %d percent", (hitCount.get() *  100) / tryCount.get());
+    //          ExoticMatter.INSTANCE.info("Terrain geometry max cached states = %d", hitMap.size());
+    //          tryCount.set(0);
+    //          hitCount.set(0);
+    //          hitMap.clear();
+    //      }
+    //  }
+
+    // PERF: reuse arrays and lists to avoid garbage
     
-//  private static LongOpenHashSet hitMap = new LongOpenHashSet();
-//  private static AtomicInteger tryCount = new AtomicInteger();
-//  private static AtomicInteger hitCount = new AtomicInteger();
-//  
-//  public static void reportAndClearHitCount()
-//  {
-//      synchronized(hitMap)
-//      {
-//          ExoticMatter.INSTANCE.info("Terrain geometry potential cache hit rate = %d percent", (hitCount.get() *  100) / tryCount.get());
-//          ExoticMatter.INSTANCE.info("Terrain geometry max cached states = %d", hitMap.size());
-//          tryCount.set(0);
-//          hitCount.set(0);
-//          hitMap.clear();
-//      }
-//  }
-  
-  private static void addTerrainQuads(TerrainState flowState, CSGNode.Root terrainQuads, boolean needsSubdivision)
-  {
-//      tryCount.incrementAndGet();
-//      synchronized(hitMap)
-//      {
-//          if(!hitMap.add(flowState.getStateKey()))
-//          {
-//              hitCount.incrementAndGet();
-//          }
-//      }
-      
-      // center vertex setup
-      FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
+    private static void addTerrainQuads(TerrainState flowState, CSGNode.Root terrainQuads, boolean needsSubdivision)
+    {
+        //      tryCount.incrementAndGet();
+        //      synchronized(hitMap)
+        //      {
+        //          if(!hitMap.add(flowState.getStateKey()))
+        //          {
+        //              hitCount.incrementAndGet();
+        //          }
+        //      }
 
-      /**
-       * Quads on left (west) side of the top face.<br>
-       * Needed for model and to computer center normal.
-       */
-      IMutablePolygon quadInputsCenterLeft[] = new IMutablePolygon[4];
-      /**
-       * Quads on right (east) side of the top face.<br>
-       * Needed for model and to compute center normal.
-       */
-      IMutablePolygon quadInputsCenterRight[] = new IMutablePolygon[4];
+        // center vertex setup
+        FaceVertex fvCenter = new FaceVertex(0.5f, 0.5f, 1.0f - flowState.getCenterVertexHeight() + flowState.getYOffset());
+
+        /**
+         * Quads on left (west) side of the top face.<br>
+         * Needed for model and to computer center normal.
+         */
+        IMutablePolygon quadInputsCenterLeft[] = new IMutablePolygon[4];
+        /**
+         * Quads on right (east) side of the top face.<br>
+         * Needed for model and to compute center normal.
+         */
+        IMutablePolygon quadInputsCenterRight[] = new IMutablePolygon[4];
 
 
-      /**
-       * Quads adjacent to each side midpoint vertex.  Needed to compute normals.
-       * Will always contains quads for this block but only contains quads
-       * for adjacent space if it has a terrain height.
-       */
-      ArrayList<ArrayList<IMutablePolygon>> quadInputsSide = new ArrayList<>(4);
+        /**
+         * Quads adjacent to each side midpoint vertex.  Needed to compute normals.
+         * Will always contains quads for this block but only contains quads
+         * for adjacent space if it has a terrain height.
+         */
+        ArrayList<ArrayList<IMutablePolygon>> quadInputsSide = new ArrayList<>(4);
 
-      /**
-       * Quads adjacent to each corner vertex.  Needed to compute normals.
-       * Will always contains quads for this block but only contains quads
-       * for adjacent spaces if the space has a terrain height.
-       */
-      ArrayList<ArrayList<IMutablePolygon>> quadInputsCorner = new ArrayList<>(4);
-
-
-      ///////////////////////////////////////////////
-      // set up corner heights and face vertices
-      ///////////////////////////////////////////////
+        /**
+         * Quads adjacent to each corner vertex.  Needed to compute normals.
+         * Will always contains quads for this block but only contains quads
+         * for adjacent spaces if the space has a terrain height.
+         */
+        ArrayList<ArrayList<IMutablePolygon>> quadInputsCorner = new ArrayList<>(4);
 
 
-      // Coordinates assume quad will be set up with North=top orientation
-      // Depth will be set separately.
-
-      /**
-       * Top face vertex positions for corners of this block.  Could be above
-       * or below the box bounding box.  CSG operations will trim shape to block box later.
-       * Initialized to a height of one and changed based on world state.
-       */
-      FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
-      fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1);
-      fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1);
-      fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1);
-      fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1);
-
-      /**
-       * Top face vertex positions for centers of the block at the four corners.  
-       * Initialized to a height of one and changed based on world state.
-       * Used to generate tris needed to compute vertex normals
-       */
-      FaceVertex fvFarCorner[] = new FaceVertex[HorizontalFace.values().length];
-      fvFarCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1.5f, 1.5f, 1);
-      fvFarCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(-0.5f, 1.5f, 1);
-      fvFarCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1.5f, -0.5f, 1);
-      fvFarCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(-0.5f, -0.5f, 1);
+        ///////////////////////////////////////////////
+        // set up corner heights and face vertices
+        ///////////////////////////////////////////////
 
 
+        // Coordinates assume quad will be set up with North=top orientation
+        // Depth will be set separately.
 
-      for(HorizontalCorner corner : HorizontalCorner.values())
-      {
+        /**
+         * Top face vertex positions for corners of this block.  Could be above
+         * or below the box bounding box.  CSG operations will trim shape to block box later.
+         * Initialized to a height of one and changed based on world state.
+         */
+        FaceVertex fvMidCorner[] = new FaceVertex[HorizontalFace.values().length];
+        fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1, 1, 1);
+        fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(0, 1, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1, 0, 1);
+        fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(0, 0, 1);
 
-          fvMidCorner[corner.ordinal()] = fvMidCorner[corner.ordinal()].withDepth(1 - flowState.getMidCornerVertexHeight(corner) + flowState.getYOffset());
-          fvFarCorner[corner.ordinal()] = fvFarCorner[corner.ordinal()].withDepth(1 - flowState.getFarCornerVertexHeight(corner) + flowState.getYOffset());
+        /**
+         * Top face vertex positions for centers of the block at the four corners.  
+         * Initialized to a height of one and changed based on world state.
+         * Used to generate tris needed to compute vertex normals
+         */
+        FaceVertex fvFarCorner[] = new FaceVertex[HorizontalFace.values().length];
+        fvFarCorner[HorizontalCorner.NORTH_EAST.ordinal()] = new FaceVertex(1.5f, 1.5f, 1);
+        fvFarCorner[HorizontalCorner.NORTH_WEST.ordinal()] = new FaceVertex(-0.5f, 1.5f, 1);
+        fvFarCorner[HorizontalCorner.SOUTH_EAST.ordinal()] = new FaceVertex(1.5f, -0.5f, 1);
+        fvFarCorner[HorizontalCorner.SOUTH_WEST.ordinal()] = new FaceVertex(-0.5f, -0.5f, 1);
 
-          quadInputsCorner.add(new ArrayList<IMutablePolygon>(8));            
-      }
+        for(int i = 0; i < HorizontalCorner.COUNT; i++)
+        {
+            HorizontalCorner corner = HorizontalCorner.VALUES[i];
+            fvMidCorner[i] = fvMidCorner[i].withDepth(1 - flowState.getMidCornerVertexHeight(corner) + flowState.getYOffset());
+            fvFarCorner[i] = fvFarCorner[i].withDepth(1 - flowState.getFarCornerVertexHeight(corner) + flowState.getYOffset());
 
-      // Coordinates assume quad will be set up with North=top orientation
-      // Depth will be set separately.
-      FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
-      fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f);
-      fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f);
-      fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f);
-      fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f);
+            quadInputsCorner.add(new ArrayList<IMutablePolygon>(8));            
+        }
 
-      FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
-      fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);
-      fvFarSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, -0.5f, 1.0f);
-      fvFarSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.5f, 0.5f, 1.0f);
-      fvFarSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(-0.5f, 0.5f, 1.0f);
+        // Coordinates assume quad will be set up with North=top orientation
+        // Depth will be set separately.
+        FaceVertex fvMidSide[] = new FaceVertex[HorizontalFace.values().length];
+        fvMidSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1f, 1.0f);
+        fvMidSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, 0f, 1.0f);
+        fvMidSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.0f, 0.5f, 1.0f);
+        fvMidSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(0f, 0.5f, 1.0f);
 
-      for(HorizontalFace side : HorizontalFace.values())
-      {
-          fvMidSide[side.ordinal()] = fvMidSide[side.ordinal()].withDepth(1 - flowState.getMidSideVertexHeight(side) + flowState.getYOffset());
-          fvFarSide[side.ordinal()] = fvFarSide[side.ordinal()].withDepth(1 - flowState.getFarSideVertexHeight(side) + flowState.getYOffset());
+        FaceVertex fvFarSide[] = new FaceVertex[HorizontalFace.values().length];
+        fvFarSide[HorizontalFace.NORTH.ordinal()] = new FaceVertex(0.5f, 1.5f, 1.0f);
+        fvFarSide[HorizontalFace.SOUTH.ordinal()] = new FaceVertex(0.5f, -0.5f, 1.0f);
+        fvFarSide[HorizontalFace.EAST.ordinal()] = new FaceVertex(1.5f, 0.5f, 1.0f);
+        fvFarSide[HorizontalFace.WEST.ordinal()] = new FaceVertex(-0.5f, 0.5f, 1.0f);
 
-          quadInputsSide.add(new ArrayList<IMutablePolygon>(8));   
+        for(HorizontalFace side : HorizontalFace.values())
+        {
+            fvMidSide[side.ordinal()] = fvMidSide[side.ordinal()].withDepth(1 - flowState.getMidSideVertexHeight(side) + flowState.getYOffset());
+            fvFarSide[side.ordinal()] = fvFarSide[side.ordinal()].withDepth(1 - flowState.getFarSideVertexHeight(side) + flowState.getYOffset());
 
-
-          // build quads on the top of this block that that border this side (left and right)
-          // these are always included in the vertex normal calculations for the side midpoint and corner vertices
-
-          IMutablePolygon qiWork = template.mutableCopy(3);
-          qiWork.setupFaceQuad(
-                  fvMidSide[side.ordinal()],
-                  fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
-                  fvCenter,
-                  EnumFacing.NORTH);           
-          quadInputsCenterLeft[side.ordinal()] = qiWork;
-          quadInputsSide.get(side.ordinal()).add(qiWork);
-          quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
-
-          qiWork = template.mutableCopy(3);
-          qiWork.setupFaceQuad(
-                  fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
-                  fvMidSide[side.ordinal()],
-                  fvCenter,
-                  EnumFacing.NORTH);
-          quadInputsCenterRight[side.ordinal()] = qiWork;
-          quadInputsSide.get(side.ordinal()).add(qiWork);
-          quadInputsCorner.get(HorizontalCorner.find(side, side.getRight()).ordinal()).add(qiWork);
-
-          final boolean isSidePresent = flowState.height(side) != TerrainState.NO_BLOCK;
-
-          // add side block tri that borders this block if it is there
-          if(isSidePresent)
-          {
-              qiWork = template.mutableCopy(3);
-              qiWork.setupFaceQuad(
-                      fvFarSide[side.ordinal()],
-                      fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
-                      fvMidSide[side.ordinal()],
-                      EnumFacing.NORTH);           
-              quadInputsSide.get(side.ordinal()).add(qiWork);
-              quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
-
-              qiWork = template.mutableCopy(3);
-              qiWork.setupFaceQuad(
-                      fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
-                      fvFarSide[side.ordinal()],
-                      fvMidSide[side.ordinal()],
-                      EnumFacing.NORTH);           
-              quadInputsSide.get(side.ordinal()).add(qiWork);
-              quadInputsCorner.get(HorizontalCorner.find(side, side.getRight()).ordinal()).add(qiWork);
-          }
+            quadInputsSide.add(new ArrayList<IMutablePolygon>(8));   
 
 
-          // add side block tris that connect to corner but do not border side
-          // if both the side and corner block are present, this will be a tri that
-          // spans both the side and corner block (and will affect normals proportional to area)
+            // build quads on the top of this block that that border this side (left and right)
+            // these are always included in the vertex normal calculations for the side midpoint and corner vertices
 
-          // if only the side is present, will be the half on the side block and if
-          // the side block is missing but the corner block is present will be the part
-          // that is on the corner block.
+            IMutablePolygon qiWork = template.mutableCopy(3);
+            qiWork.setupFaceQuad(
+                    fvMidSide[side.ordinal()],
+                    fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
+                    fvCenter,
+                    EnumFacing.NORTH);           
+            quadInputsCenterLeft[side.ordinal()] = qiWork;
+            quadInputsSide.get(side.ordinal()).add(qiWork);
+            quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
 
-          // in the cases where either the side or corner block is missing, terrain state
-          // will compute the height of midpoint between them to be the 1/2 block less than
-          // the height of center of the block that is present (see TerrainState.calcMidSideVertexHeight)
+            qiWork = template.mutableCopy(3);
+            qiWork.setupFaceQuad(
+                    fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
+                    fvMidSide[side.ordinal()],
+                    fvCenter,
+                    EnumFacing.NORTH);
+            quadInputsCenterRight[side.ordinal()] = qiWork;
+            quadInputsSide.get(side.ordinal()).add(qiWork);
+            quadInputsCorner.get(HorizontalCorner.find(side, side.getRight()).ordinal()).add(qiWork);
 
-          final HorizontalCorner leftCorner = HorizontalCorner.find(side, side.getLeft());
-          final boolean isLeftCornerPresent = flowState.height(leftCorner) != TerrainState.NO_BLOCK;
+            final boolean isSidePresent = flowState.height(side) != TerrainState.NO_BLOCK;
 
-          final HorizontalCorner rightCorner = HorizontalCorner.find(side, side.getRight());
-          final boolean isRightCornerPresent = flowState.height(rightCorner) != TerrainState.NO_BLOCK;
+            // add side block tri that borders this block if it is there
+            if(isSidePresent)
+            {
+                qiWork = template.mutableCopy(3);
+                qiWork.setupFaceQuad(
+                        fvFarSide[side.ordinal()],
+                        fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
+                        fvMidSide[side.ordinal()],
+                        EnumFacing.NORTH);           
+                quadInputsSide.get(side.ordinal()).add(qiWork);
+                quadInputsCorner.get(HorizontalCorner.find(side, side.getLeft()).ordinal()).add(qiWork);
 
-          if(isSidePresent)
-          {
-              qiWork = template.mutableCopy(3);
-              
-              final FaceVertex leftFarCorner = isLeftCornerPresent
-
-                      // have both the corner and side so do one big tri for both
-                      ? fvFarCorner[leftCorner.ordinal()]
-
-                              // only have tri on side block, vertex for side of missing corner will
-                              // be half a block lower than the side's center height
-                              : midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
-                              .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
-
-                      qiWork.setupFaceQuad(
-                              fvMidCorner[leftCorner.ordinal()],
-                              fvFarSide[side.ordinal()],
-                              leftFarCorner,
-                              EnumFacing.NORTH);           
-                      quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
+                qiWork = template.mutableCopy(3);
+                qiWork.setupFaceQuad(
+                        fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
+                        fvFarSide[side.ordinal()],
+                        fvMidSide[side.ordinal()],
+                        EnumFacing.NORTH);           
+                quadInputsSide.get(side.ordinal()).add(qiWork);
+                quadInputsCorner.get(HorizontalCorner.find(side, side.getRight()).ordinal()).add(qiWork);
+            }
 
 
-              qiWork = template.mutableCopy(3);
+            // add side block tris that connect to corner but do not border side
+            // if both the side and corner block are present, this will be a tri that
+            // spans both the side and corner block (and will affect normals proportional to area)
 
-              final FaceVertex rightFarCorner = isRightCornerPresent
+            // if only the side is present, will be the half on the side block and if
+            // the side block is missing but the corner block is present will be the part
+            // that is on the corner block.
 
-                      // have both the corner and side so do one big tri for both
-                      ? fvFarCorner[rightCorner.ordinal()]
+            // in the cases where either the side or corner block is missing, terrain state
+            // will compute the height of midpoint between them to be the 1/2 block less than
+            // the height of center of the block that is present (see TerrainState.calcMidSideVertexHeight)
 
-                              // only have tri on side block, vertex for side of missing corner will
-                              // be half a block lower than the side's center height
-                              : midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
-                              .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
+            final HorizontalCorner leftCorner = HorizontalCorner.find(side, side.getLeft());
+            final boolean isLeftCornerPresent = flowState.height(leftCorner) != TerrainState.NO_BLOCK;
 
-                      qiWork.setupFaceQuad(
-                              fvMidCorner[rightCorner.ordinal()],
-                              rightFarCorner,
-                              fvFarSide[side.ordinal()],
-                              EnumFacing.NORTH);           
-                      quadInputsCorner.get(rightCorner.ordinal()).add(qiWork);
-  }
-          else
-          {
-              if(isLeftCornerPresent)
-              {
-                  // only have the corner
-                  qiWork = template.mutableCopy(3);
-                  qiWork.setupFaceQuad(
-                          fvMidCorner[leftCorner.ordinal()],
-                          midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
-                          .withDepth(fvFarCorner[leftCorner.ordinal()].depth + 0.5f),
-                          fvFarCorner[leftCorner.ordinal()],
-                          EnumFacing.NORTH);           
-                  quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
-              }
+            final HorizontalCorner rightCorner = HorizontalCorner.find(side, side.getRight());
+            final boolean isRightCornerPresent = flowState.height(rightCorner) != TerrainState.NO_BLOCK;
 
-              if(isRightCornerPresent)
-              {
-                  // only have the corner
-                  qiWork = template.mutableCopy(3);
-                  qiWork.setupFaceQuad(
-                          fvMidCorner[rightCorner.ordinal()],
-                          fvFarCorner[rightCorner.ordinal()],
-                          midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
-                          .withDepth(fvFarCorner[rightCorner.ordinal()].depth + 0.5f),
-                          EnumFacing.NORTH);           
-                  quadInputsCorner.get(rightCorner.ordinal()).add(qiWork);
-              }
-          }
-      }
+            if(isSidePresent)
+            {
+                qiWork = template.mutableCopy(3);
 
-      int bottom = getBottomY(flowState.getYOffset());
+                final FaceVertex leftFarCorner = isLeftCornerPresent
 
-      Vec3f normCenter = quadInputsCenterLeft[0].getFaceNormal().scale(quadInputsCenterLeft[0].getArea());
-      normCenter = normCenter.add(quadInputsCenterLeft[1].getFaceNormal().scale(quadInputsCenterLeft[1].getArea()));
-      normCenter = normCenter.add(quadInputsCenterLeft[2].getFaceNormal().scale(quadInputsCenterLeft[2].getArea()));
-      normCenter = normCenter.add(quadInputsCenterLeft[3].getFaceNormal().scale(quadInputsCenterLeft[3].getArea()));
-      normCenter = normCenter.add(quadInputsCenterRight[0].getFaceNormal().scale(quadInputsCenterRight[0].getArea()));
-      normCenter = normCenter.add(quadInputsCenterRight[1].getFaceNormal().scale(quadInputsCenterRight[1].getArea()));
-      normCenter = normCenter.add(quadInputsCenterRight[2].getFaceNormal().scale(quadInputsCenterRight[2].getArea()));
-      normCenter = normCenter.add(quadInputsCenterRight[3].getFaceNormal().scale(quadInputsCenterRight[3].getArea()));
-      normCenter = shadowEnhance(normCenter);
+                        // have both the corner and side so do one big tri for both
+                        ? fvFarCorner[leftCorner.ordinal()]
 
-      Vec3f normSide[] = new Vec3f[4];
-      for(HorizontalFace side : HorizontalFace.values())
-      {
-          Vec3f normTemp = null;
-          for(IMutablePolygon qi : quadInputsSide.get(side.ordinal()))
-          {
-              if(normTemp == null) 
-              {
-                  normTemp = qi.getFaceNormal().scale(qi.getArea());
-              }
-              else
-              {
-                  normTemp = normTemp.add(qi.getFaceNormal().scale(qi.getArea()));
-              }
-          }
-          normSide[side.ordinal()] = shadowEnhance(normTemp);
-      }
+                                // only have tri on side block, vertex for side of missing corner will
+                                // be half a block lower than the side's center height
+                                : midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
+                                .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
 
-      Vec3f normCorner[] = new Vec3f[4];
-      for(HorizontalCorner corner : HorizontalCorner.values())
-      {
-          Vec3f normTemp = null;
-          for(IMutablePolygon qi : quadInputsCorner.get(corner.ordinal()))
-          {
-              if(normTemp == null) 
-              {
-                  normTemp = qi.getFaceNormal().scale(qi.getArea());
-              }
-              else
-              {
-                  normTemp = normTemp.add(qi.getFaceNormal().scale(qi.getArea()));
-              }
-          }
-          normCorner[corner.ordinal()] = shadowEnhance(normTemp);
-      }
+                        qiWork.setupFaceQuad(
+                                fvMidCorner[leftCorner.ordinal()],
+                                fvFarSide[side.ordinal()],
+                                leftFarCorner,
+                                EnumFacing.NORTH);           
+                        quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
 
-      final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple() && !needsSubdivision;
 
-      // note that outputting sides first seems to work best for CSG intersect performance
-      // with convex polyhedra tend to get an unbalanced BSP tree - not much can do about it without creating unwanted splits
-      for(HorizontalFace side: HorizontalFace.values())
-      {
-          // don't use middle vertex if it is close to being in line with corners
-          if(ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isSideSimple(side) && !needsSubdivision)
-          {
+                        qiWork = template.mutableCopy(3);
 
-              // side
-              IMutablePolygon qSide = template.mutableCopy();
-//              qSide.setTag("side-simple-" + side.toString());
-              
-              final HorizontalCorner cornerLeft = HorizontalCorner.find(side, side.getLeft());
-              final HorizontalCorner cornerRight = HorizontalCorner.find(side, side.getRight());
-              
-              qSide.setSurfaceInstance(SURFACE_SIDE);
-              qSide.setNominalFace(side.face);
+                        final FaceVertex rightFarCorner = isRightCornerPresent
 
-              qSide.setupFaceQuad(
-                      new FaceVertex(0, bottom, 0),
-                      new FaceVertex(1, bottom, 0),
-                      new FaceVertex(1, flowState.getMidCornerVertexHeight(cornerLeft) - flowState.getYOffset(), 0),
-                      new FaceVertex(0, flowState.getMidCornerVertexHeight(cornerRight) - flowState.getYOffset(), 0),
-                      EnumFacing.UP);
-              terrainQuads.addPolygon(qSide);
-              
-              // if side is simple top *may* be not necessarily so - build top if not simple
-              if(!isTopSimple)
-              {
-                  IMutablePolygon qi = template.mutableCopy(3);
-                  
-//                  qi.setTag("top-simpleside-" + side.toString());
-                  
-                  qi.setupFaceQuad(
-                          fvMidCorner[cornerLeft.ordinal()],
-                          fvCenter,
-                          fvMidCorner[cornerRight.ordinal()],
-                          EnumFacing.NORTH);   
-                  qi.setVertexNormal(0, normCorner[cornerLeft.ordinal()]);
-                  qi.setVertexNormal(1, normCenter);
-                  qi.setVertexNormal(2, normCorner[cornerRight.ordinal()]);                    
-                  terrainQuads.addPolygon(qi);    
-              }
+                                // have both the corner and side so do one big tri for both
+                                ? fvFarCorner[rightCorner.ordinal()]
 
-          }
-          else // side and top not simple
-          {
+                                        // only have tri on side block, vertex for side of missing corner will
+                                        // be half a block lower than the side's center height
+                                        : midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
+                                        .withDepth(fvFarSide[side.ordinal()].depth + 0.5f);
 
-              //Sides
-              IMutablePolygon qSide = template.mutableCopy();
-//              qSide.setTag("side-complex-1-" + side.toString());
-              qSide.setSurfaceInstance(SURFACE_SIDE);
-              qSide.setNominalFace(side.face);
+                                qiWork.setupFaceQuad(
+                                        fvMidCorner[rightCorner.ordinal()],
+                                        rightFarCorner,
+                                        fvFarSide[side.ordinal()],
+                                        EnumFacing.NORTH);           
+                                quadInputsCorner.get(rightCorner.ordinal()).add(qiWork);
+            }
+            else
+            {
+                if(isLeftCornerPresent)
+                {
+                    // only have the corner
+                    qiWork = template.mutableCopy(3);
+                    qiWork.setupFaceQuad(
+                            fvMidCorner[leftCorner.ordinal()],
+                            midPoint(fvFarSide[side.ordinal()], fvFarCorner[leftCorner.ordinal()])
+                            .withDepth(fvFarCorner[leftCorner.ordinal()].depth + 0.5f),
+                            fvFarCorner[leftCorner.ordinal()],
+                            EnumFacing.NORTH);           
+                    quadInputsCorner.get(leftCorner.ordinal()).add(qiWork);
+                }
 
-              qSide.setupFaceQuad(
-                      new FaceVertex(0, bottom, 0),
-                      new FaceVertex(0.5f, bottom, 0),
-                      new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
-                      new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
-                      EnumFacing.UP);
-              terrainQuads.addPolygon(qSide);
+                if(isRightCornerPresent)
+                {
+                    // only have the corner
+                    qiWork = template.mutableCopy(3);
+                    qiWork.setupFaceQuad(
+                            fvMidCorner[rightCorner.ordinal()],
+                            fvFarCorner[rightCorner.ordinal()],
+                            midPoint(fvFarSide[side.ordinal()], fvFarCorner[rightCorner.ordinal()])
+                            .withDepth(fvFarCorner[rightCorner.ordinal()].depth + 0.5f),
+                            EnumFacing.NORTH);           
+                    quadInputsCorner.get(rightCorner.ordinal()).add(qiWork);
+                }
+            }
+        }
 
-              qSide = qSide.mutableCopy();
-//              qSide.setTag("side-complex-2-" + side.toString());
-              qSide.setSurfaceInstance(SURFACE_SIDE);
-              qSide.setNominalFace(side.face);
-              qSide.setupFaceQuad(
-                      new FaceVertex(0.5f, bottom, 0),
-                      new FaceVertex(1, bottom, 0),
-                      new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
-                      new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
-                      EnumFacing.UP);
-              terrainQuads.addPolygon(qSide);
-              
-              // Side is not simple so have to output tops.
-              // If this quadrant touches an empty block (side or corner)
-              // then subdivide into four tris to allow for smoother vertex colors
-              // along terrain edges (especially lava).
-              
-              // left
-              {
-                  final HorizontalCorner corner = HorizontalCorner.find(side, side.getLeft());
-                  IMutablePolygon qi = quadInputsCenterLeft[side.ordinal()];
-                  qi.setVertexNormal(0, normSide[side.ordinal()]);
-                  qi.setVertexNormal(1, normCorner[corner.ordinal()]);
-                  qi.setVertexNormal(2, normCenter);
-                  
-                  if(needsSubdivision)
-                  {
-                      // find vertex at midpoint of corner and center
-                      Vertex vMid = qi.getVertex(1).interpolate(qi.getVertex(2), 0.5f);
+        int bottom = getBottomY(flowState.getYOffset());
 
-                      IMutablePolygon qHalf = qi.mutableCopy();
-                      qHalf.addVertex(0, qi.getVertex(0));
-                      qHalf.addVertex(1, qi.getVertex(1));
-                      qHalf.addVertex(2, vMid);
-                      terrainQuads.addPolygon(qHalf);
-                      
-                      qHalf = qi.mutableCopy();
-                      qHalf.addVertex(0, qi.getVertex(0));
-                      qHalf.addVertex(1, vMid);
-                      qHalf.addVertex(2, qi.getVertex(2));
-                      terrainQuads.addPolygon(qHalf);
-                  }
-                  else
-                  {
-                      terrainQuads.addPolygon(qi);
-                  }
-              }
-              
-              // right
-              {
-                  final HorizontalCorner corner = HorizontalCorner.find(side, side.getRight());
-                  IMutablePolygon qi = quadInputsCenterRight[side.ordinal()];
-                  qi.setVertexNormal(0, normCorner[corner.ordinal()]);
-                  qi.setVertexNormal(1, normSide[side.ordinal()]);
-                  qi.setVertexNormal(2, normCenter);     
-                  
-                  if(needsSubdivision)
-                  {
-                      // find vertex at midpoint of corner and center
-                      Vertex vMid = qi.getVertex(0).interpolate(qi.getVertex(2), 0.5f);
+        Vec3f.Mutable vecOut = Vec3f.Mutable.claim();
+        Vec3f.Mutable vecIn = Vec3f.Mutable.claim();
+        
+        vecOut.load(quadInputsCenterLeft[0].getFaceNormal()).scale(quadInputsCenterLeft[0].getArea());
+        vecOut.add(vecIn.load(quadInputsCenterLeft[1].getFaceNormal()).scale(quadInputsCenterLeft[1].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterLeft[2].getFaceNormal()).scale(quadInputsCenterLeft[2].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterLeft[3].getFaceNormal()).scale(quadInputsCenterLeft[3].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterRight[0].getFaceNormal()).scale(quadInputsCenterRight[0].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterRight[1].getFaceNormal()).scale(quadInputsCenterRight[1].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterRight[2].getFaceNormal()).scale(quadInputsCenterRight[2].getArea()));
+        vecOut.add(vecIn.load(quadInputsCenterRight[3].getFaceNormal()).scale(quadInputsCenterRight[3].getArea()));
+        shadowEnhance(vecOut);
+        Vec3f normCenter = vecOut.toImmutable();
+        
+        Vec3f normSide[] = new Vec3f[4];
+        
+        for(int i = 0; i < 4; i++)
+        {
+            vecOut.load(0, 0, 0);
+            for(IMutablePolygon qi : quadInputsSide.get(i))
+            {
+                vecOut.add(vecIn.load(qi.getFaceNormal()).scale(qi.getArea()));
+            }
+            shadowEnhance(vecOut);
+            normSide[i] = vecOut.toImmutable();
+        }
 
-                      IMutablePolygon qHalf = qi.mutableCopy();
-                      qHalf.addVertex(0, qi.getVertex(0));
-                      qHalf.addVertex(1, qi.getVertex(1));
-                      qHalf.addVertex(2, vMid);
-                      terrainQuads.addPolygon(qHalf);
-                      
-                      qHalf = qi.mutableCopy();
-                      qHalf.addVertex(0, vMid);
-                      qHalf.addVertex(1, qi.getVertex(1));
-                      qHalf.addVertex(2, qi.getVertex(2));
-                      terrainQuads.addPolygon(qHalf);
-                  }
-                  else
-                  {
-                      terrainQuads.addPolygon(qi);
-                  }
-              }
-          }
-      }   
-      
-      //simple top face if it is relatively flat and all sides can be drawn without a mid vertex
-      if(isTopSimple)
-      {
-          IMutablePolygon qi = template.mutableCopy(4);
-          
-//          qi.setTag("top-simple");
-          
-          qi.setupFaceQuad(
-                  fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()],
-                  fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()],
-                  fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()],
-                  fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()],
-                  EnumFacing.NORTH);   
-          qi.setVertexNormal(0, normCorner[HorizontalCorner.SOUTH_WEST.ordinal()]);
-          qi.setVertexNormal(1, normCorner[HorizontalCorner.SOUTH_EAST.ordinal()]);
-          qi.setVertexNormal(2, normCorner[HorizontalCorner.NORTH_EAST.ordinal()]);
-          qi.setVertexNormal(3, normCorner[HorizontalCorner.NORTH_WEST.ordinal()]);
+        Vec3f normCorner[] = new Vec3f[4];
+        for(int i = 0; i < 4; i++)
+        {
+            vecOut.load(0, 0, 0);
+            for(IMutablePolygon qi : quadInputsCorner.get(i))
+            {
+                vecOut.add(vecIn.load(qi.getFaceNormal()).scale(qi.getArea()));
+            }
+            shadowEnhance(vecOut);
+            normCorner[i] = vecOut.toImmutable();
+        }
 
-          //break into tris unless it is truly coplanar
-          if(qi.isOnSinglePlane())
-          {
-              terrainQuads.addPolygon(qi);   
-          }
-          else
-          {
-              qi.addTrisToCSGRoot(terrainQuads);
-          }
-      }
-      
+        Vec3f.Mutable.release(vecIn);
+        Vec3f.Mutable.release(vecOut);
+        vecIn = null;
+        vecOut = null;
+        
+        final boolean isTopSimple = ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isTopSimple() && !needsSubdivision;
 
-      // Bottom face is pre-added to CSGNode templates
-      //        IMutablePolygon qBottom = Poly.mutable(template);
-      //        qBottom.setSurfaceInstance(SURFACE_SIDE);
-      //        qBottom.setNominalFace(EnumFacing.DOWN);        
-      //        qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
-      //        terrainQuads.add(qBottom);
-      //        terrainQuads.add(getBottomForState(flowState));
-  }
+        // note that outputting sides first seems to work best for CSG intersect performance
+        // with convex polyhedra tend to get an unbalanced BSP tree - not much can do about it without creating unwanted splits
+        for(HorizontalFace side: HorizontalFace.values())
+        {
+            // don't use middle vertex if it is close to being in line with corners
+            if(ConfigXM.BLOCKS.simplifyTerrainBlockGeometry && flowState.isSideSimple(side) && !needsSubdivision)
+            {
 
-  private static List<IPolygon> cubeQuads()
-  {
-      ArrayList<IPolygon> cubeQuads = new ArrayList<>();
-      
-      //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
-      //most important thing seems to be that sides come first
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
-      cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH));
-      return cubeQuads;
-  }
+                // side
+                IMutablePolygon qSide = template.mutableCopy();
+                //              qSide.setTag("side-simple-" + side.toString());
 
-  /**
-   * Returns a face vertex at the average of the coordinates of the inputs.
-   * Does not use any other properties of the inputs.
-   */
-  private static FaceVertex midPoint(FaceVertex first, FaceVertex second)
-  {
-      return new FaceVertex((first.x + second.x) / 2, (first.y + second.y) / 2, (first.depth + second.depth) / 2);
-  }
+                final HorizontalCorner cornerLeft = HorizontalCorner.find(side, side.getLeft());
+                final HorizontalCorner cornerRight = HorizontalCorner.find(side, side.getRight());
+
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
+
+                qSide.setupFaceQuad(
+                        new FaceVertex(0, bottom, 0),
+                        new FaceVertex(1, bottom, 0),
+                        new FaceVertex(1, flowState.getMidCornerVertexHeight(cornerLeft) - flowState.getYOffset(), 0),
+                        new FaceVertex(0, flowState.getMidCornerVertexHeight(cornerRight) - flowState.getYOffset(), 0),
+                        EnumFacing.UP);
+                terrainQuads.addPolygon(qSide);
+
+                // if side is simple top *may* be not necessarily so - build top if not simple
+                if(!isTopSimple)
+                {
+                    IMutablePolygon qi = template.mutableCopy(3);
+
+                    //                  qi.setTag("top-simpleside-" + side.toString());
+
+                    qi.setupFaceQuad(
+                            fvMidCorner[cornerLeft.ordinal()],
+                            fvCenter,
+                            fvMidCorner[cornerRight.ordinal()],
+                            EnumFacing.NORTH);   
+                    qi.setVertexNormal(0, normCorner[cornerLeft.ordinal()]);
+                    qi.setVertexNormal(1, normCenter);
+                    qi.setVertexNormal(2, normCorner[cornerRight.ordinal()]);                    
+                    terrainQuads.addPolygon(qi);    
+                }
+
+            }
+            else // side and top not simple
+            {
+
+                //Sides
+                IMutablePolygon qSide = template.mutableCopy();
+                //              qSide.setTag("side-complex-1-" + side.toString());
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
+
+                qSide.setupFaceQuad(
+                        new FaceVertex(0, bottom, 0),
+                        new FaceVertex(0.5f, bottom, 0),
+                        new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
+                        new FaceVertex(0, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getRight())) - flowState.getYOffset(), 0),
+                        EnumFacing.UP);
+                terrainQuads.addPolygon(qSide);
+
+                qSide = qSide.mutableCopy();
+                //              qSide.setTag("side-complex-2-" + side.toString());
+                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setNominalFace(side.face);
+                qSide.setupFaceQuad(
+                        new FaceVertex(0.5f, bottom, 0),
+                        new FaceVertex(1, bottom, 0),
+                        new FaceVertex(1, flowState.getMidCornerVertexHeight(HorizontalCorner.find(side, side.getLeft())) - flowState.getYOffset(), 0),
+                        new FaceVertex(0.5f, flowState.getMidSideVertexHeight(side) - flowState.getYOffset(), 0),
+                        EnumFacing.UP);
+                terrainQuads.addPolygon(qSide);
+
+                // Side is not simple so have to output tops.
+                // If this quadrant touches an empty block (side or corner)
+                // then subdivide into four tris to allow for smoother vertex colors
+                // along terrain edges (especially lava).
+
+                // left
+                {
+                    final HorizontalCorner corner = HorizontalCorner.find(side, side.getLeft());
+                    IMutablePolygon qi = quadInputsCenterLeft[side.ordinal()];
+                    qi.setVertexNormal(0, normSide[side.ordinal()]);
+                    qi.setVertexNormal(1, normCorner[corner.ordinal()]);
+                    qi.setVertexNormal(2, normCenter);
+
+                    if(needsSubdivision)
+                    {
+                        // find vertex at midpoint of corner and center
+                        Vertex vMid = qi.getVertex(1).interpolate(qi.getVertex(2), 0.5f);
+
+                        IMutablePolygon qHalf = qi.mutableCopy();
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, vMid);
+                        terrainQuads.addPolygon(qHalf);
+
+                        qHalf = qi.mutableCopy();
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, vMid);
+                        qHalf.addVertex(2, qi.getVertex(2));
+                        terrainQuads.addPolygon(qHalf);
+                    }
+                    else
+                    {
+                        terrainQuads.addPolygon(qi);
+                    }
+                }
+
+                // right
+                {
+                    final HorizontalCorner corner = HorizontalCorner.find(side, side.getRight());
+                    IMutablePolygon qi = quadInputsCenterRight[side.ordinal()];
+                    qi.setVertexNormal(0, normCorner[corner.ordinal()]);
+                    qi.setVertexNormal(1, normSide[side.ordinal()]);
+                    qi.setVertexNormal(2, normCenter);     
+
+                    if(needsSubdivision)
+                    {
+                        // find vertex at midpoint of corner and center
+                        Vertex vMid = qi.getVertex(0).interpolate(qi.getVertex(2), 0.5f);
+
+                        IMutablePolygon qHalf = qi.mutableCopy();
+                        qHalf.addVertex(0, qi.getVertex(0));
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, vMid);
+                        terrainQuads.addPolygon(qHalf);
+
+                        qHalf = qi.mutableCopy();
+                        qHalf.addVertex(0, vMid);
+                        qHalf.addVertex(1, qi.getVertex(1));
+                        qHalf.addVertex(2, qi.getVertex(2));
+                        terrainQuads.addPolygon(qHalf);
+                    }
+                    else
+                    {
+                        terrainQuads.addPolygon(qi);
+                    }
+                }
+            }
+        }   
+
+        //simple top face if it is relatively flat and all sides can be drawn without a mid vertex
+        if(isTopSimple)
+        {
+            IMutablePolygon qi = template.mutableCopy(4);
+
+            //          qi.setTag("top-simple");
+
+            qi.setupFaceQuad(
+                    fvMidCorner[HorizontalCorner.SOUTH_WEST.ordinal()],
+                    fvMidCorner[HorizontalCorner.SOUTH_EAST.ordinal()],
+                    fvMidCorner[HorizontalCorner.NORTH_EAST.ordinal()],
+                    fvMidCorner[HorizontalCorner.NORTH_WEST.ordinal()],
+                    EnumFacing.NORTH);   
+            qi.setVertexNormal(0, normCorner[HorizontalCorner.SOUTH_WEST.ordinal()]);
+            qi.setVertexNormal(1, normCorner[HorizontalCorner.SOUTH_EAST.ordinal()]);
+            qi.setVertexNormal(2, normCorner[HorizontalCorner.NORTH_EAST.ordinal()]);
+            qi.setVertexNormal(3, normCorner[HorizontalCorner.NORTH_WEST.ordinal()]);
+
+            //break into tris unless it is truly coplanar
+            if(qi.isOnSinglePlane())
+            {
+                terrainQuads.addPolygon(qi);   
+            }
+            else
+            {
+                qi.addTrisToCSGRoot(terrainQuads);
+            }
+        }
+
+
+        // Bottom face is pre-added to CSGNode templates
+        //        IMutablePolygon qBottom = Poly.mutable(template);
+        //        qBottom.setSurfaceInstance(SURFACE_SIDE);
+        //        qBottom.setNominalFace(EnumFacing.DOWN);        
+        //        qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
+        //        terrainQuads.add(qBottom);
+        //        terrainQuads.add(getBottomForState(flowState));
+    }
+
+    private static List<IPolygon> cubeQuads()
+    {
+        ArrayList<IPolygon> cubeQuads = new ArrayList<>();
+
+        //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
+        //most important thing seems to be that sides come first
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
+        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH));
+        return cubeQuads;
+    }
+
+    /**
+     * Returns a face vertex at the average of the coordinates of the inputs.
+     * Does not use any other properties of the inputs.
+     */
+    private static FaceVertex midPoint(FaceVertex first, FaceVertex second)
+    {
+        return new FaceVertex((first.x + second.x) / 2, (first.y + second.y) / 2, (first.depth + second.depth) / 2);
+    }
     public TerrainMeshFactory()
     {
         super(  StateFormat.FLOW, 
@@ -698,15 +696,17 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     /**
      * Flowing terrain tends to appear washed out due to simplistic lighting model.
-     * Not hacking the lighter, but can scale down the vertical component of vertex normals
+     * Scale down the vertical component of vertex normals
      * to make the shadows a little deeper.
      */
-    private static Vec3f shadowEnhance(Vec3f vec)
+    private static void shadowEnhance(Vec3f.Mutable vec)
     {
-        Vec3f temp = vec.normalize();
-        return Vec3f.create(temp.x, temp.y * temp.y, temp.z).normalize();
+        vec.normalize();
+        float y = vec.y();
+        vec.load(vec.x(), y * y, vec.z());
+        vec.normalize();
     }
-   
+
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
     private static Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
@@ -778,7 +778,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
         CSGNode.Root terrainNode;
         CSGNode.Root cubeNode;
-        
+
 
         if(flowState.isTopSimple())
         {
@@ -795,9 +795,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //                terrainNode = terrainNodesComplex[getIndexForState(flowState)].clone();
         //                cubeNode = this.cubeNodeComplex.clone();
         //            }
-        
+
         addTerrainQuads(flowState, terrainNode, needsSubdivision);
-        
+
         // order here is important
         // terrain has to come first in order to preserve normals when 
         // top terrain face quads are co-planar with cube quads
@@ -805,9 +805,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 terrainNode,
                 cubeNode
                 );
-        
+
         assert result != null : "Got null terrain mesh - not expected.";
-        
+
         return result;
     }
 
@@ -822,39 +822,39 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     {
         return modelState.getTerrainState().verticalOcclusion();
     }
-    
+
     @Override
     public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPolygon> target)
     {
         final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
-            ? IPolygon.makeRecoloring(target) : target;
-        
-        // Hot terrain blocks that border non-hot blocks need a subdivided mesh
-        // for smooth vertex shading. So that we can still use a long key and avoid
-        // instantiating a terrain state for cached meshes, we use the sign bit on 
-        // the key to indicate that subdivision is needed.
-        // Subdivision isn't always strictly necessary for all quadrant of an edge block
-        // but subdividing all enables potentially more cache hits at the cost of a few extra polygons
-        final int hotness = modelState.getTerrainHotness();
-        final boolean needsSubdivision = !(hotness == 0 || hotness == TerrainState.ALL_HOT);
-        final long key = needsSubdivision ? -modelState.getTerrainStateKey() : modelState.getTerrainStateKey();
-        
-        if(key == TerrainState.EMPTY_BLOCK_STATE_KEY)
-            return;
-        
-        // NB: was checking flowState.isFullCube() and returning cubeQuads() in
-        // that case but can produce incorrect normals in rare cases that will cause
-        // shading on top face to be visibly mismatched to neighbors.
-//            cacheAttempts.incrementAndGet();
-        
-        //FIXME: prevent NPE in release due to strange and rare bug somewhere - possibly a concurrency issue in cache
-        final Collection<IPolygon> c = this.modelCache.get(key);
-        if(c == null)
-            assert false : "Got null result from terrain model cache";
-        else
-            c.forEach(wrapped);
+                ? IPolygon.makeRecoloring(target) : target;
+
+                // Hot terrain blocks that border non-hot blocks need a subdivided mesh
+                // for smooth vertex shading. So that we can still use a long key and avoid
+                // instantiating a terrain state for cached meshes, we use the sign bit on 
+                // the key to indicate that subdivision is needed.
+                // Subdivision isn't always strictly necessary for all quadrant of an edge block
+                // but subdividing all enables potentially more cache hits at the cost of a few extra polygons
+                final int hotness = modelState.getTerrainHotness();
+                final boolean needsSubdivision = !(hotness == 0 || hotness == TerrainState.ALL_HOT);
+                final long key = needsSubdivision ? -modelState.getTerrainStateKey() : modelState.getTerrainStateKey();
+
+                if(key == TerrainState.EMPTY_BLOCK_STATE_KEY)
+                    return;
+
+                // NB: was checking flowState.isFullCube() and returning cubeQuads() in
+                // that case but can produce incorrect normals in rare cases that will cause
+                // shading on top face to be visibly mismatched to neighbors.
+                //            cacheAttempts.incrementAndGet();
+
+                //FIXME: prevent NPE in release due to strange and rare bug somewhere - possibly a concurrency issue in cache
+                final Collection<IPolygon> c = this.modelCache.get(key);
+                if(c == null)
+                    assert false : "Got null result from terrain model cache";
+                else
+                    c.forEach(wrapped);
     }
-    
+
     @Override
     public boolean isCube(ISuperModelState modelState)
     {
