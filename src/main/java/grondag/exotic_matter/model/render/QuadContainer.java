@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
-import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.client.renderer.block.model.BakedQuad;

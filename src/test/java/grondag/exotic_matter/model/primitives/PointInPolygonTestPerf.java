@@ -5,6 +5,8 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 

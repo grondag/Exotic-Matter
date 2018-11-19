@@ -1,8 +1,9 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import javax.annotation.Nullable;
 
 import grondag.acuity.api.IRenderPipeline;
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
@@ -12,7 +13,7 @@ import net.minecraft.util.BlockRenderLayer;
  * 
  * See note in IPainteQuad header Regarding texture coordinates...<br>
  */
-public interface IPaintableQuad extends IPaintedQuad
+public interface IPaintablePolygon extends IPaintedPolygon
 {
     void setMinU(float f);
 
@@ -58,6 +59,6 @@ public interface IPaintableQuad extends IPaintedQuad
     void setVertex(int i, IPaintableVertex thisVertex);
     
     /** sets acuity render pipeline and returns self for convenience */
-    IPaintableQuad setPipeline(@Nullable IRenderPipeline pipeline);
+    IPaintablePolygon setPipeline(@Nullable IRenderPipeline pipeline);
 
 }

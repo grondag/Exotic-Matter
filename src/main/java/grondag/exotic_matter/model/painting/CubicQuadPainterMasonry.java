@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painting;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.primitives.FaceQuadInputs;
-import grondag.exotic_matter.model.primitives.IPaintableQuad;
+import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
 import grondag.exotic_matter.world.SimpleJoin;
@@ -24,7 +24,7 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     }
     
     @Override
-    public final void textureQuad(IPaintableQuad quad, Consumer<IPaintableQuad> target, boolean isItem)
+    public final void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
     {
         assert quad.isLockUV() : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
         

@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import java.util.function.Function;
 
@@ -7,12 +7,13 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public interface IMutablePolygon extends IPolygon, IPaintableQuad
+public interface IMutablePolygon extends IPolygon, IPaintablePolygon
 {
     @Override
     public default IMutablePolygon mutableReference()

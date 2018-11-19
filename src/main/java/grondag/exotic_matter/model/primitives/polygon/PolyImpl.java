@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -8,6 +8,8 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
 import grondag.exotic_matter.model.CSG.CSGNode.Root;
+import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
 import grondag.exotic_matter.model.primitives.vertex.IVertexFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -539,19 +541,19 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public IPaintableQuad getSubQuad(int layerIndex)
+    public IPaintablePolygon getSubPoly(int layerIndex)
     {
         return this;
     }
     
     @Override
-    public IPaintableQuad paintableCopyWithVertices()
+    public IPaintablePolygon paintableCopyWithVertices()
     {
         return this.mutableCopyWithVertices();
     }
 
     @Override
-    public IPaintableQuad paintableCopy(int vertexCount)
+    public IPaintablePolygon paintableCopy(int vertexCount)
     {
         return this.mutableCopy(vertexCount);
     }
@@ -563,9 +565,9 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     }
 
     @Override
-    public void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean ensureConvex)
+    public void toPaintableQuads(Consumer<IPaintablePolygon> consumer, boolean ensureConvex)
     {
-        this.toQuads(q -> consumer.accept((IPaintableQuad) q), ensureConvex);
+        this.toQuads(q -> consumer.accept((IPaintablePolygon) q), ensureConvex);
     }
 
     @Override

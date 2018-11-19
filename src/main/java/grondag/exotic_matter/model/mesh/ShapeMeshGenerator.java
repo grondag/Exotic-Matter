@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.primitives.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;

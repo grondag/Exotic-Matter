@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.IPaintableQuad;
+import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.TextureRotationType;
 import grondag.exotic_matter.model.texture.TextureScale;
@@ -22,7 +22,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public void textureQuad(IPaintableQuad quad, Consumer<IPaintableQuad> target, boolean isItem)
+    public void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.

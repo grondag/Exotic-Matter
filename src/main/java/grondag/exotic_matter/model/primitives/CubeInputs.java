@@ -3,6 +3,9 @@ package grondag.exotic_matter.model.primitives;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 

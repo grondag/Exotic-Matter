@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model.render;
 
-import grondag.exotic_matter.model.primitives.IPaintableQuad;
-import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -179,7 +179,7 @@ public class QuadBakery
         return QuadCache.INSTANCE.getCachedQuad(quad);
     }
     
-    public static void applyTextureRotation(IPaintableQuad raw, float[][] uvData)
+    public static void applyTextureRotation(IPaintablePolygon raw, float[][] uvData)
     {
        switch(raw.getRotation())
        {

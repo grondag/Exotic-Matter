@@ -5,6 +5,8 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
+
 class TriangleBoxTestPerf
 {
     @Test

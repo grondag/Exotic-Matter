@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import java.util.function.Consumer;
 
@@ -30,10 +30,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Note that a "min" UV value in the polygon instance may not be the mathematical minimum
  * because UV values can be flipped for to reverse the texture during rendering.  Same applies to max.<p>
  */
-public interface IPaintedQuad extends IPipelinedQuad
+public interface IPaintedPolygon extends IPipelinedQuad
 {
 
-    IPaintableQuad getSubQuad(int layerIndex);
+    IPaintablePolygon getSubPoly(int layerIndex);
     
     /**
      * See notes on UV coordinates in header
@@ -120,11 +120,11 @@ public interface IPaintedQuad extends IPipelinedQuad
      */
     boolean isConvex();
 
-    void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean b);
+    void toPaintableQuads(Consumer<IPaintablePolygon> consumer, boolean b);
     
-    IPaintableQuad paintableCopyWithVertices();
+    IPaintablePolygon paintableCopyWithVertices();
 
-    IPaintableQuad paintableCopy(int vertexCount);
+    IPaintablePolygon paintableCopy(int vertexCount);
     
     /**
      * Convenient shorthand for null check and texture format lookup.
@@ -139,17 +139,17 @@ public interface IPaintedQuad extends IPipelinedQuad
     @SideOnly(value = Side.CLIENT)
     public default void produceVertices(IPipelinedVertexConsumer vertexLighter)
     {
-        float[][][] uvData = IPaintedQuad.getUVData(this);
+        float[][][] uvData = IPaintedPolygon.getUVData(this);
         Vec3f fn = this.getFaceNormal();
         int glow = 0;
         
         vertexLighter.setEmissive(0, this.isEmissive());
         if(uvData.length > 1)
         {
-            vertexLighter.setEmissive(1, this.getSubQuad(1).isEmissive());
+            vertexLighter.setEmissive(1, this.getSubPoly(1).isEmissive());
             if(uvData.length == 3)
             {
-                vertexLighter.setEmissive(2, this.getSubQuad(2).isEmissive());
+                vertexLighter.setEmissive(2, this.getSubPoly(2).isEmissive());
             }
         }
         
@@ -207,7 +207,7 @@ public interface IPaintedQuad extends IPipelinedQuad
      * WARNING: returned result is thread-local, do not let it escape.
      */
     @SuppressWarnings("null")
-    static float[][][] getUVData(IPaintedQuad mainPoly)
+    static float[][][] getUVData(IPaintedPolygon mainPoly)
     {
         final int layerCount = mainPoly.layerCount();
         
@@ -215,7 +215,7 @@ public interface IPaintedQuad extends IPipelinedQuad
         
         for(int n = 0; n < layerCount; n++)
         {
-            IPaintableQuad poly = mainPoly.getSubQuad(n);
+            IPaintablePolygon poly = mainPoly.getSubPoly(n);
             
             final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(poly.getTextureName());
             

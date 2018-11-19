@@ -1,12 +1,8 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +12,10 @@ import com.google.common.collect.ImmutableList.Builder;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
+import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
+import grondag.exotic_matter.model.primitives.PointInPolygonTest;
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.model.render.QuadBakery;
@@ -29,7 +29,7 @@ import net.minecraft.util.math.Vec3i;
  * Immutable base interface for classes used to create and transform meshes before baking into MC quads.<p>
  */
 
-public interface IPolygon extends IPaintableQuad
+public interface IPolygon extends IPaintablePolygon
 {
     Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
@@ -140,6 +140,7 @@ public interface IPolygon extends IPaintableQuad
     }
     
     public void addTrisToCSGRoot(CSGNode.Root root);
+    
       /**
       * Provide direct access to vertex array for CSG only.
       * Performance optimization.
@@ -467,29 +468,6 @@ public interface IPolygon extends IPaintableQuad
         return null;
     }
 
-    /**
-     * Randomly recolors all the polygons as an aid to debugging.
-     * Polygons must be mutable and are mutated by this operation.
-     */
-    static void recolor(Collection<IPolygon> target)
-    {
-        Stream<IPolygon> quadStream;
-    
-        if (target.size() > 200) {
-            quadStream = target.parallelStream();
-        } else {
-            quadStream = target.stream();
-        }
-    
-        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
-    }
-    
-    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
-    {
-        final Random r = ThreadLocalRandom.current();
-        return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
-    }
-    
     public default void addBakedQuadsToBuilder(Builder<BakedQuad> builder, boolean isItem)
     {
         builder.add(QuadBakery.createBakedQuad(this, isItem));

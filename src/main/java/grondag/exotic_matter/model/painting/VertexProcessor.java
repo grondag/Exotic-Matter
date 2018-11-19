@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.model.primitives.IPaintableQuad;
+import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -33,5 +33,5 @@ public abstract class VertexProcessor
         this.registryName = registryName;
     }
 
-    public abstract void process(IPaintableQuad result, ISuperModelState modelState, PaintLayer paintLayer);
+    public abstract void process(IPaintablePolygon result, ISuperModelState modelState, PaintLayer paintLayer);
 }

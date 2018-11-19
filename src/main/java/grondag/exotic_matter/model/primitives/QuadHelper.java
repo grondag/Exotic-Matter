@@ -1,6 +1,11 @@
 package grondag.exotic_matter.model.primitives;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Quat4f;
@@ -8,6 +13,9 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -319,4 +327,27 @@ public class QuadHelper
                list.add(quad);
            }
        }
+
+    /**
+     * Randomly recolors all the polygons as an aid to debugging.
+     * Polygons must be mutable and are mutated by this operation.
+     */
+    public static void recolor(Collection<IPolygon> target)
+    {
+        Stream<IPolygon> quadStream;
+    
+        if (target.size() > 200) {
+            quadStream = target.parallelStream();
+        } else {
+            quadStream = target.stream();
+        }
+    
+        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+    }
+
+    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
+    {
+        final Random r = ThreadLocalRandom.current();
+        return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
+    }
 }

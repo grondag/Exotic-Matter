@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.MultiTexturePoly;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.MultiTexturePoly;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -83,7 +83,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
-                    this.get(1).producePaintedQuad(p0.getSubQuad(1), p1 -> target.accept(p1.getParent()), isItem);
+                    this.get(1).producePaintedQuad(p0.getSubPoly(1), p1 -> target.accept(p1.getParent()), isItem);
                 }, isItem);
                 break;
                 
@@ -95,9 +95,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
                 this.get(0).producePaintedQuad(q, p0 -> 
                 {
-                    this.get(1).producePaintedQuad(p0.getSubQuad(1), p1 -> 
+                    this.get(1).producePaintedQuad(p0.getSubPoly(1), p1 -> 
                     {
-                        this.get(2).producePaintedQuad(p1.getSubQuad(2), p2 -> target.accept(p2.getParent()), isItem);
+                        this.get(2).producePaintedQuad(p1.getSubPoly(2), p2 -> target.accept(p2.getParent()), isItem);
                     }, isItem);
                 }, isItem);
                 break;

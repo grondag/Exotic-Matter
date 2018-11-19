@@ -6,9 +6,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
-import grondag.exotic_matter.model.primitives.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.PolyImpl;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;

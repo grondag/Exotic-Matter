@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import grondag.acuity.api.IPipelinedQuad;
 import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
 import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
-import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.world.Rotation;

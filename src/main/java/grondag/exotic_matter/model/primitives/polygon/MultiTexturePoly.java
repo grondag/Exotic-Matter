@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import grondag.exotic_matter.model.primitives.vertex.IVertexFactory;
 import grondag.exotic_matter.model.primitives.vertex.MultiTextureVertex;
@@ -103,7 +103,7 @@ public abstract class MultiTexturePoly
         }
         
         @Override
-        public IPaintableQuad getSubQuad(int layerIndex)
+        public IPaintablePolygon getSubPoly(int layerIndex)
         {
             switch(layerIndex)
             {
@@ -194,7 +194,7 @@ public abstract class MultiTexturePoly
         }
         
         @Override
-        public IPaintableQuad getSubQuad(int layerIndex)
+        public IPaintablePolygon getSubPoly(int layerIndex)
         {
             switch(layerIndex)
             {

@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.polygon;
 
 import java.util.function.Consumer;
 
@@ -12,7 +12,7 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public abstract class PaintableSubQuad implements IPaintableQuad
+public abstract class PaintableSubQuad implements IPaintablePolygon
 {
     protected float minU = 0;
     protected float maxU = 1;
@@ -25,7 +25,7 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     
     protected PaintableSubQuad()
     {
-        final IPaintableQuad parent = this.getParent();
+        final IPaintablePolygon parent = this.getParent();
         // default all settings to parent values
         this.minU = parent.getMinU();
         this.minV = parent.getMinV();
@@ -58,15 +58,15 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
     
     @Override
-    public IPaintableQuad paintableCopyWithVertices()
+    public IPaintablePolygon paintableCopyWithVertices()
     {
-        return getParent().paintableCopyWithVertices().getSubQuad(layerIndex());
+        return getParent().paintableCopyWithVertices().getSubPoly(layerIndex());
     }
 
     @Override
-    public IPaintableQuad paintableCopy(int vertexCount)
+    public IPaintablePolygon paintableCopy(int vertexCount)
     {
-        return getParent().paintableCopy(vertexCount).getSubQuad(layerIndex());
+        return getParent().paintableCopy(vertexCount).getSubPoly(layerIndex());
     }
 
     @Override
@@ -82,21 +82,21 @@ public abstract class PaintableSubQuad implements IPaintableQuad
     }
     
     @Override
-    public void toPaintableQuads(Consumer<IPaintableQuad> consumer, boolean isItem)
+    public void toPaintableQuads(Consumer<IPaintablePolygon> consumer, boolean isItem)
     {
-        getParent().toPaintableQuads(q -> q.getSubQuad(layerIndex()), isItem);
+        getParent().toPaintableQuads(q -> q.getSubPoly(layerIndex()), isItem);
     }
 
     @Override
-    public IPaintableQuad getSubQuad(int layerIndex)
+    public IPaintablePolygon getSubPoly(int layerIndex)
     {
-        return getParent().getSubQuad(layerIndex);
+        return getParent().getSubPoly(layerIndex);
     }
     
     @Override
-    public IPaintableQuad setPipeline(@Nullable IRenderPipeline pipeline)
+    public IPaintablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
     {
-        return getParent().setPipeline(pipeline).getSubQuad(layerIndex());
+        return getParent().setPipeline(pipeline).getSubPoly(layerIndex());
     }
     
     @Override

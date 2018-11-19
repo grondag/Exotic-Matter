@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import javax.vecmath.Vector3f;
 
-import grondag.exotic_matter.model.primitives.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
