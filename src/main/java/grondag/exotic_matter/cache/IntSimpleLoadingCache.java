@@ -80,6 +80,7 @@ public class IntSimpleLoadingCache<V> implements ISimpleLoadingCache
 
     protected V loadFromBackup(IntCacheState<V> backup, final int key)
     {
+        //PERF: Don't recompute hash in backup. If position mask is same shouldn't be needed.
         int position = (int) (Useful.longHash(key) & positionMask);
         do
         {

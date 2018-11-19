@@ -42,6 +42,7 @@ public class LongAtomicLoadingCache<V> implements ISimpleLoadingCache
         this.activeState = new LongCacheState<V>(this.capacity);
     }
     
+    @SuppressWarnings("null")
     public V get(long key)
     {
         LongCacheState<V> localState = activeState;
@@ -105,6 +106,7 @@ public class LongAtomicLoadingCache<V> implements ISimpleLoadingCache
     }
     
     
+    @SuppressWarnings("null")
     protected V load(LongCacheState<V> localState, long key, int position)
     {        
         // no need to handle zero key here - is handled as privileged case in get();
@@ -142,7 +144,7 @@ public class LongAtomicLoadingCache<V> implements ISimpleLoadingCache
         return result;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "null"})
     private V getValueEventually(LongCacheState<V> localState, int position, long key)
     {
         long offset = objectByteOffset(position);

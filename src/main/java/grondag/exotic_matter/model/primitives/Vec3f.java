@@ -5,11 +5,23 @@ import net.minecraft.util.math.Vec3i;
 
 public class Vec3f
 {
+//    private static AtomicInteger createCount = new AtomicInteger();
+//    private static AtomicInteger initCount = new AtomicInteger();
+    
     public static final Vec3f ZERO = new Vec3f(0, 0, 0);
-
+    
     public static Vec3f create(float x, float y, float z)
     {
-        return new Vec3f(x, y, z);
+//        if((createCount.incrementAndGet() & 0xFFFFF) == 0xFFFFF)
+//        {
+//            int c = createCount.get();
+//            int i = initCount.get();
+//            System.out.println("Instance count = " + i);
+//            System.out.println("Create count = " + c);
+//            System.out.println("Miss rate = " + i * 100 / c);
+//            System.out.println("");
+//        }
+        return Vec3fSimpleLoadingCache.INSTANCE.get(x, y, z);
     }
     
     public static Vec3f create(Vec3i vec)
@@ -21,11 +33,12 @@ public class Vec3f
     public final float y;
     public final float z;
     
-    private Vec3f(float x, float y, float z)
+    Vec3f(float x, float y, float z)
     {
         this.x = x;
         this.y = y;
         this.z = z;
+//        initCount.incrementAndGet();
     }
     
     public final Vec3f normalize()
