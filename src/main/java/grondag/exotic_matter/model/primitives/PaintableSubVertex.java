@@ -72,21 +72,9 @@ public abstract class PaintableSubVertex<T extends Vertex> implements IPaintable
     }
    
     @Override
-    public float x()
+    public Vec3f pos()
     {
-        return parent.x();
-    }
-    
-    @Override
-    public float y()
-    {
-        return parent.y();
-    }
-
-    @Override
-    public float z()
-    {
-        return parent.z();
+        return parent.pos();
     }
     
     @Override

@@ -292,7 +292,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)this.getVertex(i);
-            int vColor = ColorHelper.multiplyColor(color, v.color);
+            int vColor = ColorHelper.multiplyColor(color, v.color());
             this.setVertex(i, v.withColor(vColor));
         }
     }
@@ -373,7 +373,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount(); i++)
         {
             Vertex v = (Vertex)getVertex(i);
-            this.setVertex(i, v.withXYZ(v.pos.x() * scale + c, v.pos.y() * scale + c, v.pos.z() * scale + c));
+            this.setVertex(i, v.withXYZ(v.x() * scale + c, v.y() * scale + c, v.z() * scale + c));
         }
     }
 
@@ -396,7 +396,7 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
         for(int i = 0; i < this.vertexCount; i++)
         {
             Vertex vertex = (Vertex)this.getVertex(i);
-            Vector4f temp = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1);
+            Vector4f temp = new Vector4f(vertex.x(), vertex.y(), vertex.z(), 1);
             matrix.transform(temp);
             this.setVertex(i, vertex.withXYZ((float)temp.x, (float)temp.y, (float)temp.z));
         }

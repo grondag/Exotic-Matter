@@ -93,7 +93,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertex(i).u);
+            final int t = vertexType(quad.getVertex(i).u());
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -116,12 +116,12 @@ public class QuadrantSplitter
             int iLowVertex = 0;
             
             Vertex thisVertex = quad.getVertex(vCount -1);
-            int thisType = vertexType(thisVertex.u);
+            int thisType = vertexType(thisVertex.u());
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
                 final Vertex nextVertex = quad.getVertex(iNext);
-                final int nextType = vertexType(nextVertex.u);
+                final int nextType = vertexType(nextVertex.u());
                 
                 if(thisType == EDGE)
                 {
@@ -133,7 +133,7 @@ public class QuadrantSplitter
                     high.setVertex(iHighVertex++, thisVertex);
                     if(nextType == LOW)
                     {
-                        final float dist = (0.5f - thisVertex.u) / (nextVertex.u - thisVertex.u);
+                        final float dist = (0.5f - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);
@@ -144,7 +144,7 @@ public class QuadrantSplitter
                     low.setVertex(iLowVertex++, thisVertex);
                     if(nextType == HIGH)
                     {
-                        final float dist = (0.5f - thisVertex.u) / (nextVertex.u - thisVertex.u);
+                        final float dist = (0.5f - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);
@@ -167,7 +167,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertex(i).v);
+            final int t = vertexType(quad.getVertex(i).v());
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -190,12 +190,12 @@ public class QuadrantSplitter
             int iLowVertex = 0;
             
             Vertex thisVertex = quad.getVertex(vCount -1);
-            int thisType = vertexType(thisVertex.v);
+            int thisType = vertexType(thisVertex.v());
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
                 final Vertex nextVertex = quad.getVertex(iNext);
-                final int nextType = vertexType(nextVertex.v);
+                final int nextType = vertexType(nextVertex.v());
                 
                 if(thisType == EDGE)
                 {
@@ -207,7 +207,7 @@ public class QuadrantSplitter
                     high.setVertex(iHighVertex++, thisVertex);
                     if(nextType == LOW)
                     {
-                        final float dist = (0.5f - thisVertex.v) / (nextVertex.v - thisVertex.v);
+                        final float dist = (0.5f - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);
@@ -218,7 +218,7 @@ public class QuadrantSplitter
                     low.setVertex(iLowVertex++, thisVertex);
                     if(nextType == HIGH)
                     {
-                        final float dist = (0.5f - thisVertex.v) / (nextVertex.v - thisVertex.v);
+                        final float dist = (0.5f - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);

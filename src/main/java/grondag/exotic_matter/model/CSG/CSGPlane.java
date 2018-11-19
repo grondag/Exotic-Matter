@@ -72,7 +72,7 @@ public class CSGPlane
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();
-        this.dist = normal.dotProduct(quad.vertex[0].pos);    
+        this.dist = normal.dotProduct(quad.vertex[0].pos());    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -120,7 +120,7 @@ public class CSGPlane
 //    private final int vertexIncrementInner(Vertex v)
 //    {
         
-        final float t = v.pos.x() * this.normalX + v.pos.y() * this.normalY + v.pos.z() * this.normalZ - this.dist;
+        final float t = v.x() * this.normalX + v.y() * this.normalY + v.z() * this.normalZ - this.dist;
         
         if(t <= QuadHelper.EPSILON)
         {
@@ -138,7 +138,7 @@ public class CSGPlane
     
     private final int vertexType(Vertex v)
     {
-        final float t = v.pos.x() * this.normalX + v.pos.y() * this.normalY + v.pos.z() * this.normalZ - this.dist;
+        final float t = v.x() * this.normalX + v.y() * this.normalY + v.z() * this.normalZ - this.dist;
         
         if(t >= -QuadHelper.EPSILON)
         {
@@ -300,11 +300,14 @@ public class CSGPlane
                     // If the next vertex will be included in this side, we are starting the line connecting
                     // next vertex with previous vertex and should use line from prev. vertex
                     // If the next vertex will NOT be included in this side, we are starting the split line.
-                    final float tx = jVertex.pos.x() - iVertex.pos.x();
-                    final float ty = jVertex.pos.y() - iVertex.pos.y();
-                    final float tz = jVertex.pos.z() - iVertex.pos.z();
+                    final Vec3f jPos = jVertex.pos();
+                    final Vec3f iPos = iVertex.pos();
                     
-                    final float iDot = iVertex.pos.x() * this.normalX + iVertex.pos.y() * this.normalY + iVertex.pos.z() * this.normalZ;
+                    final float tx = jPos.x() - iPos.x();
+                    final float ty = jPos.y() - iPos.y();
+                    final float tz = jPos.z() - iPos.z();
+                    
+                    final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);
@@ -326,10 +329,13 @@ public class CSGPlane
                     backQuad.vertex[iBack++] = iVertex;
                     
                     // see notes for 5
-                    final float tx = jVertex.pos.x() - iVertex.pos.x();
-                    final float ty = jVertex.pos.y() - iVertex.pos.y();
-                    final float tz = jVertex.pos.z() - iVertex.pos.z();
-                    final float iDot = iVertex.pos.x() * this.normalX + iVertex.pos.y() * this.normalY + iVertex.pos.z() * this.normalZ;
+                    final Vec3f jPos = jVertex.pos();
+                    final Vec3f iPos = iVertex.pos();
+                    
+                    final float tx = jPos.x() - iPos.x();
+                    final float ty = jPos.y() - iPos.y();
+                    final float tz = jPos.z() - iPos.z();
+                    final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);

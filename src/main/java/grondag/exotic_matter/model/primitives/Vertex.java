@@ -49,12 +49,12 @@ public class Vertex implements IPaintableVertex
         }
     };
     
-    public final Vec3f pos;
-    public final float u;
-    public final float v;
-    public final int color;
-    public final @Nullable Vec3f normal;
-    public final short glow;
+    protected final Vec3f pos;
+    protected final float u;
+    protected final float v;
+    protected final int color;
+    protected final @Nullable Vec3f normal;
+    protected final short glow;
     
     protected Vertex(float x, float y, float z, float u, float v, int color, @Nullable Vec3f normal, int glow)
     {
@@ -346,5 +346,11 @@ public class Vertex implements IPaintableVertex
         default:
             throw new IndexOutOfBoundsException();
         }
+    }
+
+    @Override
+    public Vec3f pos()
+    {
+        return this.pos;
     }
 }

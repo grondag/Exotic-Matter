@@ -149,9 +149,9 @@ class PointInPolygonTestPerf
         final Vertex v2 = va[2];
         
         return accuratePointInTriangle(d.x(point), d.y(point), 
-                d.x(v0.pos), d.y(v0.pos),
-                d.x(v1.pos), d.y(v1.pos),
-                d.x(v2.pos), d.y(v2.pos));
+                d.x(v0.pos()), d.y(v0.pos()),
+                d.x(v1.pos()), d.y(v1.pos()),
+                d.x(v2.pos()), d.y(v2.pos()));
         
     }
 }

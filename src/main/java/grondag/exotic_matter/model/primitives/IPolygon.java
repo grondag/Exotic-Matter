@@ -169,9 +169,9 @@ public interface IPolygon extends IPaintableQuad
 
         Vertex firstPoint = this.getVertex(0);
         
-        float dx = originX - firstPoint.pos.x();
-        float dy = originY - firstPoint.pos.y();
-        float dz = originZ - firstPoint.pos.z();
+        float dx = originX - firstPoint.x();
+        float dy = originY - firstPoint.y();
+        float dz = originZ - firstPoint.z();
         
         float distanceToPlane = -(dx * normX + dy * normY + dz * normZ) / directionDotNormal;
         //double distanceToPlane = -normal.dotProduct((origin.subtract(firstPoint))) / directionDotNormal;
@@ -209,13 +209,13 @@ public interface IPolygon extends IPaintableQuad
     
     public default AxisAlignedBB getAABB()
     {
-        double minX = Math.min(Math.min(getVertex(0).pos.x(), getVertex(1).pos.x()), Math.min(getVertex(2).pos.x(), getVertex(3).pos.x()));
-        double minY = Math.min(Math.min(getVertex(0).pos.y(), getVertex(1).pos.y()), Math.min(getVertex(2).pos.y(), getVertex(3).pos.y()));
-        double minZ = Math.min(Math.min(getVertex(0).pos.z(), getVertex(1).pos.z()), Math.min(getVertex(2).pos.z(), getVertex(3).pos.z()));
+        double minX = Math.min(Math.min(getVertex(0).x(), getVertex(1).x()), Math.min(getVertex(2).x(), getVertex(3).x()));
+        double minY = Math.min(Math.min(getVertex(0).y(), getVertex(1).y()), Math.min(getVertex(2).y(), getVertex(3).y()));
+        double minZ = Math.min(Math.min(getVertex(0).z(), getVertex(1).z()), Math.min(getVertex(2).z(), getVertex(3).z()));
 
-        double maxX = Math.max(Math.max(getVertex(0).pos.x(), getVertex(1).pos.x()), Math.max(getVertex(2).pos.x(), getVertex(3).pos.x()));
-        double maxY = Math.max(Math.max(getVertex(0).pos.y(), getVertex(1).pos.y()), Math.max(getVertex(2).pos.y(), getVertex(3).pos.y()));
-        double maxZ = Math.max(Math.max(getVertex(0).pos.z(), getVertex(1).pos.z()), Math.max(getVertex(2).pos.z(), getVertex(3).pos.z()));
+        double maxX = Math.max(Math.max(getVertex(0).x(), getVertex(1).x()), Math.max(getVertex(2).x(), getVertex(3).x()));
+        double maxY = Math.max(Math.max(getVertex(0).y(), getVertex(1).y()), Math.max(getVertex(2).y(), getVertex(3).y()));
+        double maxZ = Math.max(Math.max(getVertex(0).z(), getVertex(1).z()), Math.max(getVertex(2).z(), getVertex(3).z()));
 
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
@@ -249,13 +249,13 @@ public interface IPolygon extends IPaintableQuad
             final Vertex nextVertex = vertices[nextIndex];
             final Vertex priorVertex = vertices[priorIndex];
             
-            final float ax = thisVertex.pos.x() - priorVertex.pos.x();
-            final float ay = thisVertex.pos.y() - priorVertex.pos.y();
-            final float az = thisVertex.pos.z() - priorVertex.pos.z();
+            final float ax = thisVertex.x() - priorVertex.x();
+            final float ay = thisVertex.y() - priorVertex.y();
+            final float az = thisVertex.z() - priorVertex.z();
             
-            final float bx = nextVertex.pos.x() - thisVertex.pos.x();
-            final float by = nextVertex.pos.y() - thisVertex.pos.y();
-            final float bz = nextVertex.pos.z() - thisVertex.pos.z();
+            final float bx = nextVertex.x() - thisVertex.x();
+            final float by = nextVertex.y() - thisVertex.y();
+            final float bz = nextVertex.z() - thisVertex.z();
 
 //            Vec3d lineA = getVertex(thisIndex).subtract(getVertex(priorIndex));
 //            Vec3d lineB = getVertex(nextIndex).subtract(getVertex(thisIndex));
@@ -302,9 +302,9 @@ public interface IPolygon extends IPaintableQuad
         {
             Vertex v = this.getVertex(i);
             
-            float dx = v.pos.x() - first.pos.x();
-            float dy = v.pos.y() - first.pos.y();
-            float dz = v.pos.z() - first.pos.z();
+            float dx = v.x() - first.x();
+            float dy = v.y() - first.y();
+            float dz = v.z() - first.z();
 
             if(Math.abs(faceX * dx + faceY * dy + faceZ * dz) > QuadHelper.EPSILON) return false;
         }
@@ -327,10 +327,10 @@ public interface IPolygon extends IPaintableQuad
     {
         try
         {
-            final Vec3f v0 = getVertex(0).pos;
-            final Vec3f v1 = getVertex(1).pos;
-            final Vec3f v2 = getVertex(2).pos;
-            final Vec3f v3 = getVertex(3).pos;
+            final Vec3f v0 = getVertex(0).pos();
+            final Vec3f v1 = getVertex(1).pos();
+            final Vec3f v2 = getVertex(2).pos();
+            final Vec3f v3 = getVertex(3).pos();
             
             final float x0 = v2.x - v0.x;
             final float y0 = v2.y - v0.y;
@@ -394,28 +394,28 @@ public interface IPolygon extends IPaintableQuad
         {
           case 1:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].pos.y() * (V[j].pos.z() - V[k].pos.z()));
+                area += (V[i].y() * (V[j].z() - V[k].z()));
             break;
           case 2:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].pos.z() * (V[j].pos.x() - V[k].pos.x()));
+                area += (V[i].z() * (V[j].x() - V[k].x()));
             break;
           case 3:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].pos.x() * (V[j].pos.y() - V[k].pos.y()));
+                area += (V[i].x() * (V[j].y() - V[k].y()));
             break;
         }
         
         switch (coord)
         {    // wrap-around term
           case 1:
-            area += (V[n].pos.y() * (V[1].pos.z() - V[n-1].pos.z()));
+            area += (V[n].y() * (V[1].z() - V[n-1].z()));
             break;
           case 2:
-            area += (V[n].pos.z() * (V[1].pos.x() - V[n-1].pos.x()));
+            area += (V[n].z() * (V[1].x() - V[n-1].x()));
             break;
           case 3:
-            area += (V[n].pos.x() * (V[1].pos.y() - V[n-1].pos.y()));
+            area += (V[n].x() * (V[1].y() - V[n-1].y()));
             break;
         }
 
@@ -495,7 +495,7 @@ public interface IPolygon extends IPaintableQuad
 
     public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
     {
-        this.forEachVertex(v -> consumer.acceptVertex(v.pos.x(), v.pos.y(), v.pos.z()));
+        this.forEachVertex(v -> consumer.acceptVertex(v.x(), v.y(), v.z()));
     }
     
     @SuppressWarnings("null")
@@ -505,10 +505,10 @@ public interface IPolygon extends IPaintableQuad
         
         this.forEachVertex(v -> 
         {
-            if(v.normal == null)
-                consumer.acceptVertex(v.pos.x(), v.pos.y(), v.pos.z(), faceNorm.x(), faceNorm.y(), faceNorm.z());
+            if(v.normal() == null)
+                consumer.acceptVertex(v.x(), v.y(), v.z(), faceNorm.x(), faceNorm.y(), faceNorm.z());
             else
-                consumer.acceptVertex(v.pos.x(), v.pos.y(), v.pos.z(), v.normal.x(), v.normal.y(), v.normal.z());
+                consumer.acceptVertex(v.x(), v.y(), v.z(), v.normal().x(), v.normal().y(), v.normal().z());
         });
     }
 

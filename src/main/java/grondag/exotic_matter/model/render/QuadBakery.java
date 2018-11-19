@@ -64,19 +64,19 @@ public class QuadBakery
         for(int v = 0; v < 4; v++)
         {
             final Vertex vertex = raw.getVertex(v);
-            if(vertex.glow != 0)
+            if(vertex.glow() != 0)
             { 
                 // round to nearest 0-15
-                int g = (vertex.glow  + 9) / 17;
+                int g = (vertex.glow()  + 9) / 17;
                 glowBits |= (g << (v * 4));
             }
             
-            uvData[v][0] = vertex.u;
-            uvData[v][1] = vertex.v;
+            uvData[v][0] = vertex.u();
+            uvData[v][1] = vertex.v();
             
-            normalData[v] = vertex.normal == null
+            normalData[v] = vertex.normal() == null
                     ? faceNormal
-                    : vertex.normal.toArray();
+                    : vertex.normal().toArray();
         }
         
         // apply texture rotation
@@ -121,7 +121,7 @@ public class QuadBakery
                 switch(format.getElement(e).getUsage())
                 {
                 case POSITION:
-                    LightUtil.pack(raw.getVertex(v).pos.toArray(), vertexData, format, v, e);
+                    LightUtil.pack(raw.getVertex(v).pos().toArray(), vertexData, format, v, e);
                     break;
 
                 case NORMAL: 
@@ -131,7 +131,7 @@ public class QuadBakery
                 }
                 case COLOR:
                 {
-                    final int color = raw.getVertex(v).color;
+                    final int color = raw.getVertex(v).color();
                     float[] colorRGBA = new float[4];
                     colorRGBA[0] = ((float) (color >> 16 & 0xFF)) / 255f;
                     colorRGBA[1] = ((float) (color >> 8 & 0xFF)) / 255f;

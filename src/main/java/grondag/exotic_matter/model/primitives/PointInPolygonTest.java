@@ -137,16 +137,16 @@ public class PointInPolygonTest
 
         final Vertex vArray[] = quad.vertexArray();
         Vertex v = vArray[size - 1];
-        float x0 = d.x(v.pos);
-        float y0 = d.y(v.pos);
+        float x0 = d.x(v.pos());
+        float y0 = d.y(v.pos());
         
         float x1, y1;
         // loop through all edges of the polygon
         for (int i=0; i< size; i++)
         {
             v = vArray[i];
-            x1 = d.x(v.pos);
-            y1 = d.y(v.pos);
+            x1 = d.x(v.pos());
+            y1 = d.y(v.pos());
             wn += windingNumber(x0, y0, x1, y1, x, y);
             x0 = x1;
             y0 = y1;
@@ -191,17 +191,17 @@ public class PointInPolygonTest
         final float x = d.x(point);
         final float y = d.y(point);
         Vertex v = quad.getVertex(0);
-        final float x0 = d.x(v.pos);
-        final float y0 = d.y(v.pos);
+        final float x0 = d.x(v.pos());
+        final float y0 = d.y(v.pos());
         v = quad.getVertex(1);
-        final float x1 = d.x(v.pos);
-        final float y1 = d.y(v.pos);
+        final float x1 = d.x(v.pos());
+        final float y1 = d.y(v.pos());
         v = quad.getVertex(2);
-        final float x2 = d.x(v.pos);
-        final float y2 = d.y(v.pos);
+        final float x2 = d.x(v.pos());
+        final float y2 = d.y(v.pos());
         v = quad.getVertex(3);
-        final float x3 = d.x(v.pos);
-        final float y3 = d.y(v.pos);
+        final float x3 = d.x(v.pos());
+        final float y3 = d.y(v.pos());
         
         return isPointInPolygonTri(x, y, x0, y0, x1, y1, x2, y2) || isPointInPolygonTri(x, y, x0, y0, x2, y2, x3, y3);
     }
@@ -217,9 +217,9 @@ public class PointInPolygonTest
         final Vertex v2 = va[2];
         
         return isPointInPolygonTri(d.x(point), d.y(point), 
-                d.x(v0.pos), d.y(v0.pos),
-                d.x(v1.pos), d.y(v1.pos),
-                d.x(v2.pos), d.y(v2.pos));
+                d.x(v0.pos()), d.y(v0.pos()),
+                d.x(v1.pos()), d.y(v1.pos()),
+                d.x(v2.pos()), d.y(v2.pos()));
         
     }
    

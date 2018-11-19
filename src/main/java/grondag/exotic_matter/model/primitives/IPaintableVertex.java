@@ -1,18 +1,8 @@
 package grondag.exotic_matter.model.primitives;
 
-import javax.annotation.Nullable;
-
-public interface IPaintableVertex
+public interface IPaintableVertex extends IVertex
 {
     IPaintableVertex forTextureLayer(int layer);
-    
-    short glow();
-
-    int color();
-
-    float u();
-
-    float v();
 
     IPaintableVertex withUV(float uThis, float v);
 
@@ -31,13 +21,4 @@ public interface IPaintableVertex
     {
         return withColorGlow(this.color(), glowIn);
     }
-
-    float x();
-
-    float z();
-
-    float y();
-
-    @Nullable Vec3f normal();
-
 }

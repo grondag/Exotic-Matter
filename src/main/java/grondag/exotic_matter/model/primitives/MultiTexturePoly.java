@@ -54,7 +54,7 @@ public abstract class MultiTexturePoly
                 for(int i = 0; i < c; i++)
                 {
                     Vertex v = template.getVertex(i);
-                    this.setVertex(i, vertexFactory().newVertex(v.pos.x(), v.pos.y(), v.pos.z(), v.u, v.v, v.color, v.normal, v.glow));
+                    this.setVertex(i, vertexFactory().newVertex(v.x(), v.y(), v.z(), v.u(), v.v(), v.color(), v.normal(), v.glow()));
                 }
             }
         }
