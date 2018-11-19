@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.concurrent.ArrayBlockingQueue;
-
 import net.minecraft.util.math.MathHelper;
 
 public class Vec3f
@@ -102,22 +100,22 @@ public class Vec3f
     
     public static class Mutable extends Vec3f
     {
-        private static final ArrayBlockingQueue<Mutable> POOL = new ArrayBlockingQueue<>(1024);
-        
-        public static Mutable claim()
-        {
-            Mutable result = POOL.poll();
-            
-            if(result == null)
-                result = new Mutable(0, 0, 0);
-            
-            return result;
-        }
-        
-        public static void release(Mutable vec)
-        {
-            POOL.offer(vec);
-        }
+//        private static final ArrayBlockingQueue<Mutable> POOL = new ArrayBlockingQueue<>(1024);
+//        
+//        public static Mutable claim()
+//        {
+//            Mutable result = POOL.poll();
+//            
+//            if(result == null)
+//                result = new Mutable(0, 0, 0);
+//            
+//            return result;
+//        }
+//        
+//        public static void release(Mutable vec)
+//        {
+//            POOL.offer(vec);
+//        }
         
         public Mutable(float x, float y, float z)
         {
