@@ -1,14 +1,12 @@
 package grondag.exotic_matter.model.primitives;
 
-public interface IPaintableVertex extends IVertex
+public interface IPaintableVertex extends IMutableVertex
 {
-    IPaintableVertex forTextureLayer(int layer);
+    public int layerIndex();
+    
+    public IPaintableVertex withUV(float uThis, float v);
 
-    IPaintableVertex withUV(float uThis, float v);
-
-    IPaintableVertex interpolate(IPaintableVertex nextVertex, float dist);
-
-    IPaintableVertex withColorGlow(int colorIn, int glowIn);
+    public IPaintableVertex withColorGlow(int colorIn, int glowIn);
 
     /** returns copy of this vertex with given color */
     public default IPaintableVertex withColor(int colorIn)

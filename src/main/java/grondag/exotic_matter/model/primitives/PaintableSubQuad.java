@@ -32,7 +32,8 @@ public abstract class PaintableSubQuad implements IPaintableQuad
         this.rotation = parent.getRotation();
     }
     
-    protected abstract int layerIndex();
+    @Override
+    public abstract int layerIndex();
     
     protected void copyPropertiesFrom(PaintableSubQuad otherSubQuad)
     {

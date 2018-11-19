@@ -258,7 +258,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
     {
         final Vec3f norm = this.faceNormal;
         if(norm != null)
-            ((Vec3f.Mutable)norm).invert();
+            this.faceNormal = Vec3f.create(-norm.x(), -norm.y(), -norm.z());
     }
     
     @Override

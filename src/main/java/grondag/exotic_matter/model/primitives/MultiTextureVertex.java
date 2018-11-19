@@ -17,12 +17,12 @@ public class MultiTextureVertex
             }
 
             @Override
-            public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight)
+            public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, IVertex from, IVertex to, float toWeight)
             {
-                final int newGlow = (int) (from.glow + (to.glow - from.glow) * toWeight);
-                final int newColor = ColorHelper.interpolate(from.color, to.color, toWeight);
-                final float newU = from.u + (to.u - from.u) * toWeight;
-                final float newV = from.v + (to.v - from.v) * toWeight;
+                final int newGlow = (int) (from.glow() + (to.glow() - from.glow()) * toWeight);
+                final int newColor = ColorHelper.interpolate(from.color(), to.color(), toWeight);
+                final float newU = from.u() + (to.u() - from.u()) * toWeight;
+                final float newV = from.v() + (to.v() - from.v()) * toWeight;
                 
                 Second from2 = ((Double)from).second;
                 Second to2 = ((Double)to).second;
@@ -120,6 +120,12 @@ public class MultiTextureVertex
             {
                 return parent.withNewSecond(this.u, this.v, colorIn, glowIn);
             }
+
+            @Override
+            public int layerIndex()
+            {
+                return 1;
+            }
         }
     }
     
@@ -135,12 +141,12 @@ public class MultiTextureVertex
             }
 
             @Override
-            public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight)
+            public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, IVertex from, IVertex to, float toWeight)
             {
-                final int newGlow = (int) (from.glow + (to.glow - from.glow) * toWeight);
-                final int newColor = ColorHelper.interpolate(from.color, to.color, toWeight);
-                final float newU = from.u + (to.u - from.u) * toWeight;
-                final float newV = from.v + (to.v - from.v) * toWeight;
+                final int newGlow = (int) (from.glow() + (to.glow() - from.glow()) * toWeight);
+                final int newColor = ColorHelper.interpolate(from.color(), to.color(), toWeight);
+                final float newU = from.u() + (to.u() - from.u()) * toWeight;
+                final float newV = from.v() + (to.v() - from.v()) * toWeight;
                 
                 Second from2 = ((Double)from).second;
                 Second to2 = ((Double)to).second;
@@ -251,6 +257,12 @@ public class MultiTextureVertex
             public IPaintableVertex withColorGlow(int colorIn, int glowIn)
             {
                 return parent.withNewThird(this.u, this.v, colorIn, glowIn);
+            }
+
+            @Override
+            public int layerIndex()
+            {
+                return 2;
             }
         }
     }

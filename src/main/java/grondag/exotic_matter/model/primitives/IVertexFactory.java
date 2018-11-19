@@ -26,7 +26,7 @@ public interface IVertexFactory
         return newVertex(x, y, z, u, v, color, Vec3f.create(normalX, normalY, normalZ));
     }
 
-    public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight);
+    public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, IVertex from, IVertex to, float toWeight);
 
     public Vertex withColorGlow(Vertex vertex, int colorIn, int glowIn);
 

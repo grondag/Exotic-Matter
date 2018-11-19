@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.IMutableVertex;
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPaintableVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
@@ -237,7 +238,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                 if(nextType == REMAINDER)
                 {
                     final float dist = (vertexSplitU - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
-                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist);
+                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
                     remainder.setVertex(iRemainderVertex++, vNew);
                     
                     final float uNew = (uMin + vNew.u() * (uMax - uMin) - uSplitLow) / uSpan;
@@ -250,7 +251,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                 if(nextType == SLICE)
                 {
                     final float dist = (vertexSplitU - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
-                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist);
+                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
                     remainder.setVertex(iRemainderVertex++, vNew);
                     
                     final float uNew = (uMin + vNew.u() * (uMax - uMin) - uSplitLow) / uSpan;
@@ -373,7 +374,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                 if(nextType == REMAINDER)
                 {
                     final float dist = (vertexSplitV - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist);
+                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
                     remainder.setVertex(iRemainderVertex++, newVertex);
                     
                     final float vNew = (vMin + newVertex.v() * (vMax - vMin) - vSplitLow) / vSpan;
@@ -386,7 +387,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                 if(nextType == SLICE)
                 {
                     final float dist = (vertexSplitV - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist);
+                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
                     remainder.setVertex(iRemainderVertex++, newVertex);
                     
                     final float vNew = (vMin + newVertex.v() * (vMax - vMin) - vSplitLow) / vSpan;

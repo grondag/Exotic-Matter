@@ -262,4 +262,6 @@ public interface IPaintedQuad extends IPipelinedQuad
         return uvData;
     }
 
+    int layerIndex();
+
 }

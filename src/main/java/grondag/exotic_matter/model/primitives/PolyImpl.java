@@ -563,6 +563,12 @@ public class PolyImpl extends AbstractPolygon implements IMutablePolygon
     {
         this.toQuads(q -> consumer.accept((IPaintableQuad) q), ensureConvex);
     }
+
+    @Override
+    public int layerIndex()
+    {
+        return 0;
+    }
     
 //    private String tag;
 //

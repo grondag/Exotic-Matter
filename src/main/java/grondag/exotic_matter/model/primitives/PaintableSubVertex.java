@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
 import javax.annotation.Nullable;
+import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.varia.ColorHelper;
 
@@ -84,10 +85,32 @@ public abstract class PaintableSubVertex<T extends Vertex> implements IPaintable
     }
     
     @Override
-    public IPaintableVertex interpolate(IPaintableVertex nextVertex, float dist)
+    public IMutableVertex interpolate(IVertex nextVertex, float dist)
     {
         return parent.interpolate(nextVertex, dist);
     }
     
+    @Override
+    public IMutableVertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
+    {
+        return parent.transform(matrix, rescaleToUnitCube);
+    }
     
+    @Override
+    public IMutableVertex flipped()
+    {
+        return parent.flipped();
+    }
+    
+    @Override
+    public IMutableVertex withNormal(Vec3f normal)
+    {
+        return parent.withNormal(normal);
+    }
+    
+    @Override
+    public IMutableVertex withXYZ(float xNew, float yNew, float zNew)
+    {
+        return parent.withXYZ(xNew, yNew, zNew);
+    }
 }

@@ -6,10 +6,9 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
 import grondag.exotic_matter.varia.ColorHelper;
-import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 
-public class Vertex implements IPaintableVertex
+public class Vertex implements IPaintableVertex, IMutableVertex
 {
     public static final IVertexFactory DEFAULT_FACTORY = new IVertexFactory()
     {
@@ -20,13 +19,13 @@ public class Vertex implements IPaintableVertex
         }
 
         @Override
-        public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight)
+        public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, IVertex from, IVertex to, float toWeight)
         {
-            final int newGlow = (int) (from.glow + (to.glow - from.glow) * toWeight);
+            final int newGlow = (int) (from.glow() + (to.glow() - from.glow()) * toWeight);
             
-            int newColor = ColorHelper.interpolate(from.color, to.color, toWeight);
-            final float newU = from.u + (to.u - from.u) * toWeight;
-            final float newV = from.v + (to.v - from.v) * toWeight;
+            int newColor = ColorHelper.interpolate(from.color(), to.color(), toWeight);
+            final float newU = from.u() + (to.u() - from.u()) * toWeight;
+            final float newV = from.v() + (to.v() - from.v()) * toWeight;
             return newVertex(newX, newY, newZ, newU, newV, newColor, newNormal, newGlow);
         }
 
@@ -84,6 +83,7 @@ public class Vertex implements IPaintableVertex
      * Returns copy of self if normal is present. If normal is present return copy with inverted normal.
      */
     @SuppressWarnings("null")
+    @Override
     public final Vertex flipped()
     {
         //TODO: should normal already be mutable?
@@ -93,6 +93,7 @@ public class Vertex implements IPaintableVertex
     }
     
     /** returns copy of this vertex with given normal */
+    @Override
     public final Vertex withNormal(Vec3f normal)
     {
         return factory().withGeometry(this, this.pos.x(), this.pos.y(), this.pos.z(), normal);
@@ -112,11 +113,13 @@ public class Vertex implements IPaintableVertex
     }
     
     /** returns copy of this vertex with given XYZ coords */
+    @Override
     public final Vertex withXYZ(float xNew, float yNew, float zNew)
     {
         return factory().withGeometry(this, xNew, yNew, zNew, this.normal);
     }
     
+    @Override
     public final Vertex transform(Matrix4f matrix, boolean rescaleToUnitCube)
     {
 
@@ -142,79 +145,6 @@ public class Vertex implements IPaintableVertex
         }
 
     }
-    
-    /**
-     * Returns a signed distance to the plane of the given face.
-     * Positive numbers mean in front of face, negative numbers in back.
-     */
-    public final float distanceToFacePlane(EnumFacing face)
-    {
-        // could use dot product, but exploiting special case for less math
-        switch(face)
-        {
-        case UP:
-            return this.pos.y() - 1;
-
-        case DOWN:
-            return - this.pos.y();
-            
-        case EAST:
-            return this.pos.x() - 1;
-
-        case WEST:
-            return -this.pos.x();
-
-        case NORTH:
-            return -this.pos.z();
-            
-        case SOUTH:
-            return this.pos.z() - 1;
-
-        default:
-            // make compiler shut up about unhandled case
-            return 0;
-        }
-    }
-
-    public final boolean isOnFacePlane(EnumFacing face, float tolerance)
-    {
-        return Math.abs(this.distanceToFacePlane(face)) < tolerance;
-    }
-
-    /** 
-     * True if both vertices are at the same point. 
-     */
-    public final boolean isCsgEqual(Vertex vertexIn)
-    {
-        return Math.abs(vertexIn.pos.x() - this.pos.x()) < QuadHelper.EPSILON
-                && Math.abs(vertexIn.pos.y() - this.pos.y()) < QuadHelper.EPSILON
-                && Math.abs(vertexIn.pos.z() - this.pos.z()) < QuadHelper.EPSILON;
-    }
-
-    /**
-     * True if this point is on the line formed by the two given points.
-     * Will return false for points that are "very close" to each other
-     * because there essentially isn't enough resolution to make a firm
-     * determination of what the line is.
-     */
-    public final boolean isOnLine(float x0, float y0, float z0, float x1, float y1, float z1)
-    {
-        float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
-        if(ab < QuadHelper.EPSILON * 5) return false;
-        float bThis = Useful.distance(this.pos.x(), this.pos.y(), this.pos.z(), x1, y1, z1);
-        float aThis = Useful.distance(x0, y0, z0, this.pos.x(), this.pos.y(), this.pos.z());
-        return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);
-    }
-
-    public final boolean isOnLine(Vertex v0, Vertex v1)
-    {
-        return this.isOnLine(v0.pos.x(), v0.pos.y(), v0.pos.z(), v1.pos.x(), v1.pos.y(), v1.pos.z());
-    }
-
-    public final boolean hasNormal()
-    {
-        return this.normal != null;
-    }
 
     /**
      * Returns a new, linearly interpolated vertex based on this vertex
@@ -222,7 +152,8 @@ public class Vertex implements IPaintableVertex
      * Factor 0 returns this vertex. Factor 1 return other vertex, 
      * with values in between returning a weighted average.
      */
-    public final Vertex interpolate(Vertex otherVertex, final float otherWeight)
+    @Override
+    public final Vertex interpolate(IVertex otherVertex, final float otherWeight)
     {
         // tx = 2
         // ox = 1
@@ -230,12 +161,12 @@ public class Vertex implements IPaintableVertex
         // 2 +(1 - 2) * 0 = 2
         // 2 +(1 - 2) * 1 = 1
         
-        final float newX = this.pos.x() + (otherVertex.pos.x() - this.pos.x()) * otherWeight;
-        final float newY = this.pos.y() + (otherVertex.pos.y() - this.pos.y()) * otherWeight;
-        final float newZ = this.pos.z() + (otherVertex.pos.z() - this.pos.z()) * otherWeight;
+        final float newX = this.pos.x() + (otherVertex.x() - this.pos.x()) * otherWeight;
+        final float newY = this.pos.y() + (otherVertex.y() - this.pos.y()) * otherWeight;
+        final float newZ = this.pos.z() + (otherVertex.z() - this.pos.z()) * otherWeight;
         
         final Vec3f thisNormal = this.normal;
-        final Vec3f otherNormal = otherVertex.normal;
+        final Vec3f otherNormal = otherVertex.normal();
         
         if(thisNormal == null || otherNormal == null)
         {
@@ -307,12 +238,6 @@ public class Vertex implements IPaintableVertex
     }
 
     @Override
-    public IPaintableVertex interpolate(IPaintableVertex nextVertex, float dist)
-    {
-        return this.interpolate((Vertex)nextVertex, dist);
-    }
-
-    @Override
     public float x()
     {
         return this.pos.x();
@@ -352,5 +277,11 @@ public class Vertex implements IPaintableVertex
     public Vec3f pos()
     {
         return this.pos;
+    }
+
+    @Override
+    public int layerIndex()
+    {
+        return 0;
     }
 }

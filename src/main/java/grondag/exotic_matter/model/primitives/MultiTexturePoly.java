@@ -80,7 +80,7 @@ public abstract class MultiTexturePoly
             }
 
             @Override
-            protected int layerIndex()
+            public int layerIndex()
             {
                 return 1;
             }
@@ -171,7 +171,7 @@ public abstract class MultiTexturePoly
             }
 
             @Override
-            protected int layerIndex()
+            public int layerIndex()
             {
                 return 2;
             }
