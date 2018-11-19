@@ -29,25 +29,6 @@ import net.minecraft.util.math.Vec3i;
 
 public interface IPolygon extends IPaintablePolygon
 {
-
-    /**
-     * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.
-     */
-//    public default boolean isCSG()
-//    {
-//        return false;
-//    }
-    
-    /**
-     * If this polygon has CSG metadata and supports the CSG interface, 
-     * returns mutable reference to self as such.
-     * Thows an exception otherwise.
-     */
-//    public default ICSGPolygon csgReference()
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-
     /**
      * If this polygon is mutable, returns mutable reference to self.
      * Thows an exception if not mutable.
@@ -57,46 +38,9 @@ public interface IPolygon extends IPaintablePolygon
         throw new UnsupportedOperationException();
     }
     
-    /**
-     * True if face normal has been established, either implicitly via access
-     * or by directly setting a value. 
-     */
-    public boolean hasFaceNormal();
-    
-    public default  float[] getFaceNormalArray()
-    {
-        Vec3f normal = getFaceNormal();
-
-        float[] retval = new float[3];
-
-        retval[0] = normal.x();
-        retval[1] = normal.y();
-        retval[2] = normal.z();
-        return retval;
-    }
-    
     public Vertex getVertex(int index);
     
     public void forEachVertex(Consumer<Vertex> consumer);
-    
-    /**
-     * Splits into quads if higher vertex count than four, otherwise returns self.
-     * If ensureConvex is true, will also split quads that are concave into tris.
-     */
-    public default List<IPolygon> toQuads(boolean ensureConvex)
-    {
-        final int vertexCount = this.vertexCount();
-        
-        if(vertexCount == 3)  
-            return ImmutableList.of(this);
-        
-        if(vertexCount == 4 && (!ensureConvex || this.isConvex())) 
-            return ImmutableList.of(this);
-        
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-        this.toQuads(p -> builder.add(p), ensureConvex);
-        return builder.build();
-    }
     
     /**
      * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
@@ -110,18 +54,6 @@ public interface IPolygon extends IPaintablePolygon
      * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
      */
     public void toQuads(Consumer<IPolygon> target, boolean ensureConvex);
-    
-    /** 
-     * If this is a quad or higher order polygon, returns new tris.
-     * If is already a tri returns self.<p>
-     */
-    public default List<IPolygon> toTris()
-    {
-        if(this.vertexCount() == 3) return ImmutableList.of(this);
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-        this.toTris(p -> builder.add(p));
-        return builder.build();
-    }
     
     /**
      * Like {@link #toTris()} but doesn't instantiate a new list.
@@ -223,62 +155,9 @@ public interface IPolygon extends IPaintablePolygon
     @Override
     public default boolean isConvex()
     {
-        return isConvex(this.vertexArray());
+        return QuadHelper.isConvex(this.vertexArray(), this.vertexCount());
     }
 
-    public static boolean isConvex(Vertex[] vertices)
-    {
-        final int size = vertices.length;
-        
-        if(size == 3) return true;
-
-        float testX = 0;
-        float testY = 0;
-        float testZ = 0;
-        boolean needTest = true;
-                
-        for(int thisIndex = 0; thisIndex < size; thisIndex++)
-        {
-            int nextIndex = thisIndex + 1;
-            if(nextIndex == size) nextIndex = 0;
-
-            int priorIndex = thisIndex - 1;
-            if(priorIndex == -1) priorIndex = size - 1;
-
-            final Vertex thisVertex =  vertices[thisIndex];
-            final Vertex nextVertex = vertices[nextIndex];
-            final Vertex priorVertex = vertices[priorIndex];
-            
-            final float ax = thisVertex.x() - priorVertex.x();
-            final float ay = thisVertex.y() - priorVertex.y();
-            final float az = thisVertex.z() - priorVertex.z();
-            
-            final float bx = nextVertex.x() - thisVertex.x();
-            final float by = nextVertex.y() - thisVertex.y();
-            final float bz = nextVertex.z() - thisVertex.z();
-
-//            Vec3d lineA = getVertex(thisIndex).subtract(getVertex(priorIndex));
-//            Vec3d lineB = getVertex(nextIndex).subtract(getVertex(thisIndex));
-            
-            final float crossX = ay * bz - az * by;
-            final float crossY = az * bx - ax * bz;
-            final float crossZ = ax * by - ay * bx;
-            
-            if(needTest)
-            {
-                needTest = false;
-                testX = crossX;
-                testY = crossY;
-                testZ = crossZ;
-            }
-            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    
     public default boolean isOrthogonalTo(EnumFacing face)
     {
         Vec3i dv = face.getDirectionVec();

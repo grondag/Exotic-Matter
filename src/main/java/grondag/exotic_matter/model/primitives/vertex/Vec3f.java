@@ -68,14 +68,14 @@ public class Vec3f
         return false;
     }
     
-    // PERF - avoid this
-    public final float[] toArray()
+    /**
+     * Loads our x, y, z values into the provided array.
+     */
+    public final void toArray(float[] data)
     {
-        float[] retVal = new float[3];
-        retVal[0] = this.x();
-        retVal[1] = this.y();
-        retVal[2] = this.z();
-        return retVal;
+        data[0] = x();
+        data[1] = y();
+        data[2] = z();
     }
 
     public final float x()

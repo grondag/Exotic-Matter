@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
+import grondag.exotic_matter.model.primitives.vertex.IVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -349,5 +350,53 @@ public class QuadHelper
     {
         final Random r = ThreadLocalRandom.current();
         return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
+    }
+
+    public static boolean isConvex(IVertex[] vertices, final int vertexCount)
+    {
+        if(vertexCount == 3) return true;
+    
+        float testX = 0;
+        float testY = 0;
+        float testZ = 0;
+        boolean needTest = true;
+                
+        for(int thisIndex = 0; thisIndex < vertexCount; thisIndex++)
+        {
+            int nextIndex = thisIndex + 1;
+            if(nextIndex == vertexCount) nextIndex = 0;
+    
+            int priorIndex = thisIndex - 1;
+            if(priorIndex == -1) priorIndex = vertexCount - 1;
+    
+            final IVertex thisVertex =  vertices[thisIndex];
+            final IVertex nextVertex = vertices[nextIndex];
+            final IVertex priorVertex = vertices[priorIndex];
+            
+            final float ax = thisVertex.x() - priorVertex.x();
+            final float ay = thisVertex.y() - priorVertex.y();
+            final float az = thisVertex.z() - priorVertex.z();
+            
+            final float bx = nextVertex.x() - thisVertex.x();
+            final float by = nextVertex.y() - thisVertex.y();
+            final float bz = nextVertex.z() - thisVertex.z();
+    
+            final float crossX = ay * bz - az * by;
+            final float crossY = az * bx - ax * bz;
+            final float crossZ = ax * by - ay * bx;
+            
+            if(needTest)
+            {
+                needTest = false;
+                testX = crossX;
+                testY = crossY;
+                testZ = crossZ;
+            }
+            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

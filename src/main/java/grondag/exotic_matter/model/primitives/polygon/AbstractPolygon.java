@@ -230,11 +230,6 @@ public abstract class AbstractPolygon implements IMutablePolygon
         this.minV += vOffset;
         this.maxV += vOffset;        
     }
-    @Override
-    public boolean hasFaceNormal()
-    {
-        return  this.faceNormal != null;
-    }
     
     @Override
     public Vec3f getFaceNormal()

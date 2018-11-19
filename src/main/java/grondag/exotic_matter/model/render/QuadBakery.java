@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -36,6 +37,27 @@ public class QuadBakery
         ITEM_ALTERNATE.addElement(DefaultVertexFormats.TEX_2F);
     }
     
+    private static class Workspace
+    {
+        //Dimensions are vertex 0-4 and u/v 0-1.
+        final float[][] uvData = new float[4][2];
+        final float[][] normalData = new float[4][3];
+        
+        /**
+         * Generic holder
+         */
+        final float[] packData = new float[4];
+    }
+    
+    private static final ThreadLocal<Workspace> workspace = new ThreadLocal<Workspace>()
+    {
+        @Override
+        protected Workspace initialValue()
+        {
+            return new Workspace();
+        }
+    };
+    
     /**
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
@@ -55,10 +77,11 @@ public class QuadBakery
         
         final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(raw.getTextureName());
         
-        //Dimensions are vertex 0-4 and u/v 0-1.
-        float[][] uvData = new float[4][2];
-        float[][] normalData = new float[4][3];
-        float[] faceNormal = raw.getFaceNormalArray();   
+        final Workspace w = workspace.get();
+        
+        final float[][] uvData = w.uvData;
+        final float[][] normalData = w.normalData;
+        final float[] packData = w.packData;
         
         int glowBits =  0;
         for(int v = 0; v < 4; v++)
@@ -74,9 +97,10 @@ public class QuadBakery
             uvData[v][0] = vertex.u();
             uvData[v][1] = vertex.v();
             
-            normalData[v] = vertex.normal() == null
-                    ? faceNormal
-                    : vertex.normal().toArray();
+            Vec3f normal = vertex.normal();
+            if(normal == null)
+                normal = raw.getFaceNormal();
+            normal.toArray(normalData[v]);
         }
         
         // apply texture rotation
@@ -121,7 +145,8 @@ public class QuadBakery
                 switch(format.getElement(e).getUsage())
                 {
                 case POSITION:
-                    LightUtil.pack(raw.getVertex(v).pos().toArray(), vertexData, format, v, e);
+                    raw.getVertex(v).pos().toArray(packData);
+                    LightUtil.pack(packData, vertexData, format, v, e);
                     break;
 
                 case NORMAL: 
@@ -132,37 +157,32 @@ public class QuadBakery
                 case COLOR:
                 {
                     final int color = raw.getVertex(v).color();
-                    float[] colorRGBA = new float[4];
-                    colorRGBA[0] = ((float) (color >> 16 & 0xFF)) / 255f;
-                    colorRGBA[1] = ((float) (color >> 8 & 0xFF)) / 255f;
-                    colorRGBA[2] = ((float) (color  & 0xFF)) / 255f;
-                    colorRGBA[3] = ((float) (color >> 24 & 0xFF)) / 255f;
-                    LightUtil.pack(colorRGBA, vertexData, format, v, e);
+                    packData[0] = ((float) (color >> 16 & 0xFF)) / 255f;
+                    packData[1] = ((float) (color >> 8 & 0xFF)) / 255f;
+                    packData[2] = ((float) (color  & 0xFF)) / 255f;
+                    packData[3] = ((float) (color >> 24 & 0xFF)) / 255f;
+                    LightUtil.pack(packData, vertexData, format, v, e);
                     break;
                 }
                 case UV: 
                     if(format.getElement(e).getIndex() == 0)
                     {
                         // This block handles the normal case: texture UV coordinates
-                        float[] interpolatedUV = new float[2];
-                        
                         // doing interpolation here vs using sprite methods to avoid wasteful multiply and divide by 16
-                        interpolatedUV[0] = spriteMinU + uvData[v][0] * spriteSpanU;
-                        interpolatedUV[1] = spriteMinV + uvData[v][1] * spriteSpanV;
-                        LightUtil.pack(interpolatedUV, vertexData, format, v, e);
+                        packData[0] = spriteMinU + uvData[v][0] * spriteSpanU;
+                        packData[1] = spriteMinV + uvData[v][1] * spriteSpanV;
+                        LightUtil.pack(packData, vertexData, format, v, e);
                     }
                     else
                     {
                         // There are 2 UV elements when we are using a BLOCK vertex format
                         // The 2nd accepts pre-baked lightmaps.  
-                        float[] lightMap = new float[2];
-
                         final float glow = (float)(((glowBits >> (v * 4)) & 0xF) * 0x20) / 0xFFFF;
                                 
-                        lightMap[0] = glow;
-                        lightMap[1] = glow;
+                        packData[0] = glow;
+                        packData[1] = glow;
 
-                        LightUtil.pack(lightMap, vertexData, format, v, e);
+                        LightUtil.pack(packData, vertexData, format, v, e);
                     }
                     break;
 

@@ -45,6 +45,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
@@ -386,9 +387,6 @@ public class CSGNode
         this.front = this.back;
         this.back = temp;
     }
-
-
-
     
     /**
      * Tries to combine two quads that share the given vertex. To join, all must be true:
@@ -524,15 +522,16 @@ public class CSGNode
             return null;
         }
         
+     // must be convex
+        if(!QuadHelper.isConvex(joinedVertex, joinedSize))
+        {
+            assert false;
+            return null;
+        }
+        
         // actually build the new quad!
         CSGPolygon joinedQuad = new CSGPolygon(aQuad.original, joinedSize);
         System.arraycopy(joinedVertex, 0, joinedQuad.vertex, 0, joinedSize);
-        
-        // must be convex
-        if(!IPolygon.isConvex(joinedQuad.vertex))
-        {
-            return null;
-        }
         
 //        if(Math.abs(aQuad.getArea() + bQuad.getArea() - joinedQuad.getArea()) > QuadFactory.EPSILON)
 //        {
