@@ -200,6 +200,8 @@ public class Surface
      * Bits here indicate a layer is <em>disabled</em>
      */
     private final int layerDisabledFlags;
+
+    public static final Surface NO_SURFACE = builder(SurfaceTopology.CUBIC).build();
     
     public final boolean isLayerDisabled(PaintLayer layer)
     {

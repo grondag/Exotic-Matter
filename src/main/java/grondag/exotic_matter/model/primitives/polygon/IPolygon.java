@@ -10,8 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.exotic_matter.model.CSG.CSGNode;
-import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
 import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
 import grondag.exotic_matter.model.primitives.PointInPolygonTest;
@@ -31,7 +29,6 @@ import net.minecraft.util.math.Vec3i;
 
 public interface IPolygon extends IPaintablePolygon
 {
-    Surface NO_SURFACE = Surface.builder(SurfaceTopology.CUBIC).build();
 
     /**
      * True if this instance implements ICSGPolygon. Generally faster than instanceof tests.

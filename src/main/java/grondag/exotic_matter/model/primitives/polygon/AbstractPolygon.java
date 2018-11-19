@@ -46,7 +46,7 @@ public abstract class AbstractPolygon implements IMutablePolygon
 
     protected @Nullable Vec3f faceNormal;
     protected @Nullable String textureName;
-    protected Surface surfaceInstance = IPolygon.NO_SURFACE;
+    protected Surface surfaceInstance = Surface.NO_SURFACE;
     
     protected void copyProperties(IPolygon fromObject)
     {

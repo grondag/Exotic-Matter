@@ -27,7 +27,7 @@ public class CubeInputs{
     {
         //Minimum needed to prevent NPE
         this.textureRotation = Rotation.ROTATE_NONE;
-        this.surfaceInstance = IPolygon.NO_SURFACE;
+        this.surfaceInstance = Surface.NO_SURFACE;
     }
     
     public CubeInputs(int color, Rotation textureRotation, String textureName, boolean flipU, boolean flipV, boolean isOverlay, boolean isItem)
@@ -42,7 +42,7 @@ public class CubeInputs{
         this.u1 = flipU ? 0 : 1;
         this.v1 = flipV ? 0 : 1;
         this.rotateBottom = true;
-        this.surfaceInstance = IPolygon.NO_SURFACE;
+        this.surfaceInstance = Surface.NO_SURFACE;
     }
 
     public IPolygon makeRawFace(EnumFacing side){
