@@ -1,7 +1,8 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.vertex;
 
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
 

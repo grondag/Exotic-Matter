@@ -8,6 +8,10 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector4f;
 
 import grondag.exotic_matter.model.CSG.CSGNode.Root;
+import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
+import grondag.exotic_matter.model.primitives.vertex.IVertexFactory;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.varia.ColorHelper;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;

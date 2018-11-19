@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives;
+package grondag.exotic_matter.model.primitives.vertex;
 
 import javax.vecmath.Matrix4f;
 

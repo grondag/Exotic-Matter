@@ -8,6 +8,8 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;

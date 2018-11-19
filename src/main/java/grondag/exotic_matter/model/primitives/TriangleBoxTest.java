@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
+
 /**
  * Ported to Java from Tomas Akenine-Möller
  * http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt

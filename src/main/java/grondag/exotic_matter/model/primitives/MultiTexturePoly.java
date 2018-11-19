@@ -1,5 +1,9 @@
 package grondag.exotic_matter.model.primitives;
 
+import grondag.exotic_matter.model.primitives.vertex.IVertexFactory;
+import grondag.exotic_matter.model.primitives.vertex.MultiTextureVertex;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
+
 public abstract class MultiTexturePoly
 {
     public static class Double extends PolyImpl

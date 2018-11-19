@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.painting;
 
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
-import grondag.exotic_matter.model.primitives.IPaintableVertex;
+import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 

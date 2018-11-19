@@ -9,6 +9,8 @@ import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;

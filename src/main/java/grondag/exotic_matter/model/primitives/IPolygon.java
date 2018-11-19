@@ -16,6 +16,8 @@ import com.google.common.collect.ImmutableList.Builder;
 import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.model.render.QuadBakery;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
@@ -332,13 +334,13 @@ public interface IPolygon extends IPaintableQuad
             final Vec3f v2 = getVertex(2).pos();
             final Vec3f v3 = getVertex(3).pos();
             
-            final float x0 = v2.x - v0.x;
-            final float y0 = v2.y - v0.y;
-            final float z0 = v2.z - v0.z;
+            final float x0 = v2.x() - v0.x();
+            final float y0 = v2.y() - v0.y();
+            final float z0 = v2.z() - v0.z();
             
-            final float x1 = v3.x - v1.x;
-            final float y1 = v3.y - v1.y;
-            final float z1 = v3.z - v1.z;
+            final float x1 = v3.x() - v1.x();
+            final float y1 = v3.y() - v1.y();
+            final float z1 = v3.z() - v1.z();
             
             final float x =  y0 * z1 - z0 * y1;
             final float y = z0 * x1 - x0 * z1;

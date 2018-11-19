@@ -46,8 +46,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Vec3f;
-import grondag.exotic_matter.model.primitives.Vertex;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
 

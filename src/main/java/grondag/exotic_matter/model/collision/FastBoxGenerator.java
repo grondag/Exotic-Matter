@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume8;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
-import grondag.exotic_matter.model.primitives.Vertex;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**

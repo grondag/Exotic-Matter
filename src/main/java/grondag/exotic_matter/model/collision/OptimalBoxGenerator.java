@@ -8,7 +8,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume16;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
-import grondag.exotic_matter.model.primitives.Vertex;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public class OptimalBoxGenerator extends AbstractBoxGenerator

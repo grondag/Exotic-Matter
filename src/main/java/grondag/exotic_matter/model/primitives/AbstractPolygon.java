@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;

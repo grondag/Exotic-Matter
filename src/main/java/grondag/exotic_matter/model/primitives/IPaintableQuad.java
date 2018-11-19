@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.primitives;
 import javax.annotation.Nullable;
 
 import grondag.acuity.api.IRenderPipeline;
+import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 

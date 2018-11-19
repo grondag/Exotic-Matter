@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.model.primitives.IPaintableQuad;
 import grondag.exotic_matter.model.primitives.IPolygon;
-import grondag.exotic_matter.model.primitives.Vertex;
+import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
