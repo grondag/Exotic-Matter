@@ -58,7 +58,7 @@ public class QuadHelper
         for(int i = 0; i < 6; i++)
         {
             final EnumFacing f = EnumFacing.VALUES[i];
-            Vec3f faceNormal = new Vec3f(f.getDirectionVec());
+            Vec3f faceNormal = Vec3f.create(f.getDirectionVec());
             float diff = normal.dotProduct(faceNormal);
     
             if (diff >= 0.0 && diff > minDiff)
@@ -80,7 +80,7 @@ public class QuadHelper
 
     public static EnumFacing computeFaceForNormal(Vector4f normal)
     {
-        return computeFaceForNormal(new Vec3f(normal.x, normal.y, normal.z));
+        return computeFaceForNormal(Vec3f.create(normal.x, normal.y, normal.z));
     }
 
     /** returns the face that is normally the "top" of the given face */

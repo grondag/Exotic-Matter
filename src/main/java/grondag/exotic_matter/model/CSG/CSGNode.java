@@ -75,12 +75,12 @@ public class CSGNode
     @Nullable CSGNode back;
 
     private static final float CENTER_TO_CORNER_DISTANCE = MathHelper.sqrt(2);
-    private static final Vec3f CENTER_TO_CORNER_NORMAL_A = new Vec3f(CENTER_TO_CORNER_DISTANCE, 0, CENTER_TO_CORNER_DISTANCE);
-    private static final Vec3f CENTER_TO_CORNER_NORMAL_B = new Vec3f(CENTER_TO_CORNER_DISTANCE, 0, -CENTER_TO_CORNER_DISTANCE);
-    private static final Vec3f CENTER_TO_SIDE_NORMAL_A = new Vec3f(0, 0, 1);
+    private static final Vec3f CENTER_TO_CORNER_NORMAL_A = Vec3f.create(CENTER_TO_CORNER_DISTANCE, 0, CENTER_TO_CORNER_DISTANCE);
+    private static final Vec3f CENTER_TO_CORNER_NORMAL_B = Vec3f.create(CENTER_TO_CORNER_DISTANCE, 0, -CENTER_TO_CORNER_DISTANCE);
+    private static final Vec3f CENTER_TO_SIDE_NORMAL_A = Vec3f.create(0, 0, 1);
     private static final float CENTER_TO_SIDE_DIST_A = 0.5f;
     
-    private static final Vec3f CENTER_TO_SIDE_NORMAL_B = new Vec3f(-1, 0, 0);
+    private static final Vec3f CENTER_TO_SIDE_NORMAL_B = Vec3f.create(-1, 0, 0);
     private static final float CENTER_TO_SIDE_DIST_B = -0.5f;
     
     public static class Root extends CSGNode implements Iterable<CSGPolygon>

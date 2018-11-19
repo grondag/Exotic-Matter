@@ -100,17 +100,17 @@ public class TriangleBoxTest
      */
     public static void packPolyData(Vertex v0, Vertex v1, Vertex v2, float[] polyData)
     {
-        final float x0 = v0.x;
-        final float y0 = v0.y;
-        final float z0 = v0.z;
+        final float x0 = v0.pos.x;
+        final float y0 = v0.pos.y;
+        final float z0 = v0.pos.z;
 
-        final float x1 = v1.x;
-        final float y1 = v1.y;
-        final float z1 = v1.z;
+        final float x1 = v1.pos.x;
+        final float y1 = v1.pos.y;
+        final float z1 = v1.pos.z;
 
-        final float x2 = v2.x;
-        final float y2 = v2.y;
-        final float z2 = v2.z;
+        final float x2 = v2.pos.x;
+        final float y2 = v2.pos.y;
+        final float z2 = v2.pos.z;
 
         polyData[POLY_V0_X] = x0;
         polyData[POLY_V0_Y] = y0;

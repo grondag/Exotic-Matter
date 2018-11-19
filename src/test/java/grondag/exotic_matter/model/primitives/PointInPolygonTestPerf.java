@@ -42,7 +42,7 @@ class PointInPolygonTestPerf
             poly.addVertex(0, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
             poly.addVertex(1, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
             poly.addVertex(2, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
-            Vec3f p = new Vec3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
+            Vec3f p = Vec3f.create(r.nextFloat(), r.nextFloat(), r.nextFloat());
             elapsed -= System.nanoTime();
             boolean b = PointInPolygonTest.isPointInPolygon(p, poly);
             elapsed += System.nanoTime();
@@ -149,9 +149,9 @@ class PointInPolygonTestPerf
         final Vertex v2 = va[2];
         
         return accuratePointInTriangle(d.x(point), d.y(point), 
-                d.x(v0), d.y(v0),
-                d.x(v1), d.y(v1),
-                d.x(v2), d.y(v2));
+                d.x(v0.pos), d.y(v0.pos),
+                d.x(v1.pos), d.y(v1.pos),
+                d.x(v2.pos), d.y(v2.pos));
         
     }
 }

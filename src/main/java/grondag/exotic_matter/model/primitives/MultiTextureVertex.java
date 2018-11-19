@@ -34,13 +34,13 @@ public class MultiTextureVertex
             @Override
             public Vertex withColorGlow(Vertex vertex, int colorIn, int glowIn)
             {
-                return new Double(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn, ((Double)vertex).second.copy());
+                return new Double(vertex.pos.x, vertex.pos.y, vertex.pos.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn, ((Double)vertex).second.copy());
             }
 
             @Override
             public Vertex withUV(Vertex vertex, float uNew, float vNew)
             {
-                return new Double(vertex.x, vertex.y, vertex.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow, ((Double)vertex).second.copy());
+                return new Double(vertex.pos.x, vertex.pos.y, vertex.pos.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow, ((Double)vertex).second.copy());
             }
 
             @Override
@@ -67,7 +67,7 @@ public class MultiTextureVertex
         
         protected Double withNewSecond(float u, float v, int color, int glow)
         {
-            return new Double(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, this.glow, new Second(u, v, color, glow));
+            return new Double(this.pos.x, this.pos.y, this.pos.z, this.u, this.v, this.color, this.normal, this.glow, new Second(u, v, color, glow));
         }
         
         @Override
@@ -156,14 +156,14 @@ public class MultiTextureVertex
             @Override
             public Vertex withColorGlow(Vertex vertex, int colorIn, int glowIn)
             {
-                return new Triple(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn, 
+                return new Triple(vertex.pos.x, vertex.pos.y, vertex.pos.z, vertex.u, vertex.v, colorIn, vertex.normal, glowIn, 
                         ((Double)vertex).second.copy(), ((Triple)vertex).third.copy());
             }
 
             @Override
             public Vertex withUV(Vertex vertex, float uNew, float vNew)
             {
-                return new Triple(vertex.x, vertex.y, vertex.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow, 
+                return new Triple(vertex.pos.x, vertex.pos.y, vertex.pos.z, uNew, vNew, vertex.color, vertex.normal, vertex.glow, 
                         ((Double)vertex).second.copy(), ((Triple)vertex).third.copy());
             }
 
@@ -192,12 +192,12 @@ public class MultiTextureVertex
         @Override
         protected Double withNewSecond(float u, float v, int color, int glow)
         {
-            return new Triple(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, this.glow, new Second(u, v, color, glow), this.third.copy());
+            return new Triple(this.pos.x, this.pos.y, this.pos.z, this.u, this.v, this.color, this.normal, this.glow, new Second(u, v, color, glow), this.third.copy());
         }
         
         protected Triple withNewThird(float u, float v, int color, int glow)
         {
-            return new Triple(this.x, this.y, this.z, this.u, this.v, this.color, this.normal, this.glow, this.second.copy(), new Third(u, v, color, glow));
+            return new Triple(this.pos.x, this.pos.y, this.pos.z, this.u, this.v, this.color, this.normal, this.glow, this.second.copy(), new Third(u, v, color, glow));
         }
         
         @Override

@@ -704,7 +704,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private static Vec3f shadowEnhance(Vec3f vec)
     {
         Vec3f temp = vec.normalize();
-        return new Vec3f(temp.x, temp.y * temp.y, temp.z).normalize();
+        return Vec3f.create(temp.x, temp.y * temp.y, temp.z).normalize();
     }
    
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];

@@ -23,7 +23,7 @@ public interface IVertexFactory
     
     public default Vertex newVertex(float x, float y, float z, float u, float v, int color, float normalX, float normalY, float normalZ)
     {
-        return newVertex(x, y, z, u, v, color, new Vec3f(normalX, normalY, normalZ));
+        return newVertex(x, y, z, u, v, color, Vec3f.create(normalX, normalY, normalZ));
     }
 
     public Vertex interpolate(float newX, float newY, float newZ, @Nullable Vec3f newNormal, Vertex from, Vertex to, float toWeight);

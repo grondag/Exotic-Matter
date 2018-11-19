@@ -121,7 +121,7 @@ public class QuadBakery
                 switch(format.getElement(e).getUsage())
                 {
                 case POSITION:
-                    LightUtil.pack(raw.getVertex(v).toArray(), vertexData, format, v, e);
+                    LightUtil.pack(raw.getVertex(v).pos.toArray(), vertexData, format, v, e);
                     break;
 
                 case NORMAL: 

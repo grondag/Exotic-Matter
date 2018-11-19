@@ -72,7 +72,7 @@ public class CSGPlane
         this.normalX = normal.x;
         this.normalY = normal.y;
         this.normalZ = normal.z;
-        this.dist = normal.dotProduct(quad.vertex[0]);    
+        this.dist = normal.dotProduct(quad.vertex[0].pos);    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -120,7 +120,7 @@ public class CSGPlane
 //    private final int vertexIncrementInner(Vertex v)
 //    {
         
-        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
+        final float t = v.pos.x * this.normalX + v.pos.y * this.normalY + v.pos.z * this.normalZ - this.dist;
         
         if(t <= QuadHelper.EPSILON)
         {
@@ -138,7 +138,7 @@ public class CSGPlane
     
     private final int vertexType(Vertex v)
     {
-        final float t = v.x * this.normalX + v.y * this.normalY + v.z * this.normalZ - this.dist;
+        final float t = v.pos.x * this.normalX + v.pos.y * this.normalY + v.pos.z * this.normalZ - this.dist;
         
         if(t >= -QuadHelper.EPSILON)
         {
@@ -301,8 +301,8 @@ public class CSGPlane
                     // next vertex with previous vertex and should use line from prev. vertex
                     // If the next vertex will NOT be included in this side, we are starting the split line.
                     
-                    final Vec3f tVec = jVertex.subtract(iVertex);
-                    final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
+                    final Vec3f tVec = jVertex.pos.subtract(iVertex.pos);
+                    final float iDot = iVertex.pos.x * this.normalX + iVertex.pos.y * this.normalY + iVertex.pos.z * this.normalZ;
                     final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);
@@ -325,8 +325,8 @@ public class CSGPlane
                     
                     // see notes for 5
                     
-                    final Vec3f tVec = jVertex.subtract(iVertex);
-                    final float iDot = iVertex.x * this.normalX + iVertex.y * this.normalY + iVertex.z * this.normalZ;
+                    final Vec3f tVec = jVertex.pos.subtract(iVertex.pos);
+                    final float iDot = iVertex.pos.x * this.normalX + iVertex.pos.y * this.normalY + iVertex.pos.z * this.normalZ;
                     final float tDot = tVec.x * this.normalX + tVec.y * this.normalY + tVec.z * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     Vertex v = iVertex.interpolate(jVertex, t);
