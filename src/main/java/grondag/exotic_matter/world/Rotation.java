@@ -6,12 +6,16 @@ import net.minecraft.util.EnumFacing;
  * Texture rotations. Used mainly when rotated textures are used as
  * alternate textures.
  */
-public enum Rotation {
+public enum Rotation
+{
 	ROTATE_NONE(0, EnumFacing.NORTH),
 	ROTATE_90(90, EnumFacing.EAST),
 	ROTATE_180(180, EnumFacing.SOUTH),
 	ROTATE_270(270, EnumFacing.WEST);
 
+    public static final Rotation[] VALUES = Rotation.values();
+    public static final int COUNT = VALUES.length;
+    
 	/**
 	 * Useful for locating model file names that use degrees as a suffix.
 	 */

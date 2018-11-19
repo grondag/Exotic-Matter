@@ -147,6 +147,8 @@ public abstract class QuadPainter
      */
     protected static Vec3i getSurfaceVector(Vec3i vec, EnumFacing face, TextureScale scale)
     {
+        //PERF: reuse instances?
+        
         int sliceCountMask = scale.sliceCountMask;
         int x = vec.getX() & sliceCountMask;
         int y = vec.getY() & sliceCountMask;
@@ -181,6 +183,7 @@ public abstract class QuadPainter
      */
     protected static Vec3i rotateFacePerspective(Vec3i vec, Rotation rotation, TextureScale scale)
     {
+        // PERF - reuse instances?
         switch(rotation)
         {
         case ROTATE_90:

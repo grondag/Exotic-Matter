@@ -29,8 +29,9 @@ public class Transform
         final Axis[] avals = {Axis.X, Axis.Y, Axis.Z, null};
         for(Axis axis : avals)
         {
-            for(Rotation rot : Rotation.values())
+            for(int r = 0; r < Rotation.COUNT; r++)
             {
+                final Rotation rot = Rotation.VALUES[r];
                 populateLookups(axis, false, rot);
                 populateLookups(axis, true, rot);
             }
