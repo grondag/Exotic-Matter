@@ -1,24 +1,13 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList.Builder;
-
-import grondag.exotic_matter.model.CSG.CSGNode;
 import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
 import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
-import grondag.exotic_matter.model.primitives.PointInPolygonTest;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
-import grondag.exotic_matter.model.render.QuadBakery;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;

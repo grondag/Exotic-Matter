@@ -6,7 +6,7 @@ import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 
-public interface IPaintedPoly extends IPoly<IPaintedVertex>
+public interface IPaintedPoly<T extends IPaintedVertex> extends IPoly<T>
 {
 
     int getMaxU(int layerIndex);

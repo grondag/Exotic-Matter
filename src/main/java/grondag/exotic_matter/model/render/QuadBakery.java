@@ -244,7 +244,7 @@ public class QuadBakery
        }
     }
 
-    public static BakedQuad createBakedQuad(int layerIndex, IPaintedPoly raw, boolean forceItemFormat)
+    public static BakedQuad createBakedQuad(int layerIndex, IPaintedPoly<? extends IPaintedVertex> raw, boolean forceItemFormat)
     {
         final float spanU = raw.getMaxU(layerIndex) - raw.getMinU(layerIndex);
         final float spanV = raw.getMaxV(layerIndex) - raw.getMinV(layerIndex);
