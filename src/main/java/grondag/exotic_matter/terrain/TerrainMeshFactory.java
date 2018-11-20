@@ -499,11 +499,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         shadowEnhance(vecOut);
         final Vec3f normCenter = vecOut.toImmutable();
         
+        // compute weighted normals for side and corner vertices
+        // four of each, so reusing the same 0-3 loop for both
         for(int i = 0; i < 4; i++)
         {
             vecOut.load(0, 0, 0);
-            final ObjectArrayList<IMutablePolygon> list = quadInputsSide[i];
-            final int limit = list.size();
+            ObjectArrayList<IMutablePolygon> list = quadInputsSide[i];
+            int limit = list.size();
             for(int j = 0; j < limit; j++)
             {
                 IMutablePolygon qi = list.get(j);
@@ -511,13 +513,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
             shadowEnhance(vecOut);
             normSide[i] = vecOut.toImmutable();
-        }
-
-        for(int i = 0; i < 4; i++)
-        {
+            
             vecOut.load(0, 0, 0);
-            final ObjectArrayList<IMutablePolygon> list = quadInputsSide[i];
-            final int limit = list.size();
+            list = quadInputsCorner[i];
+            limit = list.size();
             for(int j = 0; j < limit; j++)
             {
                 IMutablePolygon qi = list.get(j);
