@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives.polygon;
+package grondag.exotic_matter.model.primitives.better;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.exotic_matter.model.CSG.CSGNode;
@@ -14,6 +13,8 @@ import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
 import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
 import grondag.exotic_matter.model.primitives.PointInPolygonTest;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.model.render.QuadBakery;
@@ -23,59 +24,38 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
-/**
- * Immutable base interface for classes used to create and transform meshes before baking into MC quads.<p>
- */
-
-public interface IPolygon extends IPaintablePolygon
+public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
 {
-    /**
-     * If this polygon is mutable, returns mutable reference to self.
-     * Thows an exception if not mutable.
-     */
-    public default IMutablePolygon mutableReference()
+    public Vec3f getFaceNormal();
+    
+    public EnumFacing getNominalFace();
+    
+    public default void forEachVertex(Consumer<T> consumer)
     {
-        throw new UnsupportedOperationException();
+        final int limit = this.vertexCount();
+        for(int i = 0; i < limit; i++)
+        {
+            consumer.accept(this.getVertex(i));
+        }
     }
     
-    public Vertex getVertex(int index);
-    
-    public void forEachVertex(Consumer<Vertex> consumer);
-    
-    /**
-     * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
-     */
-    public default void addQuadsToList(List<IPolygon> list, boolean ensureConvex)
-    {
-        this.toQuads(p -> list.add(p), ensureConvex);
-    }
-    
-    /**
-     * Like {@link #toQuads(boolean)} but doesn't instantiate a new list.
-     */
-    public void toQuads(Consumer<IPolygon> target, boolean ensureConvex);
-    
-    /**
-     * Like {@link #toTris()} but doesn't instantiate a new list.
-     */
-    public void toTris(Consumer<IPolygon> target);
-    
-    /**
-     * Like {@link #toTris()} but doesn't instantiate a new list.
-     */
-    public default void addTrisToList(List<IPolygon> list)
-    {
-        this.toTris(p -> list.add(p));
-    }
-    
-    public void addTrisToCSGRoot(CSGNode.Root root);
-    
-      /**
-      * Provide direct access to vertex array for CSG only.
-      * Performance optimization.
-      */
-     public Vertex[] vertexArray();
-    
+    //TODO: put these in helpers or something, don't belong here
+//    public default void addQuadsToList(List<IPoly<T>> list, boolean ensureConvex)
+//    {
+//        this.toQuads(p -> list.add(p), ensureConvex);
+//    }
+//    
+//    public void toQuads(Consumer<IPoly<T>> target, boolean ensureConvex);
+//    
+//    public void toTris(Consumer<IPoly<T>> target);
+//    
+//    public default void addTrisToList(List<IPoly<T>> list)
+//    {
+//        this.toTris(p -> list.add(p));
+//    }
+//    
+//    public void addTrisToCSGRoot(CSGNode.Root root);
+
     public default AxisAlignedBB getAABB()
     {
         double minX = Math.min(Math.min(getVertex(0).x(), getVertex(1).x()), Math.min(getVertex(2).x(), getVertex(3).x()));
@@ -89,10 +69,9 @@ public interface IPolygon extends IPaintablePolygon
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    @Override
     public default boolean isConvex()
     {
-        return QuadHelper.isConvex(this.vertexArray(), this.vertexCount());
+        return QuadHelper.isConvex(this);
     }
 
     public default boolean isOrthogonalTo(EnumFacing face)
@@ -112,11 +91,11 @@ public interface IPolygon extends IPaintablePolygon
         float faceY = fn.y();
         float faceZ = fn.z();
 
-        Vertex first = this.getVertex(0);
+        T first = this.getVertex(0);
         
         for(int i = 3; i < this.vertexCount(); i++)
         {
-            Vertex v = this.getVertex(i);
+            T v = this.getVertex(i);
             
             float dx = v.x() - first.x();
             float dy = v.y() - first.y();
@@ -188,8 +167,6 @@ public interface IPolygon extends IPaintablePolygon
         int  i, j, k;         // loop indices
         final int n = this.vertexCount();
         Vec3f N = this.getFaceNormal();
-        Vertex[] V = Arrays.copyOf(this.vertexArray(), n + 1);
-        V[n] = V[0];
         
         if (n < 3) return 0;  // a degenerate polygon
 
@@ -210,28 +187,28 @@ public interface IPolygon extends IPaintablePolygon
         {
           case 1:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].y() * (V[j].z() - V[k].z()));
+                area += (getVertexModulo(i)).y() * (getVertexModulo(j).z() - getVertexModulo(k).z());
             break;
           case 2:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].z() * (V[j].x() - V[k].x()));
+                area += (getVertexModulo(i).z() * (getVertexModulo(j).x() - getVertexModulo(k).x()));
             break;
           case 3:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (V[i].x() * (V[j].y() - V[k].y()));
+                area += (getVertexModulo(i).x() * (getVertexModulo(j).y() - getVertexModulo(k).y()));
             break;
         }
         
         switch (coord)
         {    // wrap-around term
           case 1:
-            area += (V[n].y() * (V[1].z() - V[n-1].z()));
+            area += (getVertexModulo(n).y() * (getVertexModulo(1).z() - getVertexModulo(n-1).z()));
             break;
           case 2:
-            area += (V[n].z() * (V[1].x() - V[n-1].x()));
+            area += (getVertexModulo(n).z() * (getVertexModulo(1).x() - getVertexModulo(n-1).x()));
             break;
           case 3:
-            area += (V[n].x() * (V[1].y() - V[n-1].y()));
+            area += (getVertexModulo(n).x() * (getVertexModulo(1).y() - getVertexModulo(n-1).y()));
             break;
         }
 
@@ -281,11 +258,6 @@ public interface IPolygon extends IPaintablePolygon
         return null;
     }
 
-    public default void addBakedQuadsToBuilder(Builder<BakedQuad> builder, boolean isItem)
-    {
-        builder.add(QuadBakery.createBakedQuad(this, isItem));
-    }
-
     public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
     {
         this.forEachVertex(v -> consumer.acceptVertex(v.x(), v.y(), v.z()));
@@ -304,17 +276,4 @@ public interface IPolygon extends IPaintablePolygon
                 consumer.acceptVertex(v.x(), v.y(), v.z(), v.normal().x(), v.normal().y(), v.normal().z());
         });
     }
-
-    IMutablePolygon mutableCopyWithVertices();
-
-    IMutablePolygon mutableCopy();
-
-    IMutablePolygon mutableCopy(int vertexCount);
-    
-//    /**
-//     * For testing
-//     */
-//    public String getTag();
-//    
-//    public IMutablePolygon setTag(String tag);
 }

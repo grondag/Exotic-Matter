@@ -44,25 +44,6 @@ public class PolyTest
         
         quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
-        // point on plane
-        point = Vec3f.create(0.5f, 0.5f, 0.5f);
-        assertTrue(quad.containsPoint(point));
-        
-        // point on plane outside poly
-        point = Vec3f.create(-0.5f, 0.5f, 1.5f);
-        assertFalse(quad.containsPoint(point));
-        
-        // point with ray intersecting poly
-        assertTrue(quad.intersectsWithRay(0.5f, 0.1f, 0.5f, 0, 1, 0));        
-        
-        // point with ray intersecting plane outside poly
-        point = Vec3f.create(-32, 0.2f, 27);
-        assertFalse(quad.containsPoint(point));
-             
-        // point with ray facing away from poly
-        assertFalse(quad.intersectsWithRay(0.5f, 0.1f, 0.5f, 0, -1, 0));
-        
-        
         //convexity & area tests
         quad = new PolyImpl(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assertTrue(quad.isConvex());

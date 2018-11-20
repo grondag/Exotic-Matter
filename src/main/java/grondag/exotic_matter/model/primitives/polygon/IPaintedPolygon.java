@@ -233,7 +233,7 @@ public interface IPaintedPolygon extends IPipelinedQuad
             }
             
             // apply texture rotation
-            QuadBakery.applyTextureRotation(poly, uvData[n]);
+            QuadBakery.applyTextureRotation(poly.getRotation(), uvData[n]);
             
             // scale UV coordinates to size of texture sub-region
             for(int v = 0; v < 4; v++)

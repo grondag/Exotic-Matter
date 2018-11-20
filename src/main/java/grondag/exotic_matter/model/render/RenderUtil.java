@@ -26,16 +26,6 @@ public class RenderUtil
         VOXEL_TEST_RAY_Z = ray.z;
     }
     
-    public static boolean isPointEnclosed(float x, float y, float z, Collection<IPolygon> quads)
-    {
-        int intersectionCount = 0;
-        for(IPolygon quad : quads)
-        {                  
-            if(quad.intersectsWithRay(x, y, z, VOXEL_TEST_RAY_X, VOXEL_TEST_RAY_Y, VOXEL_TEST_RAY_Z)) intersectionCount++;
-        }          
-        return (intersectionCount & 0x1) == 1;
-    }
-    
     /**
      * Draws block-aligned grid on sides of AABB if entity can see it from outside
      */

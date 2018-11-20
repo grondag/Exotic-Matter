@@ -13,6 +13,8 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.model.primitives.better.IGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IVertexCollection;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
@@ -352,6 +354,55 @@ public class QuadHelper
         return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
     }
 
+    public static <T extends IGeometricVertex> boolean isConvex(IVertexCollection<T> vertices)
+    {
+        final int vertexCount = vertices.vertexCount();
+        if(vertexCount == 3) return true;
+    
+        float testX = 0;
+        float testY = 0;
+        float testZ = 0;
+        boolean needTest = true;
+        
+        T priorVertex = vertices.getVertex(vertexCount - 2);
+        T thisVertex =  vertices.getVertex(vertexCount - 1);
+        
+        for(int nextIndex = 0; nextIndex < vertexCount; nextIndex++)
+        {
+            T nextVertex = vertices.getVertex(nextIndex);
+            
+            final float ax = thisVertex.x() - priorVertex.x();
+            final float ay = thisVertex.y() - priorVertex.y();
+            final float az = thisVertex.z() - priorVertex.z();
+            
+            final float bx = nextVertex.x() - thisVertex.x();
+            final float by = nextVertex.y() - thisVertex.y();
+            final float bz = nextVertex.z() - thisVertex.z();
+    
+            final float crossX = ay * bz - az * by;
+            final float crossY = az * bx - ax * bz;
+            final float crossZ = ax * by - ay * bx;
+            
+            if(needTest)
+            {
+                needTest = false;
+                testX = crossX;
+                testY = crossY;
+                testZ = crossZ;
+            }
+            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
+            {
+                return false;
+            }
+            
+            priorVertex = thisVertex;
+            thisVertex =  nextVertex;
+        }
+        return true;
+    }
+    
+    //TODO: remove when no longer needed
+    @Deprecated
     public static boolean isConvex(IVertex[] vertices, final int vertexCount)
     {
         if(vertexCount == 3) return true;
