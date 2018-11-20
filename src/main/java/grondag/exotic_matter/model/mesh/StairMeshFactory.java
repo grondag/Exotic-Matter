@@ -4,9 +4,6 @@ import java.util.function.Consumer;
 
 import javax.vecmath.Matrix4f;
 
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;

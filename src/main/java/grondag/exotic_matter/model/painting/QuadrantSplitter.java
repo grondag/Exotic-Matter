@@ -5,10 +5,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
-import grondag.exotic_matter.model.primitives.vertex.IPaintableVertex;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.world.FaceCorner;
 
 /**

@@ -37,9 +37,7 @@ package grondag.exotic_matter.model.CSG;
 import java.awt.Polygon;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 
 public class CSGPlane
 {

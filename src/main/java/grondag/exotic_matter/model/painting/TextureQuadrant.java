@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.world.FaceCorner;
 import grondag.exotic_matter.world.FaceSide;
 import grondag.exotic_matter.world.Rotation;

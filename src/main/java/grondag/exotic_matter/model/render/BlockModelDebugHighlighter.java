@@ -3,7 +3,6 @@ package grondag.exotic_matter.model.render;
 import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
 import net.minecraft.block.state.IBlockState;

@@ -15,10 +15,6 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.better.IGeometricVertex;
 import grondag.exotic_matter.model.primitives.better.IVertexCollection;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.polygon.PolyImpl;
-import grondag.exotic_matter.model.primitives.vertex.IVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;

@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import grondag.exotic_matter.model.CSG.CSGPlane;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 
 public class CSGPlanPerf
 {

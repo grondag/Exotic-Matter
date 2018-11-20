@@ -2,9 +2,7 @@ package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;

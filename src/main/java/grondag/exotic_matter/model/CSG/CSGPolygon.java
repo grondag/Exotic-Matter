@@ -3,10 +3,7 @@ package grondag.exotic_matter.model.CSG;
 import java.util.Arrays;
 import java.util.List;
 
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 
 public class CSGPolygon
 {

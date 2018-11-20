@@ -2,9 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.vecmath.Point2f;
 
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vertex;
 
 /**
  * Adapted from code that bears the notice reproduced below and

@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.polygon.IPaintablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.FaceCorner;
