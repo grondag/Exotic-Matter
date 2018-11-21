@@ -169,7 +169,7 @@ public class QuadContainer
     }
 
 
-    private static class QuadListKeyBuilder implements IGeometricVertexConsumer
+    private static class QuadListKeyBuilder
     {
         private final int axis0;
         private final int axis1;

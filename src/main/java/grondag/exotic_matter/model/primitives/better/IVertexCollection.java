@@ -1,16 +1,18 @@
 package grondag.exotic_matter.model.primitives.better;
 
-public interface IVertexCollection<T extends IGeometricVertex>
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+
+public interface IVertexCollection
 {
     public int vertexCount();
     
-    public T getVertex(int index);
+    public Vec3f getPos(int index);
     
     /**
      * Wraps around if index out of range.
      */
-    public default T getVertexModulo(int index)
+    public default Vec3f getPosModulo(int index)
     {
-        return getVertex(index % vertexCount());
+        return getPos(index % vertexCount());
     }
 }

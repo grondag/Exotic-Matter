@@ -205,12 +205,12 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitU = (uSplitLow + uSpan) / (uMax - uMin);
         
-        IPaintablePolygon slice = input.paintableCopy(sliceCount + 2);
+        IPaintablePolygon slice = input.claimCopy(sliceCount + 2);
         slice.setMinU(flipped ? 1 : 0);
         slice.setMaxU(flipped ? 0 : 1);
         int iSliceVertex = 0;
         
-        IPaintablePolygon remainder = input.paintableCopy(remainderCount + 2);
+        IPaintablePolygon remainder = input.claimCopy(remainderCount + 2);
         int iRemainderVertex = 0;
         
         float uThis = vertexU[vCountIn - 1];
@@ -341,12 +341,12 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitV = (vSplitLow + vSpan) / (vMax - vMin);
         
-        IPaintablePolygon slice = input.paintableCopy(sliceCount + 2);
+        IPaintablePolygon slice = input.claimCopy(sliceCount + 2);
         slice.setMinV(flipped ? 1 : 0);
         slice.setMaxV(flipped ? 0 : 1);
         int iSliceVertex = 0;
         
-        IPaintablePolygon remainder = input.paintableCopy(remainderCount + 2);
+        IPaintablePolygon remainder = input.claimCopy(remainderCount + 2);
         int iRemainderVertex = 0;
         
         float vThis = vertexV[vCountIn - 1];

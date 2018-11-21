@@ -22,6 +22,10 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
@@ -79,8 +83,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 new AxisAlignedBB(0, 0, 0, 1, 1, 1)
         };
 
-    private static final IPolygon template;
-    private static final IPolygon[] bottoms = new IPolygon[5];
+    private static final IPaintablePoly template;
 
     private static final CSGNode.Root[] terrainNodesSimple = new CSGNode.Root[5];
     private static final CSGNode.Root[] terrainNodesHybrid = new CSGNode.Root[5];
@@ -90,12 +93,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
-    private static final LongSimpleLoadingCache<Collection<IPolygon>> modelCache = new LongSimpleLoadingCache<Collection<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
+    private static final LongSimpleLoadingCache<Collection<IPaintedPoly<IPaintedVertex>>> modelCache = new LongSimpleLoadingCache<Collection<IPaintedPoly<IPaintedVertex>>>(new TerrainCacheLoader(), 0xFFFF);
 
-    private static class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPolygon>>
+    private static class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPaintedPoly<IPaintedVertex>>>
     {
         @Override
-        public Collection<IPolygon> load(long key)
+        public Collection<IPaintedPoly<IPaintedVertex>> load(long key)
         {
             //            cacheMisses.incrementAndGet();
             return createShapeQuads(new TerrainState(key < 0 ? -key : key, 0), key < 0);
@@ -104,37 +107,38 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     static
     {
-        IMutablePolygon templateBuilder = new PolyImpl(4);
+        template = PolyFactory.newPaintable(4, 1);
 
-        templateBuilder.setLockUV(true);
-        templateBuilder.setSurfaceInstance(SURFACE_TOP);
+        template.setLockUV(0, true);
+        template.setSurfaceInstance(SURFACE_TOP);
         // default - need to change for sides and bottom
-        templateBuilder.setNominalFace(EnumFacing.UP);
+        template.setNominalFace(EnumFacing.UP);
         //        templateBuilder.setTag("template");
-        template = templateBuilder;
 
+        final IPaintablePoly qBottom = template.claimCopy(4);
         for(int i = 0; i < 5; i++)
         {
             // Bottom faces are pre-built
-            IMutablePolygon qBottom = template.mutableCopy(4);
+            
             qBottom.setSurfaceInstance(SURFACE_SIDE);
             qBottom.setNominalFace(EnumFacing.DOWN);        
             qBottom.setupFaceQuad(0, 0, 1, 1, getBottomY(i-2), EnumFacing.NORTH);
             //            qBottom.setTag("bottom-" + i);
-            bottoms[i] = qBottom;
 
-            //            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-simple-" + i);
+            //            qBottom = Poly.claimCopyOf(qBottom).setTag("bottom-simple-" + i);
 
             terrainNodesSimple[i] = CSGNode.create(ImmutableList.of(qBottom));
 
-            //            qBottom = Poly.mutableCopyOf(qBottom).setTag("bottom-hybrid-" + i);
+            //            qBottom = Poly.claimCopyOf(qBottom).setTag("bottom-hybrid-" + i);
 
             terrainNodesHybrid[i] = CSGNode.create(ImmutableList.of(qBottom), false);
 
             //            terrainNodesComplex[i] = CSGNode.create(ImmutableList.of(qBottom), true);
 
         }
-        List<IPolygon> cubeQuads = cubeQuads();
+        qBottom.release();
+        
+        List<IPaintedPoly<IPaintedVertex>> cubeQuads = cubeQuads();
 
         //        cubeQuads.forEach(q -> q.setTag("cube-simple-" + q.getNominalFace().toString()));
         cubeNodeSimple = CSGNode.create(cubeQuads);
@@ -196,13 +200,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * Quads on left (west) side of the top face.<br>
          * Needed for model and to computer center normal.
          */
-        final IMutablePolygon quadInputsCenterLeft[] = new IMutablePolygon[4];
+        final IPaintablePoly quadInputsCenterLeft[] = new IPaintablePoly[4];
         
         /**
          * Quads on right (east) side of the top face.<br>
          * Needed for model and to compute center normal.
          */
-        final IMutablePolygon quadInputsCenterRight[] = new IMutablePolygon[4];
+        final IPaintablePoly quadInputsCenterRight[] = new IPaintablePoly[4];
         
         /**
          * Quads adjacent to each side midpoint vertex.  Needed to compute normals.
@@ -210,7 +214,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * for adjacent space if it has a terrain height.
          */
         @SuppressWarnings("unchecked")
-        final ObjectArrayList<IMutablePolygon>[] quadInputsSide = new ObjectArrayList[4];
+        final ObjectArrayList<IPaintablePoly>[] quadInputsSide = new ObjectArrayList[4];
 
         /**
          * Quads adjacent to each corner vertex.  Needed to compute normals.
@@ -218,7 +222,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
          * for adjacent spaces if the space has a terrain height.
          */
         @SuppressWarnings("unchecked")
-        final ObjectArrayList<IMutablePolygon>[] quadInputsCorner = new ObjectArrayList[4];
+        final ObjectArrayList<IPaintablePoly>[] quadInputsCorner = new ObjectArrayList[4];
         
         final Vec3f.Mutable vecOut = new Vec3f.Mutable(0, 0, 0);
         final Vec3f.Mutable vecIn = new Vec3f.Mutable(0, 0, 0);
@@ -250,8 +254,8 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         {
             for(int i = 0; i < 4; i++)
             {
-                quadInputsSide[i] = new ObjectArrayList<IMutablePolygon>();
-                quadInputsCorner[i] = new ObjectArrayList<IMutablePolygon>();
+                quadInputsSide[i] = new ObjectArrayList<IPaintablePoly>();
+                quadInputsCorner[i] = new ObjectArrayList<IPaintablePoly>();
             }
         }
         
@@ -307,10 +311,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //      }
 
         final WorkVars w = workVars.get().prepare();
-        final IMutablePolygon quadInputsCenterLeft[] = w.quadInputsCenterLeft;
-        final IMutablePolygon quadInputsCenterRight[] = w.quadInputsCenterRight;
-        final ObjectArrayList<IMutablePolygon>[] quadInputsSide = w.quadInputsSide;
-        final ObjectArrayList<IMutablePolygon>[] quadInputsCorner = w.quadInputsCorner;
+        final IPaintablePoly quadInputsCenterLeft[] = w.quadInputsCenterLeft;
+        final IPaintablePoly quadInputsCenterRight[] = w.quadInputsCenterRight;
+        final ObjectArrayList<IPaintablePoly>[] quadInputsSide = w.quadInputsSide;
+        final ObjectArrayList<IPaintablePoly>[] quadInputsCorner = w.quadInputsCorner;
         final Vec3f.Mutable vecOut = w.vecOut;
         final Vec3f.Mutable vecIn = w.vecIn;
         final FaceVertex fvMidCorner[] = w.fvMidCorner;
@@ -348,7 +352,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             // build quads on the top of this block that that border this side (left and right)
             // these are always included in the vertex normal calculations for the side midpoint and corner vertices
 
-            IMutablePolygon qiWork = template.mutableCopy(3);
+            IPaintablePoly qiWork = template.claimCopy(3);
             qiWork.setupFaceQuad(
                     fvMidSide[i],
                     fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
@@ -358,7 +362,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             quadInputsSide[i].add(qiWork);
             quadInputsCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()].add(qiWork);
 
-            qiWork = template.mutableCopy(3);
+            qiWork = template.claimCopy(3);
             qiWork.setupFaceQuad(
                     fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
                     fvMidSide[i],
@@ -373,7 +377,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             // add side block tri that borders this block if it is there
             if(isSidePresent)
             {
-                qiWork = template.mutableCopy(3);
+                qiWork = template.claimCopy(3);
                 qiWork.setupFaceQuad(
                         fvFarSide[i],
                         fvMidCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()],
@@ -382,7 +386,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 quadInputsSide[i].add(qiWork);
                 quadInputsCorner[HorizontalCorner.find(side, side.getLeft()).ordinal()].add(qiWork);
 
-                qiWork = template.mutableCopy(3);
+                qiWork = template.claimCopy(3);
                 qiWork.setupFaceQuad(
                         fvMidCorner[HorizontalCorner.find(side, side.getRight()).ordinal()],
                         fvFarSide[i],
@@ -413,7 +417,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
             if(isSidePresent)
             {
-                qiWork = template.mutableCopy(3);
+                qiWork = template.claimCopy(3);
 
                 final FaceVertex leftFarCorner = isLeftCornerPresent
 
@@ -433,7 +437,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         quadInputsCorner[leftCorner.ordinal()].add(qiWork);
 
 
-                        qiWork = template.mutableCopy(3);
+                        qiWork = template.claimCopy(3);
 
                         final FaceVertex rightFarCorner = isRightCornerPresent
 
@@ -457,7 +461,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 if(isLeftCornerPresent)
                 {
                     // only have the corner
-                    qiWork = template.mutableCopy(3);
+                    qiWork = template.claimCopy(3);
                     qiWork.setupFaceQuad(
                             fvMidCorner[leftCorner.ordinal()],
                             midPoint(fvFarSide[i], fvFarCorner[leftCorner.ordinal()])
@@ -470,7 +474,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 if(isRightCornerPresent)
                 {
                     // only have the corner
-                    qiWork = template.mutableCopy(3);
+                    qiWork = template.claimCopy(3);
                     qiWork.setupFaceQuad(
                             fvMidCorner[rightCorner.ordinal()],
                             fvFarCorner[rightCorner.ordinal()],
@@ -500,11 +504,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         for(int i = 0; i < 4; i++)
         {
             vecOut.load(0, 0, 0);
-            ObjectArrayList<IMutablePolygon> list = quadInputsSide[i];
+            ObjectArrayList<IPaintablePoly> list = quadInputsSide[i];
             int limit = list.size();
             for(int j = 0; j < limit; j++)
             {
-                IMutablePolygon qi = list.get(j);
+                IPaintablePoly qi = list.get(j);
                 vecOut.add(vecIn.load(qi.getFaceNormal()).scale(qi.getArea()));
             }
             shadowEnhance(vecOut);
@@ -515,7 +519,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             limit = list.size();
             for(int j = 0; j < limit; j++)
             {
-                IMutablePolygon qi = list.get(j);
+                IPaintablePoly qi = list.get(j);
                 vecOut.add(vecIn.load(qi.getFaceNormal()).scale(qi.getArea()));
             }
             shadowEnhance(vecOut);
@@ -535,7 +539,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             {
 
                 // side
-                IMutablePolygon qSide = template.mutableCopy();
+                IPaintablePoly qSide = template.claimCopy();
                 //              qSide.setTag("side-simple-" + side.toString());
 
                 final HorizontalCorner cornerLeft = HorizontalCorner.find(side, side.getLeft());
@@ -555,7 +559,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 // if side is simple top *may* be not necessarily so - build top if not simple
                 if(!isTopSimple)
                 {
-                    IMutablePolygon qi = template.mutableCopy(3);
+                    IPaintablePoly qi = template.claimCopy(3);
 
                     //                  qi.setTag("top-simpleside-" + side.toString());
 
@@ -575,7 +579,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             {
 
                 //Sides
-                IMutablePolygon qSide = template.mutableCopy();
+                IPaintablePoly qSide = template.claimCopy();
                 //              qSide.setTag("side-complex-1-" + side.toString());
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
@@ -588,7 +592,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         EnumFacing.UP);
                 terrainQuads.addPolygon(qSide);
 
-                qSide = qSide.mutableCopy();
+                qSide = qSide.claimCopy();
                 //              qSide.setTag("side-complex-2-" + side.toString());
                 qSide.setSurfaceInstance(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
@@ -608,7 +612,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 // left
                 {
                     final HorizontalCorner corner = HorizontalCorner.find(side, side.getLeft());
-                    IMutablePolygon qi = quadInputsCenterLeft[i];
+                    IPaintablePoly qi = quadInputsCenterLeft[i];
                     qi.setVertexNormal(0, normSide[i]);
                     qi.setVertexNormal(1, normCorner[corner.ordinal()]);
                     qi.setVertexNormal(2, normCenter);
@@ -618,13 +622,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         // find vertex at midpoint of corner and center
                         Vertex vMid = qi.getVertex(1).interpolate(qi.getVertex(2), 0.5f);
 
-                        IMutablePolygon qHalf = qi.mutableCopy();
+                        IPaintablePoly qHalf = qi.claimCopy();
                         qHalf.addVertex(0, qi.getVertex(0));
                         qHalf.addVertex(1, qi.getVertex(1));
                         qHalf.addVertex(2, vMid);
                         terrainQuads.addPolygon(qHalf);
 
-                        qHalf = qi.mutableCopy();
+                        qHalf = qi.claimCopy();
                         qHalf.addVertex(0, qi.getVertex(0));
                         qHalf.addVertex(1, vMid);
                         qHalf.addVertex(2, qi.getVertex(2));
@@ -639,7 +643,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 // right
                 {
                     final HorizontalCorner corner = HorizontalCorner.find(side, side.getRight());
-                    IMutablePolygon qi = quadInputsCenterRight[i];
+                    IPaintablePoly qi = quadInputsCenterRight[i];
                     qi.setVertexNormal(0, normCorner[corner.ordinal()]);
                     qi.setVertexNormal(1, normSide[i]);
                     qi.setVertexNormal(2, normCenter);     
@@ -649,13 +653,13 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                         // find vertex at midpoint of corner and center
                         Vertex vMid = qi.getVertex(0).interpolate(qi.getVertex(2), 0.5f);
 
-                        IMutablePolygon qHalf = qi.mutableCopy();
+                        IPaintablePoly qHalf = qi.claimCopy();
                         qHalf.addVertex(0, qi.getVertex(0));
                         qHalf.addVertex(1, qi.getVertex(1));
                         qHalf.addVertex(2, vMid);
                         terrainQuads.addPolygon(qHalf);
 
-                        qHalf = qi.mutableCopy();
+                        qHalf = qi.claimCopy();
                         qHalf.addVertex(0, vMid);
                         qHalf.addVertex(1, qi.getVertex(1));
                         qHalf.addVertex(2, qi.getVertex(2));
@@ -672,7 +676,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //simple top face if it is relatively flat and all sides can be drawn without a mid vertex
         if(isTopSimple)
         {
-            IMutablePolygon qi = template.mutableCopy(4);
+            IPaintablePoly qi = template.claimCopy(4);
 
             //          qi.setTag("top-simple");
 
@@ -700,7 +704,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
 
         // Bottom face is pre-added to CSGNode templates
-        //        IMutablePolygon qBottom = Poly.mutable(template);
+        //        IPaintablePoly qBottom = Poly.mutable(template);
         //        qBottom.setSurfaceInstance(SURFACE_SIDE);
         //        qBottom.setNominalFace(EnumFacing.DOWN);        
         //        qBottom.setupFaceQuad(0, 0, 1, 1, bottom, EnumFacing.NORTH);
@@ -708,18 +712,21 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //        terrainQuads.add(getBottomForState(flowState));
     }
 
-    private static List<IPolygon> cubeQuads()
+    private static List<IPaintedPoly<IPaintedVertex>> cubeQuads()
     {
-        ArrayList<IPolygon> cubeQuads = new ArrayList<>();
-
+        final ArrayList<IPaintedPoly<IPaintedVertex>> cubeQuads = new ArrayList<>();
+        final IPaintablePoly work = template.claimCopy();
+        
         //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
         //most important thing seems to be that sides come first
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP));
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH));
-        cubeQuads.add(template.mutableCopyWithVertices().setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH));
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
+        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
+        
+        work.release();
         return cubeQuads;
     }
 
@@ -754,7 +761,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
-    private static Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
+    private static Collection<IPaintedPoly<IPaintedVertex>> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);
@@ -869,9 +876,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPaintedPoly<IPaintedVertex>> target)
     {
-        final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
+        final Consumer<IPaintedPoly<IPaintedVertex>> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
                 ? QuadHelper.makeRecoloring(target) : target;
 
                 // Hot terrain blocks that border non-hot blocks need a subdivided mesh

@@ -11,6 +11,8 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -97,7 +99,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
     {
         FaceSpec spec = new FaceSpec(getCutCount(modelState), areCutsOnEdge(modelState));
         

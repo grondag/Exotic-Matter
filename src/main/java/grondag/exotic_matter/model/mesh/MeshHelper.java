@@ -11,6 +11,9 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
@@ -26,7 +29,7 @@ public class MeshHelper
     // Will probably need separate version for creating orthogonalAxis-aligned cylinders and cones.  
     // Also needs a parameter for minimum slices to reduce poly count on small model parts when appropriate.
     // Right now minimum is fixed at 12.
-    public static List<IPolygon> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, IPolygon template)
+    public static List<IPaintedPoly<IPaintedVertex>> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, IPaintablePoly template)
     {
         double circumference = Math.PI * Math.max(startRadius, endRadius) * 2;
         int textureSlices = (int) Math.max(1, Math.round(circumference));
@@ -42,10 +45,11 @@ public class MeshHelper
         final Vec3d axisX = new Vec3d(isY ? 1 : 0, !isY ? 1 : 0, 0)
                 .crossProduct(axisZ).normalize();
         final Vec3d axisY = axisX.crossProduct(axisZ).normalize();
-        IMutablePolygon top = template.mutableCopy(polySlices);
-        IMutablePolygon bottom = template.mutableCopy(polySlices);
+        IPaintablePoly top = template.claimCopy(polySlices);
+        IPaintablePoly bottom = template.claimCopy(polySlices);
+        IPaintablePoly side = template.claimCopy(4);
         
-        List<IPolygon> results = new ArrayList<>(48);
+        List<IPaintedPoly<IPaintedVertex>> results = new ArrayList<>(48);
 
         for (int i = 0; i < polySlices; i++) {
             double t0 = i / (double) polySlices, t1 = (i + 1) / (double) polySlices;
@@ -67,15 +71,13 @@ public class MeshHelper
                 
                 Vec3d n0 = cylNormal(axisX, axisY, t1);
                 Vec3d n1= cylNormal(axisX, axisY, t0);
- 
                 
-                IMutablePolygon newQuad = template.mutableCopy();
                 
-                newQuad.addVertex(0, centerStart.add(n0.scale(quadStartRadius)), u0, v0, 0xFFFFFFFF, n0);
-                newQuad.addVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, 0xFFFFFFFF, n1);
-                newQuad.addVertex(2, centerEnd.add(n1.scale(quadEndRadius)), u1, v1, 0xFFFFFFFF, n1);
-                newQuad.addVertex(3, centerEnd.add(n0.scale(quadEndRadius)), u0, v1, 0xFFFFFFFF, n0);
-                results.add(newQuad);
+                side.setVertex(0, centerStart.add(n0.scale(quadStartRadius)), u0, v0, 0xFFFFFFFF, n0);
+                side.setVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, 0xFFFFFFFF, n1);
+                side.setVertex(2, centerEnd.add(n1.scale(quadEndRadius)), u1, v1, 0xFFFFFFFF, n1);
+                side.setVertex(3, centerEnd.add(n0.scale(quadEndRadius)), u0, v1, 0xFFFFFFFF, n0);
+                side.addPaintedQuadsToList(0, results);
                 
                 if(j == 0 || j == raySlices - 1)
                 {
@@ -85,19 +87,23 @@ public class MeshHelper
 
                     if(j == 0)
                     {    
-                        bottom.addVertex(i, centerStart.add(n0.scale(quadStartRadius)), u, v, 0xFFFFFFFF);                
+                        bottom.setVertex(i, centerStart.add(n0.scale(quadStartRadius)), u, v, 0xFFFFFFFF, null);                
                     }
                     if(j == raySlices - 1)
                     {
-                        top.addVertex(polySlices - i - 1, centerEnd.add(n0.scale(quadEndRadius)), u, v, 0xFFFFFFFF);
+                        top.setVertex(polySlices - i - 1, centerEnd.add(n0.scale(quadEndRadius)), u, v, 0xFFFFFFFF, null);
                     }
                 }
             }
         
         }
 
-        top.addQuadsToList(results, true);
-        bottom.addQuadsToList(results, true);
+        top.addPaintedQuadsToList(0, results);
+        bottom.addPaintedQuadsToList(0, results);
+        
+        top.release();
+        bottom.release();
+        side.release();
         return results;
     }
 
@@ -110,7 +116,7 @@ public class MeshHelper
      * Makes a regular icosahedron, which is a very close approximation to a sphere for most purposes.
      * Loosely based on http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
      */
-    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IPolygon template, boolean smoothNormals) 
+    public static List<IPaintedPoly<IPaintedVertex>> makeIcosahedron(Vec3d center, double radius, IPaintablePoly template, boolean smoothNormals) 
     {
         /** vertex scale */
         final double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
@@ -147,16 +153,16 @@ public class MeshHelper
         }
         
         // create 20 triangles of the icosahedron
-        List<IPolygon> results = new ArrayList<>(20);
+        List<IPaintedPoly<IPaintedVertex>> results = new ArrayList<>(20);
         
-        IMutablePolygon poly = template.mutableCopy(3);
+        IPaintablePoly poly = template.claimCopy(3);
        
         Surface.Builder surfBuilder = Surface.builder(poly.getSurfaceInstance());
         if(surfBuilder.topology() == SurfaceTopology.TILED)
         {
             final float uvMax = (float) (2 * s);
-            poly.setMaxU(uvMax);
-            poly.setMaxV(uvMax);
+            poly.setMaxU(0, uvMax);
+            poly.setMaxV(0, uvMax);
             surfBuilder.withWrapDistance(uvMax);
         }
         poly.setSurfaceInstance(surfBuilder.build());
@@ -164,94 +170,94 @@ public class MeshHelper
         //enable texture randomization
         int salt = 0;
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly));
+        makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly));
+        makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly));
+        makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly));
+        makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly));
+        makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly).addPaintedQuadsToList(0, results);
 
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly));
+        makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly).addPaintedQuadsToList(0, results);
 
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly));
+        makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly));
+        makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly).addPaintedQuadsToList(0, results);
         
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly));
+        makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly).addPaintedQuadsToList(0, results);
 
         poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly));
-        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly));
+        makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly).addPaintedQuadsToList(0, results);
+        makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly).addPaintedQuadsToList(0, results);
   
+        poly.release();
+        
         return results;
     }
     
-    private static IPolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IPolygon template)
+    private static IPaintablePoly makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IPaintablePoly template)
     {
-        IMutablePolygon newQuad = template.mutableCopy(3);
-        
         if(normals == null)
         {
             if(topHalf)
             {
-                newQuad.addVertex(0, points[p1], 1, 1, 0xFFFFFFFF);
-                newQuad.addVertex(1, points[p2], 0, 1, 0xFFFFFFFF);
-                newQuad.addVertex(2, points[p3], 1, 0, 0xFFFFFFFF);
+                template.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, null);
+                template.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, null);
+                template.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, null);
             }
             else
             {
-                newQuad.addVertex(0, points[p1], 0, 0, 0xFFFFFFFF);
-                newQuad.addVertex(1, points[p2], 1, 0, 0xFFFFFFFF);
-                newQuad.addVertex(2, points[p3], 0, 1, 0xFFFFFFFF);
+                template.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, null);
+                template.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, null);
+                template.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, null);
             }
         }
         else
         {
             if(topHalf)
             {
-                newQuad.addVertex(0, points[p1], 1, 1, 0xFFFFFFFF, normals[p1]);
-                newQuad.addVertex(1, points[p2], 0, 1, 0xFFFFFFFF, normals[p2]);
-                newQuad.addVertex(2, points[p3], 1, 0, 0xFFFFFFFF, normals[p3]);
+                template.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, normals[p1]);
+                template.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, normals[p2]);
+                template.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, normals[p3]);
             }
             else
             {
-                newQuad.addVertex(0, points[p1], 0, 0, 0xFFFFFFFF, normals[p1]);
-                newQuad.addVertex(1, points[p2], 1, 0, 0xFFFFFFFF, normals[p2]);
-                newQuad.addVertex(2, points[p3], 0, 1, 0xFFFFFFFF, normals[p3]);
+                template.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, normals[p1]);
+                template.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, normals[p2]);
+                template.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, normals[p3]);
             }
         }
         // clear face normal if has been set somehow
-        newQuad.clearFaceNormal();
-        return newQuad;
+        template.clearFaceNormal();
+        return template;
     }
 
     /**
      * Collection version of {@link #makeBox(AxisAlignedBB, IPolygon, Consumer)}
      */
     @Deprecated // use the consumer version
-    public static Collection<IPolygon> makeBox(AxisAlignedBB box, IPolygon template)
+    public static Collection<IPaintedPoly<IPaintedVertex>> makeBox(AxisAlignedBB box, IPaintablePoly template)
     {
-        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>(6);
+        SimpleUnorderedArrayList<IPaintedPoly<IPaintedVertex>> result = new SimpleUnorderedArrayList<>(6);
         makeBox(box, template, result);
         return result;
     }
@@ -261,35 +267,32 @@ public class MeshHelper
      * Typically used with locked UV coordinates.
      */
     @SuppressWarnings("deprecation")
-    public static void makeBox(AxisAlignedBB box, IPolygon template, Consumer<IPolygon> target)
+    public static void makeBox(AxisAlignedBB box, IPaintablePoly template, Consumer<IPaintedPoly<IPaintedVertex>> target)
     {
-        IMutablePolygon quad = template.mutableCopy(4);
+        IPaintablePoly quad = template.claimCopy(4);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
-        target.accept(quad);
+        quad.produceQuads(target);
     
-        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
-        target.accept(quad);
+        quad.produceQuads(target);
     
         //-X
-        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
-        target.accept(quad);
+        quad.produceQuads(target);
         
         //+X
-        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
-        target.accept(quad);
+        quad.produceQuads(target);
         
         //-Z
-        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
-        target.accept(quad);
+        quad.produceQuads(target);
         
         //+Z
-        quad = template.mutableCopy(4);
         quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
-        target.accept(quad);
+        quad.produceQuads(target);
+        
+        quad.release();
     }
     
     /**
@@ -300,25 +303,25 @@ public class MeshHelper
      * 
      * TODO: incomplete
      */
-    public static List<IPolygon> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IPolygon template)
+    public static List<IPaintedPoly<IPaintedVertex>> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IPaintablePoly template)
     {
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        ImmutableList.Builder<IPaintedPoly<IPaintedVertex>> builder = ImmutableList.builder();
         
         final float xEnd = origin.x() + xSize;
         final float yEnd = origin.y() + ySize;
         final float zEnd = origin.z() + zSize;
         
-        IMutablePolygon quad = template.mutableCopy(4);
-        quad.setLockUV(false);
-        quad.setMinU(0);
-        quad.setMaxU(xSize);
-        quad.setMinV(0);
-        quad.setMaxV(zSize);
+        IPaintablePoly quad = template.claimCopy(4);
+        quad.setLockUV(0, false);
+        quad.setMinU(0, 0);
+        quad.setMaxU(0, xSize);
+        quad.setMinV(0, 0);
+        quad.setMaxV(0, zSize);
         quad.setNominalFace(EnumFacing.UP);
-        quad.addVertex(0, xEnd, yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
-        quad.addVertex(1, origin.x(), yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
-        quad.addVertex(2, origin.x(), yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
-        quad.addVertex(3, xEnd, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.setVertex(0, xEnd, yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.setVertex(1, origin.x(), yEnd, origin.z(), 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.setVertex(2, origin.x(), yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
+        quad.setVertex(3, xEnd, yEnd, zEnd, 0, 0, 0xFFFFFFFF, 0, 1, 0);
 //        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         builder.add(quad);
     

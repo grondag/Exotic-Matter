@@ -14,6 +14,8 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.CubeInputs;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.collision.CubeCollisionHandler;
@@ -41,7 +43,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
     {
         cachedQuads.forEach(target);
         

@@ -1,11 +1,11 @@
 package grondag.exotic_matter.model.primitives.better;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
-import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
+import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import net.minecraft.util.EnumFacing;
@@ -13,20 +13,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
-public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
+public interface IPoly extends IVertexCollection
 {
     public Vec3f getFaceNormal();
     
     public EnumFacing getNominalFace();
-    
-    public default void forEachVertex(Consumer<T> consumer)
-    {
-        final int limit = this.vertexCount();
-        for(int i = 0; i < limit; i++)
-        {
-            consumer.accept(this.getVertex(i));
-        }
-    }
     
     //TODO: put these in helpers or something, don't belong here
 //    public default void addQuadsToList(List<IPoly<T>> list, boolean ensureConvex)
@@ -47,13 +38,18 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
 
     public default AxisAlignedBB getAABB()
     {
-        double minX = Math.min(Math.min(getVertex(0).x(), getVertex(1).x()), Math.min(getVertex(2).x(), getVertex(3).x()));
-        double minY = Math.min(Math.min(getVertex(0).y(), getVertex(1).y()), Math.min(getVertex(2).y(), getVertex(3).y()));
-        double minZ = Math.min(Math.min(getVertex(0).z(), getVertex(1).z()), Math.min(getVertex(2).z(), getVertex(3).z()));
+        Vec3f p0 = getPos(0);
+        Vec3f p1 = getPos(1);
+        Vec3f p2 = getPos(2);
+        Vec3f p3 = getPos(3);
+        
+        double minX = Math.min(Math.min(p0.x(), p1.x()), Math.min(p2.x(), p3.x()));
+        double minY = Math.min(Math.min(p0.y(), p1.y()), Math.min(p2.y(), p3.y()));
+        double minZ = Math.min(Math.min(p0.z(), p1.z()), Math.min(p2.z(), p3.z()));
 
-        double maxX = Math.max(Math.max(getVertex(0).x(), getVertex(1).x()), Math.max(getVertex(2).x(), getVertex(3).x()));
-        double maxY = Math.max(Math.max(getVertex(0).y(), getVertex(1).y()), Math.max(getVertex(2).y(), getVertex(3).y()));
-        double maxZ = Math.max(Math.max(getVertex(0).z(), getVertex(1).z()), Math.max(getVertex(2).z(), getVertex(3).z()));
+        double maxX = Math.max(Math.max(p0.x(), p1.x()), Math.max(p2.x(), p3.x()));
+        double maxY = Math.max(Math.max(p0.y(), p1.y()), Math.max(p2.y(), p3.y()));
+        double maxZ = Math.max(Math.max(p0.z(), p1.z()), Math.max(p2.z(), p3.z()));
 
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
@@ -80,11 +76,11 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
         float faceY = fn.y();
         float faceZ = fn.z();
 
-        T first = this.getVertex(0);
+        Vec3f first = this.getPos(0);
         
         for(int i = 3; i < this.vertexCount(); i++)
         {
-            T v = this.getVertex(i);
+            Vec3f v = this.getPos(i);
             
             float dx = v.x() - first.x();
             float dy = v.y() - first.y();
@@ -101,7 +97,7 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
         if(face == null) return false;
         for(int i = 0; i < this.vertexCount(); i++)
         {
-            if(!getVertex(i).isOnFacePlane(face, tolerance))
+            if(!getPos(i).isOnFacePlane(face, tolerance))
                 return false;
         }
         return true;
@@ -111,10 +107,10 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
     {
         try
         {
-            final Vec3f v0 = getVertex(0).pos();
-            final Vec3f v1 = getVertex(1).pos();
-            final Vec3f v2 = getVertex(2).pos();
-            final Vec3f v3 = getVertex(3).pos();
+            final Vec3f v0 = getPos(0);
+            final Vec3f v1 = getPos(1);
+            final Vec3f v2 = getPos(2);
+            final Vec3f v3 = getPos(3);
             
             final float x0 = v2.x() - v0.x();
             final float y0 = v2.y() - v0.y();
@@ -176,28 +172,28 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
         {
           case 1:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (getVertexModulo(i)).y() * (getVertexModulo(j).z() - getVertexModulo(k).z());
+                area += (getPosModulo(i)).y() * (getPosModulo(j).z() - getPosModulo(k).z());
             break;
           case 2:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (getVertexModulo(i).z() * (getVertexModulo(j).x() - getVertexModulo(k).x()));
+                area += (getPosModulo(i).z() * (getPosModulo(j).x() - getPosModulo(k).x()));
             break;
           case 3:
             for (i=1, j=2, k=0; i<n; i++, j++, k++)
-                area += (getVertexModulo(i).x() * (getVertexModulo(j).y() - getVertexModulo(k).y()));
+                area += (getPosModulo(i).x() * (getPosModulo(j).y() - getPosModulo(k).y()));
             break;
         }
         
         switch (coord)
         {    // wrap-around term
           case 1:
-            area += (getVertexModulo(n).y() * (getVertexModulo(1).z() - getVertexModulo(n-1).z()));
+            area += (getPosModulo(n).y() * (getPosModulo(1).z() - getPosModulo(n-1).z()));
             break;
           case 2:
-            area += (getVertexModulo(n).z() * (getVertexModulo(1).x() - getVertexModulo(n-1).x()));
+            area += (getPosModulo(n).z() * (getPosModulo(1).x() - getPosModulo(n-1).x()));
             break;
           case 3:
-            area += (getVertexModulo(n).x() * (getVertexModulo(1).y() - getVertexModulo(n-1).y()));
+            area += (getPosModulo(n).x() * (getPosModulo(1).y() - getPosModulo(n-1).y()));
             break;
         }
 
@@ -216,6 +212,8 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
         }
         return area;
     }
+    
+    public Surface getSurfaceInstance();
     
     /** 
      * Face to use for shading testing.
@@ -246,23 +244,22 @@ public interface IPoly<T extends IGeometricVertex> extends IVertexCollection<T>
         }
         return null;
     }
-
-    public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
-    {
-        this.forEachVertex(v -> consumer.acceptVertex(v.x(), v.y(), v.z()));
-    }
     
-    @SuppressWarnings("null")
-    public default void produceNormalVertices(INormalVertexConsumer consumer)
+    /**
+     * Splits and creates new instances as needed.
+     * If this instance is mutable, it MAY be added to the consumer and a reference retained.
+     * Do NOT retain references to mutable instances after using this method.
+     */
+    public <P extends IPoly> void produceQuads(Consumer<P> target);
+    
+    /**
+     * Splits and creates new instances as needed.
+     * If this instance is mutable, it MAY be added to the consumer and a reference retained.
+     * Do NOT retain references to mutable instances after using this method.
+     */
+    @SuppressWarnings("unchecked")
+    public default <P extends IPoly> void addQuadsToList(List<P> list)
     {
-        Vec3f faceNorm = this.getFaceNormal();
-        
-        this.forEachVertex(v -> 
-        {
-            if(v.normal() == null)
-                consumer.acceptVertex(v.x(), v.y(), v.z(), faceNorm.x(), faceNorm.y(), faceNorm.z());
-            else
-                consumer.acceptVertex(v.x(), v.y(), v.z(), v.normal().x(), v.normal().y(), v.normal().z());
-        });
+        produceQuads(q -> list.add((P) q));
     }
 }

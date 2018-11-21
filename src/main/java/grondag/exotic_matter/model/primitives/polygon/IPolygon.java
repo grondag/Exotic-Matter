@@ -10,8 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.exotic_matter.model.CSG.CSGNode;
-import grondag.exotic_matter.model.primitives.IGeometricVertexConsumer;
-import grondag.exotic_matter.model.primitives.INormalVertexConsumer;
 import grondag.exotic_matter.model.primitives.PointInPolygonTest;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -284,25 +282,6 @@ public interface IPolygon extends IPaintablePolygon
     public default void addBakedQuadsToBuilder(Builder<BakedQuad> builder, boolean isItem)
     {
         builder.add(QuadBakery.createBakedQuad(this, isItem));
-    }
-
-    public default void produceGeometricVertices(IGeometricVertexConsumer consumer)
-    {
-        this.forEachVertex(v -> consumer.acceptVertex(v.x(), v.y(), v.z()));
-    }
-    
-    @SuppressWarnings("null")
-    public default void produceNormalVertices(INormalVertexConsumer consumer)
-    {
-        Vec3f faceNorm = this.getFaceNormal();
-        
-        this.forEachVertex(v -> 
-        {
-            if(v.normal() == null)
-                consumer.acceptVertex(v.x(), v.y(), v.z(), faceNorm.x(), faceNorm.y(), faceNorm.z());
-            else
-                consumer.acceptVertex(v.x(), v.y(), v.z(), v.normal().x(), v.normal().y(), v.normal().z());
-        });
     }
 
     IMutablePolygon mutableCopyWithVertices();

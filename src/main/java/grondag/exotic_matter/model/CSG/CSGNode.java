@@ -45,7 +45,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IMutablePoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
@@ -86,7 +87,8 @@ public class CSGNode
     {
         final CSGSplitAcceptor.CoFrontBack splitter = new CSGSplitAcceptor.CoFrontBack();
         
-        private Root(Collection<IPolygon> shapeIn, boolean crossSplit)
+        @SuppressWarnings("null")
+        private Root(Collection<IMutablePoly> shapeIn, boolean crossSplit)
         {
             super(new CSGPlane(CENTER_TO_CORNER_NORMAL_A, CENTER_TO_CORNER_DISTANCE));
             this.front = new CSGNode(new CSGPlane(CENTER_TO_CORNER_NORMAL_B, 0));
@@ -103,11 +105,11 @@ public class CSGNode
             shapeIn.forEach(p -> splitter.splitPolyStartingWith(new CSGPolygon(p), this));
         }
         
-        private Root(Collection<IPolygon> shapeIn)
+        private Root(Collection<IMutablePoly> shapeIn)
         {
             super(new CSGPolygon(shapeIn.iterator().next()));
             
-            Iterator<IPolygon> it = shapeIn.iterator();
+            Iterator<IMutablePoly> it = shapeIn.iterator();
             it.next();
             while(it.hasNext())
             {
@@ -123,12 +125,13 @@ public class CSGNode
         @Override
         public CSGNode.Root clone()
         {
-            //TODO: if serious about this need to do it without recursion
-            CSGNode.Root result = new CSGNode.Root(this.plane.clone());
-            if(this.front != null) result.front = this.front.clone();
-            if(this.back != null) result.back = this.back.clone();
-            this.quads.forEach(q -> result.quads.add(q.clone()));
-            return result;
+            throw new UnsupportedOperationException();
+//            //TODO: if serious about this need to do it without recursion
+//            CSGNode.Root result = new CSGNode.Root(this.plane.clone());
+//            if(this.front != null) result.front = this.front.clone();
+//            if(this.back != null) result.back = this.back.clone();
+//            this.quads.forEach(q -> result.quads.add(q.clone()));
+//            return result;
         }
         
         /**
@@ -182,7 +185,7 @@ public class CSGNode
             }
         }
 
-        public void addPolygon(IPolygon poly)
+        public void addPolygon(IMutablePoly poly)
         {
             splitter.splitPolyStartingWith(new CSGPolygon(poly), this);
         }
@@ -245,20 +248,13 @@ public class CSGNode
         /**
          * Returns all quads in this tree recombined as much as possible.
          * Use for anything to be rendered.
+         * All quads/vertices will be of same (mutable) type as input quads.
+         * Will hold no reference to quads in the list.
          */
         @SuppressWarnings("unchecked")
-        public List<IPolygon> recombinedRenderableQuads()
+        public List<IMutablePoly> recombinedQuads()
         {
-//            recombinedRenderableQuadsCounter.start();
-//            List<IPolygon> result = recombinedRenderableQuadsInner();
-//            recombinedRenderableQuadsCounter.stop();
-//            return result;
-//        }
-//        public static MicroTimer recombinedRenderableQuadsCounter = new MicroTimer("recombinedRenderableQuads", 200000);
-//        @SuppressWarnings("unchecked")
-//        private List<IPolygon> recombinedRenderableQuadsInner()
-//        {
-            IdentityHashMap<IPolygon, Object> ancestorBuckets = new IdentityHashMap<>();
+            IdentityHashMap<IMutablePoly, Object> ancestorBuckets = new IdentityHashMap<>();
             
             for(CSGPolygon quad : this) 
             {
@@ -280,7 +276,9 @@ public class CSGNode
                 }
             }
             
-            ArrayList<IPolygon> retVal = new ArrayList<>();
+            
+            // PERF: use threadlocal
+            ArrayList<IMutablePoly> retVal = new ArrayList<>();
             ancestorBuckets.values().forEach((bucket) ->
             {
                 if(bucket instanceof SimpleUnorderedArrayList)
@@ -335,6 +333,11 @@ public class CSGNode
                 }
             };
         }
+
+        public void release()
+        {
+            // TODO Release claimed mutables
+        }
     }
     
     /**
@@ -344,12 +347,12 @@ public class CSGNode
      * Input collection must have at least one polygon or will crash.
      * Polygons in the input are copied so that nothing is mutated.<br>
      */
-    public static Root create(Collection<IPolygon> shapeIn, boolean crossSplit)
+    public static Root create(Collection<IMutablePoly> shapeIn, boolean crossSplit)
     {
         return new Root(shapeIn, crossSplit);
     }
     
-    public static Root create(Collection<IPolygon> shapeIn)
+    public static Root create(Collection<IMutablePoly> shapeIn)
     {
         return new Root(shapeIn);
     }
@@ -368,12 +371,13 @@ public class CSGNode
     @Override
     protected CSGNode clone()
     {
-        //TODO: if serious about this need to do it without recursion
-        CSGNode result = new CSGNode(this.plane.clone());
-        if(this.front != null) result.front = this.front.clone();
-        if(this.back != null) result.back = this.back.clone();
-        this.quads.forEach(q -> result.quads.add(q.clone()));
-        return result;
+        throw new UnsupportedOperationException();
+//        //TODO: if serious about this need to do it without recursion
+//        CSGNode result = new CSGNode(this.plane.clone());
+//        if(this.front != null) result.front = this.front.clone();
+//        if(this.back != null) result.back = this.back.clone();
+//        this.quads.forEach(q -> result.quads.add(q.clone()));
+//        return result;
     }
     
     private void invertNode()
@@ -399,9 +403,8 @@ public class CSGNode
      * 
      * Returns null if quads cannot be joined.
      */
-    private static @Nullable CSGPolygon joinAtVertex(Vertex key, CSGPolygon aQuad, CSGPolygon bQuad)
+    private static @Nullable CSGPolygon joinAtVertex(IMutableGeometricVertex key, CSGPolygon aQuad, CSGPolygon bQuad)
     {
-
         // quads must be same orientation to be joined
         if(aQuad.isInverted != bQuad.isInverted) return null;
 
@@ -478,7 +481,7 @@ public class CSGNode
             return null;
         }
         
-        Vertex[] joinedVertex = new Vertex[aSize + bSize - 2];
+        IMutableGeometricVertex[] joinedVertex = new IMutableGeometricVertex[aSize + bSize - 2];
         int joinedSize = 0;
         
         for(int a = 0; a < aSize; a++)
@@ -520,74 +523,32 @@ public class CSGNode
             return null;
         }
         
-     // must be convex
-        if(!QuadHelper.isConvex(joinedVertex, joinedSize))
-        {
-            assert false;
-            return null;
-        }
-        
         // actually build the new quad!
-        CSGPolygon joinedQuad = new CSGPolygon(aQuad.original, joinedSize);
+        CSGPolygon joinedQuad = new CSGPolygon(aQuad, joinedSize);
         System.arraycopy(joinedVertex, 0, joinedQuad.vertex, 0, joinedSize);
-        
-//        if(Math.abs(aQuad.getArea() + bQuad.getArea() - joinedQuad.getArea()) > QuadFactory.EPSILON)
-//        {
-//            HardScience.log.info("area mismatch");
-//        }
         
         return joinedQuad;
         
     }
     
-    private static void recombinedAndAddRenderableToList(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
+    @SuppressWarnings("null")
+    private static void recombinedAndAddRenderableToList(Collection<CSGPolygon> quadsIn, List<IMutablePoly> output)
     {
-//        quadInCount.addAndGet(quadsIn.size());
-//        final int startingOutputSize = output.size();
-//        recombineCounter.start();
-//        recombinedAndAddRenderableToListInner(quadsIn, output);
-//        quadOutputCount.addAndGet(output.size() - startingOutputSize);
-//        if(recombineCounter.stop()) reportRecombineStats();
-//    }
-//    public static MicroTimer recombineCounter = new MicroTimer("recombinePolys", 10000000);
-//    private static AtomicInteger quadInCount = new AtomicInteger();
-//    private static AtomicInteger quadOutputCount = new AtomicInteger();
-//    private static AtomicInteger pairCount = new AtomicInteger();
-//    public static void reportRecombineStats()
-//    {
-//        int in = quadInCount.get();
-//        int out = quadOutputCount.get();
-//        quadInCount.set(0);
-//        quadOutputCount.set(0);
-//        ExoticMatter.INSTANCE.info("CSG Poly recombination reduction = %d percent (of polygons processed, not total reduction)", ((in - out) * 100) / in );
-//        ExoticMatter.INSTANCE.info("CSG Poly pair-wise count = %d percent (of polygons processed)", (pairCount.get() * 100) / in );
-//        pairCount.set(0);
-//    }
-//    
-//    private static void recombinedAndAddRenderableToListInner(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
-//    {
-        
         if(quadsIn.size() == 2) 
         {
             recombinedAndAddRenderableToListPairwise(quadsIn, output);
             return;
         }
 
-        // Caller shouldn't use this for a single polygon...  don't want to handle it here
-//        assert quadsIn.size() > 1 : "Wasteful call to CSG recombine";
-        
         /**
          * Index of all polys by vertex
          */
-        IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap = new IdentityHashMap<>();
-//        SetMultimap<Vertex, CSGPolygon> vertexMap = Multimaps.newSetMultimap(Maps.newIdentityHashMap(), Sets::newIdentityHashSet);
+        IdentityHashMap<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap = new IdentityHashMap<>();
         
         quadsIn.forEach(q ->  addPolyToVertexMap(vertexMap, q));
         
         Set<CSGPolygon> polys = Collections.newSetFromMap(new IdentityHashMap<>());
         polys.addAll(quadsIn);
-        
-//        double totalArea = 0;
         
         /** 
          * Cleared at top of each loop and set to true if and only if 
@@ -605,10 +566,10 @@ public class CSGNode
         {
             potentialMatchesRemain = false;
             
-            Iterator<Entry<Vertex, SimpleUnorderedArrayList<CSGPolygon>>> it = vertexMap.entrySet().iterator();
+            Iterator<Entry<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>>> it = vertexMap.entrySet().iterator();
             while(it.hasNext())
             {
-                Entry<Vertex, SimpleUnorderedArrayList<CSGPolygon>> entry = it.next();
+                Entry<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>> entry = it.next();
                 SimpleUnorderedArrayList<CSGPolygon> bucket = entry.getValue();
                 if(bucket.size() < 2)
                 {
@@ -618,7 +579,7 @@ public class CSGNode
                 else if(bucket.size() == 2)
                 {
                     // eliminate T junctions
-                    Vertex v = entry.getKey();
+                    IMutableGeometricVertex v = entry.getKey();
                     CSGPolygon first = bucket.get(0);
                     CSGPolygon second = bucket.get(1);
                     @Nullable CSGPolygon newPoly = joinAtVertex(v, first, second);
@@ -647,16 +608,16 @@ public class CSGNode
      * Handles special case when there are only 2 polygons to join - avoids building a map.
      * For volcano terrain, this is about 15% of the cases involving a potential join (more than 1 poly)
      */
-    private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IPolygon> output)
+    private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IMutablePoly> output)
     {
 //        pairCount.incrementAndGet();
         Iterator<CSGPolygon> it = quadsIn.iterator();
         CSGPolygon polyA = it.next();
         CSGPolygon polyB = it.next();
         
-        for(Vertex vA : polyA.vertex)
+        for(IMutableGeometricVertex vA : polyA.vertex)
         {
-            for(Vertex vB : polyB.vertex)
+            for(IMutableGeometricVertex vB : polyB.vertex)
             {
                 if(vA == vB)
                 {
@@ -676,9 +637,9 @@ public class CSGNode
     }
             
         
-    private static void removePolyFromVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vertex excludingVertex )
+    private static void removePolyFromVertexMap(IdentityHashMap<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, IMutableGeometricVertex excludingVertex )
     {
-        for(Vertex v : poly.vertex)
+        for(IMutableGeometricVertex v : poly.vertex)
         {
             if(v == excludingVertex) continue;
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
@@ -687,9 +648,9 @@ public class CSGNode
         }
     }
     
-    private static void addPolyToVertexMap(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    private static void addPolyToVertexMap(IdentityHashMap<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
     {
-        for(Vertex v : poly.vertex)
+        for(IMutableGeometricVertex v : poly.vertex)
         {
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
             if(bucket == null)
@@ -705,9 +666,9 @@ public class CSGNode
      * For use during second phase of combined - will not create buckets that are not found.
      * Assumes these have been deleted because only had a single poly in them.
      */
-    private static void addPolyToVertexMapGently(IdentityHashMap<Vertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    private static void addPolyToVertexMapGently(IdentityHashMap<IMutableGeometricVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
     {
-        for(Vertex v : poly.vertex)
+        for(IMutableGeometricVertex v : poly.vertex)
         {
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
             if(bucket != null) bucket.add(poly);

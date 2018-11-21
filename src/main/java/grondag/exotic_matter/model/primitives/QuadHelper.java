@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -14,7 +13,11 @@ import javax.vecmath.Vector4f;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.better.IGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.better.IVertexCollection;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -252,13 +255,13 @@ public class QuadHelper
         * Same as {@link #addTextureToAllFaces(String, float, float, float, double, int, boolean, float, Rotation, List)}
         * but with uvFraction = 1.
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<IPolygon> list)
+       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<IPaintablePoly> list)
        {
            addTextureToAllFaces(rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
        }
        
        /**
-        * Generates a raw quad that isn't uv-locked - originally for putting symbols on MatterPackaging Cubes.
+        * Generates a quad that isn't uv-locked - originally for putting symbols on MatterPackaging Cubes.
         * Bit of a mess, but thought might get some reuse out of it, so putting here.
         * 
         * @param rawTextureName should not have mod/blocks prefix
@@ -273,12 +276,12 @@ public class QuadHelper
         * @param contractUVs    should be true for everything except fonts maybe
         * @param list           your mutable list of quads
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPolygon> list)
+       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPaintablePoly> list)
        {
-           IMutablePolygon template = new PolyImpl(4);
-           template.setTextureName("hard_science:blocks/" + rawTextureName);
-           template.setLockUV(false);
-           template.setShouldContractUVs(contractUVs);
+           IPaintablePoly template = PolyFactory.newPaintable(4, 1)
+               .setTextureName(0, "hard_science:blocks/" + rawTextureName)
+               .setLockUV(0, false)
+               .setShouldContractUVs(0, contractUVs);
            
            float bottom = top - size;
            float right = left + size;
@@ -320,20 +323,21 @@ public class QuadHelper
            
            for(EnumFacing face : EnumFacing.VALUES)
            {
-               IMutablePolygon quad = template.mutableCopy(4);
-               quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
-               quad.scaleFromBlockCenter(scaleFactor);
-               list.add(quad);
+               template.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
+               template.scaleFromBlockCenter(scaleFactor);
+               list.add(template.claimCopy());
            }
+           
+           template.release();
        }
 
     /**
      * Randomly recolors all the polygons as an aid to debugging.
      * Polygons must be mutable and are mutated by this operation.
      */
-    public static void recolor(Collection<IPolygon> target)
+    public static void recolor(Collection<IPaintablePoly> target)
     {
-        Stream<IPolygon> quadStream;
+        Stream<IPaintablePoly> quadStream;
     
         if (target.size() > 200) {
             quadStream = target.parallelStream();
@@ -341,16 +345,15 @@ public class QuadHelper
             quadStream = target.stream();
         }
     
-        quadStream.forEach((IPolygon quad) -> quad.mutableReference().replaceColor((ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+        quadStream.forEach((IPaintablePoly quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
 
-    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
+    public static Consumer<IPaintedPoly> makeRecoloring(Consumer<IPaintedPoly> wrapped)
     {
-        final Random r = ThreadLocalRandom.current();
-        return p -> p.mutableReference().replaceColor((r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000);
+        return p -> p.recoloredCopy();
     }
 
-    public static <T extends IGeometricVertex> boolean isConvex(IVertexCollection<T> vertices)
+    public static <T extends IGeometricVertex> boolean isConvex(IVertexCollection vertices)
     {
         final int vertexCount = vertices.vertexCount();
         if(vertexCount == 3) return true;
@@ -360,12 +363,12 @@ public class QuadHelper
         float testZ = 0;
         boolean needTest = true;
         
-        T priorVertex = vertices.getVertex(vertexCount - 2);
-        T thisVertex =  vertices.getVertex(vertexCount - 1);
+        IVec3f priorVertex = vertices.getPos(vertexCount - 2);
+        IVec3f thisVertex =  vertices.getPos(vertexCount - 1);
         
         for(int nextIndex = 0; nextIndex < vertexCount; nextIndex++)
         {
-            T nextVertex = vertices.getVertex(nextIndex);
+            IVec3f nextVertex = vertices.getPos(nextIndex);
             
             final float ax = thisVertex.x() - priorVertex.x();
             final float ay = thisVertex.y() - priorVertex.y();
@@ -393,56 +396,6 @@ public class QuadHelper
             
             priorVertex = thisVertex;
             thisVertex =  nextVertex;
-        }
-        return true;
-    }
-    
-    //TODO: remove when no longer needed
-    @Deprecated
-    public static boolean isConvex(IVertex[] vertices, final int vertexCount)
-    {
-        if(vertexCount == 3) return true;
-    
-        float testX = 0;
-        float testY = 0;
-        float testZ = 0;
-        boolean needTest = true;
-                
-        for(int thisIndex = 0; thisIndex < vertexCount; thisIndex++)
-        {
-            int nextIndex = thisIndex + 1;
-            if(nextIndex == vertexCount) nextIndex = 0;
-    
-            int priorIndex = thisIndex - 1;
-            if(priorIndex == -1) priorIndex = vertexCount - 1;
-    
-            final IVertex thisVertex =  vertices[thisIndex];
-            final IVertex nextVertex = vertices[nextIndex];
-            final IVertex priorVertex = vertices[priorIndex];
-            
-            final float ax = thisVertex.x() - priorVertex.x();
-            final float ay = thisVertex.y() - priorVertex.y();
-            final float az = thisVertex.z() - priorVertex.z();
-            
-            final float bx = nextVertex.x() - thisVertex.x();
-            final float by = nextVertex.y() - thisVertex.y();
-            final float bz = nextVertex.z() - thisVertex.z();
-    
-            final float crossX = ay * bz - az * by;
-            final float crossY = az * bx - ax * bz;
-            final float crossZ = ax * by - ay * bx;
-            
-            if(needTest)
-            {
-                needTest = false;
-                testX = crossX;
-                testY = crossY;
-                testZ = crossZ;
-            }
-            else if(testX * crossX  + testY * crossY + testZ * crossZ < 0) 
-            {
-                return false;
-            }
         }
         return true;
     }

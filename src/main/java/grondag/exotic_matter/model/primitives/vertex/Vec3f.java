@@ -1,8 +1,8 @@
 package grondag.exotic_matter.model.primitives.vertex;
 
-import net.minecraft.util.math.MathHelper;
+import javax.annotation.Nullable;
 
-public class Vec3f
+public class Vec3f implements IVec3f
 {
 //    private static AtomicInteger createCount = new AtomicInteger();
 //    private static AtomicInteger initCount = new AtomicInteger();
@@ -35,34 +35,6 @@ public class Vec3f
 //        initCount.incrementAndGet();
     }
     
-    public final float dotProduct(float xIn, float yIn, float zIn)
-    {
-        return Vec3Function.dotProduct(this.x, this.y, this.z, xIn, yIn, zIn);
-    }
-    
-    public final float dotProduct(Vec3f vec)
-    {
-        return dotProduct(vec.x, vec.y, vec.z);
-    }
-
-    /**
-     * Returns a new vector with the result of this vector x the specified vector.
-     */
-    public final Vec3f crossProduct(Vec3f vec)
-    {
-        return create(this.y * vec.z - this.z * vec.y, this.z * vec.x - this.x * vec.z, this.x * vec.y - this.y * vec.x);
-    }
-    
-    public final float length()
-    {
-        return MathHelper.sqrt(lengthSquared());
-    }
-
-    public final float lengthSquared()
-    {
-        return this.x * this.x + this.y * this.y + this.z * this.z;
-    }
-    
     public boolean isMutable()
     {
         return false;
@@ -78,16 +50,19 @@ public class Vec3f
         data[2] = z();
     }
 
+    @Override
     public final float x()
     {
         return x;
     }
 
+    @Override
     public final float y()
     {
         return y;
     }
 
+    @Override
     public final float z()
     {
         return z;
@@ -206,4 +181,24 @@ public class Vec3f
             return this;
         }
     }
+
+    @Override
+    public boolean equals(@Nullable Object obj)
+    {
+        if(obj == this)
+            return true;
+
+        if(obj == null)
+            return false;
+        
+        if(obj instanceof Vec3f)
+        {
+            Vec3f v = (Vec3f)obj;
+            return v.x == x && v.y == y && v.z == z;
+        }
+        else
+            return false;
+    }
+    
+    
 }

@@ -7,6 +7,8 @@ import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;
@@ -57,15 +59,15 @@ public abstract class ShapeMeshGenerator
      */
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
-    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target);
+    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target);
 
     /**
      * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible
      */
     @Deprecated
-    public final Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
+    public final Collection<IPaintedPoly<IPaintedVertex>> getShapeQuads(ISuperModelState modelState)
     {
-        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<IPolygon>();
+        SimpleUnorderedArrayList<IPaintedPoly<IPaintedVertex>> result = new SimpleUnorderedArrayList<>();
         this.produceShapeQuads(modelState, result);
         return result;
     }

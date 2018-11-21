@@ -16,6 +16,8 @@ import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
@@ -48,7 +50,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     }
  
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
     {
         final int meta = modelState.getMetaData();
         final Matrix4f matrix = modelState.getMatrix4f();

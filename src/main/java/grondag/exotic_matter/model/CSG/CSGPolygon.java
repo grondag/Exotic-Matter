@@ -1,51 +1,55 @@
 package grondag.exotic_matter.model.CSG;
 
-import java.util.Arrays;
 import java.util.List;
 
+import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IMutablePoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
+// PERF: reuse instances
 public class CSGPolygon
 {
     public final Vec3f faceNormal;
-    public final Vertex[] vertex;
-    public final IPolygon original;
+    public final IMutableGeometricVertex[] vertex;
+    public final IMutablePoly original;
 
     public boolean isInverted;
     
-    public CSGPolygon(IPolygon original)
+    /**
+     * Copies vertices from original.
+     */
+    public CSGPolygon(IMutablePoly original)
     {
         this(original, original.vertexCount());
+        original.claimVertexCopiesToArray(vertex);
     }
     
-    public CSGPolygon(IPolygon original, final int vCount)
+    /**
+     * Copies original reference and current CSG state (faceNormal, inverted) but no vertices.
+     */
+    public CSGPolygon(CSGPolygon poly, int vCount)
     {
-        this.vertex = Arrays.copyOf(original.vertexArray(), vCount);
+        this.vertex = new IMutableGeometricVertex[vCount];
+        this.original = poly.original;
+        this.faceNormal = poly.faceNormal;
+        this.isInverted = poly.isInverted;
+    }
+    
+    /**
+     * Copies original reference and original faceNormal but no vertices.
+     */
+    private CSGPolygon(IMutablePoly original, final int vCount)
+    {
+        this.vertex = new IMutableGeometricVertex[vCount];
         this.original = original;
         this.faceNormal = original.getFaceNormal();
     }
     
+    /** DO NOT USE */
     @Override
     public CSGPolygon clone()
     {
-        return new CSGPolygon(this);
-    }
-    
-    /** specifically for clone */
-    private CSGPolygon(CSGPolygon poly)
-    {
-        this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);
-        this.original = poly.original;
-        this.faceNormal = poly.faceNormal;
-        this.isInverted = poly.isInverted;
-    }
-    
-    public CSGPolygon(CSGPolygon poly, int vCount)
-    {
-        this.vertex = new Vertex[vCount];
-        this.original = poly.original;
-        this.faceNormal = poly.faceNormal;
-        this.isInverted = poly.isInverted;
+        throw new UnsupportedOperationException();
     }
     
     public void flip()
@@ -53,14 +57,17 @@ public class CSGPolygon
         this.isInverted = !this.isInverted;
     }
 
-    public void addRenderableQuads(List<IPolygon> list)
+    /**
+     * Does NOT retain any references to our vertices.
+     */
+    public void addRenderableQuads(List<IMutablePoly> list)
     {
-        this.applyInverted().addQuadsToList(list, true);
+        this.applyInverted().claimCopy().addQuadsToList(list);
     }
 
-    public IPolygon applyInverted()
+    private IMutablePoly applyInverted()
     {
-        IMutablePolygon result = this.original.mutableCopy(this.vertex.length);
+        IMutablePoly result = this.original.claimCopy(this.vertex.length);
         
         final int vCount = this.vertex.length;
         if(this.isInverted)
@@ -70,14 +77,14 @@ public class CSGPolygon
             //reverse vertex winding order and flip vertex normals
             for(int i = 0, j = vCount - 1; i < vCount; i++, j--)
             {
-                result.addVertex(i, this.vertex[j].flipped());
+                result.copyVertex(i, this.vertex[j].flip());
             }
         }
         else
         {
             for(int i = 0; i < vCount; i++)
             {
-                result.addVertex(i, this.vertex[i]);
+                result.copyVertex(i, this.vertex[i]);
             }
         }
         
@@ -89,11 +96,11 @@ public class CSGPolygon
     /**
      * Will return {@link #VERTEX_NOT_FOUND} (-1) if vertex is not part of this polygon.
      */
-    public int indexForVertex(Vertex v)
+    public int indexForVertex(IMutableGeometricVertex v)
     {
         for(int i = 0; i < this.vertex.length; i++)
         {
-            if(this.vertex[i] == v) return i;
+            if(this.vertex[i].pos() == v) return i;
         }
         return VERTEX_NOT_FOUND;
     }
