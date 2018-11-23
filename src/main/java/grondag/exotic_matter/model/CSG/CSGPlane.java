@@ -38,6 +38,7 @@ import java.awt.Polygon;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.better.IMutableVertex;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public class CSGPlane
@@ -59,7 +60,7 @@ public class CSGPlane
      * @param normal plane normal
      * @param dist distance from origin
      */
-    public CSGPlane(Vec3f normal, float dist) {
+    public CSGPlane(IVec3f normal, float dist) {
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();
@@ -68,7 +69,7 @@ public class CSGPlane
 
     public CSGPlane(CSGPolygon quad)
     {
-        final Vec3f normal = quad.faceNormal;
+        final IVec3f normal = quad.faceNormal;
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();

@@ -111,4 +111,14 @@ public interface IVec3f
     {
         return this.isOnLine(v0.x(), v0.y(), v0.z(), v1.x(), v1.y(), v1.z());
     }
+    
+    /**
+     * Loads our x, y, z values into the provided array.
+     */
+    public default void toArray(float[] data)
+    {
+        data[0] = x();
+        data[1] = y();
+        data[2] = z();
+    }
 }

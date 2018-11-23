@@ -11,6 +11,7 @@ import grondag.acuity.api.IPipelinedQuad;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -28,10 +29,10 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
 
     public default AxisAlignedBB getAABB()
     {
-        Vec3f p0 = getPos(0);
-        Vec3f p1 = getPos(1);
-        Vec3f p2 = getPos(2);
-        Vec3f p3 = getPos(3);
+        IVec3f p0 = getPos(0);
+        IVec3f p1 = getPos(1);
+        IVec3f p2 = getPos(2);
+        IVec3f p3 = getPos(3);
         
         double minX = Math.min(Math.min(p0.x(), p1.x()), Math.min(p2.x(), p3.x()));
         double minY = Math.min(Math.min(p0.y(), p1.y()), Math.min(p2.y(), p3.y()));
@@ -60,17 +61,17 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     {
         if(this.vertexCount() == 3) return true;
 
-        Vec3f fn = this.getFaceNormal();
+        IVec3f fn = this.getFaceNormal();
 
         float faceX = fn.x();
         float faceY = fn.y();
         float faceZ = fn.z();
 
-        Vec3f first = this.getPos(0);
+        IVec3f first = this.getPos(0);
         
         for(int i = 3; i < this.vertexCount(); i++)
         {
-            Vec3f v = this.getPos(i);
+            IVec3f v = this.getPos(i);
             
             float dx = v.x() - first.x();
             float dy = v.y() - first.y();
@@ -97,10 +98,10 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     {
         try
         {
-            final Vec3f v0 = getPos(0);
-            final Vec3f v1 = getPos(1);
-            final Vec3f v2 = getPos(2);
-            final Vec3f v3 = getPos(3);
+            final IVec3f v0 = getPos(0);
+            final IVec3f v1 = getPos(1);
+            final IVec3f v2 = getPos(2);
+            final IVec3f v3 = getPos(3);
             
             final float x0 = v2.x() - v0.x();
             final float y0 = v2.y() - v0.y();
@@ -357,15 +358,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     //final Random r = ThreadLocalRandom.current();
     //(r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000
 
-    short glow(int layerIndex, int vertexIndex);
-
     float u(int layerIndex, int vertexIndex);
     
     float v(int layerIndex, int vertexIndex);
 
     Vec3f normal(int vertexIndex);
 
-    int color(int layerIndex, int vertexIndex);
+    boolean isEmissive(int textureLayerIndex);
     
     @Override
     IRenderPipeline getPipeline();
@@ -382,6 +381,4 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      * Includes vertex data.
      */
     IMutablePolygon claimCopy(int vertexCount);
-    
-    void release();
 }

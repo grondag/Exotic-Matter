@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.model.primitives.better.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -133,7 +133,7 @@ public class QuadBakery
         int glowBits =  0;
         for(int v = 0; v < 4; v++)
         {   
-            int g = raw.glow(layerIndex, v);
+            int g = raw.getVertexGlow(layerIndex, v);
             if(g != 0)
             { 
                 // round to nearest 0-15
@@ -144,7 +144,7 @@ public class QuadBakery
             uvData[v][0] = raw.u(layerIndex, v);
             uvData[v][1] = raw.v(layerIndex, v);
             
-            Vec3f normal = raw.normal(v);
+            IVec3f normal = raw.normal(v);
             if(normal == null)
                 normal = raw.getFaceNormal();
             normal.toArray(normalData[v]);
@@ -203,7 +203,7 @@ public class QuadBakery
                 }
                 case COLOR:
                 {
-                    final int color = raw.color(layerIndex, v);
+                    final int color = raw.getVertexColor(layerIndex, v);
                     packData[0] = ((float) (color >> 16 & 0xFF)) / 255f;
                     packData[1] = ((float) (color >> 8 & 0xFF)) / 255f;
                     packData[2] = ((float) (color  & 0xFF)) / 255f;

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
 import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 class PointInPolygonTestPerf
@@ -142,14 +143,14 @@ class PointInPolygonTestPerf
      return false;
     }
     
-    public static boolean accuratePointInTriangle(Vec3f point, IMutablePolygon quad)
+    public static boolean accuratePointInTriangle(IVec3f point, IMutablePolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane
         final PointInPolygonTest.DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
-        final Vec3f v0 = quad.getPos(0);
-        final Vec3f v1 = quad.getPos(1);
-        final Vec3f v2 = quad.getPos(2);
+        final IVec3f v0 = quad.getPos(0);
+        final IVec3f v1 = quad.getPos(1);
+        final IVec3f v2 = quad.getPos(2);
         
         return accuratePointInTriangle(d.x(point), d.y(point), 
                 d.x(v0), d.y(v0),

@@ -43,7 +43,7 @@ public class VertexProcessorDefault extends VertexProcessor
             
             for(int i = 0; i < poly.vertexCount(); i++)
             {
-                final float w = poly.glow(layerIndex, i) / 255f;
+                final float w = poly.getVertexGlow(layerIndex, i) / 255f;
                 int b = Math.round(lampBrightness * w);
                 int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
                 poly.setVertexColorGlow(layerIndex, i, c | alpha, b);

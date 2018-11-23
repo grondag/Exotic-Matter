@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.better.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -258,7 +258,7 @@ public class QuadContainer
             final int limit = t.vertexCount();
             for(int i = 0; i < limit; i++)
             {
-                Vec3f v = t.getPos(i);
+                IVec3f v = t.getPos(i);
                 this.acceptVertex(v.x(), v.y(), v.z());
             }
             

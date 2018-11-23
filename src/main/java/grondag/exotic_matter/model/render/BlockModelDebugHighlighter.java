@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.primitives.better.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
 import net.minecraft.block.state.IBlockState;
@@ -100,15 +100,15 @@ public class BlockModelDebugHighlighter
         final int vertexCount = quad.vertexCount();
         for(int i = 0; i < vertexCount; i++)
         {
-            Vec3f v = quad.getPos(i);
+            IVec3f v = quad.getPos(i);
             buffer.pos(v.x() + d0, v.y() + d1, v.z() + d2).color(1f, 1f, 1f, 1f).endVertex();
         }
         tessellator.draw();
         
         for(int i = 0; i < vertexCount; i++)
         {
-            Vec3f v = quad.getPos(i);
-            Vec3f n = quad.getVertexNormal(i);
+            IVec3f v = quad.getPos(i);
+            IVec3f n = quad.getVertexNormal(i);
             
             // only draw vertex normals that differ from the standard side normals
             int zeroCount = 0;

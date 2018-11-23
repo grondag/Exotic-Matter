@@ -39,16 +39,6 @@ public class Vec3f implements IVec3f
     {
         return false;
     }
-    
-    /**
-     * Loads our x, y, z values into the provided array.
-     */
-    public final void toArray(float[] data)
-    {
-        data[0] = x();
-        data[1] = y();
-        data[2] = z();
-    }
 
     @Override
     public final float x()

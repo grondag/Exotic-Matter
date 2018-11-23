@@ -13,7 +13,7 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.better.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
@@ -343,7 +343,7 @@ public class MeshHelper
      * 
      * TODO: incomplete
      */
-    public static List<IPolygon> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IMutablePolygon template)
+    public static List<IPolygon> makeBigBox(IVec3f origin, final float xSize, final float ySize, final float zSize, IMutablePolygon template)
     {
         ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         

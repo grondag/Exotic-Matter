@@ -103,10 +103,11 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
+	    	// PERF: create way to generate baked directly from mutable without a transient immutable poly
+	    	// will reduce mem allocation overhead
 	    	provideFormattedQuads(key, true, p -> 
 	    	{
 	    	    p.addBakedQuadsToBuilder(null, builder, true);
-	    	    p.release();
 	    	});
 	    	    
 			return new SimpleItemBlockModel(builder.build(), true);

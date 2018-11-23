@@ -62,7 +62,18 @@ public interface IMutablePolygon extends IPolygon
 
     IMutablePolygon setMinV(int layerIndex, float minV);
     
-    IMutablePolygon setColor(int layerIndex, int color);
+    /**
+     * Sets all vertex colors to given color
+     */
+    default IMutablePolygon setColor(int layerIndex, int color)
+    {
+        final int limit = vertexCount();
+        for(int i = 0; i < limit; i++)
+        {
+            setVertexColor(layerIndex, i, color);
+        }
+        return this;
+    }
 
     IMutablePolygon setTextureSalt(int layerIndex, int salt);
 
@@ -76,7 +87,7 @@ public interface IMutablePolygon extends IPolygon
     
     IMutablePolygon setRenderLayer(int layerIndex, BlockRenderLayer layer);
     
-    IPolygon setEmissive(int textureLayerIndex, boolean emissive);
+    IMutablePolygon setEmissive(int textureLayerIndex, boolean emissive);
     
     /**
      * glow is clamped to allowed values
@@ -219,6 +230,8 @@ public interface IMutablePolygon extends IPolygon
         }
         return builder.build();
     }
+    
+    void release();
     
     static void releaseAll(Collection<IMutablePolygon> targets)
     {
