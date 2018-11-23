@@ -1,5 +1,7 @@
 package grondag.exotic_matter.model.primitives;
 
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
+
 /**
  * Ported to Java from Tomas Akenine-Möller
  * http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox3.txt
@@ -98,7 +100,7 @@ public class TriangleBoxTest
      * Doing it this way enables reuse over many tests, minimizes call overhead and improves LOR. 
      * For low garbage, use a threadlocal array.  
      */
-    public static void packPolyData(Vertex v0, Vertex v1, Vertex v2, float[] polyData)
+    public static void packPolyData(IVec3f v0, IVec3f v1, IVec3f v2, float[] polyData)
     {
         final float x0 = v0.x();
         final float y0 = v0.y();

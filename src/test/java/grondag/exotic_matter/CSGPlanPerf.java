@@ -5,6 +5,8 @@ import java.util.Random;
 import org.junit.Test;
 
 import grondag.exotic_matter.model.CSG.CSGPlane;
+import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public class CSGPlanPerf
@@ -20,7 +22,7 @@ public class CSGPlanPerf
         
         for(int i = 0; i < 200000000; i++)
         {
-            Vertex v = Vertex.DEFAULT_FACTORY.newVertex(r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextFloat(), r.nextInt(), null, 0);
+            IMutableGeometricVertex v = PolyFactory.claimMutableVertex(r.nextFloat(), r.nextFloat(), r.nextFloat());
             plane.vertexIncrement(v);
         }
     }

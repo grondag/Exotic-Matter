@@ -3,7 +3,8 @@ package grondag.exotic_matter.model.CSG;
 import java.util.List;
 
 import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
-import grondag.exotic_matter.model.primitives.better.IMutablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 // PERF: reuse instances
@@ -11,14 +12,14 @@ public class CSGPolygon
 {
     public final Vec3f faceNormal;
     public final IMutableGeometricVertex[] vertex;
-    public final IMutablePoly original;
+    public final IPaintedPoly original;
 
     public boolean isInverted;
     
     /**
      * Copies vertices from original.
      */
-    public CSGPolygon(IMutablePoly original)
+    public CSGPolygon(IPaintedPoly original)
     {
         this(original, original.vertexCount());
         original.claimVertexCopiesToArray(vertex);
@@ -38,7 +39,7 @@ public class CSGPolygon
     /**
      * Copies original reference and original faceNormal but no vertices.
      */
-    private CSGPolygon(IMutablePoly original, final int vCount)
+    private CSGPolygon(IPaintedPoly original, final int vCount)
     {
         this.vertex = new IMutableGeometricVertex[vCount];
         this.original = original;
@@ -60,14 +61,21 @@ public class CSGPolygon
     /**
      * Does NOT retain any references to our vertices.
      */
-    public void addRenderableQuads(List<IMutablePoly> list)
+    public void addPaintableQuadsToList(List<IPaintablePoly> list)
     {
-        this.applyInverted().claimCopy().addQuadsToList(list);
+        IPaintablePoly result = this.applyInverted();
+        if(result.vertexCount() > 4)
+        {
+            result.addPaintableQuadsToList(list);
+            result.release();
+        }
+        else
+            list.add(result);
     }
 
-    private IMutablePoly applyInverted()
+    private IPaintablePoly applyInverted()
     {
-        IMutablePoly result = this.original.claimCopy(this.vertex.length);
+        IPaintablePoly result = this.original.claimCopy(this.vertex.length);
         
         final int vCount = this.vertex.length;
         if(this.isInverted)
@@ -77,14 +85,14 @@ public class CSGPolygon
             //reverse vertex winding order and flip vertex normals
             for(int i = 0, j = vCount - 1; i < vCount; i++, j--)
             {
-                result.copyVertex(i, this.vertex[j].flip());
+                result.copyVertexFrom(i, this.vertex[j].flip());
             }
         }
         else
         {
             for(int i = 0; i < vCount; i++)
             {
-                result.copyVertex(i, this.vertex[i]);
+                result.copyVertexFrom(i, this.vertex[i]);
             }
         }
         

@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.painting;
 import java.util.function.Consumer;
 
 import grondag.exotic_matter.model.primitives.FaceQuadInputs;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
@@ -45,9 +46,9 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     }
 
     @Override
-    public final void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
+    public final void textureQuad(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isItem)
     {
-        assert quad.isLockUV() : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV(layerIndex) : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
         
         EnumFacing face = quad.getNominalFace();
 
@@ -64,7 +65,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
             {
                 for(int i = 0; i < quad.vertexCount(); i++)
                 {
-                    quad.setVertex(i, quad.getPaintableVertex(i).withColor(0x00FFFFFF));
+                    quad.setVertexColor(layerIndex, i, 0x00FFFFFF);
                 }
             }
             // if using vanilla rendering just skip it
@@ -72,13 +73,13 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
                 return;
         }
         
-        quad.setRotation(inputs.rotation);
+        quad.setRotation(layerIndex, inputs.rotation);
 //        cubeInputs.rotateBottom = false;
-        quad.setMinU(inputs.flipU ? 1 : 0);
-        quad.setMinV(inputs.flipV ? 1 : 0);
-        quad.setMaxU(inputs.flipU ? 0 : 1);
-        quad.setMaxV(inputs.flipV ? 0 : 1);
-        quad.setTextureName(this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
+        quad.setMinU(layerIndex, inputs.flipU ? 1 : 0);
+        quad.setMinV(layerIndex, inputs.flipV ? 1 : 0);
+        quad.setMaxU(layerIndex, inputs.flipU ? 0 : 1);
+        quad.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
+        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
         
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }

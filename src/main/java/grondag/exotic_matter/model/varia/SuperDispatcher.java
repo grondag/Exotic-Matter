@@ -20,8 +20,11 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.painting.QuadPaintManager;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
+import grondag.exotic_matter.model.render.RenderUtil;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.varia.SparseLayerMapBuilder.SparseLayerMap;
 import net.minecraft.block.state.IBlockState;
@@ -66,8 +69,8 @@ public class SuperDispatcher
 			
 		    RenderLayout renderLayout = key.getRenderLayout();
 
-            QuadContainer.Builder[] containers = new QuadContainer.Builder[BlockRenderLayer.values().length];
-		    for(BlockRenderLayer layer : BlockRenderLayer.values())
+            QuadContainer.Builder[] containers = new QuadContainer.Builder[RenderUtil.RENDER_LAYER_COUNT];
+		    for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
             {
 		        if(renderLayout.containsBlockRenderLayer(layer))
 		            containers[layer.ordinal()] = new QuadContainer.Builder();
@@ -77,7 +80,7 @@ public class SuperDispatcher
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
 
-			for(BlockRenderLayer layer : BlockRenderLayer.values())
+			for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
 			{
 			    if(renderLayout.containsBlockRenderLayer(layer))
 			    {
@@ -96,7 +99,12 @@ public class SuperDispatcher
 		public SimpleItemBlockModel load(ISuperModelState key) 
 		{
 	    	ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<BakedQuad>();
-	    	provideFormattedQuads(key, true, p -> p.addBakedQuadsToBuilder(builder, true));
+	    	provideFormattedQuads(key, true, p -> 
+	    	{
+	    	    p.addBakedQuadsToBuilder(null, builder, true);
+	    	    p.release();
+	    	});
+	    	    
 			return new SimpleItemBlockModel(builder.build(), true);
 		}       
     }
@@ -109,10 +117,10 @@ public class SuperDispatcher
             QuadContainer.Builder builder = new QuadContainer.Builder();
             key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
-                IMutablePolygon mutable = q.mutableCopyWithVertices();
+                IPaintablePoly mutable = q.claimCopy();
                 
                 // arbitrary choice - just needs to be a simple non-null texture
-                mutable.setTextureName(grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
+                mutable.setTextureName(0, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
              
                 // Need to scale UV on non-cubic surfaces to be within a 1 block boundary.
                 // This causes breaking textures to be scaled to normal size.
@@ -120,13 +128,14 @@ public class SuperDispatcher
                 if(mutable.getSurfaceInstance().topology == SurfaceTopology.TILED)
                 {
                     // This is simple for tiled surface because UV scale is always 1.0
-                    mutable.setMinU(0);
-                    mutable.setMaxU(1);
-                    mutable.setMinV(0);
-                    mutable.setMaxV(1);
+                    mutable.setMinU(0, 0);
+                    mutable.setMaxU(0, 1);
+                    mutable.setMinV(0, 0);
+                    mutable.setMaxV(0, 1);
                 }
                 
-                builder.accept(mutable);
+                builder.accept(mutable.toPainted());
+                mutable.release();
             });
             return builder.build();
         }       
@@ -171,9 +180,9 @@ public class SuperDispatcher
         return container.getOcclusionHash(face);
     }
     
-    private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
+    private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPaintedPoly> target)
     {
-        final Consumer<IPolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
+        final Consumer<IPaintedPoly> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
         modelState.getShape().meshFactory().produceShapeQuads(modelState, manager);
     }
     
@@ -239,7 +248,7 @@ public class SuperDispatcher
          * For the debug renderer - enumerates all painted quads for all layers.
          * Pass in an extended block state.
          */
-        public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPolygon> consumer)
+        public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPaintedPoly> consumer)
         {
             ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
             
@@ -254,14 +263,15 @@ public class SuperDispatcher
         }
         
         @Override
-        public boolean mightRenderInLayer(BlockRenderLayer forLayer)
+        public boolean mightRenderInLayer(@Nullable BlockRenderLayer forLayer)
         {
-            return this.blockRenderLayout.containsBlockRenderLayer(forLayer);
+            return forLayer == null || this.blockRenderLayout.containsBlockRenderLayer(forLayer);
         }
         
         @Override
-        public void produceQuads(IPipelinedQuadConsumer quadConsumer)
+        public void produceQuads(@SuppressWarnings("null") IPipelinedQuadConsumer quadConsumer)
         {
+            @SuppressWarnings("null")
             ISuperModelState modelState = ((IExtendedBlockState)quadConsumer.blockState()).getValue(ISuperBlock.MODEL_STATE);
             SparseLayerMap map = modelCache.get(modelState);
             QuadContainer qc = map.get(MinecraftForgeClient.getRenderLayer());

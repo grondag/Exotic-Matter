@@ -244,26 +244,22 @@ public class QuadHelper
        	return retVal;
        }
     
-    //    private static int[] vertexToInts(double x, double y, double z, double u, double v, int color, TextureAtlasSprite sprite)
-    //    {
-    //
-    //        return new int[] { Float.floatToRawIntBits((float) x), Float.floatToRawIntBits((float) y), Float.floatToRawIntBits((float) z), color,
-    //                Float.floatToRawIntBits(sprite.getInterpolatedU(u)), Float.floatToRawIntBits(sprite.getInterpolatedV(v)), 0 };
-    //    }
-
+       //TODO: move this to MeshHelper
        /**
         * Same as {@link #addTextureToAllFaces(String, float, float, float, double, int, boolean, float, Rotation, List)}
         * but with uvFraction = 1.
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<IPaintablePoly> list)
+       public static <T extends IPaintedPoly> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<T> list)
        {
-           addTextureToAllFaces(rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
+           addTextureToAllFaces(createMutable, rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
        }
        
+       //TODO: move this to MeshHelper
        /**
         * Generates a quad that isn't uv-locked - originally for putting symbols on MatterPackaging Cubes.
         * Bit of a mess, but thought might get some reuse out of it, so putting here.
         * 
+        * @param createMutable  if true will add Paintable (mutable) quads. Painted (immutable) otherwise.
         * @param rawTextureName should not have mod/blocks prefix
         * @param top            using semantic coordinates here; 0,0 is lower right of face
         * @param left 
@@ -276,9 +272,10 @@ public class QuadHelper
         * @param contractUVs    should be true for everything except fonts maybe
         * @param list           your mutable list of quads
         */
-       public static void addTextureToAllFaces(String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<IPaintablePoly> list)
+       @SuppressWarnings("unchecked")
+    public static <T extends IPaintedPoly> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<T> list)
        {
-           IPaintablePoly template = PolyFactory.newPaintable(4, 1)
+           IPaintablePoly template = PolyFactory.newPaintable(4)
                .setTextureName(0, "hard_science:blocks/" + rawTextureName)
                .setLockUV(0, false)
                .setShouldContractUVs(0, contractUVs);
@@ -325,7 +322,7 @@ public class QuadHelper
            {
                template.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
                template.scaleFromBlockCenter(scaleFactor);
-               list.add(template.claimCopy());
+               list.add((T) (createMutable ? template.claimCopy() : template.toPainted()));
            }
            
            template.release();

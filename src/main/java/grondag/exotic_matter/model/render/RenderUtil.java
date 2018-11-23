@@ -5,6 +5,7 @@ import java.util.Collection;
 import javax.vecmath.Vector3f;
 
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
@@ -24,6 +25,9 @@ public class RenderUtil
         VOXEL_TEST_RAY_Y = ray.y;
         VOXEL_TEST_RAY_Z = ray.z;
     }
+    
+    public static final BlockRenderLayer[] RENDER_LAYERS = BlockRenderLayer.values();
+    public static final int RENDER_LAYER_COUNT = RENDER_LAYERS.length;
     
     /**
      * Draws block-aligned grid on sides of AABB if entity can see it from outside

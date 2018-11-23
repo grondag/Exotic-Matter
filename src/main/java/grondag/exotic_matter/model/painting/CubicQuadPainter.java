@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -54,9 +55,9 @@ public abstract class CubicQuadPainter extends QuadPainter
     }
     
     @Override
-    protected final boolean isQuadValidForPainting(IPaintablePolygon inputQuad)
+    protected final boolean isQuadValidForPainting(IPaintablePoly inputQuad)
     {
-        return inputQuad.isLockUV() == true && inputQuad.getNominalFace() != null;
+        return inputQuad.isLockUV(this.paintLayer.textureLayerIndex) == true && inputQuad.getNominalFace() != null;
     }
     
     protected final int textureHashForFace(EnumFacing face)

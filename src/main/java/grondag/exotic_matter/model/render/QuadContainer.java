@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -15,7 +17,7 @@ import net.minecraft.util.EnumFacing;
 
 public class QuadContainer
 {
-    private static IPolygon[] EMPTY_LIST = {};
+    private static IPaintedPoly[] EMPTY_LIST = {};
     private static int[] EMPTY_COUNTS = {0, 0, 0, 0, 0, 0};
     public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(EMPTY_LIST, EMPTY_COUNTS) ;
 
@@ -28,15 +30,18 @@ public class QuadContainer
     
     private int[] paintedFaceIndex = new int[EnumFacing.VALUES.length];
     
-    private final IPolygon[] paintedQuads;
+    private final IPaintedPoly[] paintedQuads;
     
-    protected QuadContainer(IPolygon[] paintedQuads, int[] paintedFaceIndex)
+    protected QuadContainer(IPaintedPoly[] paintedQuads, int[] paintedFaceIndex)
     {
         this.paintedQuads = paintedQuads;
         this.paintedFaceIndex = paintedFaceIndex;
     }
     
-    @SuppressWarnings({ "unchecked", "null" })
+    
+    //TODO: need to track layer somehow - for now will always output layer 0
+    
+    @SuppressWarnings("unchecked")
     public List<BakedQuad> getBakedQuads(@Nullable EnumFacing face)
     {
         //  build locally and don't set until end in case another thread is racing with us
@@ -48,14 +53,14 @@ public class QuadContainer
             
             {
                 final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-                this.forEachPaintedQuad(null, q -> q.addBakedQuadsToBuilder(builder, false));
+                this.forEachPaintedQuad(null, q -> q.addBakedQuadsToBuilder(0, builder, false));
                 faceLists[6] = builder.build();
             }
             
             for(EnumFacing f : EnumFacing.VALUES)
             {
                 final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-                this.forEachPaintedQuad(f, q -> q.addBakedQuadsToBuilder(builder, false));
+                this.forEachPaintedQuad(f, q -> q.addBakedQuadsToBuilder(0, builder, false));
                 faceLists[f.ordinal()] = builder.build();
             }
             
@@ -65,13 +70,13 @@ public class QuadContainer
         return face == null ? faceLists[6] : faceLists[face.ordinal()];
     }
     
-    public void forEachPaintedQuad(Consumer<IPolygon> consumer)
+    public void forEachPaintedQuad(Consumer<IPaintedPoly> consumer)
     {
-        for(IPolygon q : this.paintedQuads)
+        for(IPaintedPoly q : this.paintedQuads)
             consumer.accept(q);
     }
     
-    public void forEachPaintedQuad(@Nullable EnumFacing face, Consumer<IPolygon> consumer)
+    public void forEachPaintedQuad(@Nullable EnumFacing face, Consumer<IPaintedPoly> consumer)
     {
         int start, end;
         if(face == null)
@@ -113,28 +118,29 @@ public class QuadContainer
 
     private int computeOcclusionHash(EnumFacing face)
     {
+        //PERF: make this guy threadlocal
         QuadListKeyBuilder keyBuilder = new QuadListKeyBuilder(face);
-        this.forEachPaintedQuad(face, q -> q.produceGeometricVertices(keyBuilder));
+        this.forEachPaintedQuad(face, keyBuilder);
         return keyBuilder.getQuadListKey();
     }
     
-    public static class Builder implements Consumer<IPolygon>
+    public static class Builder implements Consumer<IPaintedPoly>
     {
         int size = 0;
         
         @SuppressWarnings("unchecked")
-        final SimpleUnorderedArrayList<IPolygon>[] buckets = new SimpleUnorderedArrayList[7];
+        final SimpleUnorderedArrayList<IPaintedPoly>[] buckets = new SimpleUnorderedArrayList[7];
         
         @Override
-        public void accept(@SuppressWarnings("null") IPolygon quad)
+        public void accept(@SuppressWarnings("null") IPaintedPoly quad)
         {
             final @Nullable EnumFacing facing = quad.getActualFace();
             final int index = facing == null ? 6 : facing.ordinal();
             
-            SimpleUnorderedArrayList<IPolygon> bucket = buckets[index];
+            SimpleUnorderedArrayList<IPaintedPoly> bucket = buckets[index];
             if(bucket  == null)
             {
-                bucket = new SimpleUnorderedArrayList<IPolygon>();
+                bucket = new SimpleUnorderedArrayList<IPaintedPoly>();
                 buckets[index] = bucket;
             }
             bucket.add(quad);
@@ -146,7 +152,7 @@ public class QuadContainer
             if(this.size == 0)
                 return EMPTY_CONTAINER;
             
-            IPolygon[] quads = new IPolygon[this.size];
+            IPaintedPoly[] quads = new IPaintedPoly[this.size];
             int[] indexes = new int[6];
             
             int i = addAndGetSize(quads, 0, buckets[6]);
@@ -160,7 +166,7 @@ public class QuadContainer
             return new QuadContainer(quads, indexes);
         }
 
-        private final int addAndGetSize(IPolygon[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPolygon> sourceList)
+        private final int addAndGetSize(IPaintedPoly[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPaintedPoly> sourceList)
         {
             if(sourceList == null) return 0;
             sourceList.copyToArray(targetArray, firstOpenIndex);
@@ -169,7 +175,7 @@ public class QuadContainer
     }
 
 
-    private static class QuadListKeyBuilder
+    private static class QuadListKeyBuilder implements Consumer<IPaintedPoly>
     {
         private final int axis0;
         private final int axis1;
@@ -207,8 +213,7 @@ public class QuadContainer
             return (int)(key & 0xFFFFFFFF);     
         }
 
-        @Override
-        public void acceptVertex(float x, float y, float z)
+        private void acceptVertex(float x, float y, float z)
         {
             float v0 = 0, v1 = 0;
             switch(axis0)
@@ -238,6 +243,18 @@ public class QuadContainer
             }
             //don't need to check which element - position is the only one included
             vertexKeys.add(((long)(Float.floatToRawIntBits(v0)) | ((long)(Float.floatToRawIntBits(v1)) << 32)));
+        }
+
+        @Override
+        public void accept(@SuppressWarnings("null") IPaintedPoly t)
+        {
+            final int limit = t.vertexCount();
+            for(int i = 0; i < limit; i++)
+            {
+                Vec3f v = t.getPos(i);
+                this.acceptVertex(v.x(), v.y(), v.z());
+            }
+            
         }
     }
 }

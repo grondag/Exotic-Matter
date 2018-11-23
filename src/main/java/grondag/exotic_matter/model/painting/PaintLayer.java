@@ -23,28 +23,28 @@ public enum PaintLayer
      * Typically used as the undecorated appearance the primary surface, often the only paint layer.
      * Lowest (unmodified) z position.  
      */
-    BASE,
+    BASE(0),
     
     /**
      * Typically used to render sides or bottoms, or the cut surfaces
      * of CSG outputs.
      */
-    CUT,
+    CUT(0),
     
     /**
      * Typically used to render a secondary surface within a model.
      */
-    LAMP,
+    LAMP(0),
     
     /**
      * Typically used to decorate the primary surface.
      */
-    MIDDLE,
+    MIDDLE(1),
     
     /**
      * Typically used to decorate the primary surface.
      */
-    OUTER;
+    OUTER(2);
     
 
     /** Convenience for values().length */
@@ -61,6 +61,12 @@ public enum PaintLayer
     
     public static BinaryEnumSet<PaintLayer> BENUMSET = new BinaryEnumSet<>(PaintLayer.class);
     
+    private PaintLayer(int textureLayerIndex)
+    {
+        this.textureLayerIndex = textureLayerIndex;
+    }
+    
+    public final int textureLayerIndex;
     
     public String localizedName()
     {

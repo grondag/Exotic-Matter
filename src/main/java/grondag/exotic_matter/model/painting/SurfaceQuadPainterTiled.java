@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.TextureRotationType;
 import grondag.exotic_matter.varia.Useful;
@@ -23,16 +24,16 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     }
 
     @Override
-    public void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
+    public void textureQuad(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isItem)
     {
-        assert !quad.isLockUV() : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
+        assert !quad.isLockUV(layerIndex) : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         
-        final boolean uFlipped = quad.getMaxU() < quad.getMinU();
-        final boolean vFlipped = quad.getMaxV() < quad.getMinV();
+        final boolean uFlipped = quad.getMaxU(layerIndex) < quad.getMinU(layerIndex);
+        final boolean vFlipped = quad.getMaxV(layerIndex) < quad.getMinV(layerIndex);
         
         final Surface surfIn = quad.getSurfaceInstance();
         final EnumFacing face = quad.getNominalFace();
-        final int salt = (quad.textureSalt() << 3) + (face == null ? 0 : face.ordinal());
+        final int salt = (quad.getTextureSalt(layerIndex) << 3) + (face == null ? 0 : face.ordinal());
         
         /**
          * The smallest UV distance that can be tiled with single texture.
@@ -51,20 +52,20 @@ public class SurfaceQuadPainterTiled extends QuadPainter
          */
         
         final int uMinIndex = uFlipped 
-                ? MathHelper.ceil(quad.getMinU() / tilingDistance)
-                : MathHelper.floor(quad.getMinU() / tilingDistance);
+                ? MathHelper.ceil(quad.getMinU(layerIndex) / tilingDistance)
+                : MathHelper.floor(quad.getMinU(layerIndex) / tilingDistance);
         
         final int uMaxIndex = uFlipped 
-                ? MathHelper.floor(quad.getMaxU() / tilingDistance)
-                : MathHelper.ceil(quad.getMaxU() / tilingDistance);
+                ? MathHelper.floor(quad.getMaxU(layerIndex) / tilingDistance)
+                : MathHelper.ceil(quad.getMaxU(layerIndex) / tilingDistance);
 
         final int vMinIndex = vFlipped 
-                ? MathHelper.ceil(quad.getMinV() / tilingDistance)
-                : MathHelper.floor(quad.getMinV() / tilingDistance);
+                ? MathHelper.ceil(quad.getMinV(layerIndex) / tilingDistance)
+                : MathHelper.floor(quad.getMinV(layerIndex) / tilingDistance);
         
         final int vMaxIndex = vFlipped 
-                ? MathHelper.floor(quad.getMaxV() / tilingDistance)
-                : MathHelper.ceil(quad.getMaxV() / tilingDistance);
+                ? MathHelper.floor(quad.getMaxV(layerIndex) / tilingDistance)
+                : MathHelper.ceil(quad.getMaxV(layerIndex) / tilingDistance);
         
         final int uStep = uFlipped ? -1 : 1;
         final int vStep = vFlipped ? -1 : 1;
@@ -72,7 +73,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         final float uSpan = uStep * tilingDistance;
         final float vSpan = vStep * tilingDistance;
             
-        IPaintablePolygon uRemainder = quad;
+        IPaintablePoly uRemainder = quad;
         
         // do the splits
         for(int uIndex = uMinIndex; uIndex != uMaxIndex;  uIndex += uStep)
@@ -80,22 +81,22 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             final int uIndexFinal = uIndex;
             final float uSplitLow = uIndexFinal * tilingDistance;
             
-            uRemainder = splitU(uRemainder, uSplitLow, uSpan, new Consumer<IPaintablePolygon>()
+            uRemainder = splitU(uRemainder, uSplitLow, uSpan, new Consumer<IPaintablePoly>()
             {
                 @SuppressWarnings("null")
                 @Override
-                public void accept(IPaintablePolygon t)
+                public void accept(IPaintablePoly t)
                 {
-                    IPaintablePolygon vRemainder = t;
+                    IPaintablePoly vRemainder = t;
                     for(int vIndex = vMinIndex; vIndex != vMaxIndex;  vIndex += vStep)
                     {
                         final int vIndexFinal = vIndex;
                         final float vSplitLow = vIndexFinal * tilingDistance;
                         
-                        vRemainder = splitV(vRemainder, vSplitLow, vSpan, new Consumer<IPaintablePolygon>()
+                        vRemainder = splitV(vRemainder, vSplitLow, vSpan, new Consumer<IPaintablePoly>()
                         {
                             @Override
-                            public void accept(IPaintablePolygon t)
+                            public void accept(IPaintablePoly t)
                             {
                                 // send for final painting and output
                                 paintBoundedQuad(t, target, isItem, salt(salt, uIndexFinal, vIndexFinal));
@@ -152,11 +153,13 @@ public class SurfaceQuadPainterTiled extends QuadPainter
      * If all input vertices are within the given split bounds, will output a single quad
      * offset and scaled as if it had been sliced, and return null.
      */
-    private @Nullable IPaintablePolygon splitU(IPaintablePolygon input, final float uSplitLow, final float uSpan, Consumer<IPaintablePolygon> output)
+    private @Nullable IPaintablePoly splitU(IPaintablePoly input, final float uSplitLow, final float uSpan, Consumer<IPaintablePoly> output)
     {
-        final float uMin = input.getMinU();
-        final float uMax = input.getMaxU();
-        final int vCountIn = input.vertexCount();        
+        final float uMin = input.getMinU(layerIndex);
+        final float uMax = input.getMaxU(layerIndex);
+        final int vCountIn = input.vertexCount();
+        
+        // PERF: make this threadlocal
         final float[] vertexU = new float[vCountIn];
         final boolean flipped = uSpan < 0;
         
@@ -168,7 +171,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         for(int i = 0; i < vCountIn; i++)
         {
             // vertex u where 0 corresponds to low split and 1 to high split
-            final float u = (uMin + input.getPaintableVertex(i).u() * (uMax - uMin) - uSplitLow) / uSpan;
+            final float u = (uMin + input.u(layerIndex, i) * (uMax - uMin) - uSplitLow) / uSpan;
             vertexU[i] = u;
             
             final int t = vertexType(u);
@@ -187,16 +190,14 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            IPaintablePolygon slice = input.paintableCopyWithVertices();
-            slice.setMinU(flipped ? 1 : 0);
-            slice.setMaxU(flipped ? 0 : 1);
+            input.setMinU(layerIndex, flipped ? 1 : 0);
+            input.setMaxU(layerIndex, flipped ? 0 : 1);
             
             for(int i = 0; i < vCountIn; i++)
             {
-                IPaintableVertex v = slice.getPaintableVertex(i);
-                slice.setVertex(i, v.withUV(vertexU[i], v.v()));
+                input.setVertexU(layerIndex, i, vertexU[i]);
             }
-            output.accept(slice);
+            output.accept(input);
             return null;
         }
         
@@ -205,60 +206,71 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitU = (uSplitLow + uSpan) / (uMax - uMin);
         
-        IPaintablePolygon slice = input.claimCopy(sliceCount + 2);
-        slice.setMinU(flipped ? 1 : 0);
-        slice.setMaxU(flipped ? 0 : 1);
+        IPaintablePoly slice = input.claimCopy(sliceCount + 2);
+        slice.setMinU(layerIndex, flipped ? 1 : 0);
+        slice.setMaxU(layerIndex, flipped ? 0 : 1);
         int iSliceVertex = 0;
         
-        IPaintablePolygon remainder = input.claimCopy(remainderCount + 2);
+        IPaintablePoly remainder = input.claimCopy(remainderCount + 2);
         int iRemainderVertex = 0;
         
         float uThis = vertexU[vCountIn - 1];
-        IPaintableVertex thisVertex = input.getPaintableVertex(vCountIn -1);
+        
+        int iThis = vCountIn - 1;
         int thisType = vertexType(uThis);
                 
         for(int iNext = 0; iNext < vCountIn; iNext++)
         {
-            final IPaintableVertex nextVertex = input.getPaintableVertex(iNext);
             final float uNext = vertexU[iNext];
             final int nextType = vertexType(uNext);
             
             if(thisType == EDGE)
             {
-                slice.setVertex(iSliceVertex++, thisVertex.withUV(uThis, thisVertex.v()));
-                remainder.setVertex(iRemainderVertex++, thisVertex);
+                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
+                iSliceVertex++;
+                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                iRemainderVertex++;
             }
             else if(thisType == SLICE)
             {
-                slice.setVertex(iSliceVertex++, thisVertex.withUV(uThis, thisVertex.v()));
+                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
+                iSliceVertex++;
                 if(nextType == REMAINDER)
                 {
-                    final float dist = (vertexSplitU - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
-                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
-                    remainder.setVertex(iRemainderVertex++, vNew);
+                    final float dist = (vertexSplitU - uThis) / (uNext - uThis);
+                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
                     
-                    final float uNew = (uMin + vNew.u() * (uMax - uMin) - uSplitLow) / uSpan;
-                    slice.setVertex(iSliceVertex++, vNew.withUV(uNew, vNew.v()));
+                    final float uNew = (uMin + remainder.getVertexU(layerIndex, iRemainderVertex) * (uMax - uMin) - uSplitLow) / uSpan;
+                    slice.setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
+                    
+                    iRemainderVertex++;
+                    iSliceVertex++;
                 }
             }
             else
             {
-                remainder.setVertex(iRemainderVertex++, thisVertex);
+                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                iRemainderVertex++;
                 if(nextType == SLICE)
                 {
-                    final float dist = (vertexSplitU - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
-                    IPaintableVertex vNew = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
-                    remainder.setVertex(iRemainderVertex++, vNew);
+                    final float dist = (vertexSplitU - uThis) / (uNext - uThis);
+                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
                     
-                    final float uNew = (uMin + vNew.u() * (uMax - uMin) - uSplitLow) / uSpan;
-                    slice.setVertex(iSliceVertex++, vNew.withUV(uNew, vNew.v()));
+                    final float uNew = (uMin + remainder.getVertexU(layerIndex, iRemainderVertex) * (uMax - uMin) - uSplitLow) / uSpan;
+                    slice.setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
+                    
+                    iRemainderVertex++;
+                    iSliceVertex++;
                 }
             }
             
             uThis = uNext;
-            thisVertex = nextVertex;
+            iThis = iNext;
             thisType = nextType;
         }
+        
+        // input no longer needed so release storage
+        input.release();
         
         output.accept(slice);
         return remainder;
@@ -288,11 +300,12 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     /**
      * Just like {@link #splitU(IMutablePolygon, float, float, Consumer)} but for the v dimension.
      */
-    private @Nullable IPaintablePolygon splitV(IPaintablePolygon input, float vSplitLow, float vSpan, Consumer<IPaintablePolygon> output)
+    private @Nullable IPaintablePoly splitV(IPaintablePoly input, float vSplitLow, float vSpan, Consumer<IPaintablePoly> output)
     {
-        final float vMin = input.getMinV();
-        final float vMax = input.getMaxV();
-        final int vCountIn = input.vertexCount();        
+        final float vMin = input.getMinV(layerIndex);
+        final float vMax = input.getMaxV(layerIndex);
+        final int vCountIn = input.vertexCount();
+        // PERF: make this threadlocal
         final float[] vertexV = new float[vCountIn];
         final boolean flipped = vSpan < 0;
         
@@ -304,7 +317,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         for(int i = 0; i < vCountIn; i++)
         {
             // vertex u where 0 corresponds to low split and 1 to high split
-            final float v = (vMin + input.getPaintableVertex(i).v() * (vMax - vMin) - vSplitLow) / vSpan;
+            final float v = (vMin + input.getVertexV(layerIndex, i) * (vMax - vMin) - vSplitLow) / vSpan;
             vertexV[i] = v;
             
             final int t = vertexType(v);
@@ -323,16 +336,14 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            IPaintablePolygon slice = input.paintableCopyWithVertices();
-            slice.setMinV(flipped ? 1 : 0);
-            slice.setMaxV(flipped ? 0 : 1);
+            input.setMinV(layerIndex, flipped ? 1 : 0);
+            input.setMaxV(layerIndex, flipped ? 0 : 1);
             
             for(int i = 0; i < vCountIn; i++)
             {
-                IPaintableVertex v = slice.getPaintableVertex(i);
-                slice.setVertex(i, v.withUV(v.u(), vertexV[i]));
+                input.setVertexV(layerIndex, i, vertexV[i]);
             }
-            output.accept(slice);
+            output.accept(input);
             return null;
         }
         
@@ -341,60 +352,71 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitV = (vSplitLow + vSpan) / (vMax - vMin);
         
-        IPaintablePolygon slice = input.claimCopy(sliceCount + 2);
-        slice.setMinV(flipped ? 1 : 0);
-        slice.setMaxV(flipped ? 0 : 1);
+        IPaintablePoly slice = input.claimCopy(sliceCount + 2);
+        slice.setMinV(layerIndex, flipped ? 1 : 0);
+        slice.setMaxV(layerIndex, flipped ? 0 : 1);
         int iSliceVertex = 0;
         
-        IPaintablePolygon remainder = input.claimCopy(remainderCount + 2);
+        IPaintablePoly remainder = input.claimCopy(remainderCount + 2);
         int iRemainderVertex = 0;
         
         float vThis = vertexV[vCountIn - 1];
-        IPaintableVertex thisVertex = input.getPaintableVertex(vCountIn -1);
+        
+        int iThis = vCountIn -1;
         int thisType = vertexType(vThis);
                 
         for(int iNext = 0; iNext < vCountIn; iNext++)
         {
-            final IPaintableVertex nextVertex = input.getPaintableVertex(iNext);
             final float vNext = vertexV[iNext];
             final int nextType = vertexType(vNext);
             
             if(thisType == EDGE)
             {
-                slice.setVertex(iSliceVertex++, thisVertex.withUV(thisVertex.u(), vThis));
-                remainder.setVertex(iRemainderVertex++, thisVertex);
+                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
+                iSliceVertex++;
+                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                iRemainderVertex++;
             }
             else if(thisType == SLICE)
             {
-                slice.setVertex(iSliceVertex++, thisVertex.withUV(thisVertex.u(), vThis));
+                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
+                iSliceVertex++;
                 if(nextType == REMAINDER)
                 {
-                    final float dist = (vertexSplitV - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
-                    remainder.setVertex(iRemainderVertex++, newVertex);
+                    final float dist = (vertexSplitV - vThis) / (vNext - vThis);
+                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
                     
-                    final float vNew = (vMin + newVertex.v() * (vMax - vMin) - vSplitLow) / vSpan;
-                    slice.setVertex(iSliceVertex++, newVertex.withUV(newVertex.u(), vNew));
+                    final float vNew = (vMin + remainder.getVertexV(layerIndex, iRemainderVertex) * (vMax - vMin) - vSplitLow) / vSpan;
+                    slice.setVertexUV(layerIndex, iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
+                    
+                    iRemainderVertex++;
+                    iSliceVertex++;
                 }
             }
             else
             {
-                remainder.setVertex(iRemainderVertex++, thisVertex);
+                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                iRemainderVertex++;
                 if(nextType == SLICE)
                 {
-                    final float dist = (vertexSplitV - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                    IPaintableVertex newVertex = thisVertex.interpolate(nextVertex, dist).forTextureLayer(nextVertex.layerIndex());
-                    remainder.setVertex(iRemainderVertex++, newVertex);
+                    final float dist = (vertexSplitV - vThis) / (vNext - vThis);
+                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
                     
-                    final float vNew = (vMin + newVertex.v() * (vMax - vMin) - vSplitLow) / vSpan;
-                    slice.setVertex(iSliceVertex++, newVertex.withUV(newVertex.u(), vNew));
+                    final float vNew = (vMin + remainder.getVertexV(layerIndex, iRemainderVertex) * (vMax - vMin) - vSplitLow) / vSpan;
+                    slice.setVertexUV(layerIndex,  iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
+                    
+                    iRemainderVertex++;
+                    iSliceVertex++;
                 }
             }
             
             vThis = vNext;
-            thisVertex = nextVertex;
+            iThis = iNext;
             thisType = nextType;
         }
+        
+        // input no longer needed so release storage
+        input.release();
         
         output.accept(slice);
         return remainder;
@@ -409,8 +431,8 @@ public class SurfaceQuadPainterTiled extends QuadPainter
      * texture tile distance.  The provided salt will be used for texture randomization.
      */
     private void paintBoundedQuad(
-            IPaintablePolygon quad, 
-            Consumer<IPaintablePolygon> target, 
+            IPaintablePoly quad, 
+            Consumer<IPaintablePoly> target, 
             boolean isItem,
             int salt)
     {
@@ -419,9 +441,9 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         // For now, always use uv 0,0 as tiling origin.
         
         int textureVersion = this.texture.textureVersionMask() & (salt >> 4);
-        quad.setTextureName(this.texture.getTextureName(textureVersion));
+        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
         
-        quad.setRotation(this.texture.rotation().rotationType() == TextureRotationType.RANDOM
+        quad.setRotation(layerIndex, this.texture.rotation().rotationType() == TextureRotationType.RANDOM
           ? Useful.offsetEnumValue(this.texture.rotation().rotation, (salt >> 16) & 3)
           : this.texture.rotation().rotation);
         
@@ -429,7 +451,12 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         // because earlier iterations may have left us with something else
         if(quad.vertexCount() > 4 || !quad.isConvex())
         {
-            quad.toPaintableQuads(p -> postPaintProcessQuadAndOutput(p, target, isItem), true);
+            boolean didSplit = quad.toPaintableQuads(p -> postPaintProcessQuadAndOutput(p, target, isItem));
+            assert didSplit;
+            // can release original polys that have been split - splits are new instances 
+            // and this current instance is not passed to the consumer nor used in any other way.
+            if(didSplit)
+                quad.release();
         }
         else 
         {
@@ -443,9 +470,9 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     }
 
     @Override
-    protected boolean isQuadValidForPainting(IPaintablePolygon inputQuad)
+    protected boolean isQuadValidForPainting(IPaintablePoly inputQuad)
     {
-        return !inputQuad.isLockUV();
+        return !inputQuad.isLockUV(layerIndex);
     }
    
 }

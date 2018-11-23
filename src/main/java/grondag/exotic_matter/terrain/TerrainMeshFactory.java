@@ -93,12 +93,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
-    private static final LongSimpleLoadingCache<Collection<IPaintedPoly<IPaintedVertex>>> modelCache = new LongSimpleLoadingCache<Collection<IPaintedPoly<IPaintedVertex>>>(new TerrainCacheLoader(), 0xFFFF);
+    private static final LongSimpleLoadingCache<Collection<IPaintedPoly>> modelCache = new LongSimpleLoadingCache<Collection<IPaintedPoly>>(new TerrainCacheLoader(), 0xFFFF);
 
-    private static class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPaintedPoly<IPaintedVertex>>>
+    private static class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPaintedPoly>>
     {
         @Override
-        public Collection<IPaintedPoly<IPaintedVertex>> load(long key)
+        public Collection<IPaintedPoly> load(long key)
         {
             //            cacheMisses.incrementAndGet();
             return createShapeQuads(new TerrainState(key < 0 ? -key : key, 0), key < 0);
@@ -107,7 +107,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     static
     {
-        template = PolyFactory.newPaintable(4, 1);
+        template = PolyFactory.newPaintable(4);
 
         template.setLockUV(0, true);
         template.setSurfaceInstance(SURFACE_TOP);
@@ -138,7 +138,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         }
         qBottom.release();
         
-        List<IPaintedPoly<IPaintedVertex>> cubeQuads = cubeQuads();
+        List<IPaintedPoly> cubeQuads = cubeQuads();
 
         //        cubeQuads.forEach(q -> q.setTag("cube-simple-" + q.getNominalFace().toString()));
         cubeNodeSimple = CSGNode.create(cubeQuads);
@@ -712,9 +712,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         //        terrainQuads.add(getBottomForState(flowState));
     }
 
-    private static List<IPaintedPoly<IPaintedVertex>> cubeQuads()
+    private static List<IPaintedPoly> cubeQuads()
     {
-        final ArrayList<IPaintedPoly<IPaintedVertex>> cubeQuads = new ArrayList<>();
+        final ArrayList<IPaintedPoly> cubeQuads = new ArrayList<>();
         final IPaintablePoly work = template.claimCopy();
         
         //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
@@ -761,7 +761,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
-    private static Collection<IPaintedPoly<IPaintedVertex>> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
+    private static Collection<IPaintedPoly> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);
@@ -853,14 +853,14 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         // order here is important
         // terrain has to come first in order to preserve normals when 
         // top terrain face quads are co-planar with cube quads
-        final Collection<IPolygon> result = CSGMesh.intersect(
+        final Collection<IPaintablePoly> mutableResult = CSGMesh.intersect(
                 terrainNode,
                 cubeNode
                 );
 
-        assert result != null : "Got null terrain mesh - not expected.";
-
-        return result;
+        assert mutableResult != null : "Got null terrain mesh - not expected.";
+        
+        return IPaintablePoly.paintAndRelease(mutableResult);
     }
 
     @Override
@@ -876,9 +876,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPaintedPoly> target)
     {
-        final Consumer<IPaintedPoly<IPaintedVertex>> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
+        final Consumer<IPaintedPoly> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
                 ? QuadHelper.makeRecoloring(target) : target;
 
                 // Hot terrain blocks that border non-hot blocks need a subdivided mesh
@@ -900,7 +900,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 //            cacheAttempts.incrementAndGet();
 
                 //FIXME: prevent NPE in release due to strange and rare bug somewhere - possibly a concurrency issue in cache
-                final Collection<IPolygon> c = this.modelCache.get(key);
+                final Collection<IPaintedPoly> c = this.modelCache.get(key);
                 if(c == null)
                     assert false : "Got null result from terrain model cache";
                 else

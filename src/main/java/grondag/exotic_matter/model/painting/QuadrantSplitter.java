@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.world.FaceCorner;
 
 /**
@@ -14,29 +15,28 @@ import grondag.exotic_matter.world.FaceCorner;
 public class QuadrantSplitter
 {
     @Nullable
-    public final static FaceCorner uvQuadrant(IPaintablePolygon quad)
+    public final static FaceCorner uvQuadrant(IPaintablePoly quad, int layerIndex)
     {
         final int vCount = quad.vertexCount();
         
-        IPaintableVertex v = quad.getPaintableVertex(0);
-        
-        float uMin = v.u();
-        float uMax = v.u();
-        float vMin = v.v();
-        float vMax = v.v();
+        float uMin = quad.u(layerIndex, 0);
+        float uMax = uMin;
+        float vMin = quad.v(layerIndex, 0);
+        float vMax = vMin;
         
         for(int i = 1; i < vCount; i++)
         {
-            v = quad.getPaintableVertex(i);
-            if(v.u() < uMin) 
-                uMin = v.u();
-            else if(v.u() > uMax)
-                uMax = v.u();
+            float u = quad.u(layerIndex, i);
+            float v = quad.v(layerIndex, i);
+            if(u < uMin) 
+                uMin = u;
+            else if(u > uMax)
+                uMax = u;
             
-            if(v.v() < vMin) 
-                vMin = v.v();
-            else if(v.v() > vMax)
-                vMax = v.v();
+            if(v < vMin) 
+                vMin = v;
+            else if(v > vMax)
+                vMax = v;
         }
         
         // note that v is inverted from FaceCorner semantics.
@@ -81,7 +81,7 @@ public class QuadrantSplitter
         }
     }
     
-    public static final void splitAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target)
+    public static final void splitAndPaint(IPaintablePoly quad, Consumer<IPaintablePoly> target, int layerIndex)
     {
         int lowCount = 0;
         int highCount = 0;
@@ -89,7 +89,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertex(i).u());
+            final int t = vertexType(quad.u(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -98,38 +98,41 @@ public class QuadrantSplitter
         
         if(lowCount == 0)
             // all on on high side
-            splitVAndPaint(quad, target, true);
+            splitVAndPaint(quad, target, true, layerIndex);
         else if(highCount == 0)
             // all on low side
-            splitVAndPaint(quad, target, false);
+            splitVAndPaint(quad, target, false, layerIndex);
         else
         {
             // spanning
-            IMutablePolygon high = quad.mutableCopy(highCount + 2);
+            IPaintablePoly high = quad.claimCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IMutablePolygon low = quad.mutableCopy(lowCount + 2);
+            IPaintablePoly low = quad.claimCopy(lowCount + 2);
             int iLowVertex = 0;
             
-            Vertex thisVertex = quad.getVertex(vCount -1);
-            int thisType = vertexType(thisVertex.u());
+            int iThis = vCount - 1;
+            //Vertex thisVertex = quad.getVertex(vCount -1);
+            float uThis = quad.u(layerIndex, iThis);
+            int thisType = vertexType(uThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final Vertex nextVertex = quad.getVertex(iNext);
-                final int nextType = vertexType(nextVertex.u());
+              //  final Vertex nextVertex = quad.getVertex(iNext);
+                final float uNext = quad.u(layerIndex, iNext);
+                final int nextType = vertexType(uNext);
                 
                 if(thisType == EDGE)
                 {
-                    high.setVertex(iHighVertex++, thisVertex);
-                    low.setVertex(iLowVertex++, thisVertex);
+                    high.copyVertexFrom(iHighVertex++, quad, iThis);
+                    low.copyVertexFrom(iLowVertex++, quad, iThis);
                 }
                 else if(thisType == HIGH)
                 {
-                    high.setVertex(iHighVertex++, thisVertex);
+                    high.copyVertexFrom(iHighVertex++, quad, iThis);
                     if(nextType == LOW)
                     {
-                        final float dist = (0.5f - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
+                        final float dist = (0.5f - uThis) / (uNext - uThis);
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);
@@ -137,25 +140,26 @@ public class QuadrantSplitter
                 }
                 else
                 {
-                    low.setVertex(iLowVertex++, thisVertex);
+                    low.copyVertexFrom(iLowVertex++, quad, iThis);
                     if(nextType == HIGH)
                     {
-                        final float dist = (0.5f - thisVertex.u()) / (nextVertex.u() - thisVertex.u());
+                        final float dist = (0.5f - uThis) / (uNext - uThis);
                         Vertex vNew = thisVertex.interpolate(nextVertex, dist);
                         low.setVertex(iLowVertex++, vNew);
                         high.setVertex(iHighVertex++, vNew);
                     }
                 }
-                thisVertex = nextVertex;
+                iThis = iNext;
+                uThis = uNext;
                 thisType = nextType;
             }
             
-            splitVAndPaint(high, target, true);
-            splitVAndPaint(low, target, false);
+            splitVAndPaint(high, target, true, layerIndex);
+            splitVAndPaint(low, target, false, layerIndex);
         }
     }
     
-    private static final void splitVAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isHighU)
+    private static final void splitVAndPaint(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isHighU, int layerIndex)
     {
         int lowCount = 0;
         int highCount = 0;
@@ -163,7 +167,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertex(i).v());
+            final int t = vertexType(quad.v(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -179,10 +183,10 @@ public class QuadrantSplitter
         else
         {
             // spanning
-            IMutablePolygon high = quad.mutableCopy(highCount + 2);
+            IPaintablePoly high = quad.claimCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IMutablePolygon low = quad.mutableCopy(lowCount + 2);
+            IPaintablePoly low = quad.claimCopy(lowCount + 2);
             int iLowVertex = 0;
             
             Vertex thisVertex = quad.getVertex(vCount -1);

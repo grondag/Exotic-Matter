@@ -46,7 +46,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
-import grondag.exotic_matter.model.primitives.better.IMutablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
@@ -88,7 +89,7 @@ public class CSGNode
         final CSGSplitAcceptor.CoFrontBack splitter = new CSGSplitAcceptor.CoFrontBack();
         
         @SuppressWarnings("null")
-        private Root(Collection<IMutablePoly> shapeIn, boolean crossSplit)
+        private Root(Collection<? extends IPaintedPoly> shapeIn, boolean crossSplit)
         {
             super(new CSGPlane(CENTER_TO_CORNER_NORMAL_A, CENTER_TO_CORNER_DISTANCE));
             this.front = new CSGNode(new CSGPlane(CENTER_TO_CORNER_NORMAL_B, 0));
@@ -105,11 +106,11 @@ public class CSGNode
             shapeIn.forEach(p -> splitter.splitPolyStartingWith(new CSGPolygon(p), this));
         }
         
-        private Root(Collection<IMutablePoly> shapeIn)
+        private Root(Collection<? extends IPaintedPoly> shapeIn)
         {
             super(new CSGPolygon(shapeIn.iterator().next()));
             
-            Iterator<IMutablePoly> it = shapeIn.iterator();
+            Iterator<? extends IPaintedPoly> it = shapeIn.iterator();
             it.next();
             while(it.hasNext())
             {
@@ -185,7 +186,7 @@ public class CSGNode
             }
         }
 
-        public void addPolygon(IMutablePoly poly)
+        public void addPolygon(IPaintablePoly poly)
         {
             splitter.splitPolyStartingWith(new CSGPolygon(poly), this);
         }
@@ -252,9 +253,9 @@ public class CSGNode
          * Will hold no reference to quads in the list.
          */
         @SuppressWarnings("unchecked")
-        public List<IMutablePoly> recombinedQuads()
+        public List<IPaintablePoly> recombinedQuads()
         {
-            IdentityHashMap<IMutablePoly, Object> ancestorBuckets = new IdentityHashMap<>();
+            IdentityHashMap<IPaintedPoly, Object> ancestorBuckets = new IdentityHashMap<>();
             
             for(CSGPolygon quad : this) 
             {
@@ -278,7 +279,7 @@ public class CSGNode
             
             
             // PERF: use threadlocal
-            ArrayList<IMutablePoly> retVal = new ArrayList<>();
+            ArrayList<IPaintablePoly> retVal = new ArrayList<>();
             ancestorBuckets.values().forEach((bucket) ->
             {
                 if(bucket instanceof SimpleUnorderedArrayList)
@@ -287,7 +288,7 @@ public class CSGNode
                 }
                 else
                 {
-                    ((CSGPolygon)bucket).addRenderableQuads(retVal);
+                    ((CSGPolygon)bucket).addPaintableQuadsToList(retVal);
                 }
             });
             
@@ -347,16 +348,16 @@ public class CSGNode
      * Input collection must have at least one polygon or will crash.
      * Polygons in the input are copied so that nothing is mutated.<br>
      */
-    public static Root create(Collection<IMutablePoly> shapeIn, boolean crossSplit)
+    public static Root create(Collection<? extends IPaintedPoly> shapeIn, boolean crossSplit)
     {
         return new Root(shapeIn, crossSplit);
     }
     
-    public static Root create(Collection<IMutablePoly> shapeIn)
+    public static Root create(Collection<? extends IPaintedPoly> shapeIn)
     {
         return new Root(shapeIn);
     }
-
+    
     CSGNode(CSGPlane plane)
     { 
         this.plane = plane;
@@ -532,7 +533,7 @@ public class CSGNode
     }
     
     @SuppressWarnings("null")
-    private static void recombinedAndAddRenderableToList(Collection<CSGPolygon> quadsIn, List<IMutablePoly> output)
+    private static void recombinedAndAddRenderableToList(Collection<CSGPolygon> quadsIn, List<IPaintablePoly> output)
     {
         if(quadsIn.size() == 2) 
         {
@@ -601,14 +602,14 @@ public class CSGNode
                 }
             }
         }
-        polys.forEach(p -> p.addRenderableQuads(output));
+        polys.forEach(p -> p.addPaintableQuadsToList(output));
     }
 
     /**
      * Handles special case when there are only 2 polygons to join - avoids building a map.
      * For volcano terrain, this is about 15% of the cases involving a potential join (more than 1 poly)
      */
-    private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IMutablePoly> output)
+    private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IPaintablePoly> output)
     {
 //        pairCount.incrementAndGet();
         Iterator<CSGPolygon> it = quadsIn.iterator();
@@ -626,14 +627,14 @@ public class CSGNode
                         break;
                     else
                     {
-                        newPoly.addRenderableQuads(output);
+                        newPoly.addPaintableQuadsToList(output);
                         return;
                     }
                 }
             }
         }
-        polyA.addRenderableQuads(output);
-        polyB.addRenderableQuads(output);
+        polyA.addPaintableQuadsToList(output);
+        polyB.addPaintableQuadsToList(output);
     }
             
         

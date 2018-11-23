@@ -3,6 +3,8 @@ package grondag.exotic_matter.model.render;
 import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.primitives.better.IPoly;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
 import net.minecraft.block.state.IBlockState;
@@ -89,35 +91,40 @@ public class BlockModelDebugHighlighter
             double d0,
             double d1,
             double d2,
-            IPolygon quad, 
+            IPoly quad, 
             Tessellator tessellator, 
             BufferBuilder buffer)
     {
         
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
-        quad.produceGeometricVertices((float x, float y, float z) ->
+        final int vertexCount = quad.vertexCount();
+        for(int i = 0; i < vertexCount; i++)
         {
-            buffer.pos(x + d0, y + d1, z + d2).color(1f, 1f, 1f, 1f).endVertex();
-        });
+            Vec3f v = quad.getPos(i);
+            buffer.pos(v.x() + d0, v.y() + d1, v.z() + d2).color(1f, 1f, 1f, 1f).endVertex();
+        }
         tessellator.draw();
         
-        quad.produceNormalVertices((float x, float y, float z, float xNormal, float yNormal, float zNormal) ->
+        for(int i = 0; i < vertexCount; i++)
         {
+            Vec3f v = quad.getPos(i);
+            Vec3f n = quad.getVertexNormal(i);
+            
             // only draw vertex normals that differ from the standard side normals
             int zeroCount = 0;
-            if(Math.abs(xNormal) < 0.0000001) zeroCount++; 
-            if(Math.abs(yNormal) < 0.0000001) zeroCount++;
-            if(Math.abs(zNormal) < 0.0000001) zeroCount++; 
+            if(Math.abs(n.x()) < 0.0000001) zeroCount++; 
+            if(Math.abs(n.y()) < 0.0000001) zeroCount++;
+            if(Math.abs(n.z()) < 0.0000001) zeroCount++; 
             if(zeroCount == 2) return;
             
-            double px = x + d0;
-            double py = y + d1;
-            double pz = z + d2;
+            double px = v.x() + d0;
+            double py = v.y() + d1;
+            double pz = v.z() + d2;
             
             buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
             buffer.pos(px, py, pz).color(0.7f, 1f, 1f, 1f).endVertex();
-            buffer.pos(px + xNormal, py + yNormal, pz + zNormal).color(0.7f, 1f, 1f, 1f).endVertex();
+            buffer.pos(px + n.x(), py + n.y(), pz + n.z()).color(0.7f, 1f, 1f, 1f).endVertex();
             tessellator.draw();
-        });
+        }
     }
 }

@@ -2,15 +2,19 @@ package grondag.exotic_matter.model.collision;
 
 import static grondag.exotic_matter.model.collision.octree.OctreeCoordinates.ALL_EMPTY;
 
+import java.util.function.Consumer;
+
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume16;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
+import grondag.exotic_matter.model.primitives.better.IPoly;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class OptimalBoxGenerator extends AbstractBoxGenerator
+public class OptimalBoxGenerator extends AbstractBoxGenerator implements Consumer<IPoly>
 {
     private static void div1(final float[] polyData, final long[] voxelBits)
     {
@@ -165,7 +169,7 @@ public class OptimalBoxGenerator extends AbstractBoxGenerator
     final BoxFinder bf = new BoxFinder();
     
     @Override
-    protected void acceptTriangle(Vertex v0, Vertex v1, Vertex v2)
+    protected void acceptTriangle(IVec3f v0, IVec3f v1, IVec3f v2)
     {
         final float[] data = polyData;
         TriangleBoxTest.packPolyData(v0, v1, v2, data);

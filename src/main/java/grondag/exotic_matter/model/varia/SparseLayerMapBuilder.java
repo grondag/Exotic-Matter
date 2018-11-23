@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.render.QuadContainer;
+import grondag.exotic_matter.model.render.RenderUtil;
 import net.minecraft.util.BlockRenderLayer;
 
 
@@ -13,7 +14,9 @@ import net.minecraft.util.BlockRenderLayer;
  */
 public class SparseLayerMapBuilder
 {
-    private final int[] layerIndices = new int[BlockRenderLayer.values().length];
+    // PERF: mem allocation overhead is a problem depending on usage
+    
+    private final int[] layerIndices = new int[RenderUtil.RENDER_LAYER_COUNT];
     private final int size;
     public final BlockRenderLayer[] layers;
     

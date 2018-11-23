@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.vecmath.Point2f;
 
+import grondag.exotic_matter.model.primitives.better.IPoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 /**
@@ -126,7 +127,7 @@ public class PointInPolygonTest
     }
     
     // FIX: this appears to have a 6% false negative rate but isn't really used right now
-    public static boolean isPointInPolygonAny(Vec3f point, IPolygon quad)
+    public static boolean isPointInPolygonAny(Vec3f point, IPoly quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
         // that is most orthogonal to our plane
@@ -137,18 +138,17 @@ public class PointInPolygonTest
         
         int wn = 0;    // the  winding number counter
 
-        final Vertex vArray[] = quad.vertexArray();
-        Vertex v = vArray[size - 1];
-        float x0 = d.x(v.pos());
-        float y0 = d.y(v.pos());
+        Vec3f v = quad.getPos(size - 1);
+        float x0 = d.x(v);
+        float y0 = d.y(v);
         
         float x1, y1;
         // loop through all edges of the polygon
         for (int i=0; i< size; i++)
         {
-            v = vArray[i];
-            x1 = d.x(v.pos());
-            y1 = d.y(v.pos());
+            v = quad.getPos(i);
+            x1 = d.x(v);
+            y1 = d.y(v);
             wn += windingNumber(x0, y0, x1, y1, x, y);
             x0 = x1;
             y0 = y1;
@@ -173,7 +173,7 @@ public class PointInPolygonTest
         return 0;
     }
     
-    public static boolean isPointInPolygon(Vec3f point, IPolygon quad)
+    public static boolean isPointInPolygon(Vec3f point, IPoly quad)
     {
         final int size = quad.vertexCount();
         if(size == 3)
@@ -185,43 +185,42 @@ public class PointInPolygonTest
         
     }
     
-    public static boolean isPointInPolygonQuad(Vec3f point, IPolygon quad)
+    public static boolean isPointInPolygonQuad(Vec3f point, IPoly quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane
         final DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
         final float x = d.x(point);
         final float y = d.y(point);
-        Vertex v = quad.getVertex(0);
-        final float x0 = d.x(v.pos());
-        final float y0 = d.y(v.pos());
-        v = quad.getVertex(1);
-        final float x1 = d.x(v.pos());
-        final float y1 = d.y(v.pos());
-        v = quad.getVertex(2);
-        final float x2 = d.x(v.pos());
-        final float y2 = d.y(v.pos());
-        v = quad.getVertex(3);
-        final float x3 = d.x(v.pos());
-        final float y3 = d.y(v.pos());
+        Vec3f v = quad.getPos(0);
+        final float x0 = d.x(v);
+        final float y0 = d.y(v);
+        v = quad.getPos(1);
+        final float x1 = d.x(v);
+        final float y1 = d.y(v);
+        v = quad.getPos(2);
+        final float x2 = d.x(v);
+        final float y2 = d.y(v);
+        v = quad.getPos(3);
+        final float x3 = d.x(v);
+        final float y3 = d.y(v);
         
         return isPointInPolygonTri(x, y, x0, y0, x1, y1, x2, y2) || isPointInPolygonTri(x, y, x0, y0, x2, y2, x3, y3);
     }
     
-    public static boolean isPointInPolygonTri(Vec3f point, IPolygon quad)
+    public static boolean isPointInPolygonTri(Vec3f point, IPoly quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane
         final DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
-        final Vertex[] va = quad.vertexArray();
-        final Vertex v0 = va[0];
-        final Vertex v1 = va[1];
-        final Vertex v2 = va[2];
+        final Vec3f v0 = quad.getPos(0);
+        final Vec3f v1 = quad.getPos(1);
+        final Vec3f v2 = quad.getPos(2);
         
         return isPointInPolygonTri(d.x(point), d.y(point), 
-                d.x(v0.pos()), d.y(v0.pos()),
-                d.x(v1.pos()), d.y(v1.pos()),
-                d.x(v2.pos()), d.y(v2.pos()));
+                d.x(v0), d.y(v0),
+                d.x(v1), d.y(v1),
+                d.x(v2), d.y(v2));
         
     }
    

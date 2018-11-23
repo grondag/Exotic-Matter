@@ -4,6 +4,8 @@ import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -16,7 +18,7 @@ public class QuadPaintManager
 {
     private static ThreadLocal<Manager> managers = ThreadLocal.withInitial(() -> new Manager());
 
-    public static final Consumer<IPolygon> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
+    public static final Consumer<IPaintedPoly> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPaintedPoly> target)
     {
         Manager result = managers.get();
         result.clear();
@@ -26,13 +28,11 @@ public class QuadPaintManager
         return result;
     }
     
-    private static class Manager implements Consumer<IPolygon>
+    private static class Manager implements Consumer<IPaintedPoly>
     {
-        @SuppressWarnings("null")
         private ISuperModelState modelState;
         private boolean isItem; 
-        @SuppressWarnings("null")
-        private Consumer<IPolygon> target;
+        private Consumer<IPaintedPoly> target;
         
         private ArrayDeque<PainterList> emptyLists
              = new ArrayDeque<PainterList>(8);
@@ -74,32 +74,19 @@ public class QuadPaintManager
         }
         
         @Override
-        public void accept(@SuppressWarnings("null") IPolygon poly)
+        public void accept(@SuppressWarnings("null") IPaintedPoly poly)
         {
             PainterList painters = paintersForSurface(poly.getSurfaceInstance());
             if(painters.isEmpty()) return;
             
-            IMutablePolygon quad = poly.mutableCopyWithVertices();
-            
-            // if lockUV is on, derive UV coords by projection
-            // of vertex coordinates on the plane of the quad's face
+            IPaintablePoly quad = poly.claimCopy();
             
             // do this here to avoid doing it for all painters
             // and because the quadrant split test requires it.
-            if(quad.isLockUV())
-            {
-                quad.assignLockedUVCoordinates();
-            }
+            quad.assignAllLockedUVCoordinates();
             
-            if(painters.needsQuadrants() && QuadrantSplitter.uvQuadrant(quad) == null)
-            {
-                QuadrantSplitter.splitAndPaint(quad, 
-                        q -> painters.producePaintedQuads(q, target, isItem));
-            }
-            else
-            {
-                painters.producePaintedQuads(quad, target, isItem);
-            }
+            painters.producePaintedQuads(quad, target, isItem);
+          
         }
       
     }

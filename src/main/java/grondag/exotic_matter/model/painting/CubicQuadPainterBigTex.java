@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.TextureRotationType;
 import grondag.exotic_matter.model.texture.TextureScale;
@@ -21,7 +22,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
+    public void textureQuad(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.
@@ -37,7 +38,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
         // based on depth within the plane, to provide variation between adjacent layers.
         // This depth-based variation can be disabled with a setting in the surface instance.
      
-        assert quad.isLockUV() : "BigTex cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV(layerIndex) : "BigTex cubic quad painter received quad without lockUV semantics.  Not expected";
 
         Vec3i surfaceVec = CubicQuadPainterBigTex.getSurfaceVector(this.pos, quad.getNominalFace(), this.texture.textureScale());
         
@@ -50,20 +51,20 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
             int depthAndSpeciesHash = quad.getSurfaceInstance().ignoreDepthForRandomization
-                    ? MathHelper.hash((this.species << 8) | quad.textureSalt())
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.textureSalt() << 12));
+                    ? MathHelper.hash((this.species << 8) | quad.getTextureSalt(layerIndex))
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.getTextureSalt(layerIndex) << 12));
             
 
             
             // rotation 
-            quad.setRotation(this.allowTexRotation
+            quad.setRotation(layerIndex, this.allowTexRotation
                     ? Useful.offsetEnumValue(texture.rotation().rotation, depthAndSpeciesHash & 3)
                     : texture.rotation().rotation);
                     
           
-            surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(), scale);
+            surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(layerIndex), scale);
 
-            quad.setTextureName(this.texture.getTextureName(0));
+            quad.setTextureName(layerIndex, this.texture.getTextureName(0));
             
             final int xOffset = (depthAndSpeciesHash >> 2) & scale.sliceCountMask; 
             final int yOffset = (depthAndSpeciesHash >> 8) & scale.sliceCountMask; 
@@ -80,12 +81,12 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             final int x = flipU ? scale.sliceCount - surfaceVec.getX() : surfaceVec.getX();
             final int y = flipV ? scale.sliceCount - surfaceVec.getY() : surfaceVec.getY();
             
-            quad.setMinU(x * sliceIncrement);
-            quad.setMaxU(quad.getMinU() + (flipU ? -sliceIncrement : sliceIncrement));
+            quad.setMinU(layerIndex, x * sliceIncrement);
+            quad.setMaxU(layerIndex, quad.getMinU(layerIndex) + (flipU ? -sliceIncrement : sliceIncrement));
 
             
-            quad.setMinV(y * sliceIncrement);
-            quad.setMaxV(quad.getMinV() + (flipV ? -sliceIncrement : sliceIncrement));
+            quad.setMinV(layerIndex, y * sliceIncrement);
+            quad.setMaxV(layerIndex, quad.getMinV(layerIndex) + (flipV ? -sliceIncrement : sliceIncrement));
             
         }
         else
@@ -94,26 +95,26 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             
          // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
-            final int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.textureSalt() == 0
+            final int depthHash = quad.getSurfaceInstance().ignoreDepthForRandomization && quad.getTextureSalt(layerIndex) == 0
                     ? 0 
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.textureSalt() << 8));
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.getTextureSalt(layerIndex) << 8));
 
-            quad.setTextureName(this.texture.getTextureName((this.textureVersionForFace(quad.getNominalFace()) + depthHash) & this.texture.textureVersionMask()));
+            quad.setTextureName(layerIndex, this.texture.getTextureName((this.textureVersionForFace(quad.getNominalFace()) + depthHash) & this.texture.textureVersionMask()));
             
-            quad.setRotation(this.allowTexRotation
+            quad.setRotation(layerIndex, this.allowTexRotation
                     ? Useful.offsetEnumValue(this.textureRotationForFace(quad.getNominalFace()), (depthHash >> 16) & 3)
                     : this.textureRotationForFace(quad.getNominalFace()));
                     
-            surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(), scale);
+            surfaceVec = rotateFacePerspective(surfaceVec, quad.getRotation(layerIndex), scale);
 
             final float sliceIncrement = scale.sliceIncrement;
             
-            quad.setMinU(surfaceVec.getX() * sliceIncrement);
-            quad.setMaxU(quad.getMinU() + sliceIncrement);
+            quad.setMinU(layerIndex, surfaceVec.getX() * sliceIncrement);
+            quad.setMaxU(layerIndex, quad.getMinU(layerIndex) + sliceIncrement);
 
             
-            quad.setMinV(surfaceVec.getY() * sliceIncrement);
-            quad.setMaxV(quad.getMinV() + sliceIncrement);
+            quad.setMinV(layerIndex, surfaceVec.getY() * sliceIncrement);
+            quad.setMaxV(layerIndex, quad.getMinV(layerIndex) + sliceIncrement);
         }
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }

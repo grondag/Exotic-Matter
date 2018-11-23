@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.painting;
 import java.util.List;
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -16,6 +17,10 @@ public abstract class QuadPainter
     protected final ISuperModelState modelState;
     public final Surface surface;
     public final PaintLayer paintLayer;
+    /**
+     * Convenience for paintLayer.textureLayerIndex
+     */
+    public final int layerIndex;
     protected final ITexturePalette texture;
     
     /**
@@ -33,7 +38,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void textureQuad(IPaintablePolygon inputQuad, Consumer<IPaintablePolygon> target, boolean isItem);
+    protected abstract void textureQuad(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem);
     
     /**
      * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
@@ -53,12 +58,13 @@ public abstract class QuadPainter
         this.modelState = modelState;
         this.surface = surface;
         this.paintLayer = paintLayer;
-
+        this.layerIndex = paintLayer.textureLayerIndex;
+        
         ITexturePalette tex = modelState.getTexture(paintLayer);
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
     
-    protected abstract boolean isQuadValidForPainting(IPaintablePolygon inputQuad);
+    protected abstract boolean isQuadValidForPainting(IPaintablePoly inputQuad);
     
     /**
      * True if painter will render a solid surface. When Acuity API is enabled
@@ -84,13 +90,13 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void producePaintedQuad(IPaintablePolygon inputQuad, Consumer<IPaintablePolygon> target, boolean isItem)
+    public final void producePaintedQuad(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
-        inputQuad.setRenderLayer(modelState.getRenderPass(paintLayer));
+        inputQuad.setRenderLayer(layerIndex, modelState.getRenderPass(paintLayer));
      
-        inputQuad.setEmissive(modelState.isEmissive(paintLayer));
+        inputQuad.setEmissive(layerIndex, modelState.isEmissive(paintLayer));
         
         // TODO: Vary color slightly with species, as user-selected option
         
@@ -101,7 +107,7 @@ public abstract class QuadPainter
      * Call from paint quad in sub classes to return results.
      * Handles item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndOutput(IPaintablePolygon inputQuad, Consumer<IPaintablePolygon> target, boolean isItem)
+    protected final void postPaintProcessQuadAndOutput(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem)
     {
         if(isItem)
         {
@@ -109,19 +115,21 @@ public abstract class QuadPainter
             //This step wouldn't be necessary if it did.
             assert inputQuad.layerCount() == 1;
             
-            switch(this.paintLayer)
-            {
-            case MIDDLE:
-                inputQuad.scaleFromBlockCenter(1.01f);
-                break;
-
-            case OUTER:
-                inputQuad.scaleFromBlockCenter(1.02f);
-                break;
-
-            default:
-                break;
-            }
+            // FIXME: not going to work with new primitives w/ shared geometry
+            // move this to baking if still needed
+//            switch(this.paintLayer)
+//            {
+//            case MIDDLE:
+//                inputQuad.scaleFromBlockCenter(1.01f);
+//                break;
+//
+//            case OUTER:
+//                inputQuad.scaleFromBlockCenter(1.02f);
+//                break;
+//
+//            default:
+//                break;
+//            }
         }
         modelState.getVertexProcessor(this.paintLayer).process(inputQuad, modelState, paintLayer);
 

@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.painting;
 
 import grondag.exotic_matter.ExoticMatter;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 
@@ -19,9 +20,10 @@ public class VertexProcessorDefault extends VertexProcessor
     }
     
     @Override
-    public final void process(IPaintablePolygon result, ISuperModelState modelState, PaintLayer paintLayer)
+    public final void process(IPaintablePoly poly, ISuperModelState modelState, PaintLayer paintLayer)
     {
         int color = modelState.getColorARGB(paintLayer);
+        int layerIndex = paintLayer.textureLayerIndex;
         
         //TODO: remove?  Was causing problems when acuity is enabled because renderpass will be solid
 //        if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
@@ -31,7 +33,7 @@ public class VertexProcessorDefault extends VertexProcessor
         // to blend the lamp color/brighness with the nominal color/brightness.
         // This does not apply with the lamp paint layer itself (makes no sense).
         // (Generally gradient surfaces should not be painted by lamp color)
-        if(paintLayer != PaintLayer.LAMP && result.getSurfaceInstance().isLampGradient)
+        if(paintLayer != PaintLayer.LAMP && poly.getSurfaceInstance().isLampGradient)
         {
             int lampColor = modelState.getColorARGB(PaintLayer.LAMP);
             int lampBrightness = modelState.isEmissive(PaintLayer.LAMP) ? 255 : 0;
@@ -39,27 +41,24 @@ public class VertexProcessorDefault extends VertexProcessor
             // keep target surface alpha
             int alpha = color & 0xFF000000;
             
-            for(int i = 0; i < result.vertexCount(); i++)
+            for(int i = 0; i < poly.vertexCount(); i++)
             {
-                IPaintableVertex v = result.getPaintableVertex(i);
-                final float w = v.glow() / 255f;
+                final float w = poly.glow(layerIndex, i) / 255f;
                 int b = Math.round(lampBrightness * w);
                 int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
-                result.setVertex(i, v.withColorGlow(c | alpha, b));
+                poly.setVertexColorGlow(layerIndex, i, c | alpha, b);
             }
         }
         else
         {
             // normal shaded surface - tint existing colors, usually WHITE to start with
-            for(int i = 0; i < result.vertexCount(); i++)
+            for(int i = 0; i < poly.vertexCount(); i++)
             {
-                IPaintableVertex v = result.getPaintableVertex(i);
-                
                 // if acuity is enabled, will use emissive flag directly
                 final int brightness = ExoticMatter.proxy.isAcuityEnabled() ? 0 : modelState.isEmissive(paintLayer) ? 255 : 0;
                 
-                final int c = ColorHelper.multiplyColor(color, v.color());
-                result.setVertex(i, v.withColorGlow(c, brightness));
+                final int c = ColorHelper.multiplyColor(color, poly.getVertexColor(layerIndex, i));
+                poly.setVertexColorGlow(layerIndex, i, c, brightness);
             }
         }
     }

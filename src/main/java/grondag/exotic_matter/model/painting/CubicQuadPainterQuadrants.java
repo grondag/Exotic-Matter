@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.FaceCorner;
@@ -53,11 +54,11 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
     }
     
     @Override
-    protected final void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
+    protected final void textureQuad(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isItem)
     {
-        assert quad.isLockUV() : "Quadrant cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV(layerIndex) : "Quadrant cubic quad painter received quad without lockUV semantics.  Not expected";
     
-        final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(quad);
+        final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(quad, layerIndex);
         if(quadrant == null) 
             return;
         
@@ -67,11 +68,11 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
         final int textureVersion = this.texture.textureVersionMask() 
                 & (this.textureHashForFace(nominalFace) >> (quadrant.ordinal() * 4));
         
-        quad.setTextureName(this.texture.getTextureName(textureVersion));
+        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
         
         final CornerJoinFaceState faceState = this.faceState(nominalFace);
         
-        TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(quad, quadrant);
+        TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(quad, layerIndex, quadrant);
         
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }

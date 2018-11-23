@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -15,22 +16,22 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     }
 
     @Override
-    public void textureQuad(IPaintablePolygon quad, Consumer<IPaintablePolygon> target, boolean isItem)
+    public void textureQuad(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isItem)
     {
-        assert quad.isLockUV() : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
+        assert quad.isLockUV(layerIndex) : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
         
         Rotation rotation = this.textureRotationForFace(quad.getNominalFace());
         int textureVersion = this.textureVersionForFace(quad.getNominalFace());
         
-        if(quad.textureSalt() != 0)
+        if(quad.getTextureSalt(layerIndex) != 0)
         {
-            int saltHash = MathHelper.hash(quad.textureSalt());
+            int saltHash = MathHelper.hash(quad.getTextureSalt(layerIndex));
             rotation = Useful.offsetEnumValue(rotation, saltHash & 3);
             textureVersion = (textureVersion + (saltHash >> 2)) & this.texture.textureVersionMask();
         }
         
-        quad.setRotation(rotation);
-        quad.setTextureName(this.texture.getTextureName(textureVersion));
+        quad.setRotation(layerIndex, rotation);
+        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
         
         this.postPaintProcessQuadAndOutput(quad, target, isItem);
     }

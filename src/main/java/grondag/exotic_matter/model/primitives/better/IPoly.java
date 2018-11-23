@@ -1,7 +1,6 @@
 package grondag.exotic_matter.model.primitives.better;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -215,6 +214,11 @@ public interface IPoly extends IVertexCollection
     
     public Surface getSurfaceInstance();
     
+    /**
+     * Returns computed face normal if no explicit normal assigned.
+     */
+    public Vec3f getVertexNormal(int vertexIndex);
+    
     /** 
      * Face to use for shading testing.
      * Based on which way face points. 
@@ -247,19 +251,31 @@ public interface IPoly extends IVertexCollection
     
     /**
      * Splits and creates new instances as needed.
-     * If this instance is mutable, it MAY be added to the consumer and a reference retained.
-     * Do NOT retain references to mutable instances after using this method.
+     * Does NOT mutate this instance and does not retain any reference to the instances added to the list.
+     * If you know the current instance is not held elsewhere, then better to
+     * check if split is necessary and if not then simply add this instance to the list.
+     * If a split is necessary and this instance is no longer needed, release it after calling.
      */
-    public <P extends IPoly> void produceQuads(Consumer<P> target);
+    void addPaintableQuadsToList(List<IPaintablePoly> list);
     
     /**
      * Splits and creates new instances as needed.
-     * If this instance is mutable, it MAY be added to the consumer and a reference retained.
-     * Do NOT retain references to mutable instances after using this method.
+     * Does NOT mutate this instance if this instance is mutable.
+     * If this instance is immutable and does not require split, will 
+     * simply add this instance to the list. 
      */
-    @SuppressWarnings("unchecked")
-    public default <P extends IPoly> void addQuadsToList(List<P> list)
-    {
-        produceQuads(q -> list.add((P) q));
-    }
+    void addPaintedQuadsToList(List<IPaintedPoly> list);
+    
+    /**
+     * Transfers mutable copies of this poly's vertices to the provided array.
+     * Array size must be >= {@link #vertexCount()}.
+     * Retains no reference to the copies, which should be released when no longer used.
+     * For use in CSG operations.
+     */
+    public void claimVertexCopiesToArray(IMutableGeometricVertex[] vertex);
+
+    IMutablePoly claimCopy(int vertexCount);
+
+    IMutablePoly claimCopy();
+    
 }

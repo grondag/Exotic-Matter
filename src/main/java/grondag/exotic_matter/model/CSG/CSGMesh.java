@@ -36,7 +36,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import grondag.exotic_matter.model.primitives.better.IMutablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
@@ -44,8 +45,10 @@ import net.minecraft.util.math.AxisAlignedBB;
  */
 public abstract class CSGMesh
 {
+    // TODO: reduce garbagification by releasing or reusing any mutables that can't escape
+    // TODO: ensure no references retained to any output
     
-    public static CSGBounds getBounds(Collection<IMutablePoly> forPolygons)
+    public static CSGBounds getBounds(Collection<? extends IPaintedPoly> forPolygons)
     {
         if (forPolygons.isEmpty()) {
             return new CSGBounds(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -53,7 +56,7 @@ public abstract class CSGMesh
 
         AxisAlignedBB retVal = null;
 
-        for (IMutablePoly p : forPolygons)
+        for (IPaintedPoly p : forPolygons)
         {
             if(retVal == null)
             {
@@ -119,11 +122,11 @@ public abstract class CSGMesh
      *      +-------+
      * </pre></blockquote>
      */
-    public static Collection<IMutablePoly> difference(Collection<IMutablePoly> a, Collection<IMutablePoly> b)
+    public static Collection<IPaintablePoly> difference(Collection<? extends IPaintedPoly> a, Collection<? extends IPaintedPoly> b)
     {
      // PERF: use threadlocals
-        List<IMutablePoly> inner = new ArrayList<>();
-        List<IMutablePoly> outer = new ArrayList<>();
+        List<IPaintablePoly> inner = new ArrayList<>();
+        List<IPaintablePoly> outer = new ArrayList<>();
 
         CSGBounds bounds = getBounds(b);
 
@@ -131,10 +134,10 @@ public abstract class CSGMesh
         {
             if (bounds.intersectsWith(p.getAABB()))
             {
-                inner.add(p);
+                inner.add(p.claimCopy());
             } else
             {
-                outer.add(p);
+                outer.add(p.claimCopy());
             }
         });
 
@@ -142,7 +145,7 @@ public abstract class CSGMesh
         return outer;
     }
     
-    private static Collection<IMutablePoly> differenceClip(Collection<IMutablePoly> aPolys, Collection<IMutablePoly> bPolys)
+    private static Collection<IPaintablePoly> differenceClip(Collection<? extends IPaintedPoly> aPolys, Collection<? extends IPaintedPoly> bPolys)
     {
 
         CSGNode.Root a = CSGNode.create(aPolys);
@@ -176,18 +179,18 @@ public abstract class CSGMesh
      *          +-------+
      * </pre></blockquote>     
      */
-    public static Collection<IMutablePoly> intersect(Collection<IMutablePoly> aMesh, Collection<IMutablePoly> bMesh)
+    public static Collection<IPaintablePoly> intersect(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
     {
         CSGNode.Root a = CSGNode.create(aMesh);
         CSGNode.Root b = CSGNode.create(bMesh);
         
-        Collection<IMutablePoly> result = intersect(a, b);
+        Collection<IPaintablePoly> result = intersect(a, b);
         a.release();
         b.release();
         return result;
     }
     
-    public static Collection<IMutablePoly> intersect(CSGNode.Root a, CSGNode.Root b)
+    public static Collection<IPaintablePoly> intersect(CSGNode.Root a, CSGNode.Root b)
     {
         a.invert();
         b.clipTo(a);
@@ -216,11 +219,11 @@ public abstract class CSGMesh
      * </pre></blockquote>
      *
      */
-    public static Collection<IMutablePoly> union(Collection<IMutablePoly> aMesh, Collection<IMutablePoly> bMesh)
+    public static Collection<IPaintablePoly> union(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
     {
         // PERF: use threadlocals
-        List<IMutablePoly> inner = new ArrayList<>();
-        List<IMutablePoly> outer = new ArrayList<>();
+        List<IPaintablePoly> inner = new ArrayList<>();
+        List<IPaintablePoly> outer = new ArrayList<>();
 
         CSGBounds bounds = getBounds(bMesh);
 
@@ -228,38 +231,38 @@ public abstract class CSGMesh
         {
             if (bounds.intersectsWith(p.getAABB())) 
             {
-                inner.add(p);
+                inner.add(p.claimCopy());
             } else
             {
-                outer.add(p);
+                outer.add(p.claimCopy());
             }
         });
         
-        List<IMutablePoly> result = new ArrayList<>();
+        List<IPaintablePoly> result = new ArrayList<>();
         
+        // always add all of A that is outside B
+        result.addAll(outer);
+
         if (!inner.isEmpty())
         {
             // some potential overlap
-            
-            // add all of A that is outside B
-            result.addAll(outer);
-            
             // add union of the overlapping bits, 
             // which will include any parts of B that need to be included
             result.addAll(unionClip(inner, bMesh));
-        } else
+            
+            // TODO: release inner?
+        } 
+        else
         {
-            // no overlap, just combine both meshes
-            result.addAll(aMesh);
-            result.addAll(bMesh);
+            // no overlap, so add all of b
+            bMesh.stream().forEach((p) -> result.add(p.claimCopy()));
         }
-
-        // TODO: avoid garbagification that is happening above
+        
         return result;
     }
 
 
-    private static Collection<IMutablePoly> unionClip(Collection<IMutablePoly> aMesh, Collection<IMutablePoly> bMesh)
+    private static Collection<IPaintablePoly> unionClip(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
     {
         CSGNode.Root a = CSGNode.create(aMesh);
         CSGNode.Root b = CSGNode.create(bMesh);
@@ -271,7 +274,7 @@ public abstract class CSGMesh
         b.invert();
         a.addAll(b);
         
-        Collection<IMutablePoly> result = a.recombinedQuads();
+        Collection<IPaintablePoly> result = a.recombinedQuads();
         a.release();
         b.release();
         return result;

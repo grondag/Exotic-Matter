@@ -23,6 +23,9 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.texture.TextureHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -416,7 +419,7 @@ public class RasterFont extends TextureAtlasSprite
     /**
      * Generates quads to render the given text on all faces of a block.  
      * The quads are oriented to be readable and are positioned in the top half of the block.
-     * Assumes the quds will be rendered on a typical 1x1 square block face. 
+     * Assumes the quads will be rendered on a typical 1x1 square block face. 
      * 
      * 
      * @param text
@@ -426,9 +429,9 @@ public class RasterFont extends TextureAtlasSprite
      * @param leftSide If false will be centered.
      * @param list
      */
-    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
+    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPaintedPoly> list)
     {
-        IMutablePolygon template = new PolyImpl(4);
+        IPaintablePoly template = PolyFactory.newPaintable(4);
         template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setLockUV(false);
         template.setShouldContractUVs(false);
@@ -462,15 +465,14 @@ public class RasterFont extends TextureAtlasSprite
                 
                 for(EnumFacing face : EnumFacing.VALUES)
                 {
-                    IMutablePolygon quad = template.mutableCopy(4);
-                    quad.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
-                    quad.scaleFromBlockCenter(bumpFactor);
-                    list.add(quad);
+                    template.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
+                    template.scaleFromBlockCenter(bumpFactor);
+                    list.add(template.toPainted());
                 }
                 
             }
         }
-
+        template.release();
     }
     
     private FaceVertex[] makeFaceVertices(GlyphInfo glyph, float left, float top, float width, float height, int color)

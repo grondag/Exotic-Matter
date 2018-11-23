@@ -1,43 +1,50 @@
 package grondag.exotic_matter.model.primitives.better;
 
+import java.util.Collection;
+
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.world.Rotation;
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
 public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
 {
     /**
-     * Same vertex count, layer count. Includes vertex data.
-     */
-    @Override
-    default IPaintablePoly claimCopy()
-    {
-        return claimCopy(this.vertexCount(), this.layerCount());
-    }
-    
-    /**
-     * Same layer count. Includes vertex data.
-     */
-    @Override
-    default  IPaintablePoly claimCopy(int vertexCount)
-    {
-        return claimCopy(vertexCount, this.layerCount());
-    }
-
-    @Override
-    IPaintablePoly claimCopy(int vertexCount, int layerCount);
-    
-    void release();
-
-    /**
      * Sets all attributes that are available in the source vertex.
      * DOES NOT retain a reference to the input vertex.
      */
-    @Override
-    IPaintablePoly copyVertex(int vertexIndex, IGeometricVertex source);
+    IPaintablePoly copyVertexFrom(int vertexIndex, IPaintedVertex source);
+    
+    /**
+     * Sets all attributes that are available in this poly in the source vertex.
+     * If target vertex is null, allocates a new stand-alone vertex.
+     * DOES NOT retain a reference to the target vertex.
+     */
+    IPaintableVertex copyVertexTo(int vertexIndex, @Nullable IPaintedVertex target);
+    
+    /**
+     * Copies all attributes that are available in the source poly.
+     * DOES NOT retain a reference to the input poly.
+     */
+    IPaintablePoly copyVertexFrom(int targetIndex, IPaintedPoly source, int sourceIndex);
+    
+    /**
+     * Interpolates all attributes that are available in the source poly.
+     * Weight = 0 gives source 0, weight = 1 gives source 1, with values 
+     * in between giving blended results.
+     * DOES NOT retain a reference to either input poly.
+     */
+    IPaintablePoly copyInterpolatedVertexFrom(int targetIndex, IPaintedPoly source0, int vertexIndex0, IPaintedPoly source1, int vertexIndex1, float weight);
+
     
     IPaintablePoly setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color);
 
@@ -62,8 +69,47 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     
     IPaintablePoly setColor(int layerIndex, int color);
 
-    IPaintablePoly setTextureSalt(int i);
+    IPaintablePoly setTextureSalt(int layerIndex, int salt);
 
+    IPaintablePoly setLockUV(int layerIndex, boolean lockUV);
+
+    IPaintablePoly setTextureName(int layerIndex, String textureName);
+    
+    IPaintablePoly setRotation(int layerIndex, Rotation rotation);
+
+    IPaintablePoly setShouldContractUVs(int layerIndex, boolean contractUVs);
+    
+    IPaintablePoly setRenderLayer(int layerIndex, BlockRenderLayer layer);
+    
+    IPaintedPoly setEmissive(int textureLayerIndex, boolean emissive);
+    
+    /**
+     * glow is clamped to allowed values
+     */
+    IPaintablePoly setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow);
+    
+    IPaintablePoly setVertexColor(int layerIndex, int vertexIndex, int color);
+    
+    IPaintablePoly setVertexUV(int layerIndex, int vertexIndex, float u, float v);
+    
+    default IPaintablePoly setVertexU(int layerIndex, int vertexIndex, float u)
+    {
+        return this.setVertexUV(layerIndex, vertexIndex, u, this.getVertexV(layerIndex, vertexIndex));
+    }
+    
+    default IPaintablePoly setVertexV(int layerIndex, int vertexIndex, float v)
+    {
+        return this.setVertexUV(layerIndex, vertexIndex, this.getVertexU(layerIndex, vertexIndex), v);
+    }
+    
+    /**
+     * glow is clamped to allowed values
+     */
+    IPaintablePoly setVertexGlow(int layerIndex, int vertexIndex, int glow);
+    
+    IPaintedPoly setPipeline(IRenderPipeline pipeline);
+    
+    @Override
     IPaintablePoly clearFaceNormal();
 
     /**
@@ -124,7 +170,6 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      */
     IPaintablePoly setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
-    IPaintablePoly setLockUV(int layerIndex, boolean lockUV);
     
     @Override
     public IPaintablePoly setNominalFace(EnumFacing face);
@@ -132,11 +177,83 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     @Override
     IPaintablePoly setSurfaceInstance(Surface surface);
 
-    IPaintablePoly setTextureName(int layerIndex, String string);
-
-    IPaintablePoly setShouldContractUVs(int layerIndex, boolean contractUVs);
-
     @Override
     IPaintablePoly scaleFromBlockCenter(float scaleFactor);
 
+    IPaintedPoly toPainted();
+
+    /**
+     * If this poly is a tri or a convex quad, simply passes to consumer and returns false.<p>
+     * 
+     * If it a concave quad or higher-order polygon, generates new paintables that split this poly
+     * into convex quads or tris. If a split occurs, returns true. This instance will be unmodified.<p>
+     * 
+     * Return value of true signals to release this poly if it is no longer needed for processing.
+     */
+    boolean toPaintableQuads(Consumer<IPaintablePoly> consumer);
+    
+    /**
+     * WARNING: releases all polys in the input collection. <br>
+     * DO NOT RETAIN REFERENCES TO ANY INPUTS. <br>
+     * Returns a new Does NOT split non-quads to quads.
+     */
+    static ImmutableList<IPaintedPoly> paintAndRelease(Collection<IPaintablePoly> from)
+    {
+        ImmutableList.Builder<IPaintedPoly> builder = ImmutableList.builder();
+
+        for(IPaintablePoly p : from)
+        {
+            builder.add(p.toPainted());
+            p.release();
+        }
+        return builder.build();
+    }
+    
+    /**
+     * Assigns locked UV coordinates in all layers that require them.
+     */
+    default IPaintedPoly assignAllLockedUVCoordinates()
+    {
+        final int layerCount = this.layerCount();
+        if(layerCount == 1)
+        {
+            if(isLockUV(0))
+                assignLockedUVCoordinates(0);
+        }
+        else 
+        {
+            for(int i = 0; i < layerCount; i++)
+            {
+                if(isLockUV(i))
+                    assignLockedUVCoordinates(i);
+            }
+        }
+        return this;
+    }
+    
+    /**
+     *  if lockUV is on, derive UV coords by projection
+     *  of vertex coordinates on the plane of the quad's face
+     */
+    IPaintedPoly assignLockedUVCoordinates(int layerIndex);
+
+    /**
+     * Adds given offsets to u,v values of each vertex.
+     */
+    default IPaintedPoly offsetVertexUV(int layerIndex, float uShift, float vShift)
+    {
+        for(int i = 0; i < this.vertexCount(); i++)
+        {
+            final float u = this.getVertexU(layerIndex, i) + uShift;
+            final float v = this.getVertexV(layerIndex, i) + vShift;
+            
+            assert u > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert u < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v > -QuadHelper.EPSILON : "vertex uv offset out of bounds"; 
+            assert v < 1 + QuadHelper.EPSILON : "vertex uv offset out of bounds";
+
+            this.setVertexUV(layerIndex, i, u, v);
+        }      
+        return this;
+    }
 }

@@ -1,7 +1,6 @@
 package grondag.exotic_matter.model.render;
 
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;
@@ -100,6 +99,14 @@ public class QuadBakery
     }
 
     /**
+     * Like {@link #createBakedQuad(int, IPaintedPoly, boolean)} but assumes layerIndex 0;
+     */
+    public static BakedQuad createBakedQuad(IPaintedPoly raw, boolean forceItemFormat)
+    {
+        return createBakedQuad(0, raw, forceItemFormat);
+    }
+    
+    /**
      * Creates a baked quad - does not mutate the given instance.
      * Will use ITEM vertex format if forceItemFormat is true.
      * Use this for item models.  Doing so will disable pre-baked lighting
@@ -185,7 +192,7 @@ public class QuadBakery
                 switch(format.getElement(e).getUsage())
                 {
                 case POSITION:
-                    raw.getVertex(v).pos().toArray(packData);
+                    raw.getPos(v).toArray(packData);
                     LightUtil.pack(packData, vertexData, format, v, e);
                     break;
 
@@ -196,7 +203,7 @@ public class QuadBakery
                 }
                 case COLOR:
                 {
-                    final int color = raw.getVertex(v).color(layerIndex);
+                    final int color = raw.color(layerIndex, v);
                     packData[0] = ((float) (color >> 16 & 0xFF)) / 255f;
                     packData[1] = ((float) (color >> 8 & 0xFF)) / 255f;
                     packData[2] = ((float) (color  & 0xFF)) / 255f;

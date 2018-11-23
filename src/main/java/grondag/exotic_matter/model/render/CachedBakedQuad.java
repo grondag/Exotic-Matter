@@ -14,7 +14,7 @@ public class CachedBakedQuad extends BakedQuad
 {
     private int hash = 0;
     
-    public CachedBakedQuad(int[] vertexDataIn, int tint, EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format)
+    public CachedBakedQuad(int[] vertexDataIn, int tint, @Nullable EnumFacing faceIn, TextureAtlasSprite spriteIn, boolean applyDiffuseLighting, VertexFormat format)
     {
         super(vertexDataIn, tint, faceIn, spriteIn, applyDiffuseLighting, format);
     }
