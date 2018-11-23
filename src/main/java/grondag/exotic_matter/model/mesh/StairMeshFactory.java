@@ -4,8 +4,9 @@ import java.util.function.Consumer;
 
 import javax.vecmath.Matrix4f;
 
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
@@ -13,7 +14,7 @@ import net.minecraft.util.EnumFacing;
 public class StairMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.
@@ -21,97 +22,111 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
 
         Matrix4f matrix = modelState.getMatrix4f();
         
-        IMutablePolygon template = new PolyImpl(4);
-        template.setRotation(Rotation.ROTATE_NONE);
-        template.setLockUV(true);
+        IPaintablePoly template = PolyFactory.newPaintable(4);
+        template.setRotation(0, Rotation.ROTATE_NONE);
+        template.setLockUV(0, true);
 
-        IMutablePolygon quad = template.mutableCopy(4);
+        IPaintablePoly quad = template.claimCopy(4);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
       
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
         // Splitting sides into three quadrants vs one long strip plus one long quadrant
         // is necessary to avoid AO lighting artifacts.  AO is done by vertex, and having
         // a T-junction tends to mess about with the results.
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.UP, 0.5, 0.0, 1.0, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
         // Splitting sides into three quadrants vs one long strip plus one long quadrant
         // is necessary to avoid AO lighting artifacts.  AO is done by vertex, and having
         // a T-junction tends to mess about with the results.
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.5, 0.5, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.5, 0.5, 1.0, 1.0, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.DOWN, 0.0, 0.0, 0.5, 0.5, 0.0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
         
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.5, 0.0, 1.0, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(TOP_SURFACE);
         // salt is so cuts appear different from top/front face
         // wedges can't connect textures with adjacent flat blocks consistently anyway, so doesn't hurt them
-        quad.setTextureSalt(1);
+        quad.setTextureSalt(0, 1);
         quad.setupFaceQuad(EnumFacing.SOUTH, 0.0, 0.0, 0.5, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(SIDE_SURFACE);
         quad.setupFaceQuad(EnumFacing.WEST, 0.0, 0.0, 0.5, 1.0, 0.0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(TOP_SURFACE);
-        quad.setTextureSalt(1);
+        quad.setTextureSalt(0, 1);
         quad.setupFaceQuad(EnumFacing.WEST, 0.5, 0.0, 1.0, 1.0, 0.5, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
+        
+        template.release();
     }
 
     @Override

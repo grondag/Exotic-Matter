@@ -28,11 +28,11 @@ public class PolyTest
         assert quad.getRotation(0) == Rotation.ROTATE_NONE;
         assert quad.getRenderLayer(0) == BlockRenderLayer.SOLID;
         
-        quad.setLockUV(true);
-        quad.setShouldContractUVs(false);
+        quad.setLockUV(0, true);
+        quad.setShouldContractUVs(0, false);
         quad.setNominalFace(EnumFacing.DOWN);
-        quad.setRotation(Rotation.ROTATE_270);
-        quad.setRenderLayer(BlockRenderLayer.TRANSLUCENT);
+        quad.setRotation(0, Rotation.ROTATE_270);
+        quad.setRenderLayer(0, BlockRenderLayer.TRANSLUCENT);
         
         assert quad.isLockUV(0);
         assert !quad.shouldContractUVs(0);

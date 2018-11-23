@@ -112,13 +112,11 @@ public class QuadrantSplitter
             int iLowVertex = 0;
             
             int iThis = vCount - 1;
-            //Vertex thisVertex = quad.getVertex(vCount -1);
             float uThis = quad.u(layerIndex, iThis);
             int thisType = vertexType(uThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-              //  final Vertex nextVertex = quad.getVertex(iNext);
                 final float uNext = quad.u(layerIndex, iNext);
                 final int nextType = vertexType(uNext);
                 
@@ -133,9 +131,10 @@ public class QuadrantSplitter
                     if(nextType == LOW)
                     {
                         final float dist = (0.5f - uThis) / (uNext - uThis);
-                        Vertex vNew = thisVertex.interpolate(nextVertex, dist);
-                        low.setVertex(iLowVertex++, vNew);
-                        high.setVertex(iHighVertex++, vNew);
+                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
+                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        iLowVertex++;
+                        iHighVertex++;
                     }
                 }
                 else
@@ -144,9 +143,10 @@ public class QuadrantSplitter
                     if(nextType == HIGH)
                     {
                         final float dist = (0.5f - uThis) / (uNext - uThis);
-                        Vertex vNew = thisVertex.interpolate(nextVertex, dist);
-                        low.setVertex(iLowVertex++, vNew);
-                        high.setVertex(iHighVertex++, vNew);
+                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
+                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        iLowVertex++;
+                        iHighVertex++;
                     }
                 }
                 iThis = iNext;
@@ -156,6 +156,9 @@ public class QuadrantSplitter
             
             splitVAndPaint(high, target, true, layerIndex);
             splitVAndPaint(low, target, false, layerIndex);
+            
+            // quad isn't passed on so release it
+            quad.release();
         }
     }
     
@@ -189,47 +192,54 @@ public class QuadrantSplitter
             IPaintablePoly low = quad.claimCopy(lowCount + 2);
             int iLowVertex = 0;
             
-            Vertex thisVertex = quad.getVertex(vCount -1);
-            int thisType = vertexType(thisVertex.v());
+            int iThis = vCount - 1;
+            float vThis = quad.v(layerIndex, iThis);
+            int thisType = vertexType(vThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final Vertex nextVertex = quad.getVertex(iNext);
-                final int nextType = vertexType(nextVertex.v());
+                final float vNext = quad.v(layerIndex, iNext);
+                final int nextType = vertexType(vNext);
                 
                 if(thisType == EDGE)
                 {
-                    high.setVertex(iHighVertex++, thisVertex);
-                    low.setVertex(iLowVertex++, thisVertex);
+                    high.copyVertexFrom(iHighVertex++, quad, iThis);
+                    low.copyVertexFrom(iLowVertex++, quad, iThis);
                 }
                 else if(thisType == HIGH)
                 {
-                    high.setVertex(iHighVertex++, thisVertex);
+                    high.copyVertexFrom(iHighVertex++, quad, iThis);
                     if(nextType == LOW)
                     {
-                        final float dist = (0.5f - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                        Vertex vNew = thisVertex.interpolate(nextVertex, dist);
-                        low.setVertex(iLowVertex++, vNew);
-                        high.setVertex(iHighVertex++, vNew);
+                        final float dist = (0.5f - vThis) / (vNext - vThis);
+                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
+                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        iLowVertex++;
+                        iHighVertex++;
                     }
                 }
                 else
                 {
-                    low.setVertex(iLowVertex++, thisVertex);
+                    low.copyVertexFrom(iLowVertex++, quad, iThis);
                     if(nextType == HIGH)
                     {
-                        final float dist = (0.5f - thisVertex.v()) / (nextVertex.v() - thisVertex.v());
-                        Vertex vNew = thisVertex.interpolate(nextVertex, dist);
-                        low.setVertex(iLowVertex++, vNew);
-                        high.setVertex(iHighVertex++, vNew);
+                        final float dist = (0.5f - vThis) / (vNext - vThis);
+                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
+                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        iLowVertex++;
+                        iHighVertex++;
                     }
                 }
-                thisVertex = nextVertex;
+                iThis = iNext;
+                vThis = vNext;
                 thisType = nextType;
             }
             
             target.accept(high);
             target.accept(low);
+            
+            // quad isn't passed on so release it
+            quad.release();
         }
     }
     

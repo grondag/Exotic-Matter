@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume8;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
-import grondag.exotic_matter.model.primitives.better.IPoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import net.minecraft.util.math.AxisAlignedBB;
 
@@ -31,7 +31,7 @@ import net.minecraft.util.math.AxisAlignedBB;
  * converted from octree coordinates because Cartesian representation is better
  * (or at least as good) for the subsequent simplification, fill and output operations.
  */
-public class FastBoxGenerator extends AbstractBoxGenerator implements Consumer<IPoly>
+public class FastBoxGenerator extends AbstractBoxGenerator implements Consumer<IPaintedPoly>
 {
     private static void div1(final float[] polyData, final long[] voxelBits)
     {

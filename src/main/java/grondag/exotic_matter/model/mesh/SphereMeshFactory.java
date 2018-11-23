@@ -9,15 +9,16 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
-import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -35,7 +36,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
             .build();
     
     /** never changes so may as well save it */
-    private final Collection<IPolygon> cachedQuads;
+    private final Collection<IPaintedPoly> cachedQuads;
     
     public SphereMeshFactory()
     {
@@ -44,18 +45,18 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
     {
         cachedQuads.forEach(target);
     }
     
-    private Collection<IPolygon> generateQuads()
+    private Collection<IPaintedPoly> generateQuads()
     {
-        IMutablePolygon template = new PolyImpl(4);
-        template.setLockUV(false);
+        IPaintablePoly template = PolyFactory.newPaintable(4);
+        template.setLockUV(0, false);
         template.setSurfaceInstance(SURFACE_MAIN);
   
-        Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
+        Collection<IPaintedPoly> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
       
         return result;
     }

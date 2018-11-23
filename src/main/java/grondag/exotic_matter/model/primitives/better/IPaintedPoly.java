@@ -31,6 +31,12 @@ public interface IPaintedPoly extends IPoly, IPipelinedQuad
     
     int getColor(int layerIndex);
 
+    float getVertexX(int vertexIndex);
+    
+    float getVertexY(int vertexIndex);
+    
+    float getVertexZ(int vertexIndex);
+    
     /** 
      * Will return quad color if vertex color not set.
      */

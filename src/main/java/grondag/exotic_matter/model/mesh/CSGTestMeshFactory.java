@@ -10,15 +10,16 @@ import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.CSG.CSGMesh;
+import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
-import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -38,7 +39,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     
     /** never changes so may as well save it */
-    private final Collection<IPolygon> cachedQuads;
+    private final Collection<IPaintedPoly> cachedQuads;
     
     public CSGTestMeshFactory()
     {
@@ -47,15 +48,15 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
     {
         this.cachedQuads.forEach(target);
     }
     
-    private Collection<IPolygon> getTestQuads()
+    private Collection<IPaintedPoly> getTestQuads()
     {
-        IMutablePolygon template = new PolyImpl(4);
-        template.setLockUV(true);
+        IPaintablePoly template = PolyFactory.newPaintable(4);
+        template.setLockUV(0, true);
         template.setSurfaceInstance(SURFACE_MAIN);
   
       
@@ -78,9 +79,9 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 //    result = new CSGShape(QuadFactory.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template));
 
       
-      Collection<IPolygon> quadsA = MeshHelper.makeBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
+      Collection<IPaintablePoly> quadsA = MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
       template.setSurfaceInstance(SURFACE_LAMP);
-      Collection<IPolygon> quadsB = MeshHelper.makeBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
+      Collection<IPaintablePoly> quadsB = MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));
 //      template.color = borderColor.getColorMap(EnumColorMap.BORDER);
@@ -88,9 +89,11 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 
 //      CSGMesh result = quadsA.intersect(quadsB);
 //      CSGMesh result = quadsA.union(quadsB);
-      Collection<IPolygon> result = CSGMesh.difference(quadsA, quadsB);
-
-
+      Collection<IPaintedPoly> result = IPaintablePoly.paintAndRelease(CSGMesh.difference(quadsA, quadsB));
+      
+      IPaintablePoly.releaseAll(quadsA);
+      IPaintablePoly.releaseAll(quadsB);
+      template.release();
     
 //      
 //      quadsB = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0, 0, 0.3, 1, 1, .7), template));

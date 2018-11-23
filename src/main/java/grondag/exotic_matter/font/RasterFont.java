@@ -432,9 +432,9 @@ public class RasterFont extends TextureAtlasSprite
     public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPaintedPoly> list)
     {
         IPaintablePoly template = PolyFactory.newPaintable(4);
-        template.setTextureName(FontHolder.FONT_RESOURCE_STRING_SMALL);
-        template.setLockUV(false);
-        template.setShouldContractUVs(false);
+        template.setTextureName(0, FontHolder.FONT_RESOURCE_STRING_SMALL);
+        template.setLockUV(0, false);
+        template.setShouldContractUVs(0, false);
         
         int pixelWidth = formatAsForumla ? this.getWidthFormula(text) : this.getWidth(text);
         

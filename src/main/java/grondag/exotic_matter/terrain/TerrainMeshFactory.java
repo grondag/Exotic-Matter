@@ -16,6 +16,8 @@ import grondag.exotic_matter.cache.LongSimpleCacheLoader;
 import grondag.exotic_matter.cache.LongSimpleLoadingCache;
 import grondag.exotic_matter.model.CSG.CSGMesh;
 import grondag.exotic_matter.model.CSG.CSGNode;
+import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.mesh.ShapeMeshGenerator;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
@@ -24,14 +26,11 @@ import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
-import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
@@ -619,20 +618,16 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                     if(needsSubdivision)
                     {
+                        IPaintablePoly qA = qi.claimCopy();
                         // find vertex at midpoint of corner and center
-                        Vertex vMid = qi.getVertex(1).interpolate(qi.getVertex(2), 0.5f);
+                        qA.copyInterpolatedVertexFrom(2, qi, 1, qi, 2, .5f);
+                        terrainQuads.addPolygon(qA);
 
-                        IPaintablePoly qHalf = qi.claimCopy();
-                        qHalf.addVertex(0, qi.getVertex(0));
-                        qHalf.addVertex(1, qi.getVertex(1));
-                        qHalf.addVertex(2, vMid);
-                        terrainQuads.addPolygon(qHalf);
-
-                        qHalf = qi.claimCopy();
-                        qHalf.addVertex(0, qi.getVertex(0));
-                        qHalf.addVertex(1, vMid);
-                        qHalf.addVertex(2, qi.getVertex(2));
-                        terrainQuads.addPolygon(qHalf);
+                        IPaintablePoly qB = qi.claimCopy();
+                        qB.copyVertexFrom(1, qA, 2);
+                        terrainQuads.addPolygon(qB);
+                        
+                        qi.release();
                     }
                     else
                     {
@@ -650,20 +645,17 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                     if(needsSubdivision)
                     {
+                        IPaintablePoly qA = qi.claimCopy();
                         // find vertex at midpoint of corner and center
-                        Vertex vMid = qi.getVertex(0).interpolate(qi.getVertex(2), 0.5f);
-
-                        IPaintablePoly qHalf = qi.claimCopy();
-                        qHalf.addVertex(0, qi.getVertex(0));
-                        qHalf.addVertex(1, qi.getVertex(1));
-                        qHalf.addVertex(2, vMid);
-                        terrainQuads.addPolygon(qHalf);
-
-                        qHalf = qi.claimCopy();
-                        qHalf.addVertex(0, vMid);
-                        qHalf.addVertex(1, qi.getVertex(1));
-                        qHalf.addVertex(2, qi.getVertex(2));
-                        terrainQuads.addPolygon(qHalf);
+                        qA.copyInterpolatedVertexFrom(2, qi, 0, qi, 2, .5f);
+                        terrainQuads.addPolygon(qA);
+                        
+                        IPaintablePoly qB = qi.claimCopy();
+                        qB.copyVertexFrom(0, qA, 2);
+                        terrainQuads.addPolygon(qB);
+                        
+                        qi.release();
+                        
                     }
                     else
                     {
@@ -698,7 +690,10 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
             }
             else
             {
-                qi.addTrisToCSGRoot(terrainQuads);
+                if(qi.toPaintableTris(terrainQuads))
+                    qi.release();
+                else
+                    assert false : "Non-co-planaer poly didn't split into tris";
             }
         }
 
@@ -900,7 +895,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 //            cacheAttempts.incrementAndGet();
 
                 //FIXME: prevent NPE in release due to strange and rare bug somewhere - possibly a concurrency issue in cache
-                final Collection<IPaintedPoly> c = this.modelCache.get(key);
+                final Collection<IPaintedPoly> c = modelCache.get(key);
                 if(c == null)
                     assert false : "Got null result from terrain model cache";
                 else

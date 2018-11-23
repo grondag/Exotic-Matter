@@ -50,6 +50,7 @@ import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.util.math.MathHelper;
 
 
@@ -84,7 +85,7 @@ public class CSGNode
     private static final Vec3f CENTER_TO_SIDE_NORMAL_B = Vec3f.create(-1, 0, 0);
     private static final float CENTER_TO_SIDE_DIST_B = -0.5f;
     
-    public static class Root extends CSGNode implements Iterable<CSGPolygon>
+    public static class Root extends CSGNode implements Iterable<CSGPolygon>, Consumer<IPaintablePoly>
     {
         final CSGSplitAcceptor.CoFrontBack splitter = new CSGSplitAcceptor.CoFrontBack();
         
@@ -189,6 +190,12 @@ public class CSGNode
         public void addPolygon(IPaintablePoly poly)
         {
             splitter.splitPolyStartingWith(new CSGPolygon(poly), this);
+        }
+        
+        @Override
+        public void accept(@SuppressWarnings("null") IPaintablePoly poly)
+        {
+            addPolygon(poly);
         }
         
         /**

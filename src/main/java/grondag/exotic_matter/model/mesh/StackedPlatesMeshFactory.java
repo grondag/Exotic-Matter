@@ -13,14 +13,15 @@ import javax.vecmath.Matrix4f;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
@@ -50,39 +51,44 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     }
  
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
     {
         final int meta = modelState.getMetaData();
         final Matrix4f matrix = modelState.getMatrix4f();
         final float height = (meta + 1) / 16;
         
-        IMutablePolygon template = new PolyImpl(4);
-        template.setRotation(Rotation.ROTATE_NONE);
-        template.setLockUV(true);
+        IPaintablePoly template = PolyFactory.newPaintable(4);
+        template.setRotation(0, Rotation.ROTATE_NONE);
+        template.setLockUV(0, true);
 
-        IMutablePolygon quad = template.mutableCopy(4);
+        IPaintablePoly quad = template.claimCopy(4);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
-            quad = template.mutableCopy(4);
+            quad = template.claimCopy(4);
             quad.setSurfaceInstance(SIDE_SURFACE);
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             quad.transform(matrix);
-            target.accept(quad);
+            target.accept(quad.toPainted());
+            quad.release();
         }
         
-        quad = template.mutableCopy(4);
+        quad = template.claimCopy(4);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad);
+        target.accept(quad.toPainted());
+        quad.release();
+        
+        template.release();
     }
     
     @Override

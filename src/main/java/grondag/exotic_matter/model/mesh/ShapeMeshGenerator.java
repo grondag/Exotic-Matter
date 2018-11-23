@@ -62,6 +62,7 @@ public abstract class ShapeMeshGenerator
      * Generator will output immutable polygons and they will be quads or tris.
      */
     public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target);
+    
 
     /**
      * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible

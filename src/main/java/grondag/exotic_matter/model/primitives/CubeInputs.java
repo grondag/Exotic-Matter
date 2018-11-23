@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
@@ -42,14 +43,15 @@ public class CubeInputs
         this.rotateBottom = true;
         this.surfaceInstance = Surface.NO_SURFACE;
     }
-
-    public IPaintablePoly makeRawFace(EnumFacing side){
+    
+    public IPaintablePoly makePaintableFace(EnumFacing side)
+    {
 
         IPaintablePoly qi = PolyFactory.newPaintable(4, 1);
         
-        qi.setLockUV(true);
-        qi.setRotation((rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
-        qi.setTextureName(this.textureName);
+        qi.setLockUV(0, true);
+        qi.setRotation(0, (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
+        qi.setTextureName(0, this.textureName);
         qi.setSurfaceInstance(this.surfaceInstance);
 
         float minBound = this.isOverlay ? -0.0002f : 0.0f;
@@ -102,5 +104,13 @@ public class CubeInputs
         }
         
         return qi;
+    }
+    
+    public IPaintedPoly makePaintedFace(EnumFacing side)
+    {
+        IPaintablePoly temp = makePaintableFace(side);
+        IPaintedPoly result = temp.toPainted();
+        temp.release();
+        return result;
     }
 }

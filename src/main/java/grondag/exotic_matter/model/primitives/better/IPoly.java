@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.better;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -265,6 +266,23 @@ public interface IPoly extends IVertexCollection
      * simply add this instance to the list. 
      */
     void addPaintedQuadsToList(List<IPaintedPoly> list);
+    
+    /**
+     * Splits and creates new instances as needed.
+     * Does NOT mutate this instance and does not retain any reference to the instances added to the list.
+     * If you know the current instance is not held elsewhere, then better to
+     * check if split is necessary and if not then simply add this instance to the list.
+     * If a split is necessary and this instance is no longer needed, release it after calling.
+     */
+    void producePaintableQuads(Consumer<IPaintablePoly> consumer);
+    
+    /**
+     * Splits and creates new instances as needed.
+     * Does NOT mutate this instance if this instance is mutable.
+     * If this instance is immutable and does not require split, will 
+     * simply add this instance to the list. 
+     */
+    void producePaintedQuads(Consumer<IPaintedPoly> consumer);
     
     /**
      * Transfers mutable copies of this poly's vertices to the provided array.

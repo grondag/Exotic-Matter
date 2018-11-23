@@ -5,6 +5,8 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
+import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 class PointInPolygonTestPerf
@@ -37,12 +39,12 @@ class PointInPolygonTestPerf
 //        double matchArea = 0;
 //        double missArea = 0;
 
+        IPaintablePoly poly = PolyFactory.newPaintable(3);
         for(int i = 0; i < samples; i++)
         {
-            PolyImpl poly = new PolyImpl(3);
-            poly.addVertex(0, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
-            poly.addVertex(1, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
-            poly.addVertex(2, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
+            poly.setVertex(0, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
+            poly.setVertex(1, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
+            poly.setVertex(2, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
             Vec3f p = Vec3f.create(r.nextFloat(), r.nextFloat(), r.nextFloat());
             elapsed -= System.nanoTime();
             boolean b = PointInPolygonTest.isPointInPolygon(p, poly);
@@ -63,6 +65,7 @@ class PointInPolygonTestPerf
                     falsePositiveCount++;
             }
         }
+        poly.release();
         System.out.println("nanos per call: " + elapsed / samples);
         System.out.println("False positive rate %: " + falsePositiveCount * 100 / samples);
         System.out.println("False negative rate %: " + falseNegativeCount * 100 / samples);
@@ -139,20 +142,19 @@ class PointInPolygonTestPerf
      return false;
     }
     
-    public static boolean accuratePointInTriangle(Vec3f point, IPolygon quad)
+    public static boolean accuratePointInTriangle(Vec3f point, IPaintablePoly quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane
         final PointInPolygonTest.DiscardAxis d = DiscardAxis.get(quad.getFaceNormal());
-        final Vertex[] va = quad.vertexArray();
-        final Vertex v0 = va[0];
-        final Vertex v1 = va[1];
-        final Vertex v2 = va[2];
+        final Vec3f v0 = quad.getPos(0);
+        final Vec3f v1 = quad.getPos(1);
+        final Vec3f v2 = quad.getPos(2);
         
         return accuratePointInTriangle(d.x(point), d.y(point), 
-                d.x(v0.pos()), d.y(v0.pos()),
-                d.x(v1.pos()), d.y(v1.pos()),
-                d.x(v2.pos()), d.y(v2.pos()));
+                d.x(v0), d.y(v0),
+                d.x(v1), d.y(v1),
+                d.x(v2), d.y(v2));
         
     }
 }

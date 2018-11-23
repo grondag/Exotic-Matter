@@ -10,16 +10,15 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
+import grondag.exotic_matter.model.collision.CubeCollisionHandler;
+import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.CubeInputs;
 import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedVertex;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
-import grondag.exotic_matter.model.collision.CubeCollisionHandler;
-import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.block.state.IBlockState;
@@ -34,7 +33,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
             .build();
     
     /** never changes so may as well save it */
-    private final List<IPolygon> cachedQuads;
+    private final List<IPaintedPoly> cachedQuads;
     
     public CubeMeshFactory()
     {
@@ -43,13 +42,13 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly<IPaintedVertex>> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
     {
         cachedQuads.forEach(target);
         
     }
     
-    private List<IPolygon> getCubeQuads()
+    private List<IPaintedPoly> getCubeQuads()
     {
         CubeInputs result = new CubeInputs();
         result.color = 0xFFFFFFFF;
@@ -62,14 +61,14 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         result.isOverlay = false;
         result.surfaceInstance = SURFACE_MAIN;
         
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
+        ImmutableList.Builder<IPaintedPoly> builder = ImmutableList.builder();
        
-        builder.add(result.makeRawFace(EnumFacing.DOWN));
-        builder.add(result.makeRawFace(EnumFacing.UP));
-        builder.add(result.makeRawFace(EnumFacing.EAST));
-        builder.add(result.makeRawFace(EnumFacing.WEST));
-        builder.add(result.makeRawFace(EnumFacing.SOUTH));
-        builder.add(result.makeRawFace(EnumFacing.NORTH));
+        builder.add(result.makePaintedFace(EnumFacing.DOWN));
+        builder.add(result.makePaintedFace(EnumFacing.UP));
+        builder.add(result.makePaintedFace(EnumFacing.EAST));
+        builder.add(result.makePaintedFace(EnumFacing.WEST));
+        builder.add(result.makePaintedFace(EnumFacing.SOUTH));
+        builder.add(result.makePaintedFace(EnumFacing.NORTH));
        
         return builder.build();
     }

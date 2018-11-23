@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.primitives.better;
 import java.util.Collection;
 
 import javax.annotation.Nullable;
+import javax.vecmath.Matrix4f;
 
 import com.google.common.collect.ImmutableList;
 
@@ -193,6 +194,16 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     boolean toPaintableQuads(Consumer<IPaintablePoly> consumer);
     
     /**
+     * If this poly is a tri, simply passes to consumer and returns false.<p>
+     * 
+     * If it a higher-order polygon, generates new paintables that split this poly
+     * into tris. If a split occurs, returns true. This instance will be unmodified.<p>
+     * 
+     * Return value of true signals to release this poly if it is no longer needed for processing.
+     */
+    boolean toPaintableTris(Consumer<IPaintablePoly> consumer);
+    
+    /**
      * WARNING: releases all polys in the input collection. <br>
      * DO NOT RETAIN REFERENCES TO ANY INPUTS. <br>
      * Returns a new Does NOT split non-quads to quads.
@@ -207,6 +218,14 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
             p.release();
         }
         return builder.build();
+    }
+    
+    static void releaseAll(Collection<IPaintablePoly> targets)
+    {
+        for(IPaintablePoly p : targets)
+        {
+            p.release();
+        }
     }
     
     /**
@@ -256,4 +275,6 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
         }      
         return this;
     }
+
+    IPaintablePoly transform(Matrix4f matrix);
 }
