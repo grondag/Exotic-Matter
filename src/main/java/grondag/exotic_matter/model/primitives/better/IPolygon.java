@@ -5,36 +5,26 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList.Builder;
+
+import grondag.acuity.api.IPipelinedQuad;
+import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.world.Rotation;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 
-public interface IPoly extends IVertexCollection
+public interface IPolygon extends IVertexCollection, IPipelinedQuad
 {
     public Vec3f getFaceNormal();
     
     public EnumFacing getNominalFace();
-    
-    //TODO: put these in helpers or something, don't belong here
-//    public default void addQuadsToList(List<IPoly<T>> list, boolean ensureConvex)
-//    {
-//        this.toQuads(p -> list.add(p), ensureConvex);
-//    }
-//    
-//    public void toQuads(Consumer<IPoly<T>> target, boolean ensureConvex);
-//    
-//    public void toTris(Consumer<IPoly<T>> target);
-//    
-//    public default void addTrisToList(List<IPoly<T>> list)
-//    {
-//        this.toTris(p -> list.add(p));
-//    }
-//    
-//    public void addTrisToCSGRoot(CSGNode.Root root);
 
     public default AxisAlignedBB getAABB()
     {
@@ -257,7 +247,7 @@ public interface IPoly extends IVertexCollection
      * check if split is necessary and if not then simply add this instance to the list.
      * If a split is necessary and this instance is no longer needed, release it after calling.
      */
-    void addPaintableQuadsToList(List<IPaintablePoly> list);
+    void addPaintableQuadsToList(List<IMutablePolygon> list);
     
     /**
      * Splits and creates new instances as needed.
@@ -265,7 +255,7 @@ public interface IPoly extends IVertexCollection
      * If this instance is immutable and does not require split, will 
      * simply add this instance to the list. 
      */
-    void addPaintedQuadsToList(List<IPaintedPoly> list);
+    void addPaintedQuadsToList(List<IPolygon> list);
     
     /**
      * Splits and creates new instances as needed.
@@ -274,7 +264,7 @@ public interface IPoly extends IVertexCollection
      * check if split is necessary and if not then simply add this instance to the list.
      * If a split is necessary and this instance is no longer needed, release it after calling.
      */
-    void producePaintableQuads(Consumer<IPaintablePoly> consumer);
+    void producePaintableQuads(Consumer<IMutablePolygon> consumer);
     
     /**
      * Splits and creates new instances as needed.
@@ -282,7 +272,7 @@ public interface IPoly extends IVertexCollection
      * If this instance is immutable and does not require split, will 
      * simply add this instance to the list. 
      */
-    void producePaintedQuads(Consumer<IPaintedPoly> consumer);
+    void producePaintedQuads(Consumer<IPolygon> consumer);
     
     /**
      * Transfers mutable copies of this poly's vertices to the provided array.
@@ -290,10 +280,108 @@ public interface IPoly extends IVertexCollection
      * Retains no reference to the copies, which should be released when no longer used.
      * For use in CSG operations.
      */
-    public void claimVertexCopiesToArray(IMutableGeometricVertex[] vertex);
-
-    IMutablePoly claimCopy(int vertexCount);
-
-    IMutablePoly claimCopy();
+    public void claimVertexCopiesToArray(IMutableVertex[] vertex);
     
+    int getMaxU(int layerIndex);
+
+    int getMaxV(int layerIndex);
+
+    int getMinU(int layerIndex);
+
+    int getMinV(int layerIndex);
+
+    int layerCount();
+    
+    String getTextureName(int layerIndex);
+
+    boolean shouldContractUVs(int layerIndex);
+
+    Rotation getRotation(int layerIndex);
+    
+    int getColor(int layerIndex);
+
+    float getVertexX(int vertexIndex);
+    
+    float getVertexY(int vertexIndex);
+    
+    float getVertexZ(int vertexIndex);
+    
+    /** 
+     * Will return quad color if vertex color not set.
+     */
+    int getVertexColor(int layerIndex, int vertexIndex);
+    
+    /** 
+     * Will return quad color if vertex color not set.
+     */
+    int getVertexGlow(int layerIndex, int vertexIndex);
+    
+    float getVertexU(int layerIndex, int vertexIndex);
+    
+    float getVertexV(int layerIndex, int vertexIndex);
+    
+    int getTextureSalt(int layerIndex);
+
+    boolean isLockUV(int layerIndex);
+
+    BlockRenderLayer getRenderLayer(int layerIndex);
+    
+    /**
+     * Adds all quads that belong in the given layer.
+     * If layer is null, outputs all quads.
+     */
+    public default void addBakedQuadsToBuilder(@Nullable BlockRenderLayer layer, Builder<BakedQuad> builder, boolean isItem)
+    {
+        final int limit = this.layerCount();
+        if(limit == 1)
+        {
+            if(layer == null || this.getRenderLayer(0) == layer)
+                addBakedQuadsToBuilder(0, builder, isItem);
+        }
+        else
+        {
+            for(int i = 0; i < limit; i++)
+            {
+                if(layer == null || this.getRenderLayer(i) == layer)
+                    addBakedQuadsToBuilder(i, builder, isItem);
+            }
+        }
+    }
+    
+    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem);
+//    {
+//        produceQuads(q -> builder.add(QuadBakery.createBakedQuad(layerIndex, (IPaintedPoly) q, isItem)));
+//    }
+
+    IPolygon recoloredCopy();
+    //final Random r = ThreadLocalRandom.current();
+    //(r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000
+
+    short glow(int layerIndex, int vertexIndex);
+
+    float u(int layerIndex, int vertexIndex);
+    
+    float v(int layerIndex, int vertexIndex);
+
+    Vec3f normal(int vertexIndex);
+
+    int color(int layerIndex, int vertexIndex);
+    
+    @Override
+    IRenderPipeline getPipeline();
+    
+    /**
+     * Same vertex count. Includes vertex data.
+     */
+    default IMutablePolygon claimCopy()
+    {
+        return claimCopy(this.vertexCount());
+    }
+    
+    /**
+     * Includes vertex data.
+     */
+    IMutablePolygon claimCopy(int vertexCount);
+    
+    void release();
 }

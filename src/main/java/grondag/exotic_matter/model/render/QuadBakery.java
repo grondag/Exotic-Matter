@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.render;
 
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;
@@ -99,9 +99,9 @@ public class QuadBakery
     }
 
     /**
-     * Like {@link #createBakedQuad(int, IPaintedPoly, boolean)} but assumes layerIndex 0;
+     * Like {@link #createBakedQuad(int, IPolygon, boolean)} but assumes layerIndex 0;
      */
-    public static BakedQuad createBakedQuad(IPaintedPoly raw, boolean forceItemFormat)
+    public static BakedQuad createBakedQuad(IPolygon raw, boolean forceItemFormat)
     {
         return createBakedQuad(0, raw, forceItemFormat);
     }
@@ -117,7 +117,7 @@ public class QuadBakery
      * Any transformation to alpha or lightmap that uses glow bits should already
      * be applied by painer before this is called.
      */
-    public static BakedQuad createBakedQuad(int layerIndex, IPaintedPoly raw, boolean forceItemFormat)
+    public static BakedQuad createBakedQuad(int layerIndex, IPolygon raw, boolean forceItemFormat)
     {
         final float spanU = raw.getMaxU(layerIndex) - raw.getMinU(layerIndex);
         final float spanV = raw.getMaxV(layerIndex) - raw.getMinV(layerIndex);

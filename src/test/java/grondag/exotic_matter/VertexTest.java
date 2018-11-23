@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IMutableVertex;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 
 class VertexTest
@@ -14,7 +14,7 @@ class VertexTest
     @Test
     void test()
     {
-        IMutableGeometricVertex testPoint = PolyFactory.claimMutableVertex(.5f, .5f, .5f);
+        IMutableVertex testPoint = PolyFactory.claimMutableVertex(.5f, .5f, .5f);
         
         assertTrue(testPoint.isOnLine(0, 0, 0, 1, 1, 1));
         assertTrue(testPoint.isOnLine(.5f, 0, .5f, .5f, 1, .5f));

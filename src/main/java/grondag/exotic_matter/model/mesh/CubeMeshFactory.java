@@ -16,7 +16,7 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.CubeInputs;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -33,7 +33,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
             .build();
     
     /** never changes so may as well save it */
-    private final List<IPaintedPoly> cachedQuads;
+    private final List<IPolygon> cachedQuads;
     
     public CubeMeshFactory()
     {
@@ -42,13 +42,13 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         cachedQuads.forEach(target);
         
     }
     
-    private List<IPaintedPoly> getCubeQuads()
+    private List<IPolygon> getCubeQuads()
     {
         CubeInputs result = new CubeInputs();
         result.color = 0xFFFFFFFF;
@@ -61,7 +61,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         result.isOverlay = false;
         result.surfaceInstance = SURFACE_MAIN;
         
-        ImmutableList.Builder<IPaintedPoly> builder = ImmutableList.builder();
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
        
         builder.add(result.makePaintedFace(EnumFacing.DOWN));
         builder.add(result.makePaintedFace(EnumFacing.UP));

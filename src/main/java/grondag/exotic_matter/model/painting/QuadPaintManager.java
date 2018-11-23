@@ -4,8 +4,8 @@ import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -18,7 +18,7 @@ public class QuadPaintManager
 {
     private static ThreadLocal<Manager> managers = ThreadLocal.withInitial(() -> new Manager());
 
-    public static final Consumer<IPaintedPoly> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPaintedPoly> target)
+    public static final Consumer<IPolygon> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
     {
         Manager result = managers.get();
         result.clear();
@@ -28,11 +28,11 @@ public class QuadPaintManager
         return result;
     }
     
-    private static class Manager implements Consumer<IPaintedPoly>
+    private static class Manager implements Consumer<IPolygon>
     {
         private ISuperModelState modelState;
         private boolean isItem; 
-        private Consumer<IPaintedPoly> target;
+        private Consumer<IPolygon> target;
         
         private ArrayDeque<PainterList> emptyLists
              = new ArrayDeque<PainterList>(8);
@@ -74,12 +74,12 @@ public class QuadPaintManager
         }
         
         @Override
-        public void accept(@SuppressWarnings("null") IPaintedPoly poly)
+        public void accept(@SuppressWarnings("null") IPolygon poly)
         {
             PainterList painters = paintersForSurface(poly.getSurfaceInstance());
             if(painters.isEmpty()) return;
             
-            IPaintablePoly quad = poly.claimCopy();
+            IMutablePolygon quad = poly.claimCopy();
             
             // do this here to avoid doing it for all painters
             // and because the quadrant split test requires it.

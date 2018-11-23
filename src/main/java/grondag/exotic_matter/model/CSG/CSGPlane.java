@@ -37,7 +37,7 @@ package grondag.exotic_matter.model.CSG;
 import java.awt.Polygon;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
+import grondag.exotic_matter.model.primitives.better.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public class CSGPlane
@@ -109,7 +109,7 @@ public class CSGPlane
     private static final int BACK_INCREMENT = 1 << BACK_SHIFT;
     private static final int BACK_MASK = FRONT_MASK << BACK_SHIFT;
     
-    public final int vertexIncrement(IMutableGeometricVertex v)
+    public final int vertexIncrement(IMutableVertex v)
     {
 //        incrementTimer.start();
 //        final int result = vertexIncrementInner(v);
@@ -136,7 +136,7 @@ public class CSGPlane
         }
     }
     
-    private final int vertexType(IMutableGeometricVertex v)
+    private final int vertexType(IMutableVertex v)
     {
         final float t = v.x() * this.normalX + v.y() * this.normalY + v.z() * this.normalZ - this.dist;
         
@@ -197,7 +197,7 @@ public class CSGPlane
 //    {
         int combinedCount = 0;
         
-        for (IMutableGeometricVertex v : poly.vertex)
+        for (IMutableVertex v : poly.vertex)
         {
             combinedCount += this.vertexIncrement(v);
         }
@@ -242,7 +242,7 @@ public class CSGPlane
 //    {
         final int vcount = poly.vertex.length;
         
-        final IMutableGeometricVertex[] verts = poly.vertex;
+        final IMutableVertex[] verts = poly.vertex;
         
         CSGPolygon frontQuad = new CSGPolygon(poly, (combinedCount & FRONT_MASK) + 2);
         int iFront = 0;
@@ -251,12 +251,12 @@ public class CSGPlane
         int iBack = 0;
 
 
-        IMutableGeometricVertex iVertex = verts[vcount - 1];
+        IMutableVertex iVertex = verts[vcount - 1];
         int iType = this.vertexType(iVertex);
         
         for (int j = 0; j < vcount; j++)
         {
-            final IMutableGeometricVertex jVertex = verts[j];
+            final IMutableVertex jVertex = verts[j];
             final int jType = this.vertexType(jVertex);
             
             switch(iType * 3 + jType)
@@ -310,7 +310,7 @@ public class CSGPlane
                     final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
-                    IMutableGeometricVertex v = iVertex.interpolate(jVertex, t);
+                    IMutableVertex v = iVertex.interpolate(jVertex, t);
                     
                     frontQuad.vertex[iFront++] = v;
                     backQuad.vertex[iBack++] = v;
@@ -338,7 +338,7 @@ public class CSGPlane
                     final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
-                    IMutableGeometricVertex v = iVertex.interpolate(jVertex, t);
+                    IMutableVertex v = iVertex.interpolate(jVertex, t);
                     
                     frontQuad.vertex[iFront++] = v;
                     backQuad.vertex[iBack++] = v;

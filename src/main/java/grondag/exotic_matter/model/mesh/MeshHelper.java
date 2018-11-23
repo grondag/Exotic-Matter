@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
@@ -28,7 +28,7 @@ public class MeshHelper
     // Will probably need separate version for creating orthogonalAxis-aligned cylinders and cones.  
     // Also needs a parameter for minimum slices to reduce poly count on small model parts when appropriate.
     // Right now minimum is fixed at 12.
-    public static List<IPaintedPoly> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, IPaintablePoly template)
+    public static List<IPolygon> makeCylinder(Vec3d start, Vec3d end, double startRadius, double endRadius, IMutablePolygon template)
     {
         double circumference = Math.PI * Math.max(startRadius, endRadius) * 2;
         int textureSlices = (int) Math.max(1, Math.round(circumference));
@@ -44,11 +44,11 @@ public class MeshHelper
         final Vec3d axisX = new Vec3d(isY ? 1 : 0, !isY ? 1 : 0, 0)
                 .crossProduct(axisZ).normalize();
         final Vec3d axisY = axisX.crossProduct(axisZ).normalize();
-        IPaintablePoly top = template.claimCopy(polySlices);
-        IPaintablePoly bottom = template.claimCopy(polySlices);
-        IPaintablePoly side = template.claimCopy(4);
+        IMutablePolygon top = template.claimCopy(polySlices);
+        IMutablePolygon bottom = template.claimCopy(polySlices);
+        IMutablePolygon side = template.claimCopy(4);
         
-        List<IPaintedPoly> results = new ArrayList<>(48);
+        List<IPolygon> results = new ArrayList<>(48);
 
         for (int i = 0; i < polySlices; i++) {
             double t0 = i / (double) polySlices, t1 = (i + 1) / (double) polySlices;
@@ -115,7 +115,7 @@ public class MeshHelper
      * Makes a regular icosahedron, which is a very close approximation to a sphere for most purposes.
      * Loosely based on http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
      */
-    public static List<IPaintedPoly> makeIcosahedron(Vec3d center, double radius, IPaintablePoly template, boolean smoothNormals) 
+    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IMutablePolygon template, boolean smoothNormals) 
     {
         /** vertex scale */
         final double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
@@ -152,9 +152,9 @@ public class MeshHelper
         }
         
         // create 20 triangles of the icosahedron
-        List<IPaintedPoly> results = new ArrayList<>(20);
+        List<IPolygon> results = new ArrayList<>(20);
         
-        IPaintablePoly poly = template.claimCopy(3);
+        IMutablePolygon poly = template.claimCopy(3);
        
         Surface.Builder surfBuilder = Surface.builder(poly.getSurfaceInstance());
         if(surfBuilder.topology() == SurfaceTopology.TILED)
@@ -213,7 +213,7 @@ public class MeshHelper
         return results;
     }
     
-    private static IPaintablePoly makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IPaintablePoly template)
+    private static IMutablePolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IMutablePolygon template)
     {
         if(normals == null)
         {
@@ -254,9 +254,9 @@ public class MeshHelper
      * Collection version of {@link #makeBox(AxisAlignedBB, IPolygon, Consumer)}
      */
     @Deprecated // use the consumer version
-    public static Collection<IPaintedPoly> makeBox(AxisAlignedBB box, IPaintablePoly template)
+    public static Collection<IPolygon> makeBox(AxisAlignedBB box, IMutablePolygon template)
     {
-        SimpleUnorderedArrayList<IPaintedPoly> result = new SimpleUnorderedArrayList<>(6);
+        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>(6);
         makeBox(box, template, result);
         return result;
     }
@@ -265,9 +265,9 @@ public class MeshHelper
      * Collection version of {@link #makePaintableBox(AxisAlignedBB, IPolygon, Consumer)}
      */
     @Deprecated // use the consumer version
-    public static Collection<IPaintablePoly> makePaintableBox(AxisAlignedBB box, IPaintablePoly template)
+    public static Collection<IMutablePolygon> makePaintableBox(AxisAlignedBB box, IMutablePolygon template)
     {
-        SimpleUnorderedArrayList<IPaintablePoly> result = new SimpleUnorderedArrayList<>(6);
+        SimpleUnorderedArrayList<IMutablePolygon> result = new SimpleUnorderedArrayList<>(6);
         makePaintableBox(box, template, result);
         return result;
     }
@@ -276,9 +276,9 @@ public class MeshHelper
      * This method is intended for boxes that fit within a single world block.
      * Typically used with locked UV coordinates.
      */
-    public static void makeBox(AxisAlignedBB box, IPaintablePoly template, Consumer<IPaintedPoly> target)
+    public static void makeBox(AxisAlignedBB box, IMutablePolygon template, Consumer<IPolygon> target)
     {
-        IPaintablePoly quad = template.claimCopy(4);
+        IMutablePolygon quad = template.claimCopy(4);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         quad.producePaintedQuads(target);
     
@@ -304,9 +304,9 @@ public class MeshHelper
         quad.release();
     }
     
-    public static void makePaintableBox(AxisAlignedBB box, IPaintablePoly template, Consumer<IPaintablePoly> target)
+    public static void makePaintableBox(AxisAlignedBB box, IMutablePolygon template, Consumer<IMutablePolygon> target)
     {
-        IPaintablePoly quad = template.claimCopy(4);
+        IMutablePolygon quad = template.claimCopy(4);
         quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
         target.accept(quad);
     
@@ -343,15 +343,15 @@ public class MeshHelper
      * 
      * TODO: incomplete
      */
-    public static List<IPaintedPoly> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IPaintablePoly template)
+    public static List<IPolygon> makeBigBox(Vec3f origin, final float xSize, final float ySize, final float zSize, IMutablePolygon template)
     {
-        ImmutableList.Builder<IPaintedPoly> builder = ImmutableList.builder();
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
         
         final float xEnd = origin.x() + xSize;
         final float yEnd = origin.y() + ySize;
         final float zEnd = origin.z() + zSize;
         
-        IPaintablePoly quad = template.claimCopy(4);
+        IMutablePolygon quad = template.claimCopy(4);
         quad.setLockUV(0, false);
         quad.setMinU(0, 0);
         quad.setMaxU(0, xSize);

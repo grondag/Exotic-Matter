@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import javax.vecmath.Point2f;
 
-import grondag.exotic_matter.model.primitives.better.IPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 /**
@@ -127,7 +127,7 @@ public class PointInPolygonTest
     }
     
     // FIX: this appears to have a 6% false negative rate but isn't really used right now
-    public static boolean isPointInPolygonAny(Vec3f point, IPoly quad)
+    public static boolean isPointInPolygonAny(Vec3f point, IMutablePolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the orthogonalAxis 
         // that is most orthogonal to our plane
@@ -173,7 +173,7 @@ public class PointInPolygonTest
         return 0;
     }
     
-    public static boolean isPointInPolygon(Vec3f point, IPoly quad)
+    public static boolean isPointInPolygon(Vec3f point, IMutablePolygon quad)
     {
         final int size = quad.vertexCount();
         if(size == 3)
@@ -185,7 +185,7 @@ public class PointInPolygonTest
         
     }
     
-    public static boolean isPointInPolygonQuad(Vec3f point, IPoly quad)
+    public static boolean isPointInPolygonQuad(Vec3f point, IMutablePolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane
@@ -208,7 +208,7 @@ public class PointInPolygonTest
         return isPointInPolygonTri(x, y, x0, y0, x1, y1, x2, y2) || isPointInPolygonTri(x, y, x0, y0, x2, y2, x3, y3);
     }
     
-    public static boolean isPointInPolygonTri(Vec3f point, IPoly quad)
+    public static boolean isPointInPolygonTri(Vec3f point, IMutablePolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane

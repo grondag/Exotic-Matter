@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.world.FaceCorner;
 
 /**
@@ -15,7 +15,7 @@ import grondag.exotic_matter.world.FaceCorner;
 public class QuadrantSplitter
 {
     @Nullable
-    public final static FaceCorner uvQuadrant(IPaintablePoly quad, int layerIndex)
+    public final static FaceCorner uvQuadrant(IMutablePolygon quad, int layerIndex)
     {
         final int vCount = quad.vertexCount();
         
@@ -81,7 +81,7 @@ public class QuadrantSplitter
         }
     }
     
-    public static final void splitAndPaint(IPaintablePoly quad, Consumer<IPaintablePoly> target, int layerIndex)
+    public static final void splitAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, int layerIndex)
     {
         int lowCount = 0;
         int highCount = 0;
@@ -105,10 +105,10 @@ public class QuadrantSplitter
         else
         {
             // spanning
-            IPaintablePoly high = quad.claimCopy(highCount + 2);
+            IMutablePolygon high = quad.claimCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IPaintablePoly low = quad.claimCopy(lowCount + 2);
+            IMutablePolygon low = quad.claimCopy(lowCount + 2);
             int iLowVertex = 0;
             
             int iThis = vCount - 1;
@@ -162,7 +162,7 @@ public class QuadrantSplitter
         }
     }
     
-    private static final void splitVAndPaint(IPaintablePoly quad, Consumer<IPaintablePoly> target, boolean isHighU, int layerIndex)
+    private static final void splitVAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isHighU, int layerIndex)
     {
         int lowCount = 0;
         int highCount = 0;
@@ -186,10 +186,10 @@ public class QuadrantSplitter
         else
         {
             // spanning
-            IPaintablePoly high = quad.claimCopy(highCount + 2);
+            IMutablePolygon high = quad.claimCopy(highCount + 2);
             int iHighVertex = 0;
             
-            IPaintablePoly low = quad.claimCopy(lowCount + 2);
+            IMutablePolygon low = quad.claimCopy(lowCount + 2);
             int iLowVertex = 0;
             
             int iThis = vCount - 1;

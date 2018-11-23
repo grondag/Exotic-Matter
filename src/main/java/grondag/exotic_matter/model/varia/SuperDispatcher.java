@@ -20,8 +20,8 @@ import grondag.exotic_matter.cache.ObjectSimpleLoadingCache;
 import grondag.exotic_matter.model.painting.QuadPaintManager;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
 import grondag.exotic_matter.model.render.RenderUtil;
@@ -117,7 +117,7 @@ public class SuperDispatcher
             QuadContainer.Builder builder = new QuadContainer.Builder();
             key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
-                IPaintablePoly mutable = q.claimCopy();
+                IMutablePolygon mutable = q.claimCopy();
                 
                 // arbitrary choice - just needs to be a simple non-null texture
                 mutable.setTextureName(0, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE.getSampleTextureName());
@@ -180,9 +180,9 @@ public class SuperDispatcher
         return container.getOcclusionHash(face);
     }
     
-    private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPaintedPoly> target)
+    private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
-        final Consumer<IPaintedPoly> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
+        final Consumer<IPolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
         modelState.getShape().meshFactory().produceShapeQuads(modelState, manager);
     }
     
@@ -248,7 +248,7 @@ public class SuperDispatcher
          * For the debug renderer - enumerates all painted quads for all layers.
          * Pass in an extended block state.
          */
-        public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPaintedPoly> consumer)
+        public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPolygon> consumer)
         {
             ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
             

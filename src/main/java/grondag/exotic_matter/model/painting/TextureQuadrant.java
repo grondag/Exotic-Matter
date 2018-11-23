@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.world.FaceCorner;
 import grondag.exotic_matter.world.FaceSide;
 import grondag.exotic_matter.world.Rotation;
@@ -32,7 +32,7 @@ public enum TextureQuadrant
     SIDE_RIGHT(1)
     {
         @Override
-        public void applyForQuadrant(IPaintablePoly polygon, int layerIndex, FaceCorner quadrant)
+        public void applyForQuadrant(IMutablePolygon polygon, int layerIndex, FaceCorner quadrant)
         {
             super.applyForQuadrant(polygon, layerIndex, quadrant);
             final int i = quadrant.rightSide.ordinal();
@@ -90,7 +90,7 @@ public enum TextureQuadrant
      * Applies the texture rotation needed to position this texture
      * in the quadrant identified by the given corner.<p>
      */
-    public void applyForQuadrant(IPaintablePoly polygon, int layerIndex, FaceCorner quadrant)
+    public void applyForQuadrant(IMutablePolygon polygon, int layerIndex, FaceCorner quadrant)
     {
         polygon.setRotation(layerIndex, Rotation.VALUES[(4 + FACE_CORNER_ROTATION_MAP[quadrant.ordinal()] - this.rotation) & 3]);
     }

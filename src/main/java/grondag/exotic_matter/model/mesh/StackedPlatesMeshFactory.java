@@ -17,8 +17,8 @@ import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -51,17 +51,17 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     }
  
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         final int meta = modelState.getMetaData();
         final Matrix4f matrix = modelState.getMatrix4f();
         final float height = (meta + 1) / 16;
         
-        IPaintablePoly template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setRotation(0, Rotation.ROTATE_NONE);
         template.setLockUV(0, true);
 
-        IPaintablePoly quad = template.claimCopy(4);
+        IMutablePolygon quad = template.claimCopy(4);
         quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);

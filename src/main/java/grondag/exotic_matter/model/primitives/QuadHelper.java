@@ -12,9 +12,8 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.model.primitives.better.IGeometricVertex;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.IVertexCollection;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
@@ -249,7 +248,7 @@ public class QuadHelper
         * Same as {@link #addTextureToAllFaces(String, float, float, float, double, int, boolean, float, Rotation, List)}
         * but with uvFraction = 1.
         */
-       public static <T extends IPaintedPoly> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<T> list)
+       public static <T extends IPolygon> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<T> list)
        {
            addTextureToAllFaces(createMutable, rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
        }
@@ -273,9 +272,9 @@ public class QuadHelper
         * @param list           your mutable list of quads
         */
        @SuppressWarnings("unchecked")
-    public static <T extends IPaintedPoly> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<T> list)
+    public static <T extends IPolygon> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<T> list)
        {
-           IPaintablePoly template = PolyFactory.newPaintable(4)
+           IMutablePolygon template = PolyFactory.newPaintable(4)
                .setTextureName(0, "hard_science:blocks/" + rawTextureName)
                .setLockUV(0, false)
                .setShouldContractUVs(0, contractUVs);
@@ -332,9 +331,9 @@ public class QuadHelper
      * Randomly recolors all the polygons as an aid to debugging.
      * Polygons must be mutable and are mutated by this operation.
      */
-    public static void recolor(Collection<IPaintablePoly> target)
+    public static void recolor(Collection<IMutablePolygon> target)
     {
-        Stream<IPaintablePoly> quadStream;
+        Stream<IMutablePolygon> quadStream;
     
         if (target.size() > 200) {
             quadStream = target.parallelStream();
@@ -342,15 +341,15 @@ public class QuadHelper
             quadStream = target.stream();
         }
     
-        quadStream.forEach((IPaintablePoly quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
+        quadStream.forEach((IMutablePolygon quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
 
-    public static Consumer<IPaintedPoly> makeRecoloring(Consumer<IPaintedPoly> wrapped)
+    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
     {
         return p -> p.recoloredCopy();
     }
 
-    public static <T extends IGeometricVertex> boolean isConvex(IVertexCollection vertices)
+    public static boolean isConvex(IVertexCollection vertices)
     {
         final int vertexCount = vertices.vertexCount();
         if(vertexCount == 3) return true;

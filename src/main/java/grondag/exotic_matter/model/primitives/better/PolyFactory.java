@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.primitives.better;
 
 public class PolyFactory
 {
-    public static IPaintablePoly newPaintable(int vertexCount, int layerCount)
+    public static IMutablePolygon newPaintable(int vertexCount, int layerCount)
     {
         return  null;
     }
@@ -10,12 +10,12 @@ public class PolyFactory
     /**
      * Concise syntax for single layer
      */
-    public static IPaintablePoly newPaintable(int vertexCount)
+    public static IMutablePolygon newPaintable(int vertexCount)
     {
         return newPaintable(vertexCount, 1);
     }
 
-    public static IMutableGeometricVertex claimMutableVertex(float x, float y, float z)
+    public static IMutableVertex claimMutableVertex(float x, float y, float z)
     {
         // TODO Auto-generated method stub
         return null;

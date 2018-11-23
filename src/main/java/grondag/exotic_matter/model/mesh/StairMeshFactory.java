@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 
 import javax.vecmath.Matrix4f;
 
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
@@ -14,7 +14,7 @@ import net.minecraft.util.EnumFacing;
 public class StairMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.
@@ -22,11 +22,11 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
 
         Matrix4f matrix = modelState.getMatrix4f();
         
-        IPaintablePoly template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setRotation(0, Rotation.ROTATE_NONE);
         template.setLockUV(0, true);
 
-        IPaintablePoly quad = template.claimCopy(4);
+        IMutablePolygon quad = template.claimCopy(4);
         quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);

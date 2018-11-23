@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.render;
 import org.lwjgl.opengl.GL11;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.primitives.better.IPoly;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.varia.SuperDispatcher;
 import grondag.exotic_matter.model.varia.SuperDispatcher.DispatchDelegate;
@@ -91,7 +91,7 @@ public class BlockModelDebugHighlighter
             double d0,
             double d1,
             double d2,
-            IPoly quad, 
+            IPolygon quad, 
             Tessellator tessellator, 
             BufferBuilder buffer)
     {

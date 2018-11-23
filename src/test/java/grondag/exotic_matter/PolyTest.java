@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
@@ -19,7 +19,7 @@ public class PolyTest
     @Test
     public void test()
     {
-        IPaintablePoly quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        IMutablePolygon quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         // basic properties
         assert !quad.isLockUV(0);

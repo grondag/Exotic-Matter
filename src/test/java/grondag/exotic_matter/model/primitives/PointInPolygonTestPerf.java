@@ -5,7 +5,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
@@ -39,7 +39,7 @@ class PointInPolygonTestPerf
 //        double matchArea = 0;
 //        double missArea = 0;
 
-        IPaintablePoly poly = PolyFactory.newPaintable(3);
+        IMutablePolygon poly = PolyFactory.newPaintable(3);
         for(int i = 0; i < samples; i++)
         {
             poly.setVertex(0, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);
@@ -142,7 +142,7 @@ class PointInPolygonTestPerf
      return false;
     }
     
-    public static boolean accuratePointInTriangle(Vec3f point, IPaintablePoly quad)
+    public static boolean accuratePointInTriangle(Vec3f point, IMutablePolygon quad)
     {
         // faster to check in 2 dimensions, so throw away the axis 
         // that is most orthogonal to our plane

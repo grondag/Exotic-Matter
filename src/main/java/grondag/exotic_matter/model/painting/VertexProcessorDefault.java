@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model.painting;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 
@@ -20,7 +20,7 @@ public class VertexProcessorDefault extends VertexProcessor
     }
     
     @Override
-    public final void process(IPaintablePoly poly, ISuperModelState modelState, PaintLayer paintLayer)
+    public final void process(IMutablePolygon poly, ISuperModelState modelState, PaintLayer paintLayer)
     {
         int color = modelState.getColorARGB(paintLayer);
         int layerIndex = paintLayer.textureLayerIndex;

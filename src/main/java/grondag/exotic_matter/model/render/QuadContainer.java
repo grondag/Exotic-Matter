@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
@@ -17,7 +17,7 @@ import net.minecraft.util.EnumFacing;
 
 public class QuadContainer
 {
-    private static IPaintedPoly[] EMPTY_LIST = {};
+    private static IPolygon[] EMPTY_LIST = {};
     private static int[] EMPTY_COUNTS = {0, 0, 0, 0, 0, 0};
     public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(EMPTY_LIST, EMPTY_COUNTS) ;
 
@@ -30,9 +30,9 @@ public class QuadContainer
     
     private int[] paintedFaceIndex = new int[EnumFacing.VALUES.length];
     
-    private final IPaintedPoly[] paintedQuads;
+    private final IPolygon[] paintedQuads;
     
-    protected QuadContainer(IPaintedPoly[] paintedQuads, int[] paintedFaceIndex)
+    protected QuadContainer(IPolygon[] paintedQuads, int[] paintedFaceIndex)
     {
         this.paintedQuads = paintedQuads;
         this.paintedFaceIndex = paintedFaceIndex;
@@ -70,13 +70,13 @@ public class QuadContainer
         return face == null ? faceLists[6] : faceLists[face.ordinal()];
     }
     
-    public void forEachPaintedQuad(Consumer<IPaintedPoly> consumer)
+    public void forEachPaintedQuad(Consumer<IPolygon> consumer)
     {
-        for(IPaintedPoly q : this.paintedQuads)
+        for(IPolygon q : this.paintedQuads)
             consumer.accept(q);
     }
     
-    public void forEachPaintedQuad(@Nullable EnumFacing face, Consumer<IPaintedPoly> consumer)
+    public void forEachPaintedQuad(@Nullable EnumFacing face, Consumer<IPolygon> consumer)
     {
         int start, end;
         if(face == null)
@@ -124,23 +124,23 @@ public class QuadContainer
         return keyBuilder.getQuadListKey();
     }
     
-    public static class Builder implements Consumer<IPaintedPoly>
+    public static class Builder implements Consumer<IPolygon>
     {
         int size = 0;
         
         @SuppressWarnings("unchecked")
-        final SimpleUnorderedArrayList<IPaintedPoly>[] buckets = new SimpleUnorderedArrayList[7];
+        final SimpleUnorderedArrayList<IPolygon>[] buckets = new SimpleUnorderedArrayList[7];
         
         @Override
-        public void accept(@SuppressWarnings("null") IPaintedPoly quad)
+        public void accept(@SuppressWarnings("null") IPolygon quad)
         {
             final @Nullable EnumFacing facing = quad.getActualFace();
             final int index = facing == null ? 6 : facing.ordinal();
             
-            SimpleUnorderedArrayList<IPaintedPoly> bucket = buckets[index];
+            SimpleUnorderedArrayList<IPolygon> bucket = buckets[index];
             if(bucket  == null)
             {
-                bucket = new SimpleUnorderedArrayList<IPaintedPoly>();
+                bucket = new SimpleUnorderedArrayList<IPolygon>();
                 buckets[index] = bucket;
             }
             bucket.add(quad);
@@ -152,7 +152,7 @@ public class QuadContainer
             if(this.size == 0)
                 return EMPTY_CONTAINER;
             
-            IPaintedPoly[] quads = new IPaintedPoly[this.size];
+            IPolygon[] quads = new IPolygon[this.size];
             int[] indexes = new int[6];
             
             int i = addAndGetSize(quads, 0, buckets[6]);
@@ -166,7 +166,7 @@ public class QuadContainer
             return new QuadContainer(quads, indexes);
         }
 
-        private final int addAndGetSize(IPaintedPoly[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPaintedPoly> sourceList)
+        private final int addAndGetSize(IPolygon[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPolygon> sourceList)
         {
             if(sourceList == null) return 0;
             sourceList.copyToArray(targetArray, firstOpenIndex);
@@ -175,7 +175,7 @@ public class QuadContainer
     }
 
 
-    private static class QuadListKeyBuilder implements Consumer<IPaintedPoly>
+    private static class QuadListKeyBuilder implements Consumer<IPolygon>
     {
         private final int axis0;
         private final int axis1;
@@ -246,7 +246,7 @@ public class QuadContainer
         }
 
         @Override
-        public void accept(@SuppressWarnings("null") IPaintedPoly t)
+        public void accept(@SuppressWarnings("null") IPolygon t)
         {
             final int limit = t.vertexCount();
             for(int i = 0; i < limit; i++)

@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -61,16 +61,16 @@ public abstract class ShapeMeshGenerator
     /**
      * Generator will output immutable polygons and they will be quads or tris.
      */
-    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPaintedPoly> target);
+    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target);
     
 
     /**
      * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible
      */
     @Deprecated
-    public final Collection<IPaintedPoly> getShapeQuads(ISuperModelState modelState)
+    public final Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
-        SimpleUnorderedArrayList<IPaintedPoly> result = new SimpleUnorderedArrayList<>();
+        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>();
         this.produceShapeQuads(modelState, result);
         return result;
     }

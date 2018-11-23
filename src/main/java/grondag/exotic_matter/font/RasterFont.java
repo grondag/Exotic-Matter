@@ -23,8 +23,8 @@ import com.sun.imageio.plugins.png.PNGImageWriterSpi;
 import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.FaceVertex;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.texture.TextureHelper;
 import net.minecraft.client.Minecraft;
@@ -429,9 +429,9 @@ public class RasterFont extends TextureAtlasSprite
      * @param leftSide If false will be centered.
      * @param list
      */
-    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPaintedPoly> list)
+    public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
     {
-        IPaintablePoly template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setTextureName(0, FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setLockUV(0, false);
         template.setShouldContractUVs(0, false);

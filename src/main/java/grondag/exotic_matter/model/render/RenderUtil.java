@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.render;
 
-import java.util.Collection;
-
 import javax.vecmath.Vector3f;
 
 import net.minecraft.client.renderer.BufferBuilder;

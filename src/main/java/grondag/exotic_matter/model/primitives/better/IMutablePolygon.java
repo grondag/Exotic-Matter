@@ -11,32 +11,21 @@ import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
+import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 
-public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
+public interface IMutablePolygon extends IPolygon
 {
-    /**
-     * Sets all attributes that are available in the source vertex.
-     * DOES NOT retain a reference to the input vertex.
-     */
-    IPaintablePoly copyVertexFrom(int vertexIndex, IPaintedVertex source);
-    
-    /**
-     * Sets all attributes that are available in this poly in the source vertex.
-     * If target vertex is null, allocates a new stand-alone vertex.
-     * DOES NOT retain a reference to the target vertex.
-     */
-    IPaintableVertex copyVertexTo(int vertexIndex, @Nullable IPaintedVertex target);
-    
     /**
      * Copies all attributes that are available in the source poly.
      * DOES NOT retain a reference to the input poly.
      */
-    IPaintablePoly copyVertexFrom(int targetIndex, IPaintedPoly source, int sourceIndex);
+    IMutablePolygon copyVertexFrom(int targetIndex, IPolygon source, int sourceIndex);
     
     /**
      * Interpolates all attributes that are available in the source poly.
@@ -44,14 +33,19 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      * in between giving blended results.
      * DOES NOT retain a reference to either input poly.
      */
-    IPaintablePoly copyInterpolatedVertexFrom(int targetIndex, IPaintedPoly source0, int vertexIndex0, IPaintedPoly source1, int vertexIndex1, float weight);
+    IMutablePolygon copyInterpolatedVertexFrom(int targetIndex, IPolygon source0, int vertexIndex0, IPolygon source1, int vertexIndex1, float weight);
 
+    /**
+     * Sets all attributes that are available in the source vertex.
+     * DOES NOT retain a reference to the input vertex.
+     */
+    IMutablePolygon copyVertexFrom(int vertexIndex, IMutableVertex source);
     
-    IPaintablePoly setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color);
+    IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color);
 
-    IPaintablePoly setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ);
+    IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ);
 
-    default IPaintablePoly setVertex(int vertexIndex, Vec3d pos, double u, double v, int color, @Nullable Vec3d normal)
+    default IMutablePolygon setVertex(int vertexIndex, Vec3d pos, double u, double v, int color, @Nullable Vec3d normal)
     {
         if(normal == null)
             return setVertex(vertexIndex, (float)pos.x, (float)pos.y, (float)pos.z, (float)u, (float)v, color);
@@ -60,45 +54,45 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
                     (float)normal.x, (float)normal.y, (float)normal.z);
     }
 
-    IPaintablePoly setMaxU(int layerIndex, float maxU);
+    IMutablePolygon setMaxU(int layerIndex, float maxU);
     
-    IPaintablePoly setMaxV(int layerIndex, float maxV);
+    IMutablePolygon setMaxV(int layerIndex, float maxV);
     
-    IPaintablePoly setMinU(int layerIndex, float minU);
+    IMutablePolygon setMinU(int layerIndex, float minU);
 
-    IPaintablePoly setMinV(int layerIndex, float minV);
+    IMutablePolygon setMinV(int layerIndex, float minV);
     
-    IPaintablePoly setColor(int layerIndex, int color);
+    IMutablePolygon setColor(int layerIndex, int color);
 
-    IPaintablePoly setTextureSalt(int layerIndex, int salt);
+    IMutablePolygon setTextureSalt(int layerIndex, int salt);
 
-    IPaintablePoly setLockUV(int layerIndex, boolean lockUV);
+    IMutablePolygon setLockUV(int layerIndex, boolean lockUV);
 
-    IPaintablePoly setTextureName(int layerIndex, String textureName);
+    IMutablePolygon setTextureName(int layerIndex, String textureName);
     
-    IPaintablePoly setRotation(int layerIndex, Rotation rotation);
+    IMutablePolygon setRotation(int layerIndex, Rotation rotation);
 
-    IPaintablePoly setShouldContractUVs(int layerIndex, boolean contractUVs);
+    IMutablePolygon setShouldContractUVs(int layerIndex, boolean contractUVs);
     
-    IPaintablePoly setRenderLayer(int layerIndex, BlockRenderLayer layer);
+    IMutablePolygon setRenderLayer(int layerIndex, BlockRenderLayer layer);
     
-    IPaintedPoly setEmissive(int textureLayerIndex, boolean emissive);
+    IPolygon setEmissive(int textureLayerIndex, boolean emissive);
     
     /**
      * glow is clamped to allowed values
      */
-    IPaintablePoly setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow);
+    IMutablePolygon setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow);
     
-    IPaintablePoly setVertexColor(int layerIndex, int vertexIndex, int color);
+    IMutablePolygon setVertexColor(int layerIndex, int vertexIndex, int color);
     
-    IPaintablePoly setVertexUV(int layerIndex, int vertexIndex, float u, float v);
+    IMutablePolygon setVertexUV(int layerIndex, int vertexIndex, float u, float v);
     
-    default IPaintablePoly setVertexU(int layerIndex, int vertexIndex, float u)
+    default IMutablePolygon setVertexU(int layerIndex, int vertexIndex, float u)
     {
         return this.setVertexUV(layerIndex, vertexIndex, u, this.getVertexV(layerIndex, vertexIndex));
     }
     
-    default IPaintablePoly setVertexV(int layerIndex, int vertexIndex, float v)
+    default IMutablePolygon setVertexV(int layerIndex, int vertexIndex, float v)
     {
         return this.setVertexUV(layerIndex, vertexIndex, this.getVertexU(layerIndex, vertexIndex), v);
     }
@@ -106,19 +100,27 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     /**
      * glow is clamped to allowed values
      */
-    IPaintablePoly setVertexGlow(int layerIndex, int vertexIndex, int glow);
+    IMutablePolygon setVertexGlow(int layerIndex, int vertexIndex, int glow);
     
-    IPaintedPoly setPipeline(IRenderPipeline pipeline);
+    IMutablePolygon setVertexNormal(int vertexIndex, Vec3f normal);
     
-    @Override
-    IPaintablePoly clearFaceNormal();
+    default IMutablePolygon setVertexNormal(int vertexIndex, IVec3f normal)
+    {
+        return setVertexNormal(vertexIndex, normal.x(), normal.y(), normal.z());
+    }
+    
+    IMutablePolygon setVertexNormal(int vertexIndex, float x, float y, float z);
+    
+    IPolygon setPipeline(IRenderPipeline pipeline);
+    
+    IMutablePolygon clearFaceNormal();
 
     /**
      * Same as {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      * except also sets nominal face to the given face in the start parameter. 
      * Returns self for convenience.
      */
-    IPaintablePoly setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace);
 
     /** 
      * Sets up a quad with human-friendly semantics. <br><br>
@@ -133,7 +135,7 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      * UV coordinates will be based on where rotated vertices project onto the nominal 
      * face for this quad (effectively lockedUV) unless face vertexes have UV coordinates.
      */
-    IPaintablePoly setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace);
     
     /** 
      * Sets up a quad with standard semantics.  
@@ -145,18 +147,18 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      * 
      * @see #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)
      */
-    IPaintablePoly setupFaceQuad(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
 
     /**
      * Same as {@link #setupFaceQuad(double, double, double, double, double, EnumFacing)}
      * but also sets nominal face with given face in start parameter.  
      * Returns self as convenience.
      */
-    IPaintablePoly setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace);
 
     //TODO use float version
     @Deprecated
-    public default IPaintablePoly setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, @Nullable EnumFacing topFace)
+    public default IMutablePolygon setupFaceQuad(EnumFacing face, double x0, double y0, double x1, double y1, double depth, @Nullable EnumFacing topFace)
     {
         return this.setupFaceQuad(face, (float)x0, (float)y0, (float)x1, (float)y1, (float)depth, topFace);
     }
@@ -164,24 +166,22 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     /**
      * Triangular version of {@link #setupFaceQuad(EnumFacing, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    IPaintablePoly setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
     /**
      * Triangular version of {@link #setupFaceQuad(FaceVertex, FaceVertex, FaceVertex, FaceVertex, EnumFacing)}
      */
-    IPaintablePoly setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
+    IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace);
 
+    public IMutablePolygon setNominalFace(EnumFacing face);
     
-    @Override
-    public IPaintablePoly setNominalFace(EnumFacing face);
+    IMutablePolygon invertFaceNormal();
     
-    @Override
-    IPaintablePoly setSurfaceInstance(Surface surface);
+    IMutablePolygon setSurfaceInstance(Surface surface);
 
-    @Override
-    IPaintablePoly scaleFromBlockCenter(float scaleFactor);
+    IMutablePolygon scaleFromBlockCenter(float scaleFactor);
 
-    IPaintedPoly toPainted();
+    IPolygon toPainted();
 
     /**
      * If this poly is a tri or a convex quad, simply passes to consumer and returns false.<p>
@@ -191,7 +191,7 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      * 
      * Return value of true signals to release this poly if it is no longer needed for processing.
      */
-    boolean toPaintableQuads(Consumer<IPaintablePoly> consumer);
+    boolean toPaintableQuads(Consumer<IMutablePolygon> consumer);
     
     /**
      * If this poly is a tri, simply passes to consumer and returns false.<p>
@@ -201,18 +201,18 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      * 
      * Return value of true signals to release this poly if it is no longer needed for processing.
      */
-    boolean toPaintableTris(Consumer<IPaintablePoly> consumer);
+    boolean toPaintableTris(Consumer<IMutablePolygon> consumer);
     
     /**
      * WARNING: releases all polys in the input collection. <br>
      * DO NOT RETAIN REFERENCES TO ANY INPUTS. <br>
      * Returns a new Does NOT split non-quads to quads.
      */
-    static ImmutableList<IPaintedPoly> paintAndRelease(Collection<IPaintablePoly> from)
+    static ImmutableList<IPolygon> paintAndRelease(Collection<IMutablePolygon> from)
     {
-        ImmutableList.Builder<IPaintedPoly> builder = ImmutableList.builder();
+        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
 
-        for(IPaintablePoly p : from)
+        for(IMutablePolygon p : from)
         {
             builder.add(p.toPainted());
             p.release();
@@ -220,9 +220,9 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
         return builder.build();
     }
     
-    static void releaseAll(Collection<IPaintablePoly> targets)
+    static void releaseAll(Collection<IMutablePolygon> targets)
     {
-        for(IPaintablePoly p : targets)
+        for(IMutablePolygon p : targets)
         {
             p.release();
         }
@@ -231,7 +231,7 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
     /**
      * Assigns locked UV coordinates in all layers that require them.
      */
-    default IPaintedPoly assignAllLockedUVCoordinates()
+    default IPolygon assignAllLockedUVCoordinates()
     {
         final int layerCount = this.layerCount();
         if(layerCount == 1)
@@ -254,12 +254,12 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
      *  if lockUV is on, derive UV coords by projection
      *  of vertex coordinates on the plane of the quad's face
      */
-    IPaintedPoly assignLockedUVCoordinates(int layerIndex);
+    IPolygon assignLockedUVCoordinates(int layerIndex);
 
     /**
      * Adds given offsets to u,v values of each vertex.
      */
-    default IPaintedPoly offsetVertexUV(int layerIndex, float uShift, float vShift)
+    default IPolygon offsetVertexUV(int layerIndex, float uShift, float vShift)
     {
         for(int i = 0; i < this.vertexCount(); i++)
         {
@@ -276,5 +276,5 @@ public interface IPaintablePoly  extends IMutablePoly, IPaintedPoly
         return this;
     }
 
-    IPaintablePoly transform(Matrix4f matrix);
+    IMutablePolygon transform(Matrix4f matrix);
 }

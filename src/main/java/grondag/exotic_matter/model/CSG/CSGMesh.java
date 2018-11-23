@@ -36,8 +36,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
@@ -48,7 +48,7 @@ public abstract class CSGMesh
     // TODO: reduce garbagification by releasing or reusing any mutables that can't escape
     // TODO: ensure no references retained to any output
     
-    public static CSGBounds getBounds(Collection<? extends IPaintedPoly> forPolygons)
+    public static CSGBounds getBounds(Collection<? extends IPolygon> forPolygons)
     {
         if (forPolygons.isEmpty()) {
             return new CSGBounds(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -56,7 +56,7 @@ public abstract class CSGMesh
 
         AxisAlignedBB retVal = null;
 
-        for (IPaintedPoly p : forPolygons)
+        for (IPolygon p : forPolygons)
         {
             if(retVal == null)
             {
@@ -122,11 +122,11 @@ public abstract class CSGMesh
      *      +-------+
      * </pre></blockquote>
      */
-    public static Collection<IPaintablePoly> difference(Collection<? extends IPaintedPoly> a, Collection<? extends IPaintedPoly> b)
+    public static Collection<IMutablePolygon> difference(Collection<? extends IPolygon> a, Collection<? extends IPolygon> b)
     {
      // PERF: use threadlocals
-        List<IPaintablePoly> inner = new ArrayList<>();
-        List<IPaintablePoly> outer = new ArrayList<>();
+        List<IMutablePolygon> inner = new ArrayList<>();
+        List<IMutablePolygon> outer = new ArrayList<>();
 
         CSGBounds bounds = getBounds(b);
 
@@ -145,7 +145,7 @@ public abstract class CSGMesh
         return outer;
     }
     
-    private static Collection<IPaintablePoly> differenceClip(Collection<? extends IPaintedPoly> aPolys, Collection<? extends IPaintedPoly> bPolys)
+    private static Collection<IMutablePolygon> differenceClip(Collection<? extends IPolygon> aPolys, Collection<? extends IPolygon> bPolys)
     {
 
         CSGNode.Root a = CSGNode.create(aPolys);
@@ -179,18 +179,18 @@ public abstract class CSGMesh
      *          +-------+
      * </pre></blockquote>     
      */
-    public static Collection<IPaintablePoly> intersect(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
+    public static Collection<IMutablePolygon> intersect(Collection<? extends IPolygon> aMesh, Collection<? extends IPolygon> bMesh)
     {
         CSGNode.Root a = CSGNode.create(aMesh);
         CSGNode.Root b = CSGNode.create(bMesh);
         
-        Collection<IPaintablePoly> result = intersect(a, b);
+        Collection<IMutablePolygon> result = intersect(a, b);
         a.release();
         b.release();
         return result;
     }
     
-    public static Collection<IPaintablePoly> intersect(CSGNode.Root a, CSGNode.Root b)
+    public static Collection<IMutablePolygon> intersect(CSGNode.Root a, CSGNode.Root b)
     {
         a.invert();
         b.clipTo(a);
@@ -219,11 +219,11 @@ public abstract class CSGMesh
      * </pre></blockquote>
      *
      */
-    public static Collection<IPaintablePoly> union(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
+    public static Collection<IMutablePolygon> union(Collection<? extends IPolygon> aMesh, Collection<? extends IPolygon> bMesh)
     {
         // PERF: use threadlocals
-        List<IPaintablePoly> inner = new ArrayList<>();
-        List<IPaintablePoly> outer = new ArrayList<>();
+        List<IMutablePolygon> inner = new ArrayList<>();
+        List<IMutablePolygon> outer = new ArrayList<>();
 
         CSGBounds bounds = getBounds(bMesh);
 
@@ -238,7 +238,7 @@ public abstract class CSGMesh
             }
         });
         
-        List<IPaintablePoly> result = new ArrayList<>();
+        List<IMutablePolygon> result = new ArrayList<>();
         
         // always add all of A that is outside B
         result.addAll(outer);
@@ -262,7 +262,7 @@ public abstract class CSGMesh
     }
 
 
-    private static Collection<IPaintablePoly> unionClip(Collection<? extends IPaintedPoly> aMesh, Collection<? extends IPaintedPoly> bMesh)
+    private static Collection<IMutablePolygon> unionClip(Collection<? extends IPolygon> aMesh, Collection<? extends IPolygon> bMesh)
     {
         CSGNode.Root a = CSGNode.create(aMesh);
         CSGNode.Root b = CSGNode.create(bMesh);
@@ -274,7 +274,7 @@ public abstract class CSGMesh
         b.invert();
         a.addAll(b);
         
-        Collection<IPaintablePoly> result = a.recombinedQuads();
+        Collection<IMutablePolygon> result = a.recombinedQuads();
         a.release();
         b.release();
         return result;

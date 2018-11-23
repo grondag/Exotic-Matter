@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painting;
 import java.util.List;
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
@@ -38,7 +38,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void textureQuad(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem);
+    protected abstract void textureQuad(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem);
     
     /**
      * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
@@ -64,7 +64,7 @@ public abstract class QuadPainter
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
     
-    protected abstract boolean isQuadValidForPainting(IPaintablePoly inputQuad);
+    protected abstract boolean isQuadValidForPainting(IMutablePolygon inputQuad);
     
     /**
      * True if painter will render a solid surface. When Acuity API is enabled
@@ -90,7 +90,7 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void producePaintedQuad(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem)
+    public final void producePaintedQuad(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
@@ -107,7 +107,7 @@ public abstract class QuadPainter
      * Call from paint quad in sub classes to return results.
      * Handles item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndOutput(IPaintablePoly inputQuad, Consumer<IPaintablePoly> target, boolean isItem)
+    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem)
     {
         if(isItem)
         {

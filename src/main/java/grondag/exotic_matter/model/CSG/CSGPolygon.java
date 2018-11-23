@@ -2,24 +2,24 @@ package grondag.exotic_matter.model.CSG;
 
 import java.util.List;
 
-import grondag.exotic_matter.model.primitives.better.IMutableGeometricVertex;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutableVertex;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 // PERF: reuse instances
 public class CSGPolygon
 {
     public final Vec3f faceNormal;
-    public final IMutableGeometricVertex[] vertex;
-    public final IPaintedPoly original;
+    public final IMutableVertex[] vertex;
+    public final IPolygon original;
 
     public boolean isInverted;
     
     /**
      * Copies vertices from original.
      */
-    public CSGPolygon(IPaintedPoly original)
+    public CSGPolygon(IPolygon original)
     {
         this(original, original.vertexCount());
         original.claimVertexCopiesToArray(vertex);
@@ -30,7 +30,7 @@ public class CSGPolygon
      */
     public CSGPolygon(CSGPolygon poly, int vCount)
     {
-        this.vertex = new IMutableGeometricVertex[vCount];
+        this.vertex = new IMutableVertex[vCount];
         this.original = poly.original;
         this.faceNormal = poly.faceNormal;
         this.isInverted = poly.isInverted;
@@ -39,9 +39,9 @@ public class CSGPolygon
     /**
      * Copies original reference and original faceNormal but no vertices.
      */
-    private CSGPolygon(IPaintedPoly original, final int vCount)
+    private CSGPolygon(IPolygon original, final int vCount)
     {
-        this.vertex = new IMutableGeometricVertex[vCount];
+        this.vertex = new IMutableVertex[vCount];
         this.original = original;
         this.faceNormal = original.getFaceNormal();
     }
@@ -61,9 +61,9 @@ public class CSGPolygon
     /**
      * Does NOT retain any references to our vertices.
      */
-    public void addPaintableQuadsToList(List<IPaintablePoly> list)
+    public void addPaintableQuadsToList(List<IMutablePolygon> list)
     {
-        IPaintablePoly result = this.applyInverted();
+        IMutablePolygon result = this.applyInverted();
         if(result.vertexCount() > 4)
         {
             result.addPaintableQuadsToList(list);
@@ -73,9 +73,9 @@ public class CSGPolygon
             list.add(result);
     }
 
-    private IPaintablePoly applyInverted()
+    private IMutablePolygon applyInverted()
     {
-        IPaintablePoly result = this.original.claimCopy(this.vertex.length);
+        IMutablePolygon result = this.original.claimCopy(this.vertex.length);
         
         final int vCount = this.vertex.length;
         if(this.isInverted)
@@ -104,7 +104,7 @@ public class CSGPolygon
     /**
      * Will return {@link #VERTEX_NOT_FOUND} (-1) if vertex is not part of this polygon.
      */
-    public int indexForVertex(IMutableGeometricVertex v)
+    public int indexForVertex(IMutableVertex v)
     {
         for(int i = 0; i < this.vertex.length; i++)
         {

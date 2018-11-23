@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
 
 import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
-import grondag.exotic_matter.model.primitives.better.IPaintablePoly;
-import grondag.exotic_matter.model.primitives.better.IPaintedPoly;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -38,10 +38,10 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
 
     private static class Consumers
     {
-        protected Consumer<IPaintedPoly> wrappedTarget;
-        protected Consumer<IPaintablePoly> firstInnerTarget;
-        protected Consumer<IPaintablePoly> secondInnerTarget;
-        protected Consumer<IPaintablePoly> thirdInnerTarget;
+        protected Consumer<IPolygon> wrappedTarget;
+        protected Consumer<IMutablePolygon> firstInnerTarget;
+        protected Consumer<IMutablePolygon> secondInnerTarget;
+        protected Consumer<IMutablePolygon> thirdInnerTarget;
         protected QuadPainter firstPainter;
         protected QuadPainter secondPainter;
         protected QuadPainter thirdPainter;
@@ -50,20 +50,20 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
         /**
          * Converts mutable output to immutable and then releases.
          */
-        protected final Consumer<IPaintablePoly> outputTarget = new Consumer<IPaintablePoly>()
+        protected final Consumer<IMutablePolygon> outputTarget = new Consumer<IMutablePolygon>()
         {
             @Override
-            public void accept(@SuppressWarnings("null") IPaintablePoly p)
+            public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 wrappedTarget.accept(p.toPainted());   
                 p.release();
             }
         };
         
-        protected final Consumer<IPaintablePoly> firstTarget = new Consumer<IPaintablePoly>()
+        protected final Consumer<IMutablePolygon> firstTarget = new Consumer<IMutablePolygon>()
         {
             @Override
-            public void accept(@SuppressWarnings("null") IPaintablePoly p)
+            public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(firstPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 0) == null)
                     QuadrantSplitter.splitAndPaint(p, q -> firstPainter.producePaintedQuad(q, firstInnerTarget, isItem), 0);
@@ -72,10 +72,10 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             }
         };
         
-        protected final Consumer<IPaintablePoly> secondTarget = new Consumer<IPaintablePoly>()
+        protected final Consumer<IMutablePolygon> secondTarget = new Consumer<IMutablePolygon>()
         {
             @Override
-            public void accept(@SuppressWarnings("null") IPaintablePoly p)
+            public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(secondPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 1) == null)
                     QuadrantSplitter.splitAndPaint(p, q -> secondPainter.producePaintedQuad(q, secondInnerTarget, isItem), 1);
@@ -84,10 +84,10 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             }
         };
         
-        protected final Consumer<IPaintablePoly> thirdTarget = new Consumer<IPaintablePoly>()
+        protected final Consumer<IMutablePolygon> thirdTarget = new Consumer<IMutablePolygon>()
         {
             @Override
-            public void accept(@SuppressWarnings("null") IPaintablePoly p)
+            public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(thirdPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 2) == null)
                     QuadrantSplitter.splitAndPaint(p, q -> thirdPainter.producePaintedQuad(q, thirdInnerTarget, isItem), 2);
@@ -96,7 +96,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             }
         };
         
-        protected Consumer<IPaintablePoly> prepareSingle(Consumer<IPaintedPoly> target, boolean isItem, PainterList painters)
+        protected Consumer<IMutablePolygon> prepareSingle(Consumer<IPolygon> target, boolean isItem, PainterList painters)
         {
             this.isItem = isItem;
             this.wrappedTarget = target;
@@ -105,7 +105,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             return firstTarget;
         }
         
-        protected Consumer<IPaintablePoly> prepareDouble(Consumer<IPaintedPoly> target, boolean isItem, PainterList painters)
+        protected Consumer<IMutablePolygon> prepareDouble(Consumer<IPolygon> target, boolean isItem, PainterList painters)
         {
             this.isItem = isItem;
             this.wrappedTarget = target;
@@ -116,7 +116,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             return firstTarget;
         }
         
-        protected Consumer<IPaintablePoly> prepareTriple(Consumer<IPaintedPoly> target, boolean isItem, PainterList painters)
+        protected Consumer<IMutablePolygon> prepareTriple(Consumer<IPolygon> target, boolean isItem, PainterList painters)
         {
             this.isItem = isItem;
             this.wrappedTarget = target;
@@ -144,7 +144,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
      * May emit more quads than are input due to surface subdivision.
      */
     @SuppressWarnings("null")
-    public void producePaintedQuads(IPaintablePoly q, Consumer<IPaintedPoly> target, boolean isItem)
+    public void producePaintedQuads(IMutablePolygon q, Consumer<IPolygon> target, boolean isItem)
     {
         switch(this.size)
         {
