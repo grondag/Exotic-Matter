@@ -1,17 +1,17 @@
 package grondag.exotic_matter.varia.structures;
 
-final class Vector4<T> extends Vector3<T>
+public class Tuple3<T> extends Tuple2<T>
 {
-    protected final T v3;
+    protected final T v2;
     
-    Vector4(T v0, T v1, T v2, T v3)
+    Tuple3(T v0, T v1, T v2)
     {
-        super(v0, v1, v2);
-        this.v3 = v3;
+        super(v0, v1);
+        this.v2 = v2;
     }
     
     @Override
-    final T get(int index)
+    public T get(int index)
     {
         switch(index)
         {
@@ -21,16 +21,14 @@ final class Vector4<T> extends Vector3<T>
             return v1;
         case 2:
             return v2;
-        case 3:
-            return v3;
         default:
             throw new IndexOutOfBoundsException();
         }
     }
-    
+
     @Override
-    final int size()
+    public int size()
     {
-        return 4;
+        return 3;
     }
 }

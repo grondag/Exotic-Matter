@@ -9,13 +9,13 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.varia.structures.Vector3;
+import grondag.exotic_matter.varia.structures.Tuple3;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 
 class AbstractTri extends AbstractPolygon
 {
-    AbstractTri(Vector3<IMutableVertex> vertices, @Nullable Vector3<Vec3f> normals)
+    AbstractTri(Tuple3<IMutableVertex> vertices, @Nullable Tuple3<Vec3f> normals)
     {
         super(vertices, normals);
     }

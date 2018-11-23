@@ -8,7 +8,7 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.BitPacker;
-import grondag.exotic_matter.varia.structures.AbstractVector;
+import grondag.exotic_matter.varia.structures.AbstractTuple;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -106,11 +106,11 @@ abstract class AbstractPolygon implements IPolygon
     protected @Nullable String textureName;
     protected Surface surfaceInstance = Surface.NO_SURFACE;
 
-    protected final AbstractVector<IMutableVertex> vertices;
+    protected final AbstractTuple<IMutableVertex> vertices;
     
-    protected final @Nullable AbstractVector<Vec3f> normals;
+    protected final @Nullable AbstractTuple<Vec3f> normals;
     
-    AbstractPolygon(AbstractVector<IMutableVertex> vertices, @Nullable AbstractVector<Vec3f> normals)
+    AbstractPolygon(AbstractTuple<IMutableVertex> vertices, @Nullable AbstractTuple<Vec3f> normals)
     {
         this.vertices = vertices;
         this.normals = normals;

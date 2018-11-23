@@ -1,25 +1,25 @@
 package grondag.exotic_matter.varia.structures;
 
-public class VectorN<T> extends AbstractVector<T>
+public class TupleN<T> extends AbstractTuple<T>
 {
     final T[] values;
     
     /**
      * RETAINS REFERENCE!
      */
-    VectorN(T[] values)
+    TupleN(T[] values)
     {
         this.values = values;
     }
     
     @Override
-    T get(int index)
+    public T get(int index)
     {
         return values[index];
     }
 
     @Override
-    int size()
+    public int size()
     {
         return values.length;
     }
