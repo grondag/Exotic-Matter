@@ -1,46 +1,96 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList.Builder;
-
 import grondag.acuity.api.IRenderPipeline;
+import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.world.Rotation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public abstract class AbstractPolygon implements IPolygon
+abstract class AbstractPolygon implements IPolygon
 {
     protected static final BitPacker<AbstractPolygon> BITPACKER = new BitPacker<AbstractPolygon>(p -> p.stateBits, (p, b) -> p.stateBits = b);
 
     protected static final BitPacker<AbstractPolygon>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
     protected static final BitPacker<AbstractPolygon>.IntElement PIPELINE_INDEX = BITPACKER.createIntElement(1024);
     
-    protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation> ROTATION_BITS = BITPACKER.createEnumElement(Rotation.class);
-    protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer> RENDERPASS_BITS = BITPACKER.createEnumElement(BlockRenderLayer.class);
-    protected static final BitPacker<AbstractPolygon>.BooleanElement LOCKUV_BIT = BITPACKER.createBooleanElement();
-    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT = BITPACKER.createBooleanElement();
-    protected static final BitPacker<AbstractPolygon>.BooleanElement CONTRACTUV_BITS = BITPACKER.createBooleanElement();
-    protected static final BitPacker<AbstractPolygon>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
-    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT_2 = BITPACKER.createBooleanElement();
-    protected static final BitPacker<AbstractPolygon>.BooleanElement EMISSIVE_BIT_3 = BITPACKER.createBooleanElement();
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.EnumElement<Rotation>[] ROTATION_BITS = new BitPacker.EnumElement[3];
+    
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.EnumElement<BlockRenderLayer>[] RENDERPASS_BITS = new BitPacker.EnumElement[3];
+   
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.BooleanElement[] LOCKUV_BIT = new BitPacker.BooleanElement[3];
+
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.BooleanElement[] EMISSIVE_BIT = new BitPacker.BooleanElement[3];
+    
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.BooleanElement[] CONTRACTUV_BITS = new BitPacker.BooleanElement[3];
+    
+    @SuppressWarnings("unchecked")
+    protected static final BitPacker<AbstractPolygon>.IntElement SALT_BITS[] = new BitPacker.IntElement[3];
 
     protected static final long DEFAULT_BITS;
     static
     {
+        ROTATION_BITS[0] = BITPACKER.createEnumElement(Rotation.class);
+        ROTATION_BITS[1] = BITPACKER.createEnumElement(Rotation.class);
+        ROTATION_BITS[2] = BITPACKER.createEnumElement(Rotation.class);
+        
+        RENDERPASS_BITS[0] = BITPACKER.createEnumElement(BlockRenderLayer.class);
+        RENDERPASS_BITS[1] = BITPACKER.createEnumElement(BlockRenderLayer.class);
+        RENDERPASS_BITS[2] = BITPACKER.createEnumElement(BlockRenderLayer.class);
+        
+        LOCKUV_BIT[0] = BITPACKER.createBooleanElement();
+        LOCKUV_BIT[1] = BITPACKER.createBooleanElement();
+        LOCKUV_BIT[2] = BITPACKER.createBooleanElement();
+        
+        EMISSIVE_BIT[0] = BITPACKER.createBooleanElement();
+        EMISSIVE_BIT[1] = BITPACKER.createBooleanElement();
+        EMISSIVE_BIT[2] = BITPACKER.createBooleanElement();
+        
+        CONTRACTUV_BITS[0] = BITPACKER.createBooleanElement();
+        CONTRACTUV_BITS[1] = BITPACKER.createBooleanElement();
+        CONTRACTUV_BITS[2] = BITPACKER.createBooleanElement();
+        
+        SALT_BITS[0] = BITPACKER.createIntElement(256);
+        SALT_BITS[1] = BITPACKER.createIntElement(256);
+        SALT_BITS[2] = BITPACKER.createIntElement(256);
+        
         assert BITPACKER.bitLength() <= 64;
+        
         long defaultBits = 0;
-        defaultBits |= ROTATION_BITS.getBits(Rotation.ROTATE_NONE);
-        defaultBits |= RENDERPASS_BITS.getBits(BlockRenderLayer.SOLID);
-        defaultBits |= LOCKUV_BIT.getBits(false);
-        defaultBits |= CONTRACTUV_BITS.getBits(true);
+        defaultBits |= ROTATION_BITS[0].getBits(Rotation.ROTATE_NONE);
+        defaultBits |= ROTATION_BITS[1].getBits(Rotation.ROTATE_NONE);
+        defaultBits |= ROTATION_BITS[2].getBits(Rotation.ROTATE_NONE);
+        
+        defaultBits |= RENDERPASS_BITS[0].getBits(BlockRenderLayer.SOLID);
+        defaultBits |= RENDERPASS_BITS[1].getBits(BlockRenderLayer.SOLID);
+        defaultBits |= RENDERPASS_BITS[2].getBits(BlockRenderLayer.SOLID);
+        
+        defaultBits |= LOCKUV_BIT[0].getBits(false);
+        defaultBits |= LOCKUV_BIT[1].getBits(false);
+        defaultBits |= LOCKUV_BIT[2].getBits(false);
+        
+        defaultBits |= EMISSIVE_BIT[0].getBits(false);
+        defaultBits |= EMISSIVE_BIT[1].getBits(false);
+        defaultBits |= EMISSIVE_BIT[2].getBits(false);
+        
+        defaultBits |= CONTRACTUV_BITS[0].getBits(false);
+        defaultBits |= CONTRACTUV_BITS[1].getBits(false);
+        defaultBits |= CONTRACTUV_BITS[2].getBits(false);
+        
+        defaultBits |= SALT_BITS[0].getBits(0);
+        defaultBits |= SALT_BITS[1].getBits(0);
+        defaultBits |= SALT_BITS[2].getBits(0);
+        
         DEFAULT_BITS = defaultBits;
     }
 
@@ -55,122 +105,146 @@ public abstract class AbstractPolygon implements IPolygon
     protected @Nullable String textureName;
     protected Surface surfaceInstance = Surface.NO_SURFACE;
 
-    @Override
-    public Vec3f getFaceNormal()
+    protected final AbstractVector<IMutableVertex> vertices;
+    
+    protected final @Nullable AbstractVector<Vec3f> normals;
+    
+    AbstractPolygon(AbstractVector<IMutableVertex> vertices, @Nullable AbstractVector<Vec3f> normals)
     {
-        // TODO Auto-generated method stub
-        return null;
+        this.vertices = vertices;
+        this.normals = normals;
+    }
+    
+    @Override
+    public final int vertexCount()
+    {
+        return vertices.size();
+    }
+    
+    @Override
+    public final Vec3f getFaceNormal()
+    {
+        Vec3f result = this.faceNormal;
+        if(result == null)
+        {
+            result = computeFaceNormal();
+            this.faceNormal = result;
+        }
+        return result;
     }
 
     @Override
-    public EnumFacing getNominalFace()
+    public final EnumFacing getNominalFace()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return NOMINAL_FACE_BITS.getValue(this);
     }
 
     @Override
-    public Surface getSurfaceInstance()
+    public final Surface getSurfaceInstance()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return surfaceInstance;
     }
 
     @Override
-    public void addPaintableQuadsToList(List<IMutablePolygon> list)
+    public final IRenderPipeline getPipeline()
     {
-        // TODO Auto-generated method stub
-
+        return ClientProxy.acuityPipeline(PIPELINE_INDEX.getValue(this));
     }
 
     @Override
-    public void addPaintedQuadsToList(List<IPolygon> list)
+    public final boolean shouldContractUVs(int layerIndex)
     {
-        // TODO Auto-generated method stub
-
+        assert layerIndex < this.layerCount();
+        return CONTRACTUV_BITS[layerIndex].getValue(this);
     }
 
     @Override
-    public void producePaintableQuads(Consumer<IMutablePolygon> consumer)
+    public final Rotation getRotation(int layerIndex)
     {
-        // TODO Auto-generated method stub
-
+        assert layerIndex < this.layerCount();
+        return ROTATION_BITS[layerIndex].getValue(this);
     }
 
     @Override
-    public void producePaintedQuads(Consumer<IPolygon> consumer)
+    public final int getTextureSalt(int layerIndex)
     {
-        // TODO Auto-generated method stub
-
+        assert layerIndex < this.layerCount();
+        return SALT_BITS[layerIndex].getValue(this);
     }
 
     @Override
-    public void claimVertexCopiesToArray(IMutableVertex[] vertex)
+    public final boolean isLockUV(int layerIndex)
     {
-        // TODO Auto-generated method stub
-
+        assert layerIndex < this.layerCount();
+        return LOCKUV_BIT[layerIndex].getValue(this);
     }
 
     @Override
-    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
+    public final BlockRenderLayer getRenderLayer(int layerIndex)
     {
-        // TODO Auto-generated method stub
-
+        assert layerIndex < this.layerCount();
+        return RENDERPASS_BITS[layerIndex].getValue(this);
+    }
+    
+    @Override
+    public final boolean isEmissive(int layerIndex)
+    {
+        assert layerIndex < this.layerCount();
+        return EMISSIVE_BIT[layerIndex].getValue(this);
+    }
+    
+    @SuppressWarnings("null")
+    @Override
+    public final Vec3f getVertexNormal(int vertexIndex)
+    {
+        return normals == null ? getFaceNormal() : normals.get(vertexIndex);
+    }
+    
+    @Override
+    public final float getVertexX(int vertexIndex)
+    {
+        return vertices.get(vertexIndex).x();
     }
 
     @Override
-    public IPolygon recoloredCopy()
+    public final float getVertexY(int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return vertices.get(vertexIndex).y();
     }
 
     @Override
-    public IRenderPipeline getPipeline()
+    public final float getVertexZ(int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return vertices.get(vertexIndex).z();
     }
 
     @Override
-    public IMutablePolygon claimCopy(int vertexCount)
+    public final int getVertexColor(int layerIndex, int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return vertices.get(vertexIndex).getColor();
     }
 
     @Override
-    public boolean shouldContractUVs(int layerIndex)
+    public final int getVertexGlow(int layerIndex, int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return false;
+        return vertices.get(vertexIndex).getGlow();
     }
 
     @Override
-    public Rotation getRotation(int layerIndex)
+    public final float getVertexU(int layerIndex, int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return vertices.get(vertexIndex).getU(vertexIndex);
     }
 
     @Override
-    public int getTextureSalt(int layerIndex)
+    public final float getVertexV(int layerIndex, int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return 0;
+        return vertices.get(vertexIndex).getV(vertexIndex);
     }
 
     @Override
-    public boolean isLockUV(int layerIndex)
+    public final IVec3f getPos(int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public BlockRenderLayer getRenderLayer(int layerIndex)
-    {
-        // TODO Auto-generated method stub
-        return null;
+        return vertices.get(vertexIndex).pos();
     }
 }

@@ -141,10 +141,10 @@ public class QuadBakery
                 glowBits |= (g << (v * 4));
             }
             
-            uvData[v][0] = raw.u(layerIndex, v);
-            uvData[v][1] = raw.v(layerIndex, v);
+            uvData[v][0] = raw.getVertexU(layerIndex, v);
+            uvData[v][1] = raw.getVertexV(layerIndex, v);
             
-            IVec3f normal = raw.normal(v);
+            IVec3f normal = raw.getVertexNormal(v);
             if(normal == null)
                 normal = raw.getFaceNormal();
             normal.toArray(normalData[v]);

@@ -77,11 +77,18 @@ public class SuperDispatcher
             }
             
 		    
-		    // PERF: When Acuity is enabled this whole structure is inefficient.  Also somewhat
-		    // inefficient without because adding same polys to mutliple containers.
+		    // PERF: When Acuity is enabled this whole structure is inefficient.  
+		    // Also inefficient without because too many checks and adding same polys to mutliple containers.
 		    // TODO: No way to handle pipelined polygons that render in both translucent and solid (will there be any?)
-		    provideFormattedQuads(key, false, p -> containers[p.getRenderLayer().ordinal()].accept(p));
-			
+		    provideFormattedQuads(key, false, p -> 
+		    {
+		        for(QuadContainer.Builder c : containers)
+		        {
+		            if(p.hasRenderLayer(c.layer))
+		                c.accept(p);
+		        }
+		        
+		    });
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
 
 			for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)

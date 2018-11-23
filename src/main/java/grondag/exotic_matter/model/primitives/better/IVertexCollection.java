@@ -1,7 +1,6 @@
 package grondag.exotic_matter.model.primitives.better;
 
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public interface IVertexCollection
 {

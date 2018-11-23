@@ -299,8 +299,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
 
     Rotation getRotation(int layerIndex);
     
-    int getColor(int layerIndex);
-
     float getVertexX(int vertexIndex);
     
     float getVertexY(int vertexIndex);
@@ -325,6 +323,8 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
 
     boolean isLockUV(int layerIndex);
 
+    public boolean hasRenderLayer(BlockRenderLayer layer);
+    
     BlockRenderLayer getRenderLayer(int layerIndex);
     
     /**
@@ -358,12 +358,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     //final Random r = ThreadLocalRandom.current();
     //(r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000
 
-    float u(int layerIndex, int vertexIndex);
-    
-    float v(int layerIndex, int vertexIndex);
-
-    Vec3f normal(int vertexIndex);
-
     boolean isEmissive(int textureLayerIndex);
     
     @Override
@@ -381,4 +375,5 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      * Includes vertex data.
      */
     IMutablePolygon claimCopy(int vertexCount);
+    
 }

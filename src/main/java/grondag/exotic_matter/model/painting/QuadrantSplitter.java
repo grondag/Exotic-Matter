@@ -19,15 +19,15 @@ public class QuadrantSplitter
     {
         final int vCount = quad.vertexCount();
         
-        float uMin = quad.u(layerIndex, 0);
+        float uMin = quad.getVertexU(layerIndex, 0);
         float uMax = uMin;
-        float vMin = quad.v(layerIndex, 0);
+        float vMin = quad.getVertexV(layerIndex, 0);
         float vMax = vMin;
         
         for(int i = 1; i < vCount; i++)
         {
-            float u = quad.u(layerIndex, i);
-            float v = quad.v(layerIndex, i);
+            float u = quad.getVertexU(layerIndex, i);
+            float v = quad.getVertexV(layerIndex, i);
             if(u < uMin) 
                 uMin = u;
             else if(u > uMax)
@@ -89,7 +89,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.u(layerIndex, i));
+            final int t = vertexType(quad.getVertexU(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -112,12 +112,12 @@ public class QuadrantSplitter
             int iLowVertex = 0;
             
             int iThis = vCount - 1;
-            float uThis = quad.u(layerIndex, iThis);
+            float uThis = quad.getVertexU(layerIndex, iThis);
             int thisType = vertexType(uThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final float uNext = quad.u(layerIndex, iNext);
+                final float uNext = quad.getVertexU(layerIndex, iNext);
                 final int nextType = vertexType(uNext);
                 
                 if(thisType == EDGE)
@@ -170,7 +170,7 @@ public class QuadrantSplitter
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.v(layerIndex, i));
+            final int t = vertexType(quad.getVertexV(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -193,12 +193,12 @@ public class QuadrantSplitter
             int iLowVertex = 0;
             
             int iThis = vCount - 1;
-            float vThis = quad.v(layerIndex, iThis);
+            float vThis = quad.getVertexV(layerIndex, iThis);
             int thisType = vertexType(vThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final float vNext = quad.v(layerIndex, iNext);
+                final float vNext = quad.getVertexV(layerIndex, iNext);
                 final int nextType = vertexType(vNext);
                 
                 if(thisType == EDGE)

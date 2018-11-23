@@ -85,5 +85,13 @@ public interface IMutableVertex extends IVec3f
      * Does not retain a reference to the output or either input.<br>
      */
     public IMutableVertex interpolate(IMutableVertex jVertex, float t);
+
+    public int getColor();
+
+    public int getGlow();
+
+    public float getU(int layerIndex);
+    
+    public float getV(int layerIndex);
     
 }

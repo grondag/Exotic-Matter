@@ -171,7 +171,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         for(int i = 0; i < vCountIn; i++)
         {
             // vertex u where 0 corresponds to low split and 1 to high split
-            final float u = (uMin + input.u(layerIndex, i) * (uMax - uMin) - uSplitLow) / uSpan;
+            final float u = (uMin + input.getVertexU(layerIndex, i) * (uMax - uMin) - uSplitLow) / uSpan;
             vertexU[i] = u;
             
             final int t = vertexType(u);

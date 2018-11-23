@@ -128,7 +128,7 @@ public class QuadContainer
     {
         int size = 0;
         
-        final BlockRenderLayer layer;
+        public final BlockRenderLayer layer;
         
         @SuppressWarnings("unchecked")
         final SimpleUnorderedArrayList<IPolygon>[] buckets = new SimpleUnorderedArrayList[7];
