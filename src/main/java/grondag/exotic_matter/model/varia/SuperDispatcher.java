@@ -73,9 +73,13 @@ public class SuperDispatcher
 		    for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
             {
 		        if(renderLayout.containsBlockRenderLayer(layer))
-		            containers[layer.ordinal()] = new QuadContainer.Builder();
+		            containers[layer.ordinal()] = new QuadContainer.Builder(layer);
             }
             
+		    
+		    // PERF: When Acuity is enabled this whole structure is inefficient.  Also somewhat
+		    // inefficient without because adding same polys to mutliple containers.
+		    // TODO: No way to handle pipelined polygons that render in both translucent and solid (will there be any?)
 		    provideFormattedQuads(key, false, p -> containers[p.getRenderLayer().ordinal()].accept(p));
 			
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
@@ -114,7 +118,7 @@ public class SuperDispatcher
         @Override
         public QuadContainer load(ISuperModelState key) 
         {
-            QuadContainer.Builder builder = new QuadContainer.Builder();
+            QuadContainer.Builder builder = new QuadContainer.Builder(BlockRenderLayer.SOLID);
             key.getShape().meshFactory().produceShapeQuads(key, q ->
             {
                 IMutablePolygon mutable = q.claimCopy();

@@ -13,13 +13,14 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
 public class QuadContainer
 {
     private static IPolygon[] EMPTY_LIST = {};
     private static int[] EMPTY_COUNTS = {0, 0, 0, 0, 0, 0};
-    public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(EMPTY_LIST, EMPTY_COUNTS) ;
+    public static final QuadContainer EMPTY_CONTAINER = new QuadContainer(EMPTY_LIST, EMPTY_COUNTS, BlockRenderLayer.SOLID) ;
 
     // Heavy usage, many instances, so using sublists of a single immutable list to improve LOR
     // I didn't profile this to make sure it's worthwhile - don't tell Knuth.
@@ -32,14 +33,14 @@ public class QuadContainer
     
     private final IPolygon[] paintedQuads;
     
-    protected QuadContainer(IPolygon[] paintedQuads, int[] paintedFaceIndex)
+    public final BlockRenderLayer layer;
+    
+    protected QuadContainer(IPolygon[] paintedQuads, int[] paintedFaceIndex, BlockRenderLayer layer)
     {
         this.paintedQuads = paintedQuads;
         this.paintedFaceIndex = paintedFaceIndex;
+        this.layer = layer;
     }
-    
-    
-    //TODO: need to track layer somehow - for now will always output layer 0
     
     @SuppressWarnings("unchecked")
     public List<BakedQuad> getBakedQuads(@Nullable EnumFacing face)
@@ -50,10 +51,9 @@ public class QuadContainer
         if(faceLists == null)
         {
             faceLists = new ImmutableList[7];
-            
             {
                 final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-                this.forEachPaintedQuad(null, q -> q.addBakedQuadsToBuilder(0, builder, false));
+                this.forEachPaintedQuad(null, q -> q.addBakedQuadsToBuilder(layer, builder, false));
                 faceLists[6] = builder.build();
             }
             
@@ -128,8 +128,15 @@ public class QuadContainer
     {
         int size = 0;
         
+        final BlockRenderLayer layer;
+        
         @SuppressWarnings("unchecked")
         final SimpleUnorderedArrayList<IPolygon>[] buckets = new SimpleUnorderedArrayList[7];
+        
+        public Builder(BlockRenderLayer layer)
+        {
+            this.layer = layer;
+        }
         
         @Override
         public void accept(@SuppressWarnings("null") IPolygon quad)
@@ -163,7 +170,7 @@ public class QuadContainer
                 i += addAndGetSize(quads, i, buckets[j]);
             }
             
-            return new QuadContainer(quads, indexes);
+            return new QuadContainer(quads, indexes, layer);
         }
 
         private final int addAndGetSize(IPolygon[] targetArray, int firstOpenIndex, @Nullable SimpleUnorderedArrayList<IPolygon> sourceList)
