@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives.better;
+package grondag.exotic_matter.varia.structures;
 
 public class VectorN<T> extends AbstractVector<T>
 {

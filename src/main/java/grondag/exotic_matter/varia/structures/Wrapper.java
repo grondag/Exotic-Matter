@@ -1,4 +1,4 @@
-package grondag.exotic_matter.varia;
+package grondag.exotic_matter.varia.structures;
 
 /** generic mutable, indirect reference class - surprised couldn't find one */
 public class Wrapper<T>

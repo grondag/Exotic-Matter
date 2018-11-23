@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.AbstractUnorderedArrayList;
+import grondag.exotic_matter.varia.structures.AbstractUnorderedArrayList;
 import sun.misc.Unsafe;
 
 /**

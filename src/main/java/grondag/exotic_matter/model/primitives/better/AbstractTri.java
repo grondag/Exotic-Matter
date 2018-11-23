@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.varia.structures.Vector3;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 

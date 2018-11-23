@@ -2,7 +2,7 @@ package grondag.exotic_matter;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.varia.LongQueue;
+import grondag.exotic_matter.varia.structures.LongQueue;
 
 public class LongQueueTest
 {

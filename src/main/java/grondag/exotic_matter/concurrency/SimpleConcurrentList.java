@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.varia.AbstractUnorderedArrayList;
+import grondag.exotic_matter.varia.structures.AbstractUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;
 
 

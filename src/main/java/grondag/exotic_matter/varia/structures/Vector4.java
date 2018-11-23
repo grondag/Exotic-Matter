@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives.better;
+package grondag.exotic_matter.varia.structures;
 
 final class Vector4<T> extends Vector3<T>
 {

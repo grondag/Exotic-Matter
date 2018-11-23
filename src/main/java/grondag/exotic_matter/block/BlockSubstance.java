@@ -15,7 +15,7 @@ import grondag.exotic_matter.model.color.Hue;
 import grondag.exotic_matter.model.color.Luminance;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.varia.ILocalized;
-import grondag.exotic_matter.varia.NullHandler;
+import grondag.exotic_matter.varia.structures.NullHandler;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;

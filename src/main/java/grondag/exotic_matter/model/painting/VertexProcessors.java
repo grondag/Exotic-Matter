@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.painting;
 import java.util.HashMap;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.varia.NullHandler;
+import grondag.exotic_matter.varia.structures.NullHandler;
 
 /**
  * Tracks vertex processors by name to support external processor 

@@ -1,4 +1,4 @@
-package grondag.exotic_matter.varia;
+package grondag.exotic_matter.varia.structures;
 
 import javax.annotation.Nullable;
 

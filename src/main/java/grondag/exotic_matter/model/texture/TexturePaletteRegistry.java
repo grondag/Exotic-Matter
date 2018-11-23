@@ -17,7 +17,7 @@ import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.IGrondagMod;
 import grondag.exotic_matter.init.SubstanceConfig;
 import grondag.exotic_matter.model.painting.PaintLayer;
-import grondag.exotic_matter.varia.NullHandler;
+import grondag.exotic_matter.varia.structures.NullHandler;
 
 public class TexturePaletteRegistry implements Iterable<ITexturePalette>
 {
