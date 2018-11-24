@@ -1,13 +1,19 @@
 package grondag.exotic_matter.varia.structures;
 
+import javax.annotation.Nullable;
+
 public class Tuple4<T> extends Tuple3<T>
 {
-    protected final T v3;
+    @Nullable protected T v3;
     
     Tuple4(T v0, T v1, T v2, T v3)
     {
         super(v0, v1, v2);
-        this.v3 = v3;
+    }
+    
+    Tuple4()
+    {
+        super();
     }
     
     @Override
@@ -23,6 +29,28 @@ public class Tuple4<T> extends Tuple3<T>
             return v2;
         case 3:
             return v3;
+        default:
+            throw new IndexOutOfBoundsException();
+        }
+    }
+    
+    @Override
+    public void set(int index, T value)
+    {
+        switch(index)
+        {
+        case 0:
+            v0 = value;
+            return;
+        case 1:
+            v1 = value;
+            return;
+        case 2:
+            v2 = value;
+            return;
+        case 3:
+            v3 = value;
+            return;
         default:
             throw new IndexOutOfBoundsException();
         }

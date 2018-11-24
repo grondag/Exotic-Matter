@@ -13,24 +13,6 @@ public interface IMutableVertex extends IVec3f
      * Do not use on mutable instances to avoid memory allocation overhead.
      */
     public Vec3f pos();
-    
-    @Override
-    public default float x()
-    {
-        return pos().x();
-    }
-
-    @Override
-    public default float y()
-    {
-        return pos().y();
-    }
-    
-    @Override
-    public default float z()
-    {
-        return pos().z();
-    }
 
     /**
      * WARNING: Will always return an immutable reference to ensure safety.
@@ -38,28 +20,13 @@ public interface IMutableVertex extends IVec3f
      */
     public @Nullable Vec3f normal();
     
-    public default float normalX()
-    {
-        final Vec3f n = normal();
-        return n == null ? 0 : n.x();
-    }
+    public float normalX();
     
-    public default float normalY()
-    {
-        final Vec3f n = normal();
-        return n == null ? 0 : n.y();
-    }
+    public float normalY();
     
-    public default float normalZ()
-    {
-        final Vec3f n = normal();
-        return n == null ? 0 : n.z();
-    }
+    public float normalZ();
 
-    public default boolean hasNormal()
-    {
-        return this.normal() != null;
-    }
+    public boolean hasNormal();
     
     public IMutableVertex flip();
     
@@ -101,5 +68,9 @@ public interface IMutableVertex extends IVec3f
     public void setGlow(int layerIndex, int glow);
 
     public void setUV(int layerIndex, float u, float v);
+
+    public void setU(int layerIndex, float u);
+    
+    public void setV(int layerIndex, float v);
     
 }

@@ -1,5 +1,7 @@
 package grondag.exotic_matter.varia.structures;
 
+import java.lang.reflect.Array;
+
 public class TupleN<T> implements ITuple<T>
 {
     final T[] values;
@@ -12,12 +14,24 @@ public class TupleN<T> implements ITuple<T>
         this.values = values;
     }
     
+    @SuppressWarnings("unchecked")
+    TupleN(Class<T> clazz, int order)
+    {
+        values = (T[]) Array.newInstance(clazz, order);
+    }
+    
     @Override
     public T get(int index)
     {
         return values[index];
     }
 
+    @Override
+    public void set(int index, T value)
+    {
+        values[index] = value;
+    }
+    
     @Override
     public int size()
     {

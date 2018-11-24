@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.better;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
@@ -14,7 +15,6 @@ import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
-import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
@@ -122,7 +122,7 @@ public interface IMutablePolygon extends IPolygon
     
     IMutablePolygon setVertexNormal(int vertexIndex, float x, float y, float z);
     
-    IPolygon setPipeline(IRenderPipeline pipeline);
+    IMutablePolygon setPipeline(IRenderPipeline pipeline);
     
     IMutablePolygon clearFaceNormal();
 
@@ -244,7 +244,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Assigns locked UV coordinates in all layers that require them.
      */
-    default IPolygon assignAllLockedUVCoordinates()
+    default IMutablePolygon assignAllLockedUVCoordinates()
     {
         final int layerCount = this.layerCount();
         if(layerCount == 1)
@@ -267,12 +267,12 @@ public interface IMutablePolygon extends IPolygon
      *  if lockUV is on, derive UV coords by projection
      *  of vertex coordinates on the plane of the quad's face
      */
-    IPolygon assignLockedUVCoordinates(int layerIndex);
+    IMutablePolygon assignLockedUVCoordinates(int layerIndex);
 
     /**
      * Adds given offsets to u,v values of each vertex.
      */
-    default IPolygon offsetVertexUV(int layerIndex, float uShift, float vShift)
+    default IMutablePolygon offsetVertexUV(int layerIndex, float uShift, float vShift)
     {
         for(int i = 0; i < this.vertexCount(); i++)
         {

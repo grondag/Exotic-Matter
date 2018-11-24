@@ -212,6 +212,12 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     public IVec3f getVertexNormal(int vertexIndex);
     
+    public float getVertexNormalX(int vertexIndex);
+    
+    public float getVertexNormalY(int vertexIndex);
+    
+    public float getVertexNormalZ(int vertexIndex);
+    
     /** 
      * Face to use for shading testing.
      * Based on which way face points. 

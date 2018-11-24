@@ -73,7 +73,7 @@ public class CSGPlane
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();
-        this.dist = normal.dotProduct(quad.vertex[0].pos());    
+        this.dist = normalX * quad.vertex[0].x() + normalY * quad.vertex[0].y() + normalZ * quad.vertex[0].z();    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -301,14 +301,12 @@ public class CSGPlane
                     // If the next vertex will be included in this side, we are starting the line connecting
                     // next vertex with previous vertex and should use line from prev. vertex
                     // If the next vertex will NOT be included in this side, we are starting the split line.
-                    final Vec3f jPos = jVertex.pos();
-                    final Vec3f iPos = iVertex.pos();
                     
-                    final float tx = jPos.x() - iPos.x();
-                    final float ty = jPos.y() - iPos.y();
-                    final float tz = jPos.z() - iPos.z();
+                    final float tx = jVertex.x() - iVertex.x();
+                    final float ty = jVertex.y() - iVertex.y();
+                    final float tz = jVertex.z() - iVertex.z();
                     
-                    final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
+                    final float iDot = iVertex.x() * this.normalX + iVertex.y() * this.normalY + iVertex.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     IMutableVertex v = iVertex.interpolate(jVertex, t);
@@ -330,13 +328,10 @@ public class CSGPlane
                     backQuad.vertex[iBack++] = iVertex;
                     
                     // see notes for 5
-                    final Vec3f jPos = jVertex.pos();
-                    final Vec3f iPos = iVertex.pos();
-                    
-                    final float tx = jPos.x() - iPos.x();
-                    final float ty = jPos.y() - iPos.y();
-                    final float tz = jPos.z() - iPos.z();
-                    final float iDot = iPos.x() * this.normalX + iPos.y() * this.normalY + iPos.z() * this.normalZ;
+                    final float tx = jVertex.x() - iVertex.x();
+                    final float ty = jVertex.y() - iVertex.y();
+                    final float tz = jVertex.z() - iVertex.z();
+                    final float iDot = iVertex.x() * this.normalX + iVertex.y() * this.normalY + iVertex.z() * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
                     IMutableVertex v = iVertex.interpolate(jVertex, t);

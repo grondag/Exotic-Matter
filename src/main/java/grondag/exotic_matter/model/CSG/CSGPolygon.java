@@ -108,7 +108,7 @@ public class CSGPolygon
     {
         for(int i = 0; i < this.vertex.length; i++)
         {
-            if(this.vertex[i].pos() == v) return i;
+            if(this.vertex[i] == v) return i;
         }
         return VERTEX_NOT_FOUND;
     }

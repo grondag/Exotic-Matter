@@ -1,13 +1,20 @@
 package grondag.exotic_matter.varia.structures;
 
+import javax.annotation.Nullable;
+
 public class Tuple2<T> extends Tuple1<T>
 {
-    protected final T v1;
+    @Nullable protected T v1;
     
     Tuple2(T v0, T v1)
     {
         super(v0);
         this.v1 = v1;
+    }
+    
+    Tuple2()
+    {
+        super();
     }
     
     @Override
@@ -19,6 +26,18 @@ public class Tuple2<T> extends Tuple1<T>
         {
             assert index == 1;
             return v1;
+        }
+    }
+    
+    @Override
+    public void set(int index, T value)
+    {
+        if(index == 0)
+            v0 = value;
+        else
+        {
+            assert index == 1;
+            v1 = value;
         }
     }
 
