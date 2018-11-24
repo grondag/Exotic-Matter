@@ -57,7 +57,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     {
         IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setLockUV(0, true);
-        template.setSurfaceInstance(SURFACE_MAIN);
+        template.setSurface(SURFACE_MAIN);
   
       
       //union opposite overlapping coplanar faces
@@ -80,7 +80,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 
       
       Collection<IMutablePolygon> quadsA = MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
-      template.setSurfaceInstance(SURFACE_LAMP);
+      template.setSurface(SURFACE_LAMP);
       Collection<IMutablePolygon> quadsB = MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));

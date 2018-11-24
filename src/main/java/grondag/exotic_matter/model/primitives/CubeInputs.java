@@ -52,7 +52,7 @@ public class CubeInputs
         qi.setLockUV(0, true);
         qi.setRotation(0, (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
         qi.setTextureName(0, this.textureName);
-        qi.setSurfaceInstance(this.surfaceInstance);
+        qi.setSurface(this.surfaceInstance);
 
         float minBound = this.isOverlay ? -0.0002f : 0.0f;
         float maxBound = this.isOverlay ? 1.0002f : 1.0f;

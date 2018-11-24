@@ -28,7 +28,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         template.setLockUV(0, true);
 
         IMutablePolygon quad = template.claimCopy();
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
+        quad.setSurface(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
@@ -36,7 +36,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         quad.release();
       
         quad = template.claimCopy();
-        quad.setSurfaceInstance(BACK_AND_BOTTOM_SURFACE);
+        quad.setSurface(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
@@ -44,7 +44,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         quad.release();
         
         quad = template.claimCopy();
-        quad.setSurfaceInstance(SIDE_SURFACE);
+        quad.setSurface(SIDE_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 1, 0),
@@ -56,7 +56,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         quad.release();
         
         quad = template.claimCopy();
-        quad.setSurfaceInstance(SIDE_SURFACE);
+        quad.setSurface(SIDE_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(EnumFacing.DOWN,
                 new FaceVertex(0, 0, 0),
@@ -68,7 +68,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         quad.release();
         
         quad = template.claimCopy();
-        quad.setSurfaceInstance(TOP_SURFACE);
+        quad.setSurface(TOP_SURFACE);
         quad.setNominalFace(EnumFacing.SOUTH);
         quad.setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 1),

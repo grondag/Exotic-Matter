@@ -76,7 +76,7 @@ public class QuadPaintManager
         @Override
         public void accept(@SuppressWarnings("null") IPolygon poly)
         {
-            PainterList painters = paintersForSurface(poly.getSurfaceInstance());
+            PainterList painters = paintersForSurface(poly.getSurface());
             if(painters.isEmpty()) return;
             
             IMutablePolygon quad = poly.claimCopy();

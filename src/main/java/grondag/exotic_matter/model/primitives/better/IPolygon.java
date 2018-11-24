@@ -204,12 +204,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         return area;
     }
     
-    public Surface getSurfaceInstance();
+    public Surface getSurface();
     
     /**
      * Returns computed face normal if no explicit normal assigned.
+     * CONVERT TO IMMUTABLE IF SAVING A REFERENCE.
      */
-    public Vec3f getVertexNormal(int vertexIndex);
+    public IVec3f getVertexNormal(int vertexIndex);
     
     /** 
      * Face to use for shading testing.
@@ -283,13 +284,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     public void claimVertexCopiesToArray(IMutableVertex[] vertex);
     
-    int getMaxU(int layerIndex);
+    float getMaxU(int layerIndex);
 
-    int getMaxV(int layerIndex);
+    float getMaxV(int layerIndex);
 
-    int getMinU(int layerIndex);
+    float getMinU(int layerIndex);
 
-    int getMinV(int layerIndex);
+    float getMinV(int layerIndex);
 
     int layerCount();
     

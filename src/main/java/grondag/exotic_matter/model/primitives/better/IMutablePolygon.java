@@ -188,7 +188,7 @@ public interface IMutablePolygon extends IPolygon
     
     IMutablePolygon invertFaceNormal();
     
-    IMutablePolygon setSurfaceInstance(Surface surface);
+    IMutablePolygon setSurface(Surface surface);
 
     IMutablePolygon scaleFromBlockCenter(float scaleFactor);
 

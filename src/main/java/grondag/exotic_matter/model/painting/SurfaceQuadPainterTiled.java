@@ -31,7 +31,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         final boolean uFlipped = quad.getMaxU(layerIndex) < quad.getMinU(layerIndex);
         final boolean vFlipped = quad.getMaxV(layerIndex) < quad.getMinV(layerIndex);
         
-        final Surface surfIn = quad.getSurfaceInstance();
+        final Surface surfIn = quad.getSurface();
         final EnumFacing face = quad.getNominalFace();
         final int salt = (quad.getTextureSalt(layerIndex) << 3) + (face == null ? 0 : face.ordinal());
         

@@ -54,7 +54,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     {
         IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setLockUV(0, false);
-        template.setSurfaceInstance(SURFACE_MAIN);
+        template.setSurface(SURFACE_MAIN);
   
         Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
       

@@ -1,6 +1,6 @@
 package grondag.exotic_matter.varia.structures;
 
-public class TupleN<T> extends AbstractTuple<T>
+public class TupleN<T> implements ITuple<T>
 {
     final T[] values;
     

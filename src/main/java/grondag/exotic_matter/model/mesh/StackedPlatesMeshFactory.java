@@ -62,7 +62,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         template.setLockUV(0, true);
 
         IMutablePolygon quad = template.claimCopy(4);
-        quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
+        quad.setSurface(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         quad.transform(matrix);
@@ -72,7 +72,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
             quad = template.claimCopy(4);
-            quad.setSurfaceInstance(SIDE_SURFACE);
+            quad.setSurface(SIDE_SURFACE);
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             quad.transform(matrix);
@@ -81,7 +81,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         }
         
         quad = template.claimCopy(4);
-        quad.setSurfaceInstance(TOP_AND_BOTTOM_SURFACE);
+        quad.setSurface(TOP_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         quad.transform(matrix);

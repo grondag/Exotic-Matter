@@ -66,18 +66,18 @@ public interface IMutableVertex extends IVec3f
     /**
      * Will not retain a reference to normal if it is mutable.
      */
-    public IMutableVertex setNormal(Vec3f normal);
+    public void setNormal(Vec3f normal);
     
-    public IMutableVertex setNormal(float x, float y, float z);
+    public void setNormal(float x, float y, float z);
     
     /**
      * Will not retain a reference to pos if it is mutable.
      */
-    public IMutableVertex setPos(Vec3f pos);
+    public void setPos(Vec3f pos);
     
-    public IMutableVertex setPos(float x, float y, float z);
+    public void setPos(float x, float y, float z);
     
-    public IMutableVertex transform(Matrix4f matrix, boolean rescaleToUnitCube);
+    public void transform(Matrix4f matrix, boolean rescaleToUnitCube);
 
     /**
      * The two input vertices must be of the same concrete type and both will be unmodified.<br>
@@ -86,12 +86,20 @@ public interface IMutableVertex extends IVec3f
      */
     public IMutableVertex interpolate(IMutableVertex jVertex, float t);
 
-    public int getColor();
+    public int getColor(int layerIndex);
 
-    public int getGlow();
+    public int getGlow(int layerIndex);
 
     public float getU(int layerIndex);
     
     public float getV(int layerIndex);
+
+    public void setColorGlow(int layerIndex, int color, int glow);
+
+    public void setColor(int layerIndex, int color);
+
+    public void setGlow(int layerIndex, int glow);
+
+    public void setUV(int layerIndex, float u, float v);
     
 }

@@ -109,7 +109,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         template = PolyFactory.newPaintable(4);
 
         template.setLockUV(0, true);
-        template.setSurfaceInstance(SURFACE_TOP);
+        template.setSurface(SURFACE_TOP);
         // default - need to change for sides and bottom
         template.setNominalFace(EnumFacing.UP);
         //        templateBuilder.setTag("template");
@@ -119,7 +119,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         {
             // Bottom faces are pre-built
             
-            qBottom.setSurfaceInstance(SURFACE_SIDE);
+            qBottom.setSurface(SURFACE_SIDE);
             qBottom.setNominalFace(EnumFacing.DOWN);        
             qBottom.setupFaceQuad(0, 0, 1, 1, getBottomY(i-2), EnumFacing.NORTH);
             //            qBottom.setTag("bottom-" + i);
@@ -544,7 +544,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 final HorizontalCorner cornerLeft = HorizontalCorner.find(side, side.getLeft());
                 final HorizontalCorner cornerRight = HorizontalCorner.find(side, side.getRight());
 
-                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setSurface(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
 
                 qSide.setupFaceQuad(
@@ -580,7 +580,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 //Sides
                 IMutablePolygon qSide = template.claimCopy();
                 //              qSide.setTag("side-complex-1-" + side.toString());
-                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setSurface(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
 
                 qSide.setupFaceQuad(
@@ -593,7 +593,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
                 qSide = qSide.claimCopy();
                 //              qSide.setTag("side-complex-2-" + side.toString());
-                qSide.setSurfaceInstance(SURFACE_SIDE);
+                qSide.setSurface(SURFACE_SIDE);
                 qSide.setNominalFace(side.face);
                 qSide.setupFaceQuad(
                         new FaceVertex(0.5f, bottom, 0),
@@ -714,12 +714,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
         //most important thing seems to be that sides come first
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
-        work.setSurfaceInstance(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
+        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
         
         work.release();
         return cubeQuads;

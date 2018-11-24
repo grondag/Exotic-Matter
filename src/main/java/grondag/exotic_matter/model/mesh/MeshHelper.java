@@ -156,7 +156,7 @@ public class MeshHelper
         
         IMutablePolygon poly = template.claimCopy(3);
        
-        Surface.Builder surfBuilder = Surface.builder(poly.getSurfaceInstance());
+        Surface.Builder surfBuilder = Surface.builder(poly.getSurface());
         if(surfBuilder.topology() == SurfaceTopology.TILED)
         {
             final float uvMax = (float) (2 * s);
@@ -164,7 +164,7 @@ public class MeshHelper
             poly.setMaxV(0, uvMax);
             surfBuilder.withWrapDistance(uvMax);
         }
-        poly.setSurfaceInstance(surfBuilder.build());
+        poly.setSurface(surfBuilder.build());
         
         //enable texture randomization
         int salt = 0;

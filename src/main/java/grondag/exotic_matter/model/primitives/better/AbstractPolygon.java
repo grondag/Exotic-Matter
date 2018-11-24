@@ -1,19 +1,22 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Consumer;
 
+import com.google.common.collect.ImmutableList.Builder;
+
+import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
-import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
-import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.BitPacker;
-import grondag.exotic_matter.varia.structures.AbstractTuple;
+import grondag.exotic_matter.varia.structures.ITuple;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-abstract class AbstractPolygon implements IPolygon
+public abstract class AbstractPolygon  implements IPolygon
 {
     protected static final BitPacker<AbstractPolygon> BITPACKER = new BitPacker<AbstractPolygon>(p -> p.stateBits, (p, b) -> p.stateBits = b);
 
@@ -97,53 +100,22 @@ abstract class AbstractPolygon implements IPolygon
 
     protected long stateBits = DEFAULT_BITS;
 
-    protected float minU = 0;
-    protected float maxU = 1;
-    protected float minV = 0;
-    protected float maxV = 1;
+    protected abstract ITuple<IMutableVertex> getVertices();
 
-    protected @Nullable Vec3f faceNormal;
-    protected @Nullable String textureName;
-    protected Surface surfaceInstance = Surface.NO_SURFACE;
+    protected abstract ITuple<IVec3f> getNormals();
 
-    protected final AbstractTuple<IMutableVertex> vertices;
-    
-    protected final @Nullable AbstractTuple<Vec3f> normals;
-    
-    AbstractPolygon(AbstractTuple<IMutableVertex> vertices, @Nullable AbstractTuple<Vec3f> normals)
-    {
-        this.vertices = vertices;
-        this.normals = normals;
-    }
+    protected abstract ITuple<IPolygonLayerProperties> getLayerProps();
     
     @Override
     public final int vertexCount()
     {
-        return vertices.size();
+        return getVertices().size();
     }
     
-    @Override
-    public final Vec3f getFaceNormal()
-    {
-        Vec3f result = this.faceNormal;
-        if(result == null)
-        {
-            result = computeFaceNormal();
-            this.faceNormal = result;
-        }
-        return result;
-    }
-
     @Override
     public final EnumFacing getNominalFace()
     {
         return NOMINAL_FACE_BITS.getValue(this);
-    }
-
-    @Override
-    public final Surface getSurfaceInstance()
-    {
-        return surfaceInstance;
     }
 
     @Override
@@ -194,58 +166,177 @@ abstract class AbstractPolygon implements IPolygon
         return EMISSIVE_BIT[layerIndex].getValue(this);
     }
     
-    @SuppressWarnings("null")
     @Override
-    public final Vec3f getVertexNormal(int vertexIndex)
+    public final IVec3f getVertexNormal(int vertexIndex)
     {
-        return normals == null ? getFaceNormal() : normals.get(vertexIndex);
+        return getNormals() == null ? getFaceNormal() : getNormals().get(vertexIndex);
     }
     
     @Override
     public final float getVertexX(int vertexIndex)
     {
-        return vertices.get(vertexIndex).x();
+        return getVertices().get(vertexIndex).x();
     }
 
     @Override
     public final float getVertexY(int vertexIndex)
     {
-        return vertices.get(vertexIndex).y();
+        return getVertices().get(vertexIndex).y();
     }
 
     @Override
     public final float getVertexZ(int vertexIndex)
     {
-        return vertices.get(vertexIndex).z();
+        return getVertices().get(vertexIndex).z();
     }
 
     @Override
     public final int getVertexColor(int layerIndex, int vertexIndex)
     {
-        return vertices.get(vertexIndex).getColor();
+        return getVertices().get(vertexIndex).getColor(layerIndex);
     }
 
     @Override
     public final int getVertexGlow(int layerIndex, int vertexIndex)
     {
-        return vertices.get(vertexIndex).getGlow();
+        return getVertices().get(vertexIndex).getGlow(layerIndex);
     }
 
     @Override
     public final float getVertexU(int layerIndex, int vertexIndex)
     {
-        return vertices.get(vertexIndex).getU(vertexIndex);
+        return getVertices().get(vertexIndex).getU(vertexIndex);
     }
 
     @Override
     public final float getVertexV(int layerIndex, int vertexIndex)
     {
-        return vertices.get(vertexIndex).getV(vertexIndex);
+        return getVertices().get(vertexIndex).getV(vertexIndex);
     }
 
     @Override
     public final IVec3f getPos(int vertexIndex)
     {
-        return vertices.get(vertexIndex).pos();
+        return getVertices().get(vertexIndex).pos();
+    }
+
+    
+    @Override
+    public final float getMaxU(int layerIndex)
+    {
+        return getLayerProps().get(layerIndex).getMaxU();
+    }
+
+    @Override
+    public final float getMaxV(int layerIndex)
+    {
+        return getLayerProps().get(layerIndex).getMaxV();
+    }
+
+    @Override
+    public final float getMinU(int layerIndex)
+    {
+        return getLayerProps().get(layerIndex).getMinU();
+    }
+
+    @Override
+    public final float getMinV(int layerIndex)
+    {
+        return getLayerProps().get(layerIndex).getMinV();
+    }
+
+    @Override
+    public final int layerCount()
+    {
+        return getLayerProps().size();
+    }
+
+    @Override
+    public final String getTextureName(int layerIndex)
+    {
+        return getLayerProps().get(layerIndex).getTextureName();
+    }
+
+    /**
+     * This is Acuity-only.  Acuity assumes quad has only a single render layer.
+     */
+    @Override
+    public final BlockRenderLayer getRenderLayer()
+    {
+        return getRenderLayer(0);
+    }
+
+    @Override
+    public final boolean hasRenderLayer(BlockRenderLayer layer)
+    {
+        if(getRenderLayer(0) == layer)
+            return true;
+        
+        final int count = this.layerCount();
+        return (count > 1 && getRenderLayer(1) == layer)
+               || (count == 3 && getRenderLayer(2) == layer);
+    }
+    
+    @Override
+    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public IPolygon recoloredCopy()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public IMutablePolygon claimCopy(int vertexCount)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void produceVertices(@SuppressWarnings("null") IPipelinedVertexConsumer vertexLighter)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    @Override
+    public final void addPaintableQuadsToList(List<IMutablePolygon> list)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public final void addPaintedQuadsToList(List<IPolygon> list)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public final void producePaintableQuads(Consumer<IMutablePolygon> consumer)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public final void producePaintedQuads(Consumer<IPolygon> consumer)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public final void claimVertexCopiesToArray(IMutableVertex[] vertex)
+    {
+        // TODO Auto-generated method stub
+        
     }
 }
