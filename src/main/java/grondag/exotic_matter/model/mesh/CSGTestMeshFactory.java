@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.mesh;
 
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NONE;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -39,7 +38,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     
     /** never changes so may as well save it */
-    private final Collection<IPolygon> cachedQuads;
+    private final List<IPolygon> cachedQuads;
     
     public CSGTestMeshFactory()
     {
@@ -48,12 +47,14 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
-        this.cachedQuads.forEach(target);
+        final int limit = cachedQuads.size();
+        for(int i = 0; i < limit; i++)
+            target.accept(cachedQuads.get(i).claimCopy());
     }
     
-    private Collection<IPolygon> getTestQuads()
+    private List<IPolygon> getTestQuads()
     {
         IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setLockUV(0, true);
@@ -79,9 +80,9 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 //    result = new CSGShape(QuadFactory.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template));
 
       
-      Collection<IMutablePolygon> quadsA = MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
+      List<IMutablePolygon> quadsA = MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
       template.setSurface(SURFACE_LAMP);
-      Collection<IMutablePolygon> quadsB = MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
+      List<IMutablePolygon> quadsB = MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
 
 //      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));
 //      template.color = borderColor.getColorMap(EnumColorMap.BORDER);
@@ -89,7 +90,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 
 //      CSGMesh result = quadsA.intersect(quadsB);
 //      CSGMesh result = quadsA.union(quadsB);
-      Collection<IPolygon> result = IMutablePolygon.paintAndRelease(CSGMesh.difference(quadsA, quadsB));
+      List<IPolygon> result = IMutablePolygon.paintAndRelease(CSGMesh.difference(quadsA, quadsB));
       
       IMutablePolygon.releaseAll(quadsA);
       IMutablePolygon.releaseAll(quadsB);

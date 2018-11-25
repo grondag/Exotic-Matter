@@ -16,6 +16,7 @@ import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.varia.BitPacker;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -387,15 +388,8 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     @Override
     public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
     {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public IPolygon recoloredCopy()
-    {
-        // TODO Auto-generated method stub
-        return null;
+        assert vertexCount() <= 4;
+        builder.add(QuadBakery.createBakedQuad(this, isItem));
     }
 
     @Override

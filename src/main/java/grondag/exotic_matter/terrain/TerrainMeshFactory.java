@@ -92,12 +92,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     private static final CSGNode.Root cubeNodeHybrid;
     //    private final CSGNode.Root cubeNodeComplex;
 
-    private static final LongSimpleLoadingCache<Collection<IPolygon>> modelCache = new LongSimpleLoadingCache<Collection<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
+    private static final LongSimpleLoadingCache<List<IPolygon>> modelCache = new LongSimpleLoadingCache<List<IPolygon>>(new TerrainCacheLoader(), 0xFFFF);
 
-    private static class TerrainCacheLoader implements LongSimpleCacheLoader<Collection<IPolygon>>
+    private static class TerrainCacheLoader implements LongSimpleCacheLoader<List<IPolygon>>
     {
         @Override
-        public Collection<IPolygon> load(long key)
+        public List<IPolygon> load(long key)
         {
             //            cacheMisses.incrementAndGet();
             return createShapeQuads(new TerrainState(key < 0 ? -key : key, 0), key < 0);
@@ -756,7 +756,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     //    private static ISuperModelState[] modelStates = new ISuperModelState[120000];
     //    private static int index = 0;
-    private static Collection<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
+    private static List<IPolygon> createShapeQuads(TerrainState flowState, boolean needsSubdivision)
     {
         //        shapeTimer.start();
         //        Collection<IPolygon> result = innerShapeQuads(modelState);
@@ -871,9 +871,9 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IMutablePolygon> target)
     {
-        final Consumer<IPolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
+        final Consumer<IMutablePolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
                 ? QuadHelper.makeRecoloring(target) : target;
 
                 // Hot terrain blocks that border non-hot blocks need a subdivided mesh
@@ -895,11 +895,15 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 //            cacheAttempts.incrementAndGet();
 
                 //FIXME: prevent NPE in release due to strange and rare bug somewhere - possibly a concurrency issue in cache
-                final Collection<IPolygon> c = modelCache.get(key);
+                final List<IPolygon> c = modelCache.get(key);
                 if(c == null)
                     assert false : "Got null result from terrain model cache";
                 else
-                    c.forEach(wrapped);
+                {
+                    final int limit = c.size();
+                    for(int i = 0; i < limit; i++)
+                        wrapped.accept(c.get(i).claimCopy());
+                }
     }
 
     @Override

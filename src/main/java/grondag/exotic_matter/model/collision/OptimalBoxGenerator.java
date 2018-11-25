@@ -10,11 +10,11 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume16;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class OptimalBoxGenerator extends AbstractBoxGenerator implements Consumer<IPolygon>
+public class OptimalBoxGenerator extends AbstractBoxGenerator implements Consumer<IMutablePolygon>
 {
     private static void div1(final float[] polyData, final long[] voxelBits)
     {

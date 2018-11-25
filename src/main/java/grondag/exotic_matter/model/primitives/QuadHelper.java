@@ -13,13 +13,10 @@ import javax.vecmath.Vector4f;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.IVertexCollection;
-import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
@@ -243,91 +240,7 @@ public class QuadHelper
        	return retVal;
        }
     
-       //TODO: move this to MeshHelper
-       /**
-        * Same as {@link #addTextureToAllFaces(String, float, float, float, double, int, boolean, float, Rotation, List)}
-        * but with uvFraction = 1.
-        */
-       public static <T extends IPolygon> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, Rotation texturRotation, List<T> list)
-       {
-           addTextureToAllFaces(createMutable, rawTextureName, left, top, size, scaleFactor, color, contractUVs, 1, texturRotation, list);
-       }
-       
-       //TODO: move this to MeshHelper
-       /**
-        * Generates a quad that isn't uv-locked - originally for putting symbols on MatterPackaging Cubes.
-        * Bit of a mess, but thought might get some reuse out of it, so putting here.
-        * 
-        * @param createMutable  if true will add Paintable (mutable) quads. Painted (immutable) otherwise.
-        * @param rawTextureName should not have mod/blocks prefix
-        * @param top            using semantic coordinates here; 0,0 is lower right of face
-        * @param left 
-        * @param size           assuming square box
-        * @param scaleFactor    quads will be scaled out from center by this- use value > 1 to bump out overlays
-        * @param color          color of textures
-        * @param uvFraction     how much of texture to include, starting from u,v 0,0.  
-        *                       Pass 1 to include whole texture. Mainly of use when trying to 
-        *                       apply big textures to item models and don't want whole thing.
-        * @param contractUVs    should be true for everything except fonts maybe
-        * @param list           your mutable list of quads
-        */
-       @SuppressWarnings("unchecked")
-    public static <T extends IPolygon> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<T> list)
-       {
-           IMutablePolygon template = PolyFactory.newPaintable(4)
-               .setTextureName(0, "hard_science:blocks/" + rawTextureName)
-               .setLockUV(0, false)
-               .setShouldContractUVs(0, contractUVs);
-           
-           float bottom = top - size;
-           float right = left + size;
-           
-           FaceVertex[] fv = new FaceVertex[4];
-           
-           switch(texturRotation)
-           {
-        case ROTATE_180:
-            fv[0] = new FaceVertex.UV(left, bottom, 0, uvFraction, 0);
-            fv[1] = new FaceVertex.UV(right, bottom, 0, 0, 0);
-            fv[2] = new FaceVertex.UV(right, top, 0, 0, uvFraction);
-            fv[3] = new FaceVertex.UV(left, top, 0, uvFraction, uvFraction);
-            break;
-
-        case ROTATE_270:
-            fv[0] = new FaceVertex.UV(left, bottom, 0, 0, 0);
-            fv[1] = new FaceVertex.UV(right, bottom, 0, 0, uvFraction);
-            fv[2] = new FaceVertex.UV(right, top, 0, uvFraction, uvFraction);
-            fv[3] = new FaceVertex.UV(left, top, 0, uvFraction, 0);
-            break;
-        
-        case ROTATE_90:
-            fv[0] = new FaceVertex.UV(left, bottom, 0, uvFraction, uvFraction);
-            fv[1] = new FaceVertex.UV(right, bottom, 0, uvFraction, 0);
-            fv[2] = new FaceVertex.UV(right, top, 0, 0, 0);
-            fv[3] = new FaceVertex.UV(left, top, 0, 0, uvFraction);
-            break;
-        
-        case ROTATE_NONE:
-        default:
-            fv[0] = new FaceVertex.UV(left, bottom, 0, 0, uvFraction);
-            fv[1] = new FaceVertex.UV(right, bottom, 0, uvFraction, uvFraction);
-            fv[2] = new FaceVertex.UV(right, top, 0, uvFraction, 0);
-            fv[3] = new FaceVertex.UV(left, top, 0, 0, 0);
-            break;
-           
-           }
-           
-           for(EnumFacing face : EnumFacing.VALUES)
-           {
-               template.setupFaceQuad(face, fv[0], fv[1], fv[2], fv[3], null);
-               template.scaleFromBlockCenter(scaleFactor);
-               list.add((T) (createMutable ? template.claimCopy() : template.toPainted()));
-           }
-           
-           template.release();
-       }
-
-    /**
+     /**
      * Randomly recolors all the polygons as an aid to debugging.
      * Polygons must be mutable and are mutated by this operation.
      */
@@ -344,9 +257,15 @@ public class QuadHelper
         quadStream.forEach((IMutablePolygon quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
 
-    public static Consumer<IPolygon> makeRecoloring(Consumer<IPolygon> wrapped)
+    //TODO: move to mesh helper
+    public static Consumer<IMutablePolygon> makeRecoloring(Consumer<IMutablePolygon> wrapped)
     {
-        return p -> p.recoloredCopy();
+        return p -> 
+        {
+            int c = (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000;
+            p.setColor(0, c);
+            wrapped.accept(p);
+        };
     }
 
     public static boolean isConvex(IVertexCollection vertices)

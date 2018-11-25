@@ -1,6 +1,6 @@
 package grondag.exotic_matter.varia.structures;
 
-import java.util.AbstractCollection;
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -14,7 +14,7 @@ import net.minecraft.util.math.MathHelper;
  * @author grondag
  *
  */
-public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
+public class AbstractUnorderedArrayList<T> extends AbstractList<T>
 {
     protected Object[] items;
     
@@ -64,6 +64,14 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
         return -1;
     }
     
+    @SuppressWarnings({ "null", "unchecked" })
+    @Override
+    public int indexOf(@Nullable Object o)
+    {
+        return findIndex((T) o);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     @Nullable
     public T get(int index)
@@ -72,19 +80,23 @@ public class AbstractUnorderedArrayList<T> extends AbstractCollection<T>
     }
     
     /** Does NOT preserve order! */
-    public void remove(int index)
+    @SuppressWarnings("unchecked")
+    @Override
+    public T remove(int index)
     {
         assert this.size > 0 : "SimpleUnoderedArrayList detected attempt to remove item from empty list.";
-
+        @Nullable T result = null;
         if(this.size > 0)
         {
             this.size--;
             if(index < size)
             {
+                result = (T) this.items[index];
                 this.items[index] = this.items[size];
             }
             this.items[size] = null;
         }
+        return result;
     }
     
     @Override

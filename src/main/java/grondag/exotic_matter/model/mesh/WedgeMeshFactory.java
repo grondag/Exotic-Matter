@@ -6,7 +6,6 @@ import javax.vecmath.Matrix4f;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
@@ -15,7 +14,7 @@ import net.minecraft.util.EnumFacing;
 public class WedgeMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.
@@ -32,16 +31,14 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
         quad.setNominalFace(EnumFacing.NORTH);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
       
         quad = template.claimCopy();
         quad.setSurface(BACK_AND_BOTTOM_SURFACE);
         quad.setNominalFace(EnumFacing.EAST);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
         
         quad = template.claimCopy();
         quad.setSurface(SIDE_SURFACE);
@@ -52,8 +49,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(1, 1, 0), 
                 EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
         
         quad = template.claimCopy();
         quad.setSurface(SIDE_SURFACE);
@@ -64,8 +60,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(0, 1, 0), 
                 EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
         
         quad = template.claimCopy();
         quad.setSurface(TOP_SURFACE);
@@ -77,8 +72,7 @@ public class WedgeMeshFactory extends AbstractWedgeMeshFactory
                 new FaceVertex(0, 1, 1), 
                 EnumFacing.UP);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
         
         template.release();
     }

@@ -18,7 +18,6 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.primitives.better.PolyFactory;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -51,7 +50,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
     }
  
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
         final int meta = modelState.getMetaData();
         final Matrix4f matrix = modelState.getMatrix4f();
@@ -66,8 +65,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         quad.setNominalFace(EnumFacing.UP);
         quad.setupFaceQuad(0, 0, 1, 1, 1-height, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
       
         for(EnumFacing face : EnumFacing.Plane.HORIZONTAL.facings())
         {
@@ -76,8 +74,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
             quad.setNominalFace(face);
             quad.setupFaceQuad( 0, 0, 1, height, 0, EnumFacing.UP);
             quad.transform(matrix);
-            target.accept(quad.toPainted());
-            quad.release();
+            target.accept(quad);
         }
         
         quad = template.claimCopy(4);
@@ -85,8 +82,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         quad.setNominalFace(EnumFacing.DOWN);
         quad.setupFaceQuad(0, 0, 1, 1, 0, EnumFacing.NORTH);
         quad.transform(matrix);
-        target.accept(quad.toPainted());
-        quad.release();
+        target.accept(quad);
         
         template.release();
     }

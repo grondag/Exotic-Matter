@@ -194,7 +194,7 @@ public class SuperDispatcher
     
     private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
-        final Consumer<IPolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
+        final Consumer<IMutablePolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
         modelState.getShape().meshFactory().produceShapeQuads(modelState, manager);
     }
     

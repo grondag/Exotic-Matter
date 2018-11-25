@@ -18,7 +18,7 @@ public class QuadPaintManager
 {
     private static ThreadLocal<Manager> managers = ThreadLocal.withInitial(() -> new Manager());
 
-    public static final Consumer<IPolygon> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
+    public static final Consumer<IMutablePolygon> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
     {
         Manager result = managers.get();
         result.clear();
@@ -28,7 +28,7 @@ public class QuadPaintManager
         return result;
     }
     
-    private static class Manager implements Consumer<IPolygon>
+    private static class Manager implements Consumer<IMutablePolygon>
     {
         private ISuperModelState modelState;
         private boolean isItem; 
@@ -74,18 +74,16 @@ public class QuadPaintManager
         }
         
         @Override
-        public void accept(@SuppressWarnings("null") IPolygon poly)
+        public void accept(@SuppressWarnings("null") IMutablePolygon poly)
         {
             PainterList painters = paintersForSurface(poly.getSurface());
             if(painters.isEmpty()) return;
             
-            IMutablePolygon quad = poly.claimCopy();
-            
             // do this here to avoid doing it for all painters
             // and because the quadrant split test requires it.
-            quad.assignAllLockedUVCoordinates();
+            poly.assignAllLockedUVCoordinates();
             
-            painters.producePaintedQuads(quad, target, isItem);
+            painters.producePaintedQuads(poly, target, isItem);
           
         }
       

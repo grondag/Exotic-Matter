@@ -361,10 +361,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
 //        produceQuads(q -> builder.add(QuadBakery.createBakedQuad(layerIndex, (IPaintedPoly) q, isItem)));
 //    }
 
-    IPolygon recoloredCopy();
-    //final Random r = ThreadLocalRandom.current();
-    //(r.nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000
-
     boolean isEmissive(int textureLayerIndex);
     
     @Override

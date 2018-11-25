@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
+import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.better.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -59,11 +60,14 @@ public abstract class ShapeMeshGenerator
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
     /**
-     * Generator will output immutable polygons and they will be quads or tris.
+     * Generator will output MUTABLE polygons and they will be quads or tris.
+     * Generator will not hold references to any of the polys and they should
+     * be released when no longer needed.
      */
-    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target);
+    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target);
     
 
+    //TODO: remove
     /**
      * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible
      */
@@ -71,7 +75,11 @@ public abstract class ShapeMeshGenerator
     public final Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
     {
         SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>();
-        this.produceShapeQuads(modelState, result);
+        this.produceShapeQuads(modelState, p -> 
+        {
+            result.accept(p.toPainted());
+            p.release();
+        });
         return result;
     }
     

@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.mesh;
 
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NONE;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,7 +35,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
             .build();
     
     /** never changes so may as well save it */
-    private final Collection<IPolygon> cachedQuads;
+    private final List<IPolygon> cachedQuads;
     
     public SphereMeshFactory()
     {
@@ -45,18 +44,20 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
-        cachedQuads.forEach(target);
+        final int limit = cachedQuads.size();
+        for(int i = 0; i < limit; i++)
+            target.accept(cachedQuads.get(i).claimCopy());
     }
     
-    private Collection<IPolygon> generateQuads()
+    private List<IPolygon> generateQuads()
     {
         IMutablePolygon template = PolyFactory.newPaintable(4);
         template.setLockUV(0, false);
         template.setSurface(SURFACE_MAIN);
   
-        Collection<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
+        List<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
       
         return result;
     }
