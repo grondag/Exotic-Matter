@@ -3,7 +3,7 @@ package grondag.exotic_matter.model.primitives.better;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.VertexLayer;
 
-public class Polygon1x4 extends AbstractPolygonNx3<Polygon1x4>
+public class Polygon1x4 extends AbstractPolygonNx4<Polygon1x4>
 {
     @SuppressWarnings("unchecked")
     private static final Layer<Polygon1x4>[] LAYERS = new Layer[1];

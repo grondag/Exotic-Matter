@@ -41,18 +41,7 @@ public interface IMutablePolygon extends IPolygon
      */
     IMutablePolygon copyVertexFrom(int vertexIndex, IMutableVertex source);
     
-    IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color);
-
-    IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ);
-
-    default IMutablePolygon setVertex(int vertexIndex, Vec3d pos, double u, double v, int color, @Nullable Vec3d normal)
-    {
-        if(normal == null)
-            return setVertex(vertexIndex, (float)pos.x, (float)pos.y, (float)pos.z, (float)u, (float)v, color);
-        else
-            return setVertex(vertexIndex, (float)pos.x, (float)pos.y, (float)pos.z, (float)u, (float)v, color, 
-                    (float)normal.x, (float)normal.y, (float)normal.z);
-    }
+    IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex,float u, float v, int color, int glow);
 
     IMutablePolygon setMaxU(int layerIndex, float maxU);
     
@@ -88,6 +77,53 @@ public interface IMutablePolygon extends IPolygon
     IMutablePolygon setRenderLayer(int layerIndex, BlockRenderLayer layer);
     
     IMutablePolygon setEmissive(int textureLayerIndex, boolean emissive);
+    
+    /**
+     * Assumes layer 0
+     */
+    IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, int glow);
+    
+    /**
+     * Assumes layer 0, sets glow to 0
+     */
+    default IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color)
+    {
+        return setVertex(vertexIndex, x, y, z, u, v, color, 0);
+    }
+    
+    /**
+     * Assumes layer 0
+     */
+    default IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ)
+    {
+        return this.setVertex(vertexIndex, normX, normY, normZ, u, v, color).setVertexNormal(vertexIndex, normX, normY, normZ);
+    }
+    
+    /**
+     * Assumes layer 0, sets glow to 0. 
+     * Prefer value-passing, floats.
+     */
+    @Deprecated
+    default IMutablePolygon setVertex(int vertexIndex, Vec3d pos, double u, double v, int color)
+    {
+        return setVertex(vertexIndex, (float)pos.x, (float)pos.y, (float)pos.z, (float)u, (float)v, color, 0);
+    }
+    
+    /**
+     * Assumes layer 0, sets glow to 0. 
+     * Prefer value-passing, floats.
+     */
+    @Deprecated
+    default IMutablePolygon setVertex(int vertexIndex, Vec3d pos, double u, double v, int color, @Nullable Vec3d normal)
+    {
+        IMutablePolygon result = setVertex(vertexIndex, (float)pos.x, (float)pos.y, (float)pos.z, (float)u, (float)v, color, 0);
+        return normal == null ? result : result.setVertexNormal(vertexIndex, (float)normal.x, (float)normal.y, (float)normal.z);
+    }
+    
+    IMutablePolygon setVertexPos(int vertexIndex, float x, float y, float z);
+    
+    IMutablePolygon setVertexPos(int vertexIndex, Vec3f pos);
+
     
     /**
      * glow is clamped to allowed values

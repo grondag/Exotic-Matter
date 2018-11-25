@@ -86,25 +86,27 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
 
     /** supports mutable interface */
     @Override
-    protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color)
+    protected final void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
         final IMutableVertex vertex = vertices()[computeArrayIndex(vertexIndex)];
-        vertex.setPos(x, y, z);
         vertex.setUV(0, u, v);
-        vertex.setColor(0, color);
+        vertex.setColorGlow(0, color, glow);
     }
 
     /** supports mutable interface */
     @Override
-    protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ)
+    protected final void setVertexPosImpl(int vertexIndex, float x, float y, float z)
     {
-        final IMutableVertex vertex = vertices()[computeArrayIndex(vertexIndex)];
-        vertex.setPos(x, y, z);
-        vertex.setNormal(normX, normY, normZ);
-        vertex.setUV(0, u, v);
-        vertex.setColor(0, color);
+        vertices()[computeArrayIndex(vertexIndex)].setPos(x, y, z);
     }
 
+    /** supports mutable interface */
+    @Override
+    protected final void setVertexPosImpl(int vertexIndex, Vec3f pos)
+    {
+        vertices()[computeArrayIndex(vertexIndex)].setPos(pos);
+    }
+    
     /** supports mutable interface */
     @Override
     protected final void setVertexNormalImpl(int vertexIndex, Vec3f normal)

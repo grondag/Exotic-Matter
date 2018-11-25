@@ -97,27 +97,29 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
     /** supports mutable interface */
     @SuppressWarnings("unchecked")
     @Override
-    protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color)
+    protected final void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
-        vertexArray()[vertexIndex].xyzSetter.set((T) this, x, y, z);
-        final VertexLayer<T> vl = layerVertexArray()[0][vertexIndex];
-        vl.uvSetter.set((T) this, u, v);
-        vl.colorSetter.set((T) this, color);
-    }
-    
-    /** supports mutable interface */
-    @SuppressWarnings("unchecked")
-    @Override
-    protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ)
-    {
-        final Vertex<T> vert = vertexArray()[vertexIndex];
-        vert.xyzSetter.set((T) this, x, y, z);
-        vert.normXYZSetter.set((T) this, normX, normY, normZ);
         final VertexLayer<T> vl = layerVertexArray()[0][vertexIndex];
         vl.uvSetter.set((T) this, u, v);
         vl.colorSetter.set((T) this, color);
     }
 
+    /** supports mutable interface */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected final void setVertexPosImpl(int vertexIndex, float x, float y, float z)
+    {
+        vertexArray()[vertexIndex].xyzSetter.set((T) this, x, y, z);
+    }
+
+    /** supports mutable interface */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected final void setVertexPosImpl(int vertexIndex, Vec3f pos)
+    {
+        vertexArray()[vertexIndex].posSetter.set((T) this, pos);
+    }
+    
     /** supports mutable interface */
     @SuppressWarnings("unchecked")
     @Override

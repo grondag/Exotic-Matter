@@ -26,6 +26,12 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 
                 this.vGetter = v -> v.v0;
                 this.vSetter = (v, vVal) -> v.v0 = vVal;
+                
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u0 = u;
+                    v.v0 = vVal;
+                };
             }
         };
         
@@ -43,6 +49,12 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 
                 this.vGetter = v -> v.v1;
                 this.vSetter = (v, vVal) -> v.v1 = vVal;
+                
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u1 = u;
+                    v.v1 = vVal;
+                };
             }
         };
         
@@ -60,6 +72,12 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 
                 this.vGetter = v -> v.v2;
                 this.vSetter = (v, vVal) -> v.v2 = vVal;
+                
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u2 = u;
+                    v.v2 = vVal;
+                };
             }
         };
     }

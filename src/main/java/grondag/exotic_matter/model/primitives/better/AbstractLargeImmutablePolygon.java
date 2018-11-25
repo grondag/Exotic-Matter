@@ -10,6 +10,7 @@ public abstract class AbstractLargeImmutablePolygon<T extends AbstractLargeImmut
     protected AbstractLargeImmutablePolygon(int vertexCount, Class<? extends IMutableVertex> clazz)
     {
         super();
+        assert vertexCount > 4;
         vertices = new IMutableVertex[vertexCount];
         try
         {

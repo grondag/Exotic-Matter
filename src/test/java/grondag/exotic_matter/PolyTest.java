@@ -1,8 +1,5 @@
 package grondag.exotic_matter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import grondag.exotic_matter.model.primitives.FaceVertex;
@@ -44,16 +41,16 @@ public class PolyTest
         
         //convexity & area tests
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
-        assertTrue(quad.isConvex());
-        assertTrue(Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON);
+        assert quad.isConvex();
+        assert Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON;
         
         quad = PolyFactory.newPaintable(3).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
                 EnumFacing.NORTH);
-        assertTrue(quad.isConvex());
-        assertTrue(Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON);
+        assert quad.isConvex();
+        assert Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON;
         
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
@@ -61,21 +58,20 @@ public class PolyTest
                 new FaceVertex(1, 1, 0), 
                 new FaceVertex(0.9f, 0.1f, 0), 
                 EnumFacing.NORTH);
-        assertFalse(quad.isConvex());
-        
+        assert !quad.isConvex();
         
         // normal facing calculation
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
-        assertTrue(quad.getNormalFace() == EnumFacing.UP);
+        assert quad.getNormalFace() == EnumFacing.UP;
         
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
-        assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
+        assert quad.getNormalFace() == EnumFacing.DOWN;
         
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
-        assertTrue(quad.getNormalFace() == EnumFacing.EAST);
+        assert quad.getNormalFace() == EnumFacing.EAST;
         
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
-        assertTrue(quad.getNormalFace() == EnumFacing.DOWN);
+        assert quad.getNormalFace() == EnumFacing.DOWN;
         
         quad = PolyFactory.newPaintable(4).setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 0.1f), 
@@ -83,7 +79,7 @@ public class PolyTest
                 new FaceVertex(1, 1, 0), 
                 new FaceVertex(0.9f, 0.1f, 0), 
                 EnumFacing.UP);
-        assertTrue(quad.getNormalFace() == EnumFacing.SOUTH);
+        assert quad.getNormalFace() == EnumFacing.SOUTH;
 
     }
 

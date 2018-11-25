@@ -13,6 +13,7 @@ import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.BitPacker;
@@ -92,9 +93,9 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         defaultBits |= EMISSIVE_BIT[1].getBits(false);
         defaultBits |= EMISSIVE_BIT[2].getBits(false);
         
-        defaultBits |= CONTRACTUV_BITS[0].getBits(false);
-        defaultBits |= CONTRACTUV_BITS[1].getBits(false);
-        defaultBits |= CONTRACTUV_BITS[2].getBits(false);
+        defaultBits |= CONTRACTUV_BITS[0].getBits(true);
+        defaultBits |= CONTRACTUV_BITS[1].getBits(true);
+        defaultBits |= CONTRACTUV_BITS[2].getBits(true);
         
         defaultBits |= SALT_BITS[0].getBits(0);
         defaultBits |= SALT_BITS[1].getBits(0);
@@ -349,13 +350,15 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         this.surface = surface;
     }
 
+    /** supports mutable interface */
+    protected abstract void setVertexPosImpl(int vertexIndex, float x, float y, float z);
     
     /** supports mutable interface */
-    protected abstract void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color);
-
+    protected abstract void setVertexPosImpl(int vertexIndex, Vec3f pos);
+    
     /** supports mutable interface */
-    protected abstract void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, float normX, float normY, float normZ);
-
+    protected abstract void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow);
+    
     /** supports mutable interface */
     protected abstract void setVertexNormalImpl(int vertexIndex, Vec3f normal);
 
@@ -484,39 +487,141 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     }
 
     /** supports mutable interface */
-    protected final void setupFaceQuadImpl(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace)
+    protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, int glow)
     {
-        // TODO Auto-generated method stub
+        setVertexPosImpl(vertexIndex, x, y, z);
+        setVertexLayerImpl(0, vertexIndex, u, v, color, glow);
     }
-
+    
+    /** supports mutable interface */
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace)
     {
-        // TODO Auto-generated method stub
+        assert vertexCount() <= 4;
+        EnumFacing defaultTop = QuadHelper.defaultTopOf(this.getNominalFace());
+        if(topFace == null) topFace = defaultTop;
+        
+        FaceVertex rv0;
+        FaceVertex rv1;
+        FaceVertex rv2;
+        FaceVertex rv3;
+
+        if(topFace == defaultTop)
+        {
+            rv0 = vertexIn0;
+            rv1 = vertexIn1;
+            rv2 = vertexIn2;
+            rv3 = vertexIn3;
+        }
+        else if(topFace == QuadHelper.rightOf(this.getNominalFace(), defaultTop))
+        {
+            rv0 = vertexIn0.withXY(vertexIn0.y, 1 - vertexIn0.x);
+            rv1 = vertexIn1.withXY(vertexIn1.y, 1 - vertexIn1.x);
+            rv2 = vertexIn2.withXY(vertexIn2.y, 1 - vertexIn2.x);
+            rv3 = vertexIn3.withXY(vertexIn3.y, 1 - vertexIn3.x);
+        }
+        else if(topFace == QuadHelper.bottomOf(this.getNominalFace(), defaultTop))
+        {
+            rv0 = vertexIn0.withXY(1 - vertexIn0.x, 1 - vertexIn0.y);
+            rv1 = vertexIn1.withXY(1 - vertexIn1.x, 1 - vertexIn1.y);
+            rv2 = vertexIn2.withXY(1 - vertexIn2.x, 1 - vertexIn2.y);
+            rv3 = vertexIn3.withXY(1 - vertexIn3.x, 1 - vertexIn3.y);
+        }
+        else // left of
+        {
+            rv0 = vertexIn0.withXY(1 - vertexIn0.y, vertexIn0.x);
+            rv1 = vertexIn1.withXY(1 - vertexIn1.y, vertexIn1.x);
+            rv2 = vertexIn2.withXY(1 - vertexIn2.y, vertexIn2.x);
+            rv3 = vertexIn3.withXY(1 - vertexIn3.y, vertexIn3.x);
+        }
+
+        
+        switch(this.getNominalFace())
+        {
+        case UP:
+            setVertexImpl(0, rv0.x, 1-rv0.depth, 1-rv0.y, rv0.u(), rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, rv1.x, 1-rv1.depth, 1-rv1.y, rv1.u(), rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, rv2.x, 1-rv2.depth, 1-rv2.y, rv2.u(), rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, rv3.x, 1-rv3.depth, 1-rv3.y, rv3.u(), rv3.v(), rv3.color(), rv3.glow());
+            break;
+
+        case DOWN:     
+            setVertexImpl(0, rv0.x, rv0.depth, rv0.y, 1-rv0.u(), 1-rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, rv1.x, rv1.depth, rv1.y, 1-rv1.u(), 1-rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, rv2.x, rv2.depth, rv2.y, 1-rv2.u(), 1-rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, rv3.x, rv3.depth, rv3.y, 1-rv3.u(), 1-rv3.v(), rv3.color(), rv3.glow());
+            break;
+
+        case EAST:
+            setVertexImpl(0, 1-rv0.depth, rv0.y, 1-rv0.x, rv0.u(), rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, 1-rv1.depth, rv1.y, 1-rv1.x, rv1.u(), rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, 1-rv2.depth, rv2.y, 1-rv2.x, rv2.u(), rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, 1-rv3.depth, rv3.y, 1-rv3.x, rv3.u(), rv3.v(), rv3.color(), rv3.glow());
+            break;
+
+        case WEST:
+            setVertexImpl(0, rv0.depth, rv0.y, rv0.x, rv0.u(), rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, rv1.depth, rv1.y, rv1.x, rv1.u(), rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, rv2.depth, rv2.y, rv2.x, rv2.u(), rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, rv3.depth, rv3.y, rv3.x, rv3.u(), rv3.v(), rv3.color(), rv3.glow());
+            break;
+
+        case NORTH:
+            setVertexImpl(0, 1-rv0.x, rv0.y, rv0.depth, rv0.u(), rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, 1-rv1.x, rv1.y, rv1.depth, rv1.u(), rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, 1-rv2.x, rv2.y, rv2.depth, rv2.u(), rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, 1-rv3.x, rv3.y, rv3.depth, rv3.u(), rv3.v(), rv3.color(), rv3.glow());
+            break;
+
+        case SOUTH:
+            setVertexImpl(0, rv0.x, rv0.y, 1-rv0.depth, rv0.u(), rv0.v(), rv0.color(), rv0.glow());
+            setVertexImpl(1, rv1.x, rv1.y, 1-rv1.depth, rv1.u(), rv1.v(), rv1.color(), rv1.glow());
+            setVertexImpl(2, rv2.x, rv2.y, 1-rv2.depth, rv2.u(), rv2.v(), rv2.color(), rv2.glow());
+            if(vertexCount() == 4) setVertexImpl(3, rv3.x, rv3.y, 1-rv3.depth, rv3.u(), rv3.v(), rv3.color(), rv3.glow());
+            break;
+        }
+
+    }
+
+    protected final void setupFaceQuadImpl(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace)
+    {
+        assert(vertexCount() == 4);
+        setNominalFaceImpl(side);
+        setupFaceQuadImpl(tv0, tv1, tv2, tv3, topFace);
     }
 
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
     {
-        // TODO Auto-generated method stub
+        // PERF: garbage factory
+        setupFaceQuadImpl(
+                new FaceVertex(x0, y0, depth),
+                new FaceVertex(x1, y0, depth),
+                new FaceVertex(x1, y1, depth),
+                new FaceVertex(x0, y1, depth), 
+                topFace);
     }
 
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
     {
-        // TODO Auto-generated method stub
+        setNominalFaceImpl(face);
+        setupFaceQuadImpl(x0, y0, x1, y1, depth, topFace);
     }
 
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
     {
-        // TODO Auto-generated method stub
+        assert(vertexCount() == 3);
+        setNominalFaceImpl(side);
+        setupFaceQuadImpl(tv0, tv1, tv2, tv2, topFace);
     }
 
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
     {
-        // TODO Auto-generated method stub
+        assert(vertexCount() == 3);
+        setupFaceQuadImpl(tv0, tv1, tv2, tv2, topFace);
     }
 
     /** supports mutable interface */
