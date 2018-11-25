@@ -406,7 +406,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected abstract void setVertexPosImpl(int vertexIndex, float x, float y, float z);
     
     /** supports mutable interface */
-    protected abstract void setVertexPosImpl(int vertexIndex, @Nullable Vec3f pos);
+    protected abstract void setVertexPosImpl(int vertexIndex, Vec3f pos);
     
     /** supports mutable interface */
     protected abstract void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow);
