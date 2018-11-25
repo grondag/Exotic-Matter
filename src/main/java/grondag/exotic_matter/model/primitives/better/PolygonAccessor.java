@@ -1,9 +1,13 @@
 package grondag.exotic_matter.model.primitives.better;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public class PolygonAccessor
 {
+    //UGLY: these interfaces are generic (ha ha) and should probably live somewhere else for reuse.
+    
     @FunctionalInterface
     public static interface FloatGetter<T>
     {
@@ -47,9 +51,21 @@ public class PolygonAccessor
     }
     
     @FunctionalInterface
+    public static interface NullableObjectGetter<T, V>
+    {
+        @Nullable V get(T input);
+    }
+    
+    @FunctionalInterface
     public static interface ObjectSetter<T, V>
     {
         void set(T input, V value);
+    }
+    
+    @FunctionalInterface
+    public static interface NullableObjectSetter<T, V>
+    {
+        void set(T input, @Nullable V value);
     }
     
     public static class Layer<T>
@@ -80,8 +96,8 @@ public class PolygonAccessor
         public FloatGetter<T> zGetter;
         public Float3Setter<T> xyzSetter;
 
-        public ObjectGetter<T, Vec3f> normalGetter;
-        public ObjectSetter<T, Vec3f> normalSetter;
+        public NullableObjectGetter<T, Vec3f> normalGetter;
+        public NullableObjectSetter<T, Vec3f> normalSetter;
 
         public FloatGetter<T> normXGetter;
         public FloatGetter<T> normYGetter;

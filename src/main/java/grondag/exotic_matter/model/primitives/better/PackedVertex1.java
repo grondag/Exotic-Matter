@@ -44,4 +44,9 @@ public class PackedVertex1 extends AbstractPackedVertex<PackedVertex1>
         return (VertexLayer<PackedVertex1>[]) LAYERS;
     }
 
+    @Override
+    public int getLayerCount()
+    {
+        return 1;
+    }
 }

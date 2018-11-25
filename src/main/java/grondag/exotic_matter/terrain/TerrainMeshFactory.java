@@ -714,12 +714,12 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
         
         //note the order here is significant - testing shows this order gives fewest splits in CSG intersect
         //most important thing seems to be that sides come first
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP).addPaintedQuadsToList(cubeQuads);
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
-        work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH).addPaintedQuadsToList(cubeQuads);
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.NORTH, 0, 0, 1, 1, 0, EnumFacing.UP).toPainted());
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0, EnumFacing.UP).toPainted());
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.SOUTH, 0, 0, 1, 1, 0, EnumFacing.UP).toPainted());
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.WEST, 0, 0, 1, 1, 0, EnumFacing.UP).toPainted());
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0, EnumFacing.NORTH).toPainted());
+        cubeQuads.add(work.setSurface(SURFACE_SIDE).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0, EnumFacing.NORTH).toPainted());
         
         work.release();
         return cubeQuads;

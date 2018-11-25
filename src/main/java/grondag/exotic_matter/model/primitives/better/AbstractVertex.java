@@ -1,21 +1,11 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector4f;
-
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.VertexLayer;
 
 public abstract class AbstractVertex<T extends AbstractVertex<T>> implements IMutableVertex
 {
     protected abstract VertexLayer<T>[] layerVertexArray();
     
-    @Override
-    public IMutableVertex interpolate(IMutableVertex jVertex, float t)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public final int getColor(int layerIndex)
@@ -86,27 +76,5 @@ public abstract class AbstractVertex<T extends AbstractVertex<T>> implements IMu
     public final void setV(int layerIndex, float v)
     {
         layerVertexArray()[layerIndex].vSetter.set((T) this, v);
-    }
-
-    @Override
-    public final void transform(Matrix4f matrix, boolean rescaleToUnitCube)
-    {
-          Vector4f tmp = new Vector4f(this.x(), this.y(), this.z(), 1f);
-    
-          matrix.transform(tmp);
-          if (rescaleToUnitCube && Math.abs(tmp.w - 1f) > 1e-5)
-          {
-              tmp.scale(1f / tmp.w);
-          }
-    
-          this.setPos(tmp.x, tmp.y, tmp.z);
-          
-          if(this.hasNormal())
-          {
-              Vector4f tmpNormal = new Vector4f(this.normalX(), this.normalY(), this.normalZ(), 1f);
-              matrix.transform(tmpNormal);
-              float normScale= (float) (1/Math.sqrt(tmpNormal.x*tmpNormal.x + tmpNormal.y*tmpNormal.y + tmpNormal.z*tmpNormal.z));
-              this.setNormal(tmpNormal.x * normScale, tmpNormal.y * normScale, tmpNormal.z * normScale);
-          }        
     }
 }

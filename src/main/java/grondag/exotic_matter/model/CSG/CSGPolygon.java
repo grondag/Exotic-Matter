@@ -64,13 +64,8 @@ public class CSGPolygon
     public void addPaintableQuadsToList(List<IMutablePolygon> list)
     {
         IMutablePolygon result = this.applyInverted();
-        if(result.vertexCount() > 4)
-        {
-            result.addPaintableQuadsToList(list);
+        if(result.toPaintableQuads(list))
             result.release();
-        }
-        else
-            list.add(result);
     }
 
     private IMutablePolygon applyInverted()

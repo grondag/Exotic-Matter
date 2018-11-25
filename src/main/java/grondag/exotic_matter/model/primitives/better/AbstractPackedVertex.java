@@ -31,7 +31,7 @@ public abstract class AbstractPackedVertex<T extends AbstractPackedVertex<T>> ex
     }
 
     @Override
-    public final void setNormal(Vec3f normal)
+    public final void setNormal(@Nullable Vec3f normal)
     {
         this.normal = normal;
     }
@@ -97,5 +97,14 @@ public abstract class AbstractPackedVertex<T extends AbstractPackedVertex<T>> ex
     public final float z()
     {
         return pos.z();
+    }
+    
+    /**
+     * Not supported on packed vertices - they have a fixed number of layers.
+     */
+    @Override
+    public final void setLayerCount(int layerCount)
+    {
+        throw new UnsupportedOperationException();
     }
 }

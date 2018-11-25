@@ -1,9 +1,6 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
 
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
@@ -27,30 +24,16 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
     
     @Override
+    protected void copyPolyAttributesFrom(IPolygon template)
+    {
+        super.copyPolyAttributesFrom(template);
+        this.setLayerCount(template.layerCount());
+    }
+    
+    @Override
     public final int layerCount()
     {
         return layerCount;
-    }
-
-    @Override
-    public IMutablePolygon copyVertexFrom(int targetIndex, IPolygon source, int sourceIndex)
-    {
-        super.copyVertexFromImpl(targetIndex, source, sourceIndex);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon copyInterpolatedVertexFrom(int targetIndex, IPolygon source0, int vertexIndex0, IPolygon source1, int vertexIndex1, float weight)
-    {
-        super.copyInterpolatedVertexFromImpl(targetIndex, source0, vertexIndex0, source1, vertexIndex1, weight);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon copyVertexFrom(int vertexIndex, IMutableVertex source)
-    {
-        super.copyVertexFromImpl(vertexIndex, source);
-        return this;
     }
 
     @Override
@@ -159,7 +142,7 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setVertexNormal(int vertexIndex, Vec3f normal)
+    public IMutablePolygon setVertexNormal(int vertexIndex, @Nullable Vec3f normal)
     {
         super.setVertexNormalImpl(vertexIndex, normal);
         return this;
@@ -173,7 +156,7 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setPipeline(IRenderPipeline pipeline)
+    public IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
     {
         super.setPipelineImpl(pipeline);
         return this;
@@ -250,48 +233,9 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon scaleFromBlockCenter(float scaleFactor)
-    {
-        super.scaleFromBlockCenterImpl(scaleFactor);
-        return this;
-    }
-
-    @Override
-    public IPolygon toPainted()
-    {
-        return super.toPaintedImpl();
-    }
-
-    @Override
-    public boolean toPaintableQuads(Consumer<IMutablePolygon> consumer)
-    {
-        return super.toPaintableQuadsImpl(consumer);
-    }
-
-    @Override
-    public boolean toPaintableTris(Consumer<IMutablePolygon> consumer)
-    {
-        return super.toPaintableTrisImpl(consumer);
-    }
-
-    @Override
     public void release()
     {
         // NOOP
-    }
-
-    @Override
-    public IMutablePolygon assignLockedUVCoordinates(int layerIndex)
-    {
-        super.assignLockedUVCoordinatesImpl(layerIndex);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon transform(Matrix4f matrix)
-    {
-        super.transformImpl(matrix);
-        return this;
     }
 
     @Override
@@ -319,6 +263,20 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     public final IMutablePolygon setVertexPos(int vertexIndex, Vec3f pos)
     {
         super.setVertexPosImpl(vertexIndex, pos);
+        return this;
+    }
+
+    @Override
+    public IMutablePolygon setLayerCount(int layerCount)
+    {
+        this.layerCount = layerCount;
+        return this;
+    }
+
+    @Override
+    public IMutablePolygon copyVertexFrom(int targetIndex, IPolygon source, int sourceIndex)
+    {
+        copyVertexFromImpl(targetIndex, source, sourceIndex);
         return this;
     }
 }

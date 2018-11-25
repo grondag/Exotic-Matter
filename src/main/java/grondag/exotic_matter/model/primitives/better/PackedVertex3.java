@@ -99,4 +99,10 @@ public class PackedVertex3 extends AbstractPackedVertex<PackedVertex3>
     {
         return (VertexLayer<PackedVertex3>[]) LAYERS;
     }
+
+    @Override
+    public int getLayerCount()
+    {
+        return 3;
+    }
 }

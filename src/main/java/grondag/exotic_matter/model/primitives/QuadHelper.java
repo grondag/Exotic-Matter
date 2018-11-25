@@ -257,7 +257,7 @@ public class QuadHelper
         quadStream.forEach((IMutablePolygon quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
     }
 
-    //TODO: move to mesh helper
+    //UGLY: move to mesh helper
     public static Consumer<IMutablePolygon> makeRecoloring(Consumer<IMutablePolygon> wrapped)
     {
         return p -> 

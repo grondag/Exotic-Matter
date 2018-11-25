@@ -1,8 +1,9 @@
 package grondag.exotic_matter.model.primitives.better;
 
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.Vertex;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.VertexLayer;
-import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> extends AbstractPolygon<T>
@@ -12,7 +13,7 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
 
     @SuppressWarnings("unchecked")
     @Override
-    public final IVec3f getVertexNormal(int vertexIndex)
+    public final Vec3f getVertexNormal(int vertexIndex)
     {
         return vertexArray()[vertexIndex].normalGetter.get((T) this);
     }
@@ -40,7 +41,7 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
     
     @SuppressWarnings("unchecked")
     @Override
-    public final IVec3f getPos(int vertexIndex)
+    public final Vec3f getPos(int vertexIndex)
     {
         return vertexArray()[vertexIndex].posGetter.get((T) this);
     }
@@ -123,7 +124,7 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
     /** supports mutable interface */
     @SuppressWarnings("unchecked")
     @Override
-    protected final void setVertexNormalImpl(int vertexIndex, Vec3f normal)
+    protected final void setVertexNormalImpl(int vertexIndex, @Nullable Vec3f normal)
     {
         vertexArray()[vertexIndex].normalSetter.set((T) this, normal);
     }

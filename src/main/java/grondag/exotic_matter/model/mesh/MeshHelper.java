@@ -78,7 +78,7 @@ public class MeshHelper
                 side.setVertex(1, centerStart.add(n1.scale(quadStartRadius)), u1, v0, 0xFFFFFFFF, n1);
                 side.setVertex(2, centerEnd.add(n1.scale(quadEndRadius)), u1, v1, 0xFFFFFFFF, n1);
                 side.setVertex(3, centerEnd.add(n0.scale(quadEndRadius)), u0, v1, 0xFFFFFFFF, n0);
-                side.addPaintedQuadsToList(results);
+                results.add(side.toPainted());
                 
                 if(j == 0 || j == raySlices - 1)
                 {
@@ -99,8 +99,8 @@ public class MeshHelper
         
         }
 
-        top.addPaintedQuadsToList(results);
-        bottom.addPaintedQuadsToList(results);
+        results.add(top.toPainted());
+        results.add(bottom.toPainted());
         
         top.release();
         bottom.release();
@@ -171,44 +171,44 @@ public class MeshHelper
         //enable texture randomization
         int salt = 0;
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly).toPainted());
 
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly).toPainted());
 
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly).toPainted());
         
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly).toPainted());
 
         poly.setTextureSalt(0, salt++);
-        makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly).addPaintedQuadsToList(results);
-        makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly).addPaintedQuadsToList(results);
+        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly).toPainted());
+        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly).toPainted());
   
         poly.release();
         
@@ -253,17 +253,6 @@ public class MeshHelper
     }
 
     /**
-     * Collection version of {@link #makeBox(AxisAlignedBB, IPolygon, Consumer)}
-     */
-    @Deprecated // use the consumer version
-    public static List<IPolygon> makeBox(AxisAlignedBB box, IMutablePolygon template)
-    {
-        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>(6);
-        makeBox(box, template, result);
-        return result;
-    }
-    
-    /**
      * Collection version of {@link #makePaintableBox(AxisAlignedBB, IPolygon, Consumer)}
      */
     @Deprecated // use the consumer version
@@ -272,38 +261,6 @@ public class MeshHelper
         SimpleUnorderedArrayList<IMutablePolygon> result = new SimpleUnorderedArrayList<>(6);
         makePaintableBox(box, template, result);
         return result;
-    }
-    
-    /**
-     * This method is intended for boxes that fit within a single world block.
-     * Typically used with locked UV coordinates.
-     */
-    public static void makeBox(AxisAlignedBB box, IMutablePolygon template, Consumer<IPolygon> target)
-    {
-        IMutablePolygon quad = template.claimCopy(4);
-        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
-        quad.producePaintedQuads(target);
-    
-        quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
-        quad.producePaintedQuads(target);
-    
-        //-X
-        quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
-        quad.producePaintedQuads(target);
-        
-        //+X
-        quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
-        quad.producePaintedQuads(target);
-        
-        //-Z
-        quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
-        quad.producePaintedQuads(target);
-        
-        //+Z
-        quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
-        quad.producePaintedQuads(target);
-        
-        quad.release();
     }
     
     public static void makePaintableBox(AxisAlignedBB box, IMutablePolygon template, Consumer<IMutablePolygon> target)

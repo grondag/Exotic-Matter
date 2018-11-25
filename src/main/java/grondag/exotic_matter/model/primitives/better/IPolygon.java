@@ -1,25 +1,29 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.acuity.api.IPipelinedQuad;
+import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.acuity.api.IRenderPipeline;
+import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.world.Rotation;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public interface IPolygon extends IVertexCollection, IPipelinedQuad
 {
@@ -210,7 +214,9 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      * Returns computed face normal if no explicit normal assigned.
      * CONVERT TO IMMUTABLE IF SAVING A REFERENCE.
      */
-    public IVec3f getVertexNormal(int vertexIndex);
+    public Vec3f getVertexNormal(int vertexIndex);
+    
+    public boolean hasVertexNormal(int vertexIndex);
     
     public float getVertexNormalX(int vertexIndex);
     
@@ -249,46 +255,31 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     }
     
     /**
-     * Splits and creates new instances as needed.
-     * Does NOT mutate this instance and does not retain any reference to the instances added to the list.
-     * If you know the current instance is not held elsewhere, then better to
-     * check if split is necessary and if not then simply add this instance to the list.
-     * If a split is necessary and this instance is no longer needed, release it after calling.
+     * Transfers mutable copies of this poly's vertices to the provided array.<br>
+     * Array size must be >= {@link #vertexCount()}.<br>
+     * Retains no reference to the copies, which should be released when no longer used.<br>
+     * For use in CSG operations.<br>
      */
-    void addPaintableQuadsToList(List<IMutablePolygon> list);
-    
-    /**
-     * Splits and creates new instances as needed.
-     * Does NOT mutate this instance if this instance is mutable.
-     * If this instance is immutable and does not require split, will 
-     * simply add this instance to the list. 
-     */
-    void addPaintedQuadsToList(List<IPolygon> list);
-    
-    /**
-     * Splits and creates new instances as needed.
-     * Does NOT mutate this instance and does not retain any reference to the instances added to the list.
-     * If you know the current instance is not held elsewhere, then better to
-     * check if split is necessary and if not then simply add this instance to the list.
-     * If a split is necessary and this instance is no longer needed, release it after calling.
-     */
-    void producePaintableQuads(Consumer<IMutablePolygon> consumer);
-    
-    /**
-     * Splits and creates new instances as needed.
-     * Does NOT mutate this instance if this instance is mutable.
-     * If this instance is immutable and does not require split, will 
-     * simply add this instance to the list. 
-     */
-    void producePaintedQuads(Consumer<IPolygon> consumer);
-    
-    /**
-     * Transfers mutable copies of this poly's vertices to the provided array.
-     * Array size must be >= {@link #vertexCount()}.
-     * Retains no reference to the copies, which should be released when no longer used.
-     * For use in CSG operations.
-     */
-    public void claimVertexCopiesToArray(IMutableVertex[] vertex);
+    default void claimVertexCopiesToArray(IMutableVertex[] vertex)
+    {
+        final int layerCount = this.layerCount();
+        final int vertexCount = this.vertexCount();
+        assert vertex.length >= vertexCount;
+        for(int v = 0; v < vertexCount; v++)
+        {
+            IMutableVertex vNew = PolyFactory.claimMutableVertex();
+            vertex[v] = vNew;
+            
+            vNew.setPos(getVertexX(v), getVertexY(v), getVertexZ(v));
+            vNew.setNormal(getVertexNormalX(v), getVertexNormalY(v), getVertexNormalZ(v));
+            vNew.setLayerCount(layerCount);
+            for(int l = 0; l < layerCount; l++)
+            {
+                vNew.setColorGlow(l, getVertexColor(l, v), getVertexGlow(l, v));
+                vNew.setUV(l, getVertexU(l, v), getVertexV(l, v));
+            }
+        }
+    }
     
     float getMaxU(int layerIndex);
 
@@ -371,12 +362,153 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     default IMutablePolygon claimCopy()
     {
-        return claimCopy(this.vertexCount());
+        return PolyFactory.claimCopy(this);
     }
     
     /**
-     * Includes vertex data.
+     * Copies non-vertex attributes.  Will include vertex data only if vertex counts match.
      */
-    IMutablePolygon claimCopy(int vertexCount);
+    public default IMutablePolygon claimCopy(int vertexCount)
+    {
+        return PolyFactory.claimCopy(this, vertexCount);
+    }
     
+    /**
+     * Convenient shorthand for null check and texture format lookup.
+     */
+    public default @Nullable TextureFormat textureFormat()
+    {
+        final IRenderPipeline p = this.getPipeline();
+        return p == null ? null : p.textureFormat();
+    }
+    
+    @Override
+    @SideOnly(value = Side.CLIENT)
+    public default void produceVertices(@SuppressWarnings("null") IPipelinedVertexConsumer vertexLighter)
+    {
+        float[][][] uvData = AcuityHelper.getUVData(this);
+        int lastGlow = 0;
+        final int layerCount = layerCount();
+        
+        vertexLighter.setEmissive(0, isEmissive(0));
+        if(layerCount > 1)
+        {
+            vertexLighter.setEmissive(1, isEmissive(1));
+            if(layerCount == 3)
+                vertexLighter.setEmissive(2, isEmissive(2));
+        }
+        
+        for(int i = 0; i < 4; i++)
+        {
+            // passing layer 0 glow as an extra data point (for lava)
+            int currentGlow = this.getVertexGlow(0, i);
+            if(currentGlow != lastGlow)
+            {
+                final int g = currentGlow * 17;
+                vertexLighter.setBlockLightMap(g, g, g, 255);
+                lastGlow = currentGlow;
+            }
+            
+            switch(layerCount)
+            {
+            case 1:
+                vertexLighter.acceptVertex(
+                        getVertexX(i), getVertexY(i), getVertexZ(i), 
+                        getVertexNormalX(i), getVertexNormalY(i), getVertexNormalZ(i),
+                        getVertexColor(0, i), uvData[0][i][0], uvData[0][i][1]);
+                break;
+                
+            case 2:
+                vertexLighter.acceptVertex(
+                        getVertexX(i), getVertexY(i), getVertexZ(i), 
+                        getVertexNormalX(i), getVertexNormalY(i), getVertexNormalZ(i),
+                        getVertexColor(0, i), uvData[0][i][0], uvData[0][i][1],
+                        getVertexColor(1, i), uvData[1][i][0], uvData[1][i][1]);
+                break;
+            
+            case 3:
+                vertexLighter.acceptVertex(
+                        getVertexX(i), getVertexY(i), getVertexZ(i), 
+                        getVertexNormalX(i), getVertexNormalY(i), getVertexNormalZ(i),
+                        getVertexColor(0, i), uvData[0][i][0], uvData[0][i][1],
+                        getVertexColor(1, i), uvData[1][i][0], uvData[1][i][1],
+                        getVertexColor(2, i), uvData[2][i][0], uvData[2][i][1]);
+                break;
+            
+            default:
+                throw new ArrayIndexOutOfBoundsException();
+            }
+        }
+    }
+    
+    class AcuityHelper
+    {
+        /**
+         * INTERNAL USE ONLY
+         */
+        private static final ThreadLocal<float[][][]> uvArray = new ThreadLocal<float[][][]>()
+        {
+            @Override
+            protected float[][][] initialValue()
+            {
+                return new float[3][4][2];
+            }
+        };
+        
+        /**
+         * WARNING: returned result is thread-local, do not let it escape.
+         */
+        static float[][][] getUVData(IPolygon poly)
+        {
+            final int layerCount = poly.layerCount();
+            
+            final float[][][] uvData = uvArray.get();
+            
+            for(int l = 0; l < layerCount; l++)
+            {
+                final TextureAtlasSprite textureSprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(poly.getTextureName(l));
+                
+                final float minU = poly.getMinU(l);
+                final float minV = poly.getMinV(l);
+                
+                final float spanU = poly.getMaxU(l) - minU;
+                final float spanV = poly.getMaxV(l) - minV;
+                
+                for(int v = 0; v < 4; v++)
+                {
+                    uvData[l][v][0] = poly.getVertexU(l, v);
+                    uvData[l][v][1] = poly.getVertexV(l, v);
+                }
+                
+                // apply texture rotation
+                QuadBakery.applyTextureRotation(poly.getRotation(l), uvData[l]);
+                
+                // scale UV coordinates to size of texture sub-region
+                for(int v = 0; v < 4; v++)
+                {
+                    uvData[l][v][0] = minU + spanU * uvData[l][v][0];
+                    uvData[l][v][1] = minV + spanV * uvData[l][v][1];
+                }
+        
+                if(poly.shouldContractUVs(l))
+                {
+                    QuadBakery.contractUVs(textureSprite, uvData[l]);
+                }
+                
+                final float spriteMinU = textureSprite.getMinU();
+                final float spriteSpanU = textureSprite.getMaxU() - spriteMinU;
+                final float spriteMinV = textureSprite.getMinV();
+                final float spriteSpanV = textureSprite.getMaxV() - spriteMinV;
+                
+                for(int v = 0; v < 4; v++)
+                {
+                    // doing interpolation here vs using sprite methods to avoid wasteful multiply and divide by 16
+                    // PERF: can this be combined with loop above?
+                    uvData[l][v][0] = spriteMinU + uvData[l][v][0] * spriteSpanU;
+                    uvData[l][v][1] = spriteMinV + uvData[l][v][1] * spriteSpanV;
+                }
+            }
+            return uvData;
+        }
+    }
 }

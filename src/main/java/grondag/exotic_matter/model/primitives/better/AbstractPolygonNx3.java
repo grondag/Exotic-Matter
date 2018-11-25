@@ -115,4 +115,11 @@ public abstract class AbstractPolygonNx3<T extends AbstractPolygonNx3<T>> extend
     {
         return (Vertex<T>[]) VERTEX_ACCESS;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public final boolean hasVertexNormal(int vertexIndex)
+    {
+        return normals != null && vertexArray()[vertexIndex].normalGetter.get((T) this) != null;
+    }
 }

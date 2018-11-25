@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import grondag.exotic_matter.model.primitives.vertex.IVec3f;
+import javax.annotation.Nullable;
+
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> extends AbstractPolygon<T>
@@ -10,9 +11,15 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     protected abstract int computeArrayIndex(int vertexIndex);
     
     @Override
-    public final IVec3f getVertexNormal(int vertexIndex)
+    public final Vec3f getVertexNormal(int vertexIndex)
     {
         return vertices()[computeArrayIndex(vertexIndex)].normal();
+    }
+    
+    @Override
+    public final boolean hasVertexNormal(int vertexIndex)
+    {
+        return vertices()[computeArrayIndex(vertexIndex)].hasNormal();
     }
     
     @Override
@@ -37,7 +44,7 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     }
     
     @Override
-    public final IVec3f getPos(int vertexIndex)
+    public final Vec3f getPos(int vertexIndex)
     {
         return vertices()[computeArrayIndex(vertexIndex)].pos();
     }
@@ -109,7 +116,7 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     
     /** supports mutable interface */
     @Override
-    protected final void setVertexNormalImpl(int vertexIndex, Vec3f normal)
+    protected final void setVertexNormalImpl(int vertexIndex, @Nullable Vec3f normal)
     {
         vertices()[computeArrayIndex(vertexIndex)].setNormal(normal);
     }

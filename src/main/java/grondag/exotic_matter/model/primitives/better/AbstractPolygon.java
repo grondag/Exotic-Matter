@@ -1,14 +1,11 @@
 package grondag.exotic_matter.model.primitives.better;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.ImmutableList.Builder;
 
-import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
@@ -111,6 +108,60 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected Surface surface = Surface.NO_SURFACE;
 
     protected abstract Layer<T>[] layerAccess();
+    
+    AbstractPolygon<T> load(IPolygon template)
+    {
+        copyPolyAttributesFrom(template);
+        final int limit = this.vertexCount();
+        
+        if(limit == template.vertexCount())
+        {
+            for(int i = 0; i < limit; i++)
+                this.copyVertexFromImpl(i, this, i);
+        }
+        
+        return this;
+    }
+    
+    protected void copyPolyAttributesFrom(IPolygon template)
+    {
+        setNominalFaceImpl(template.getNominalFace());
+        setPipelineImpl(template.getPipeline());
+        clearFaceNormalImpl();
+        
+        final int layerCount = template.layerCount();
+        
+        for(int l = 0; l < layerCount; l++)
+        {
+            setMaxUImpl(l, template.getMaxU(l));
+            setMaxVImpl(l, template.getMaxV(l));
+            setMinUImpl(l, template.getMinU(l));
+            setMinVImpl(l, template.getMinV(l));
+            setEmissiveImpl(l, template.isEmissive(l));
+            setRenderLayerImpl(l, template.getRenderLayer(l));
+            setLockUVImpl(l, template.isLockUV(l));
+            setShouldContractUVsImpl(l, template.shouldContractUVs(l));
+            setRotationImpl(l, template.getRotation(l));
+            setTextureNameImpl(l, template.getTextureName(l));
+            setTextureSaltImpl(l, template.getTextureSalt(l));
+        }
+    }
+    
+    private static ThreadLocal<Pair<VertexAdapter.Inner, VertexAdapter.Fixed>> adapters = new ThreadLocal<Pair<VertexAdapter.Inner, VertexAdapter.Fixed>>()
+    {
+        @Override
+        protected Pair<VertexAdapter.Inner, VertexAdapter.Fixed> initialValue()
+        {
+            return Pair.of(new VertexAdapter.Inner(), new VertexAdapter.Fixed());
+        }
+    };
+    
+    protected void copyVertexFromImpl(int targetIndex, IPolygon source, int sourceIndex)
+    {
+        final Pair<VertexAdapter.Inner, VertexAdapter.Fixed> help = adapters.get();
+        help.getLeft().prepare(this, targetIndex)
+            .copyFrom(help.getRight().prepare(source, sourceIndex));
+    }
     
     @Override
     public final EnumFacing getNominalFace()
@@ -355,13 +406,13 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected abstract void setVertexPosImpl(int vertexIndex, float x, float y, float z);
     
     /** supports mutable interface */
-    protected abstract void setVertexPosImpl(int vertexIndex, Vec3f pos);
+    protected abstract void setVertexPosImpl(int vertexIndex, @Nullable Vec3f pos);
     
     /** supports mutable interface */
     protected abstract void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow);
     
     /** supports mutable interface */
-    protected abstract void setVertexNormalImpl(int vertexIndex, Vec3f normal);
+    protected abstract void setVertexNormalImpl(int vertexIndex, @Nullable Vec3f normal);
 
     /** supports mutable interface */
     protected abstract void setVertexNormalImpl(int vertexIndex, float x, float y, float z);
@@ -392,94 +443,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         builder.add(QuadBakery.createBakedQuad(this, isItem));
     }
 
-    @Override
-    public IMutablePolygon claimCopy(int vertexCount)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void produceVertices(@SuppressWarnings("null") IPipelinedVertexConsumer vertexLighter)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    @Override
-    public final void addPaintableQuadsToList(List<IMutablePolygon> list)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public final void addPaintedQuadsToList(List<IPolygon> list)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public final void producePaintableQuads(Consumer<IMutablePolygon> consumer)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public final void producePaintedQuads(Consumer<IPolygon> consumer)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public final void claimVertexCopiesToArray(IMutableVertex[] vertex)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    /** supports mutable interface */
-    protected final void scaleFromBlockCenterImpl(float scaleFactor)
-    {
-        // TODO Auto-generated method stub
-    }
-
-    /** supports mutable interface */
-    protected IPolygon toPaintedImpl()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-    /** supports mutable interface */
-    protected boolean toPaintableQuadsImpl(Consumer<IMutablePolygon> consumer)
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-    
-    /** supports mutable interface */
-    protected boolean toPaintableTrisImpl(Consumer<IMutablePolygon> consumer)
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /** supports mutable interface */
-    protected final void assignLockedUVCoordinatesImpl(int layerIndex)
-    {
-        // TODO Auto-generated method stub
-    }
-
-    /** supports mutable interface */
-    protected final void transformImpl(Matrix4f matrix)
-    {
-        // TODO Auto-generated method stub
-    }
-
     /** supports mutable interface */
     protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, int glow)
     {
@@ -487,7 +450,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         setVertexLayerImpl(0, vertexIndex, u, v, color, glow);
     }
     
-    /** supports mutable interface */
     /** supports mutable interface */
     protected final void setupFaceQuadImpl(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace)
     {
@@ -616,23 +578,5 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     {
         assert(vertexCount() == 3);
         setupFaceQuadImpl(tv0, tv1, tv2, tv2, topFace);
-    }
-
-    /** supports mutable interface */
-    protected final void copyVertexFromImpl(int targetIndex, IPolygon source, int sourceIndex)
-    {
-        // TODO Auto-generated method stub
-    }
-
-    /** supports mutable interface */
-    protected final void copyInterpolatedVertexFromImpl(int targetIndex, IPolygon source0, int vertexIndex0, IPolygon source1, int vertexIndex1, float weight)
-    {
-        // TODO Auto-generated method stub
-    }
-
-    /** supports mutable interface */
-    protected final void copyVertexFromImpl(int vertexIndex, IMutableVertex source)
-    {
-        // TODO Auto-generated method stub
     }
 }

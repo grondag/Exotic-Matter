@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.model.primitives.better.PolygonAccessor.VertexLayer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
-public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
+public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements IMutableVertex
 {
     @SuppressWarnings("unchecked")
     private static final VertexLayer<UnpackedVertex3>[] LAYERS = new VertexLayer[3];
@@ -18,8 +18,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color0;
                 this.colorSetter = (v, color) -> v.color0 = color;
                 
-                this.glowGetter = v -> v.glow & 0xFF;
-                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0xFFFF00) | (glow & 0xFF);
+                this.glowGetter = v -> v.glowAndLayerCount & 0xFF;
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFFFF00) | (glow & 0xFF);
                 
                 this.uGetter = v -> v.u0;
                 this.uSetter = (v, u) -> v.u0 = u;
@@ -41,8 +41,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color1;
                 this.colorSetter = (v, color) -> v.color1 = color;
                 
-                this.glowGetter = v -> (v.glow >> 8) & 0xFF;
-                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0xFF00FF) | ((glow & 0xFF) << 8);
+                this.glowGetter = v -> (v.glowAndLayerCount >> 8) & 0xFF;
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFF00FF) | ((glow & 0xFF) << 8);
                 
                 this.uGetter = v -> v.u1;
                 this.uSetter = (v, u) -> v.u1 = u;
@@ -64,8 +64,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color2;
                 this.colorSetter = (v, color) -> v.color2 = color;
                 
-                this.glowGetter = v -> (v.glow >> 16) & 0xFF;
-                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0x00FFFF) | ((glow & 0xFF) << 16);
+                this.glowGetter = v -> (v.glowAndLayerCount >> 16) & 0xFF;
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0x00FFFF) | ((glow & 0xFF) << 16);
                 
                 this.uGetter = v -> v.u2;
                 this.uSetter = (v, u) -> v.u2 = u;
@@ -90,7 +90,9 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
     private float normY;
     private float normZ;
     
-    private int glow;
+    // low 3 bytes are per-layer glow values
+    // high byte is layer count
+    private int glowAndLayerCount;
     
     private float u0;
     private float v0;
@@ -103,6 +105,7 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
     private float u2;
     private float v2;
     private int color2;
+
     
     @Override
     protected final VertexLayer<UnpackedVertex3>[] layerVertexArray()
@@ -212,5 +215,51 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
     public float z()
     {
         return z;
+    }
+
+    @Override
+    public int getLayerCount()
+    {
+        return (glowAndLayerCount >>> 24) & 0xFF;
+    }
+    
+    @Override
+    public void setLayerCount(int layerCount)
+    {
+        glowAndLayerCount = (glowAndLayerCount & 0xFFFFFF) | (layerCount << 24);
+    }
+    
+    @Override
+    public final void copyFrom(IMutableVertex source)
+    {
+        if(source instanceof UnpackedVertex3)
+            copyFromFast((UnpackedVertex3) source);
+        else
+            IMutableVertex.super.copyFrom(source);
+    }
+    
+    private final void copyFromFast(UnpackedVertex3 source)
+    {
+        this.x = source.x;
+        this.y = source.y;
+        this.z = source.z;
+        
+        this.normX = source.normX;
+        this.normY = source.normY;
+        this.normZ = source.normZ;
+        
+        this.glowAndLayerCount = source.glowAndLayerCount;
+        
+        this.u0 = source.u0;
+        this.v0 = source.v0;
+        this.color0 = source.color0;
+        
+        this.u1 = source.u1;
+        this.v1 = source.v1;
+        this.color1 = source.color1;
+        
+        this.u2 = source.u2;
+        this.v2 = source.v2;
+        this.color2 = source.color2;
     }
 }
