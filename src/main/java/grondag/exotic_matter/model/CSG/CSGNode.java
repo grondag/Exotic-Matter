@@ -46,9 +46,9 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import grondag.exotic_matter.model.primitives.better.IMutableVertex;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import net.minecraft.util.math.MathHelper;

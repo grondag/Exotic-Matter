@@ -5,8 +5,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import grondag.exotic_matter.model.primitives.PointInPolygonTest.DiscardAxis;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 

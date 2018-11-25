@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 
 public abstract class AbstractBoxGenerator implements Consumer<IMutablePolygon>

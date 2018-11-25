@@ -12,9 +12,9 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IVertexCollection;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
+import grondag.exotic_matter.model.primitives.vertex.IVertexCollection;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import net.minecraft.client.renderer.block.model.BakedQuad;

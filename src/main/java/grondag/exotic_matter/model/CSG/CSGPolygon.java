@@ -2,9 +2,9 @@ package grondag.exotic_matter.model.CSG;
 
 import java.util.List;
 
-import grondag.exotic_matter.model.primitives.better.IMutableVertex;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 // PERF: reuse instances

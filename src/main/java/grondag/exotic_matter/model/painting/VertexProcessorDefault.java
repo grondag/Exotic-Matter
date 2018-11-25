@@ -1,7 +1,7 @@
 package grondag.exotic_matter.model.painting;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
 

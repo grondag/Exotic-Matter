@@ -10,7 +10,7 @@ import grondag.exotic_matter.ConfigXM;
 import grondag.exotic_matter.model.collision.octree.OctreeCoordinates;
 import grondag.exotic_matter.model.collision.octree.VoxelVolume16;
 import grondag.exotic_matter.model.primitives.TriangleBoxTest;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import net.minecraft.util.math.AxisAlignedBB;
 

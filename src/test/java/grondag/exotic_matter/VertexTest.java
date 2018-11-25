@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import grondag.exotic_matter.model.primitives.better.IMutableVertex;
-import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.PolyFactory;
+import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 
 class VertexTest
 {

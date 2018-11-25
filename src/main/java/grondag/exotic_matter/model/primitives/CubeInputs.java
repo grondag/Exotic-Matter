@@ -1,9 +1,8 @@
 package grondag.exotic_matter.model.primitives;
 
 import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.model.primitives.better.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.better.IPolygon;
-import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 

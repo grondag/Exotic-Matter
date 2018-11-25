@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.render;
 
-import grondag.exotic_matter.model.primitives.better.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.Minecraft;

@@ -5,8 +5,8 @@ import java.util.Random;
 import org.junit.Test;
 
 import grondag.exotic_matter.model.CSG.CSGPlane;
-import grondag.exotic_matter.model.primitives.better.IMutableVertex;
-import grondag.exotic_matter.model.primitives.better.PolyFactory;
+import grondag.exotic_matter.model.primitives.PolyFactory;
+import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 public class CSGPlanPerf
