@@ -18,8 +18,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color0;
                 this.colorSetter = (v, color) -> v.color0 = color;
                 
-                this.glowGetter = v -> v.glow0;
-                this.glowSetter = (v, glow) -> v.glow0 = (short)glow;
+                this.glowGetter = v -> v.glow & 0xFF;
+                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0xFFFF00) | (glow & 0xFF);
                 
                 this.uGetter = v -> v.u0;
                 this.uSetter = (v, u) -> v.u0 = u;
@@ -41,8 +41,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color1;
                 this.colorSetter = (v, color) -> v.color1 = color;
                 
-                this.glowGetter = v -> v.glow1;
-                this.glowSetter = (v, glow) -> v.glow1 = (short)glow;
+                this.glowGetter = v -> (v.glow >> 8) & 0xFF;
+                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0xFF00FF) | ((glow & 0xFF) << 8);
                 
                 this.uGetter = v -> v.u1;
                 this.uSetter = (v, u) -> v.u1 = u;
@@ -64,8 +64,8 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
                 this.colorGetter = v -> v.color2;
                 this.colorSetter = (v, color) -> v.color2 = color;
                 
-                this.glowGetter = v -> v.glow2;
-                this.glowSetter = (v, glow) -> v.glow2 = (short)glow;
+                this.glowGetter = v -> (v.glow >> 16) & 0xFF;
+                this.glowSetter = (v, glow) -> v.glow = (v.glow & 0x00FFFF) | ((glow & 0xFF) << 16);
                 
                 this.uGetter = v -> v.u2;
                 this.uSetter = (v, u) -> v.u2 = u;
@@ -90,19 +90,18 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3>
     private float normY;
     private float normZ;
     
+    private int glow;
+    
     private float u0;
     private float v0;
-    private short glow0;
     private int color0;
     
     private float u1;
     private float v1;
-    private short glow1;
     private int color1;
     
     private float u2;
     private float v2;
-    private short glow2;
     private int color2;
     
     @Override

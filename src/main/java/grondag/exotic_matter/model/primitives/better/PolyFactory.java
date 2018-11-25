@@ -22,9 +22,9 @@ public class PolyFactory
         return newPaintable(vertexCount, 1);
     }
 
-    public static IMutableVertex claimMutableVertex(float x, float y, float z)
+    public static IMutableVertex claimMutableVertex()
     {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO pooled
+        return new UnpackedVertex3();
     }
 }
