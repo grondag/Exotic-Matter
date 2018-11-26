@@ -18,14 +18,14 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     @Override
     public void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
     {
-        assert quad.isLockUV(layerIndex) : "Tiled cubic quad painter received quad without lockUV semantics.  Not expected";
+        quad.setLockUV(layerIndex, true);
         
         Rotation rotation = this.textureRotationForFace(quad.getNominalFace());
         int textureVersion = this.textureVersionForFace(quad.getNominalFace());
         
-        if(quad.getTextureSalt(layerIndex) != 0)
+        if(quad.getTextureSalt() != 0)
         {
-            int saltHash = MathHelper.hash(quad.getTextureSalt(layerIndex));
+            int saltHash = MathHelper.hash(quad.getTextureSalt());
             rotation = Useful.offsetEnumValue(rotation, saltHash & 3);
             textureVersion = (textureVersion + (saltHash >> 2)) & this.texture.textureVersionMask();
         }

@@ -48,7 +48,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     @Override
     public final void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
     {
-        assert quad.isLockUV(layerIndex) : "Borders cubic quad painter received quad without lockUV semantics.  Not expected";
+        quad.setLockUV(layerIndex, true);
         
         EnumFacing face = quad.getNominalFace();
 

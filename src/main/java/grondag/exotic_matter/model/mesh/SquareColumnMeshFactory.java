@@ -287,7 +287,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(rightFace, bottomCapHeight, 1-spec.cutDepth, 1-topCapHeight, 1, 1 - sx0, face));
                 target.accept(quad);
             }
@@ -297,7 +297,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(leftFace, topCapHeight, 1-spec.cutDepth, 1-bottomCapHeight, 1, sx1, face));
                 target.accept(quad);
             }
@@ -307,7 +307,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(bottomFace, sx0, 1-spec.cutDepth, sx1, 1, 1 -topCapHeight, face));
                 target.accept(quad);
             }
@@ -317,7 +317,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(topFace, 1 -sx1, 1-spec.cutDepth, 1 -sx0, 1, 1 -bottomCapHeight, face));
                 target.accept(quad);
             }
@@ -327,7 +327,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(bottomFace, Math.max(leftMarginWidth, 0), 1-spec.cutDepth, leftMarginWidth + spec.cutWidth, 1, 1 -spec.baseMarginWidth, face));
                 target.accept(quad);
             }
@@ -337,7 +337,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(topFace, 1 - leftMarginWidth - spec.cutWidth, 1-spec.cutDepth, Math.min(1 - leftMarginWidth, 1), 1, 1 -spec.baseMarginWidth, face));
                 target.accept(quad);
 
@@ -348,7 +348,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(bottomFace, 1 - rightMarginWidth - spec.cutWidth, 1-spec.cutDepth, Math.min(1 - rightMarginWidth, 1), 1, 1 -spec.baseMarginWidth, face));
                 target.accept(quad);
             }
@@ -358,7 +358,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             {
                 IMutablePolygon quad = template.claimCopy(4);
                 quad.setSurface(cutSurface);
-                quad.setTextureSalt(0, salt++);
+                quad.setTextureSalt(salt++);
                 setupCutSideQuad(quad, new SimpleQuadBounds(topFace, Math.max(rightMarginWidth, 0), 1-spec.cutDepth, rightMarginWidth + spec.cutWidth, 1, 1 -spec.baseMarginWidth, face));
                 target.accept(quad);
             }
@@ -434,14 +434,14 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                 {
                     IMutablePolygon quad = template.claimCopy(4);
                     quad.setSurface(cutSurface);
-                    quad.setTextureSalt(0, salt++);
+                    quad.setTextureSalt(salt++);
                     setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.rightOf(face, side), 1 -spec.baseMarginWidth, 1 -spec.cutDepth, 1, 1, 1 -spec.baseMarginWidth, face));
                     target.accept(quad);
                 }
                 {
                     IMutablePolygon quad = template.claimCopy(4);
                     quad.setSurface(cutSurface);
-                    quad.setTextureSalt(0, salt++);
+                    quad.setTextureSalt(salt++);
                     setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.leftOf(face, side), 0, 1 -spec.cutDepth, spec.baseMarginWidth, 1, 1 -spec.baseMarginWidth, face));
                     target.accept(quad);
                 }
@@ -484,14 +484,14 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                         {
                             IMutablePolygon quad = template.claimCopy(4);
                             quad.setSurface(cutSurface);
-                            quad.setTextureSalt(0, salt++);
+                            quad.setTextureSalt(salt++);
                             setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.leftOf(face, side), 0, 1 -spec.cutDepth, xLeft, 1, xLeft, face));
                             target.accept(quad);
                         }
                         {
                             IMutablePolygon quad = template.claimCopy(4);
                             quad.setSurface(cutSurface);
-                            quad.setTextureSalt(0, salt++);
+                            quad.setTextureSalt(salt++);
                             setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.rightOf(face, side), 1 -xLeft, 1 -spec.cutDepth, 1, 1, xLeft, face));
                             target.accept(quad);
                         }
@@ -501,14 +501,14 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                         {
                             IMutablePolygon quad = template.claimCopy(4);
                             quad.setSurface(cutSurface);
-                            quad.setTextureSalt(0, salt++);
+                            quad.setTextureSalt(salt++);
                             setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.rightOf(face, side), 1 -xRight, 1 -spec.cutDepth, 1, 1, 1 -xRight, face));
                             target.accept(quad);
                         }
                         {
                             IMutablePolygon quad = template.claimCopy(4);
                             quad.setSurface(cutSurface);
-                            quad.setTextureSalt(0, salt++);
+                            quad.setTextureSalt(salt++);
                             setupCutSideQuad(quad, new SimpleQuadBounds(QuadHelper.leftOf(face, side), 0, 1 -spec.cutDepth, xRight, 1, 1 -xRight, face));
                             target.accept(quad);
                         }
@@ -540,7 +540,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
 
                         IMutablePolygon quad = template.claimCopy(4);
                         quad.setSurface(cutSurface);
-                        quad.setTextureSalt(0, salt++);
+                        quad.setTextureSalt(salt++);
                         setupCutSideQuad(quad, new SimpleQuadBounds(side.getOpposite(), offset, 1 -spec.cutDepth, 1 -offset, 1, 1 -offset, face));
                         target.accept(quad);
 
@@ -555,7 +555,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
                         // inner cut sides
                         IMutablePolygon quad = template.claimCopy(4);
                         quad.setSurface(cutSurface);
-                        quad.setTextureSalt(0, salt++);
+                        quad.setTextureSalt(salt++);
                         setupCutSideQuad(quad, new SimpleQuadBounds(side, offset, 1 -spec.cutDepth, 1 -offset, 1, offset, face));
                         target.accept(quad);
                     }

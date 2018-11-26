@@ -77,7 +77,18 @@ public class QuadPaintManager
         public void accept(@SuppressWarnings("null") IMutablePolygon poly)
         {
             PainterList painters = paintersForSurface(poly.getSurface());
-            if(painters.isEmpty()) return;
+            int layerCount = painters.size();
+            
+            if(layerCount == 0) return;
+            
+            assert layerCount <= 3;
+            
+            // add layers and propagate layer-specific values if applicable
+            if(layerCount > 1)
+            {
+                poly.setLayerCount(layerCount);
+                poly.propagateLayerProperties();
+            }
             
             // do this here to avoid doing it for all painters
             // and because the quadrant split test requires it.

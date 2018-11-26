@@ -26,15 +26,13 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
     @Override
     public final void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
     {
-        assert quad.isLockUV(layerIndex) : "Masonry cubic quad painter received quad without lockUV semantics.  Not expected";
+        quad.setLockUV(layerIndex, true);
         
         // face won't be null - checked in validation method
         final EnumFacing face = quad.getNominalFace();
         
-        @SuppressWarnings("null")
         SimpleJoinFaceState fjs = SimpleJoinFaceState.find(face, this.bjs);
         
-        @SuppressWarnings("null")
         FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][fjs.ordinal()];
         
         if(inputs == null) return;

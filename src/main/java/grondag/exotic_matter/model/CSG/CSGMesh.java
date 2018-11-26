@@ -124,7 +124,7 @@ public abstract class CSGMesh
      */
     public static Collection<IMutablePolygon> difference(Collection<? extends IPolygon> a, Collection<? extends IPolygon> b)
     {
-     // PERF: use threadlocals
+     // PERF: use threadlocals or custom linking
         List<IMutablePolygon> inner = new ArrayList<>();
         List<IMutablePolygon> outer = new ArrayList<>();
 

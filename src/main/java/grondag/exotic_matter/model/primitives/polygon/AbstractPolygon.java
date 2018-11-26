@@ -42,8 +42,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     @SuppressWarnings("unchecked")
     protected static final BitPacker<AbstractPolygon<?>>.BooleanElement[] CONTRACTUV_BITS = new BitPacker.BooleanElement[3];
     
-    @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.IntElement SALT_BITS[] = new BitPacker.IntElement[3];
+    protected static final BitPacker<AbstractPolygon<?>>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
 
     protected static final long DEFAULT_BITS;
     static
@@ -68,10 +67,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         CONTRACTUV_BITS[1] = BITPACKER.createBooleanElement();
         CONTRACTUV_BITS[2] = BITPACKER.createBooleanElement();
         
-        SALT_BITS[0] = BITPACKER.createIntElement(256);
-        SALT_BITS[1] = BITPACKER.createIntElement(256);
-        SALT_BITS[2] = BITPACKER.createIntElement(256);
-        
         assert BITPACKER.bitLength() <= 64;
         
         long defaultBits = 0;
@@ -94,10 +89,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         defaultBits |= CONTRACTUV_BITS[0].getBits(true);
         defaultBits |= CONTRACTUV_BITS[1].getBits(true);
         defaultBits |= CONTRACTUV_BITS[2].getBits(true);
-        
-        defaultBits |= SALT_BITS[0].getBits(0);
-        defaultBits |= SALT_BITS[1].getBits(0);
-        defaultBits |= SALT_BITS[2].getBits(0);
         
         DEFAULT_BITS = defaultBits;
     }
@@ -144,7 +135,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
             setShouldContractUVsImpl(l, template.shouldContractUVs(l));
             setRotationImpl(l, template.getRotation(l));
             setTextureNameImpl(l, template.getTextureName(l));
-            setTextureSaltImpl(l, template.getTextureSalt(l));
+            setTextureSaltImpl(template.getTextureSalt());
         }
     }
     
@@ -218,17 +209,15 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     }
     
     @Override
-    public final int getTextureSalt(int layerIndex)
+    public final int getTextureSalt()
     {
-        assert layerIndex < this.layerCount();
-        return SALT_BITS[layerIndex].getValue(this);
+        return SALT_BITS.getValue(this);
     }
 
     /** supports mutable interface */
-    protected final void setTextureSaltImpl(int layerIndex, int salt)
+    protected final void setTextureSaltImpl(int salt)
     {
-        assert layerIndex < this.layerCount();
-        SALT_BITS[layerIndex].setValue(salt, this);
+        SALT_BITS.setValue(salt, this);
     }
     
     @Override

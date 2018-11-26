@@ -231,7 +231,7 @@ public class PolyTest
         poly.setTextureName(layer, tex);
         
         int salt = r.nextInt(256);
-        poly.setTextureSalt(layer, salt);
+        poly.setTextureSalt(salt);
         
         assert poly.isEmissive(layer) == e;
         assert poly.isLockUV(layer) == l;
@@ -243,7 +243,7 @@ public class PolyTest
         assert poly.getRotation(layer) == rot;
         assert poly.shouldContractUVs(layer) == cuv;
         assert poly.getTextureName(layer) == tex;
-        assert poly.getTextureSalt(layer) == salt;
+        assert poly.getTextureSalt() == salt;
         
         for(int v = 0; v < vertexCount; v++)
         {
@@ -307,7 +307,7 @@ public class PolyTest
         assert a.getRotation(layer) == b.getRotation(layer);
         assert a.shouldContractUVs(layer) == b.shouldContractUVs(layer);
         assert a.getTextureName(layer) == b.getTextureName(layer);
-        assert a.getTextureSalt(layer) == b.getTextureSalt(layer);
+        assert a.getTextureSalt() == b.getTextureSalt();
         
         for(int v = 0; v < a.vertexCount(); v++)
         {

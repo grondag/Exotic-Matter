@@ -69,37 +69,39 @@ public class SuperDispatcher
 			
 		    RenderLayout renderLayout = key.getRenderLayout();
 
+		    // PERF: make threadlocal
             QuadContainer.Builder[] containers = new QuadContainer.Builder[RenderUtil.RENDER_LAYER_COUNT];
+            int containerCount = 0;
+            
 		    for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
             {
 		        if(renderLayout.containsBlockRenderLayer(layer))
-		            containers[layer.ordinal()] = new QuadContainer.Builder(layer);
+		            containers[containerCount++] = new QuadContainer.Builder(layer);
             }
             
+		    final int finalCount = containerCount;
 		    
 		    // PERF: When Acuity is enabled this whole structure is inefficient.  
 		    // Also inefficient without because too many checks and adding same polys to mutliple containers.
 		    // TODO: No way to handle pipelined polygons that render in both translucent and solid (will there be any?)
 		    provideFormattedQuads(key, false, p -> 
 		    {
-		        for(QuadContainer.Builder c : containers)
+		        for(int i = 0; i < finalCount; i++)
 		        {
+		            QuadContainer.Builder c = containers[i];
 		            if(p.hasRenderLayer(c.layer))
 		                c.accept(p);
 		        }
 		        
 		    });
+		    
 			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
-
-			for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
-			{
-			    if(renderLayout.containsBlockRenderLayer(layer))
-			    {
-//			        if(Output.DEBUG_MODE && containers[layer.ordinal()].isEmpty())
-//			            Output.warn("SuperDispatcher BlockCacheLoader: Empty quads on enabled render layer.");
-			        result.set(layer, containers[layer.ordinal()].build());
-			    }
-			}
+			for(int i = 0; i < finalCount; i++)
+            {
+                QuadContainer.Builder c = containers[i];
+                result.set(c.layer, c.build());
+            }
+			
 			return result;
 		}
     }

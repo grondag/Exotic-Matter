@@ -26,8 +26,8 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     @Override
     protected void copyPolyAttributesFrom(IPolygon template)
     {
-        super.copyPolyAttributesFrom(template);
         this.setLayerCount(template.layerCount());
+        super.copyPolyAttributesFrom(template);
     }
     
     @Override
@@ -65,9 +65,9 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setTextureSalt(int layerIndex, int salt)
+    public IMutablePolygon setTextureSalt(int salt)
     {
-        super.setTextureSaltImpl(layerIndex, salt);
+        super.setTextureSaltImpl(salt);
         return this;
     }
 

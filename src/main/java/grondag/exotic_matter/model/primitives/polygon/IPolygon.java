@@ -215,7 +215,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     
     /**
      * Returns computed face normal if no explicit normal assigned.
-     * CONVERT TO IMMUTABLE IF SAVING A REFERENCE.
      */
     public Vec3f getVertexNormal(int vertexIndex);
     
@@ -276,6 +275,8 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
             vNew.setPos(getVertexX(v), getVertexY(v), getVertexZ(v));
             vNew.setNormal(getVertexNormalX(v), getVertexNormalY(v), getVertexNormalZ(v));
             vNew.setLayerCount(layerCount);
+            
+            //PERF: unwind this loop
             for(int l = 0; l < layerCount; l++)
             {
                 vNew.setColorGlow(l, getVertexColor(l, v), getVertexGlow(l, v));
@@ -320,7 +321,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     
     float getVertexV(int layerIndex, int vertexIndex);
     
-    int getTextureSalt(int layerIndex);
+    int getTextureSalt();
 
     boolean isLockUV(int layerIndex);
 

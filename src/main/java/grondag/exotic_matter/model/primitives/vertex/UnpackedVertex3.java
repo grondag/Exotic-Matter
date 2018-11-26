@@ -18,7 +18,7 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
                 this.colorSetter = (v, color) -> v.color0 = color;
                 
                 this.glowGetter = v -> v.glowAndLayerCount & 0xFF;
-                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFFFF00) | (glow & 0xFF);
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFFFFFF00) | (glow & 0xFF);
                 
                 this.uGetter = v -> v.u0;
                 this.uSetter = (v, u) -> v.u0 = u;
@@ -41,7 +41,7 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
                 this.colorSetter = (v, color) -> v.color1 = color;
                 
                 this.glowGetter = v -> (v.glowAndLayerCount >> 8) & 0xFF;
-                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFF00FF) | ((glow & 0xFF) << 8);
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFFFF00FF) | ((glow & 0xFF) << 8);
                 
                 this.uGetter = v -> v.u1;
                 this.uSetter = (v, u) -> v.u1 = u;
@@ -64,7 +64,7 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
                 this.colorSetter = (v, color) -> v.color2 = color;
                 
                 this.glowGetter = v -> (v.glowAndLayerCount >> 16) & 0xFF;
-                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0x00FFFF) | ((glow & 0xFF) << 16);
+                this.glowSetter = (v, glow) -> v.glowAndLayerCount = (v.glowAndLayerCount & 0xFF00FFFF) | ((glow & 0xFF) << 16);
                 
                 this.uGetter = v -> v.u2;
                 this.uSetter = (v, u) -> v.u2 = u;
@@ -91,7 +91,7 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
     
     // low 3 bytes are per-layer glow values
     // high byte is layer count
-    private int glowAndLayerCount;
+    private int glowAndLayerCount = 0x1000000F;
     
     private float u0;
     private float v0;

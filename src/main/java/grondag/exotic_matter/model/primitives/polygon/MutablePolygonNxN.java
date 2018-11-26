@@ -116,8 +116,8 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     @Override
     protected void copyPolyAttributesFrom(IPolygon template)
     {
-        super.copyPolyAttributesFrom(template);
         this.setLayerCount(template.layerCount());
+        super.copyPolyAttributesFrom(template);
     }
     
     @Override
@@ -190,9 +190,9 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public IMutablePolygon setTextureSalt(int layerIndex, int salt)
+    public IMutablePolygon setTextureSalt(int salt)
     {
-        super.setTextureSaltImpl(layerIndex, salt);
+        super.setTextureSaltImpl(salt);
         return this;
     }
 
@@ -395,6 +395,9 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     public IMutablePolygon setLayerCount(int layerCount)
     {
         this.layerCount = layerCount;
+        for(int i = 0; i < vertexCount; i++)
+            vertices[i].setLayerCount(layerCount);
+        
         return this;
     }
 

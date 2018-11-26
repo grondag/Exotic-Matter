@@ -19,6 +19,7 @@ public abstract class QuadPainter
     public final PaintLayer paintLayer;
     /**
      * Convenience for paintLayer.textureLayerIndex
+     * Use this for both inputs and outputs; layer-0 values are copied to upper layers before painting
      */
     public final int layerIndex;
     protected final ITexturePalette texture;
@@ -111,10 +112,6 @@ public abstract class QuadPainter
     {
         if(isItem)
         {
-            //Acuity API doesn't support multi-layer textures for item render yet.
-            //This step wouldn't be necessary if it did.
-            assert inputQuad.layerCount() == 1;
-            
             // FIXME: not going to work with new primitives w/ shared geometry
             // move this to baking if still needed
 //            switch(this.paintLayer)

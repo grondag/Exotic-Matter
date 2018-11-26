@@ -115,7 +115,7 @@ public interface IMutablePolygon extends IPolygon
         return this;
     }
 
-    IMutablePolygon setTextureSalt(int layerIndex, int salt);
+    IMutablePolygon setTextureSalt(int salt);
 
     IMutablePolygon setLockUV(int layerIndex, boolean lockUV);
 
@@ -311,21 +311,61 @@ public interface IMutablePolygon extends IPolygon
      */
     default IMutablePolygon assignAllLockedUVCoordinates()
     {
+        if(isLockUV(0))
+            assignLockedUVCoordinates(0);
         final int layerCount = this.layerCount();
-        if(layerCount == 1)
+        if(layerCount > 1)
         {
-            if(isLockUV(0))
-                assignLockedUVCoordinates(0);
-        }
-        else 
-        {
-            for(int i = 0; i < layerCount; i++)
-            {
-                if(isLockUV(i))
-                    assignLockedUVCoordinates(i);
-            }
+            if(isLockUV(1))
+                assignLockedUVCoordinates(1);
+            
+            if(layerCount == 3 && isLockUV(2))
+                assignLockedUVCoordinates(2);
         }
         return this;
+    }
+    
+    /**
+     * Copies all layer-specific properties (quad and vertex) 
+     * from layer 0 to upper layers.  To be called by quad painter
+     * after setting layerCount to something other than 1 for
+     * multi-layer painting schemes.
+     */
+    default IMutablePolygon propagateLayerProperties()
+    {
+        if(layerCount() > 1)
+        {
+            copyLayerProperties(0, 1);
+            if(layerCount() == 3)
+                copyLayerProperties(0, 2);
+        }
+        return this;
+    }
+    
+    /**
+     * For use in {@link #propagateLayerProperties()}
+     */
+    default void copyLayerProperties(int fromLayer, int toLayer)
+    {
+        setEmissive(toLayer, isEmissive(fromLayer));
+        setLockUV(toLayer, isLockUV(fromLayer));
+        setMinU(toLayer, getMinU(fromLayer));
+        setMaxU(toLayer, getMaxU(fromLayer));
+        setMinV(toLayer, getMinV(fromLayer));
+        setMaxV(toLayer, getMaxV(fromLayer));
+        setRenderLayer(toLayer, getRenderLayer(fromLayer));
+        setRotation(toLayer, getRotation(fromLayer));
+        setShouldContractUVs(toLayer, shouldContractUVs(fromLayer));
+        setTextureName(toLayer, getTextureName(fromLayer));
+        
+        final int vertexCount = vertexCount();
+        for(int v = 0; v < vertexCount; v++)
+        {
+            setVertexColor(toLayer, v, getVertexColor(fromLayer, v));
+            setVertexGlow(toLayer, v, getVertexGlow(fromLayer, v));
+            setVertexU(toLayer, v, getVertexU(fromLayer, v));
+            setVertexV(toLayer, v, getVertexV(fromLayer, v));
+        }
     }
     
     /**

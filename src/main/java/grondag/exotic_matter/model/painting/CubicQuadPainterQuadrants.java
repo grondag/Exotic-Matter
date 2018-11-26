@@ -56,7 +56,7 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
     @Override
     protected final void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
     {
-        assert quad.isLockUV(layerIndex) : "Quadrant cubic quad painter received quad without lockUV semantics.  Not expected";
+        quad.setLockUV(layerIndex, true);
     
         final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(quad, layerIndex);
         if(quadrant == null) 

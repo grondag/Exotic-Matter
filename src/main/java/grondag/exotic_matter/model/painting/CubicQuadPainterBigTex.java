@@ -38,7 +38,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
         // based on depth within the plane, to provide variation between adjacent layers.
         // This depth-based variation can be disabled with a setting in the surface instance.
      
-        assert quad.isLockUV(layerIndex) : "BigTex cubic quad painter received quad without lockUV semantics.  Not expected";
+        quad.setLockUV(this.layerIndex, true);
 
         Vec3i surfaceVec = CubicQuadPainterBigTex.getSurfaceVector(this.pos, quad.getNominalFace(), this.texture.textureScale());
         
@@ -51,8 +51,8 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
             int depthAndSpeciesHash = quad.getSurface().ignoreDepthForRandomization
-                    ? MathHelper.hash((this.species << 8) | quad.getTextureSalt(layerIndex))
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.getTextureSalt(layerIndex) << 12));
+                    ? MathHelper.hash((this.species << 8) | quad.getTextureSalt())
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (this.species << 8) | (quad.getTextureSalt() << 12));
             
 
             
@@ -95,9 +95,9 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             
          // abs is necessary so that hash input components combine together properly
             // Small random numbers already have most bits set.
-            final int depthHash = quad.getSurface().ignoreDepthForRandomization && quad.getTextureSalt(layerIndex) == 0
+            final int depthHash = quad.getSurface().ignoreDepthForRandomization && quad.getTextureSalt() == 0
                     ? 0 
-                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.getTextureSalt(layerIndex) << 8));
+                    : MathHelper.hash(Math.abs(surfaceVec.getZ()) | (quad.getTextureSalt() << 8));
 
             quad.setTextureName(layerIndex, this.texture.getTextureName((this.textureVersionForFace(quad.getNominalFace()) + depthHash) & this.texture.textureVersionMask()));
             

@@ -57,7 +57,7 @@ public abstract class CubicQuadPainter extends QuadPainter
     @Override
     protected final boolean isQuadValidForPainting(IMutablePolygon inputQuad)
     {
-        return inputQuad.isLockUV(this.paintLayer.textureLayerIndex) == true && inputQuad.getNominalFace() != null;
+        return inputQuad.getNominalFace() != null;
     }
     
     protected final int textureHashForFace(EnumFacing face)

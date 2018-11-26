@@ -8,10 +8,10 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 @SuppressWarnings("null")
 public abstract class AbstractPolygonNx4<T extends AbstractPolygonNx4<T>> extends AbstractSmallPolygon<T>
 {
-    Vec3f pos0;
-    Vec3f pos1;
-    Vec3f pos2;
-    Vec3f pos3;
+    Vec3f pos0 = Vec3f.ZERO;
+    Vec3f pos1 = Vec3f.ZERO;
+    Vec3f pos2 = Vec3f.ZERO;
+    Vec3f pos3 = Vec3f.ZERO;
     
     static class Normals
     {

@@ -17,8 +17,6 @@ import grondag.exotic_matter.model.primitives.polygon.Polygon3x4;
 import grondag.exotic_matter.model.primitives.polygon.Polygon3xN;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.UnpackedVertex3;
-import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CrashReport;
 import net.minecraft.util.math.MathHelper;
 
 public class PolyFactory

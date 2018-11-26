@@ -151,7 +151,7 @@ public interface IMutableVertex extends IVec3f
         setPos(source.x(), source.y(), source.z());
 
         final int layerCount = source.getLayerCount();
-        setLayerCount(source.getLayerCount());
+        setLayerCount(layerCount);
         
         setColorGlow(0, source.getColor(0), source.getGlow(0));
         setUV(0, source.getU(0), source.getV(0));

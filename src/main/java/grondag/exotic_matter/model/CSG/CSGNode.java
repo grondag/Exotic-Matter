@@ -107,6 +107,7 @@ public class CSGNode
             shapeIn.forEach(p -> splitter.splitPolyStartingWith(new CSGPolygon(p), this));
         }
         
+        // PERF: need to use custom linked list
         private Root(Collection<? extends IPolygon> shapeIn)
         {
             super(new CSGPolygon(shapeIn.iterator().next()));
@@ -618,6 +619,7 @@ public class CSGNode
      */
     private static void recombinedAndAddRenderableToListPairwise(Collection<CSGPolygon> quadsIn, List<IMutablePolygon> output)
     {
+        // PERF: wowsers
 //        pairCount.incrementAndGet();
         Iterator<CSGPolygon> it = quadsIn.iterator();
         CSGPolygon polyA = it.next();
