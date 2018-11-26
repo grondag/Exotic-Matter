@@ -47,35 +47,34 @@ public class PolyFactory
         return new UnpackedVertex3();
     }
 
-    @SuppressWarnings("unchecked")
-    static final Class<? extends AbstractPolygon<?>>[][] MAKERS = new Class[3][3];
+    @FunctionalInterface 
+    static private interface Maker
+    {
+        AbstractPolygon<?> make(IMutablePolygon from);
+    }
+    
+    private static Maker[][] MAKERS = new Maker[3][3];
     
     static
     {
-        MAKERS[0][0] = Polygon1x3.class;
-        MAKERS[0][1] = Polygon1x4.class;
-        MAKERS[0][2] = Polygon1xN.class;
+        MAKERS[0][0] = p -> new Polygon1x3();
+        MAKERS[0][1] = p -> new Polygon1x4();
+        MAKERS[0][2] = p -> new Polygon1xN(p.vertexCount());
         
-        MAKERS[1][0] = Polygon2x3.class;
-        MAKERS[1][1] = Polygon2x4.class;
-        MAKERS[1][2] = Polygon2xN.class;
+        MAKERS[1][0] = p -> new Polygon2x3();
+        MAKERS[1][1] = p -> new Polygon2x4();
+        MAKERS[1][2] = p -> new Polygon2xN(p.vertexCount());
         
-        MAKERS[2][0] = Polygon3x3.class;
-        MAKERS[2][1] = Polygon3x4.class;
-        MAKERS[2][2] = Polygon3xN.class;
+        MAKERS[2][0] = p -> new Polygon3x3();
+        MAKERS[2][1] = p -> new Polygon3x4();
+        MAKERS[2][2] = p -> new Polygon3xN(p.vertexCount());
     }
     
     public static IPolygon toPainted(IMutablePolygon mutable)
     {
-        try
-        {
-            return MAKERS[mutable.layerCount() - 1][Math.min(2, mutable.vertexCount() - 3)].newInstance().load(mutable);
-        }
-        catch (Exception e)
-        {
-            Minecraft.getMinecraft().crashed(new CrashReport("Grondag's code is bad and he should feel bad.", e));
-            return null;
-        }
+        AbstractPolygon<?> result = MAKERS[mutable.layerCount() - 1][Math.min(2, mutable.vertexCount() - 3)].make(mutable);
+        result.load(mutable);
+        return result;
     }
 
     /**

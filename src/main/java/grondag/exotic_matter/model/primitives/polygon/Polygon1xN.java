@@ -38,7 +38,7 @@ public class Polygon1xN extends AbstractLargeImmutablePolygon<Polygon1xN>
     private float vMin0;
     private float vMax0;
     
-    protected Polygon1xN(int vertexCount)
+    public Polygon1xN(int vertexCount)
     {
         super(vertexCount, PackedVertex1.class);
     }

@@ -63,7 +63,7 @@ public class Polygon2xN extends AbstractLargeImmutablePolygon<Polygon2xN>
     private float vMin1;
     private float vMax1;
     
-    protected Polygon2xN(int vertexCount)
+    public Polygon2xN(int vertexCount)
     {
         super(vertexCount, PackedVertex2.class);
     }

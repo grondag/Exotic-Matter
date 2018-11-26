@@ -89,7 +89,7 @@ public class Polygon3xN extends AbstractLargeImmutablePolygon<Polygon3xN>
     private float vMin2;
     private float vMax2;
     
-    protected Polygon3xN(int vertexCount)
+    public Polygon3xN(int vertexCount)
     {
         super(vertexCount, PackedVertex3.class);
     }

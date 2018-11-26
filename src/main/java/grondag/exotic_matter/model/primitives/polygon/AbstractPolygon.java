@@ -117,7 +117,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         if(limit == template.vertexCount())
         {
             for(int i = 0; i < limit; i++)
-                this.copyVertexFromImpl(i, this, i);
+                this.copyVertexFromImpl(i, template, i);
         }
         
         return this;
@@ -127,6 +127,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     {
         setNominalFaceImpl(template.getNominalFace());
         setPipelineImpl(template.getPipeline());
+        setSurfaceImpl(template.getSurface());
         clearFaceNormalImpl();
         
         final int layerCount = template.layerCount();
