@@ -20,7 +20,7 @@ import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
 import grondag.exotic_matter.model.varia.SimpleQuadBounds;
-import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.BitPacker64;
 import grondag.exotic_matter.varia.Color;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
@@ -54,9 +54,9 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
             .build();
     
     @SuppressWarnings("null")
-    private static final BitPacker<SquareColumnMeshFactory> STATE_PACKER = new BitPacker<SquareColumnMeshFactory>(null, null);
-    private static final BitPacker<SquareColumnMeshFactory>.BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
-    private static final BitPacker<SquareColumnMeshFactory>.IntElement STATE_CUT_COUNT = STATE_PACKER.createIntElement(MIN_CUTS, MAX_CUTS);
+    private static final BitPacker64<SquareColumnMeshFactory> STATE_PACKER = new BitPacker64<SquareColumnMeshFactory>(null, null);
+    private static final BitPacker64<SquareColumnMeshFactory>.BooleanElement STATE_ARE_CUTS_ON_EDGE = STATE_PACKER.createBooleanElement();
+    private static final BitPacker64<SquareColumnMeshFactory>.IntElement STATE_CUT_COUNT = STATE_PACKER.createIntElement(MIN_CUTS, MAX_CUTS);
 
     private static class FaceSpec
     {

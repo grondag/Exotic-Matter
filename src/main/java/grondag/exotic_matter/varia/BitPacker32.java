@@ -1,39 +1,39 @@
 package grondag.exotic_matter.varia;
 
 import java.util.Arrays;
-import java.util.function.ObjLongConsumer;
-import java.util.function.ToLongFunction;
+import java.util.function.ObjIntConsumer;
+import java.util.function.ToIntFunction;
 
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.ExoticMatter;
 
-public class BitPacker<T>
+public class BitPacker32<T>
 {
-    private int totalBitLength;
-    private long bitMask;
-    private final ObjLongConsumer<T> writer;
-    private final ToLongFunction<T> reader;
+    protected int totalBitLength;
+    protected int bitMask;
+    protected final ObjIntConsumer<T> writer;
+    protected final ToIntFunction<T> reader;
     
-    public BitPacker(ToLongFunction<T> reader, ObjLongConsumer<T> writer)
+    public BitPacker32(ToIntFunction<T> reader, ObjIntConsumer<T> writer)
     {
         this.reader = reader;
         this.writer = writer;
     }
     
-    private void addElement(BitElement element)
+    protected void addElement(BitElement element)
     {
         element.shift = this.totalBitLength;
         element.shiftedMask = element.mask << element.shift;
         element.shiftedInverseMask = ~ element.shiftedMask;
         
         this.totalBitLength += element.bitLength;
-        this.bitMask = Useful.longBitMask(totalBitLength);
-        if(totalBitLength > 64) ExoticMatter.INSTANCE.warn("BitPacker length exceeded. This is definately a bug, and should be impossible in released code. Some things probably won't work correctly.");
+        this.bitMask = Useful.intBitMask(totalBitLength);
+        if(totalBitLength > 32) ExoticMatter.INSTANCE.warn("BitPacker length exceeded. This is definately a bug, and should be impossible in released code. Some things probably won't work correctly.");
     }
     
     public final int bitLength() { return this.totalBitLength; }
-    public final long bitMask() { return this.bitMask; }
+    public final int bitMask() { return this.bitMask; }
     
     public <V extends Enum<?>> EnumElement<V> createEnumElement(Class<V> e)
     {
@@ -64,21 +64,6 @@ public class BitPacker<T>
         return result;
     }
     
-    public LongElement createLongElement(long minValue, long maxValue)
-    {
-        LongElement result = new LongElement(minValue, maxValue);
-        this.addElement(result);
-        return result;
-    }
-    
-    /** use this when you just need zero-based positive (long) integers. Same as createLongElement(0, count-1) */
-    public LongElement createLongElement(long valueCount)
-    {
-        LongElement result = new LongElement(0, valueCount - 1);
-        this.addElement(result);
-        return result;
-    }
-    
     public BooleanElement createBooleanElement()
     {
         BooleanElement result = new BooleanElement();
@@ -89,22 +74,22 @@ public class BitPacker<T>
     protected abstract class BitElement
     {
         protected final int bitLength;
-        protected long mask;
+        protected int mask;
         protected int shift;
-        protected long shiftedMask;
-        protected long shiftedInverseMask;
+        protected int shiftedMask;
+        protected int shiftedInverseMask;
         
-        private BitElement(long valueCount)
+        private BitElement(int valueCount)
         {
             this.bitLength = Useful.bitLength(valueCount);
-            this.mask = Useful.longBitMask(this.bitLength);
+            this.mask = Useful.intBitMask(this.bitLength);
         }
         
         /** 
          * Mask that isolates bits for this element. 
          * Useful to compare this and other elements simultaneously 
          */
-        public final long comparisonMask()
+        public final int comparisonMask()
         {
             return this.shiftedMask;
         }
@@ -120,24 +105,24 @@ public class BitPacker<T>
             this.values = e.getEnumConstants();
         }
         
-        public final long getBits(V e)
+        public final int getBits(V e)
         {
             return (e.ordinal() & mask) << shift; 
         }
         
         public final void setValue(V e, T inObject)
         { 
-            writer.accept(inObject, setValue(e, reader.applyAsLong(inObject)));
+            writer.accept(inObject, setValue(e, reader.applyAsInt(inObject)));
         }
         
-        public final long setValue(V e, long inBits)
+        public final int setValue(V e, int inBits)
         {
             return ((inBits & this.shiftedInverseMask) | getBits(e));
         }
         
         public final V getValue(T fromObject)
         { 
-            return getValue(reader.applyAsLong(fromObject));
+            return getValue(reader.applyAsInt(fromObject));
         }
         
         public final V getValue(long fromBits)
@@ -160,7 +145,7 @@ public class BitPacker<T>
             this.nullOrdinal = constants.length;
         }
         
-        public final long getBits(@Nullable V e)
+        public final int getBits(@Nullable V e)
         {
             final int ordinal = e == null ? this.nullOrdinal : e.ordinal();
             return (ordinal & mask) << shift; 
@@ -168,22 +153,22 @@ public class BitPacker<T>
         
         public final void setValue(@Nullable V e, T inObject)
         { 
-            writer.accept(inObject, setValue(e, reader.applyAsLong(inObject)));
+            writer.accept(inObject, setValue(e, reader.applyAsInt(inObject)));
         }
         
-        public final long setValue(@Nullable V e, long inBits)
+        public final int setValue(@Nullable V e, int inBits)
         {
             return ((inBits & this.shiftedInverseMask) | getBits(e));
         }
         
         public final @Nullable V getValue(T fromObject)
         { 
-            return getValue(reader.applyAsLong(fromObject));
+            return getValue(reader.applyAsInt(fromObject));
         }
         
-        public final @Nullable V getValue(long fromBits)
+        public final @Nullable V getValue(int fromBits)
         {
-            return values[(int) ((fromBits >> shift) & mask)];  
+            return values[(fromBits >> shift) & mask];  
         }
     }
     
@@ -198,67 +183,27 @@ public class BitPacker<T>
             this.minValue = minValue;
         }
         
-        public final long getBits(int i) 
+        public final int getBits(int i) 
         { 
-            return (((long)i - minValue) & mask) << shift; 
+            return ((i - minValue) & mask) << shift; 
         }
         
         public final void setValue(int i, T inObject)
         { 
-            writer.accept(inObject, setValue(i, reader.applyAsLong(inObject)));
+            writer.accept(inObject, setValue(i, reader.applyAsInt(inObject)));
         }
         
-        public final long setValue(int i, long inBits)
+        public final int setValue(int i, int inBits)
         {
             return ((inBits & this.shiftedInverseMask) | getBits(i));
         }
         
         public final int getValue(T fromObject)
         { 
-            return getValue(reader.applyAsLong(fromObject));
+            return getValue(reader.applyAsInt(fromObject));
         }
         
-        public final int getValue(long fromBits)
-        {
-            return (int) (((fromBits >> shift) & mask) + minValue); 
-        }
-    }
-    
-    /** 
-     * Stores values in given range as bits.  Handles negative values 
-     * but if range is too large will overflow due lack of unsigned numeric types. 
-     */
-    public class LongElement extends BitElement
-    {
-        private final long minValue;
-        
-        private LongElement(long minValue, long maxValue)
-        {
-            super(maxValue - minValue + 1);
-            this.minValue = minValue;
-        }
-        
-        public final long getBits(long i) 
-        { 
-            return ((i - minValue) & mask) << shift; 
-        }
-        
-        public final void setValue(long i, T inObject)
-        { 
-            writer.accept(inObject, setValue(i, reader.applyAsLong(inObject)));
-        }
-        
-        public final long setValue(long i, long inBits)
-        {
-            return ((inBits & this.shiftedInverseMask) | getBits(i));
-        }
-        
-        public final long getValue(T fromObject)
-        { 
-            return getValue(reader.applyAsLong(fromObject));
-        }
-        
-        public final long getValue(long fromBits)
+        public final int getValue(int fromBits)
         {
             return ((fromBits >> shift) & mask) + minValue; 
         }
@@ -271,27 +216,27 @@ public class BitPacker<T>
             super(2);
         }
         
-        public final long getBits(boolean b) 
+        public final int getBits(boolean b) 
         { 
             return ((b ? 1 : 0) & mask) << shift; 
         }
         
         public final void setValue(boolean b, T inObject)
         { 
-            writer.accept(inObject, setValue(b, reader.applyAsLong(inObject)));
+            writer.accept(inObject, setValue(b, reader.applyAsInt(inObject)));
         }
         
-        public final long setValue(boolean b, long inBits)
+        public final int setValue(boolean b, int inBits)
         {
             return ((inBits & this.shiftedInverseMask) | getBits(b));
         }
         
         public final boolean getValue(T fromObject)
         { 
-            return getValue(reader.applyAsLong(fromObject));
+            return getValue(reader.applyAsInt(fromObject));
         }
         
-        public final boolean getValue(long fromBits)
+        public final boolean getValue(int fromBits)
         {
             return((fromBits >> shift) & mask) == 1; 
         }

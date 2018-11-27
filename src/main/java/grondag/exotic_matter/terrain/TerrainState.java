@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.block.ISuperBlockAccess;
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.BitPacker64;
 import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.HorizontalCorner;
 import grondag.exotic_matter.world.HorizontalFace;
@@ -1103,12 +1103,12 @@ public class TerrainState
     }
     
     @SuppressWarnings("null")
-    public static final BitPacker<Void> HOTNESS_PACKER = new BitPacker<Void>(null, null);
-    public static final BitPacker<Void>.IntElement CENTER_HOTNESS = HOTNESS_PACKER.createIntElement(6); 
+    public static final BitPacker64<Void> HOTNESS_PACKER = new BitPacker64<Void>(null, null);
+    public static final BitPacker64<Void>.IntElement CENTER_HOTNESS = HOTNESS_PACKER.createIntElement(6); 
     @SuppressWarnings("unchecked")
-    public static final BitPacker<Void>.IntElement[] CORNER_HOTNESS = (BitPacker<Void>.IntElement[]) new BitPacker<?>.IntElement[4];
+    public static final BitPacker64<Void>.IntElement[] CORNER_HOTNESS = (BitPacker64<Void>.IntElement[]) new BitPacker64<?>.IntElement[4];
     @SuppressWarnings("unchecked")
-    public static final BitPacker<Void>.IntElement[] SIDE_HOTNESS = (BitPacker<Void>.IntElement[]) new BitPacker<?>.IntElement[4];
+    public static final BitPacker64<Void>.IntElement[] SIDE_HOTNESS = (BitPacker64<Void>.IntElement[]) new BitPacker64<?>.IntElement[4];
    
     public static final int ALL_HOT;
     static

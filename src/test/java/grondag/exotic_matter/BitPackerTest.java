@@ -2,7 +2,7 @@ package grondag.exotic_matter;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.BitPacker64;
 
 public class BitPackerTest
 {
@@ -16,21 +16,21 @@ public class BitPackerTest
     @Test
     public void test()
     {
-        BitPacker<BitPackerTest> packer = new BitPacker<BitPackerTest>( v -> v.bits,  (o, v) -> o.bits = v);
+        BitPacker64<BitPackerTest> packer = new BitPacker64<BitPackerTest>( v -> v.bits,  (o, v) -> o.bits = v);
         
-        BitPacker<BitPackerTest>.BooleanElement bool1 = packer.createBooleanElement();
+        BitPacker64<BitPackerTest>.BooleanElement bool1 = packer.createBooleanElement();
         
-        BitPacker<BitPackerTest>.IntElement int1 = packer.createIntElement(0, 67);
-        BitPacker<BitPackerTest>.EnumElement<Things1> enum1 = packer.createEnumElement(Things1.class);
+        BitPacker64<BitPackerTest>.IntElement int1 = packer.createIntElement(0, 67);
+        BitPacker64<BitPackerTest>.EnumElement<Things1> enum1 = packer.createEnumElement(Things1.class);
 
-        BitPacker<BitPackerTest>.IntElement int2 = packer.createIntElement(-53555643, 185375);
-        BitPacker<BitPackerTest>.EnumElement<Things2> enum2 = packer.createEnumElement(Things2.class);
+        BitPacker64<BitPackerTest>.IntElement int2 = packer.createIntElement(-53555643, 185375);
+        BitPacker64<BitPackerTest>.EnumElement<Things2> enum2 = packer.createEnumElement(Things2.class);
         
-        BitPacker<BitPackerTest>.BooleanElement bool2 = packer.createBooleanElement();
+        BitPacker64<BitPackerTest>.BooleanElement bool2 = packer.createBooleanElement();
         
-        BitPacker<BitPackerTest>.LongElement long1 = packer.createLongElement(-1, 634235);
+        BitPacker64<BitPackerTest>.LongElement long1 = packer.createLongElement(-1, 634235);
         
-        BitPacker<BitPackerTest>.IntElement int3 = packer.createIntElement(8);
+        BitPacker64<BitPackerTest>.IntElement int3 = packer.createIntElement(8);
         
         assert(packer.bitLength() == 64);
 

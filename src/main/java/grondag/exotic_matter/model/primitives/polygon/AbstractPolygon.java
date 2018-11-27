@@ -14,7 +14,7 @@ import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.render.QuadBakery;
-import grondag.exotic_matter.varia.BitPacker;
+import grondag.exotic_matter.varia.BitPacker64;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
@@ -22,27 +22,27 @@ import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements IPolygon
 {
-    protected static final BitPacker<AbstractPolygon<?>> BITPACKER = new BitPacker<AbstractPolygon<?>>(p -> p.stateBits, (p, b) -> p.stateBits = b);
+    protected static final BitPacker64<AbstractPolygon<?>> BITPACKER = new BitPacker64<AbstractPolygon<?>>(p -> p.stateBits, (p, b) -> p.stateBits = b);
 
-    protected static final BitPacker<AbstractPolygon<?>>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
-    protected static final BitPacker<AbstractPolygon<?>>.IntElement PIPELINE_INDEX = BITPACKER.createIntElement(1024);
+    protected static final BitPacker64<AbstractPolygon<?>>.EnumElement<EnumFacing> NOMINAL_FACE_BITS = BITPACKER.createEnumElement(EnumFacing.class);
+    protected static final BitPacker64<AbstractPolygon<?>>.IntElement PIPELINE_INDEX = BITPACKER.createIntElement(1024);
     
     @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.EnumElement<Rotation>[] ROTATION_BITS = new BitPacker.EnumElement[3];
+    protected static final BitPacker64<AbstractPolygon<?>>.EnumElement<Rotation>[] ROTATION_BITS = new BitPacker64.EnumElement[3];
     
     @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.EnumElement<BlockRenderLayer>[] RENDERPASS_BITS = new BitPacker.EnumElement[3];
+    protected static final BitPacker64<AbstractPolygon<?>>.EnumElement<BlockRenderLayer>[] RENDERPASS_BITS = new BitPacker64.EnumElement[3];
    
     @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.BooleanElement[] LOCKUV_BIT = new BitPacker.BooleanElement[3];
+    protected static final BitPacker64<AbstractPolygon<?>>.BooleanElement[] LOCKUV_BIT = new BitPacker64.BooleanElement[3];
 
     @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.BooleanElement[] EMISSIVE_BIT = new BitPacker.BooleanElement[3];
+    protected static final BitPacker64<AbstractPolygon<?>>.BooleanElement[] EMISSIVE_BIT = new BitPacker64.BooleanElement[3];
     
     @SuppressWarnings("unchecked")
-    protected static final BitPacker<AbstractPolygon<?>>.BooleanElement[] CONTRACTUV_BITS = new BitPacker.BooleanElement[3];
+    protected static final BitPacker64<AbstractPolygon<?>>.BooleanElement[] CONTRACTUV_BITS = new BitPacker64.BooleanElement[3];
     
-    protected static final BitPacker<AbstractPolygon<?>>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
+    protected static final BitPacker64<AbstractPolygon<?>>.IntElement SALT_BITS = BITPACKER.createIntElement(256);
 
     protected static final long DEFAULT_BITS;
     static
