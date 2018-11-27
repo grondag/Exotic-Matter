@@ -16,7 +16,7 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
     }
 
     @Override
-    public void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
+    public void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         quad.setLockUV(layerIndex, true);
         
@@ -33,6 +33,6 @@ public class CubicQuadPainterTiles extends CubicQuadPainter
         quad.setRotation(layerIndex, rotation);
         quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
         
-        this.postPaintProcessQuadAndOutput(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
     }
 }

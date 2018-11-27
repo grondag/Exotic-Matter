@@ -33,5 +33,5 @@ public abstract class VertexProcessor
         this.registryName = registryName;
     }
 
-    public abstract void process(IMutablePolygon result, ISuperModelState modelState, PaintLayer paintLayer);
+    public abstract void process(IMutablePolygon result, int layerIndex, ISuperModelState modelState, PaintLayer paintLayer);
 }

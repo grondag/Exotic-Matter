@@ -22,7 +22,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
     }
 
     @Override
-    public void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
+    public void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         // Determine what type of randomizations to apply so that we have a different
         // appearance based on depth and species.
@@ -38,7 +38,7 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
         // based on depth within the plane, to provide variation between adjacent layers.
         // This depth-based variation can be disabled with a setting in the surface instance.
      
-        quad.setLockUV(this.layerIndex, true);
+        quad.setLockUV(layerIndex, true);
 
         Vec3i surfaceVec = CubicQuadPainterBigTex.getSurfaceVector(this.pos, quad.getNominalFace(), this.texture.textureScale());
         
@@ -116,6 +116,6 @@ public class CubicQuadPainterBigTex extends CubicQuadPainter
             quad.setMinV(layerIndex, surfaceVec.getY() * sliceIncrement);
             quad.setMaxV(layerIndex, quad.getMinV(layerIndex) + sliceIncrement);
         }
-        this.postPaintProcessQuadAndOutput(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
     }
 }

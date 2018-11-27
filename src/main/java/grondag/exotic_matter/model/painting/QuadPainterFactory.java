@@ -8,6 +8,8 @@ import grondag.exotic_matter.model.texture.TextureScale;
 
 public class QuadPainterFactory
 {
+    // PERF: make painters threadlocal
+    
     public static @Nullable QuadPainter getPainterForSurface(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
     {
         if(surface.isLayerDisabled(paintLayer)) return null;

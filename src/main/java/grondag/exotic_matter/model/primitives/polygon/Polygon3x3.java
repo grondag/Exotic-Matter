@@ -105,29 +105,6 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
         VERTEX_LAYERS[0][1] = new VertexLayer<Polygon3x3>()
         {
             {
-                this.colorGetter = v -> v.color0_2;
-                this.colorSetter = (v, color) -> v.color0_2 = color;
-
-                this.glowGetter = v -> v.glow0_2;
-                this.glowSetter = (v, glow) -> v.glow0_2 = (short)glow;
-
-                this.uGetter = v -> v.u0_2;
-                this.uSetter = (v, u) -> v.u0_2 = u;
-
-                this.vGetter = v -> v.v0_2;
-                this.vSetter = (v, vVal) -> v.v0_2 = vVal;
-
-                this.uvSetter = (v, u, vVal) -> 
-                {
-                    v.u0_2 = u;
-                    v.v0_2 = vVal;
-                };
-            }
-        };
-
-        VERTEX_LAYERS[0][2] = new VertexLayer<Polygon3x3>()
-        {
-            {
                 this.colorGetter = v -> v.color0_1;
                 this.colorSetter = (v, color) -> v.color0_1 = color;
 
@@ -144,6 +121,29 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
                 {
                     v.u0_1 = u;
                     v.v0_1 = vVal;
+                };
+            }
+        };
+
+        VERTEX_LAYERS[0][2] = new VertexLayer<Polygon3x3>()
+        {
+            {
+                this.colorGetter = v -> v.color0_2;
+                this.colorSetter = (v, color) -> v.color0_2 = color;
+
+                this.glowGetter = v -> v.glow0_2;
+                this.glowSetter = (v, glow) -> v.glow0_2 = (short)glow;
+
+                this.uGetter = v -> v.u0_2;
+                this.uSetter = (v, u) -> v.u0_2 = u;
+
+                this.vGetter = v -> v.v0_2;
+                this.vSetter = (v, vVal) -> v.v0_2 = vVal;
+
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u0_2 = u;
+                    v.v0_2 = vVal;
                 };
             }
         };
@@ -178,29 +178,6 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
         VERTEX_LAYERS[1][1] = new VertexLayer<Polygon3x3>()
         {
             {
-                this.colorGetter = v -> v.color1_2;
-                this.colorSetter = (v, color) -> v.color1_2 = color;
-
-                this.glowGetter = v -> v.glow1_2;
-                this.glowSetter = (v, glow) -> v.glow1_2 = (short)glow;
-
-                this.uGetter = v -> v.u1_2;
-                this.uSetter = (v, u) -> v.u1_2 = u;
-
-                this.vGetter = v -> v.v1_2;
-                this.vSetter = (v, vVal) -> v.v1_2 = vVal;
-
-                this.uvSetter = (v, u, vVal) -> 
-                {
-                    v.u1_2 = u;
-                    v.v1_2 = vVal;
-                };
-            }
-        };
-
-        VERTEX_LAYERS[1][2] = new VertexLayer<Polygon3x3>()
-        {
-            {
                 this.colorGetter = v -> v.color1_1;
                 this.colorSetter = (v, color) -> v.color1_1 = color;
 
@@ -217,6 +194,29 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
                 {
                     v.u1_1 = u;
                     v.v1_1 = vVal;
+                };
+            }
+        };
+
+        VERTEX_LAYERS[1][2] = new VertexLayer<Polygon3x3>()
+        {
+            {
+                this.colorGetter = v -> v.color1_2;
+                this.colorSetter = (v, color) -> v.color1_2 = color;
+
+                this.glowGetter = v -> v.glow1_2;
+                this.glowSetter = (v, glow) -> v.glow1_2 = (short)glow;
+
+                this.uGetter = v -> v.u1_2;
+                this.uSetter = (v, u) -> v.u1_2 = u;
+
+                this.vGetter = v -> v.v1_2;
+                this.vSetter = (v, vVal) -> v.v1_2 = vVal;
+
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u1_2 = u;
+                    v.v1_2 = vVal;
                 };
             }
         };
@@ -251,29 +251,6 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
         VERTEX_LAYERS[2][1] = new VertexLayer<Polygon3x3>()
         {
             {
-                this.colorGetter = v -> v.color2_2;
-                this.colorSetter = (v, color) -> v.color2_2 = color;
-
-                this.glowGetter = v -> v.glow2_2;
-                this.glowSetter = (v, glow) -> v.glow2_2 = (short)glow;
-
-                this.uGetter = v -> v.u2_2;
-                this.uSetter = (v, u) -> v.u2_2 = u;
-
-                this.vGetter = v -> v.v2_2;
-                this.vSetter = (v, vVal) -> v.v2_2 = vVal;
-
-                this.uvSetter = (v, u, vVal) -> 
-                {
-                    v.u2_2 = u;
-                    v.v2_2 = vVal;
-                };
-            }
-        };
-
-        VERTEX_LAYERS[2][2] = new VertexLayer<Polygon3x3>()
-        {
-            {
                 this.colorGetter = v -> v.color2_1;
                 this.colorSetter = (v, color) -> v.color2_1 = color;
 
@@ -290,6 +267,29 @@ public class Polygon3x3 extends AbstractPolygonNx3<Polygon3x3>
                 {
                     v.u2_1 = u;
                     v.v2_1 = vVal;
+                };
+            }
+        };
+
+        VERTEX_LAYERS[2][2] = new VertexLayer<Polygon3x3>()
+        {
+            {
+                this.colorGetter = v -> v.color2_2;
+                this.colorSetter = (v, color) -> v.color2_2 = color;
+
+                this.glowGetter = v -> v.glow2_2;
+                this.glowSetter = (v, glow) -> v.glow2_2 = (short)glow;
+
+                this.uGetter = v -> v.u2_2;
+                this.uSetter = (v, u) -> v.u2_2 = u;
+
+                this.vGetter = v -> v.v2_2;
+                this.vSetter = (v, vVal) -> v.v2_2 = vVal;
+
+                this.uvSetter = (v, u, vVal) -> 
+                {
+                    v.u2_2 = u;
+                    v.v2_2 = vVal;
                 };
             }
         };

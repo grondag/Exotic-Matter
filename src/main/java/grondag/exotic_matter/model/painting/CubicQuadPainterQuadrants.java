@@ -54,7 +54,7 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
     }
     
     @Override
-    protected final void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
+    protected final void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         quad.setLockUV(layerIndex, true);
     
@@ -74,7 +74,7 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
         
         TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(quad, layerIndex, quadrant);
         
-        this.postPaintProcessQuadAndOutput(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
     }
     
     @Override

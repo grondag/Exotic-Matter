@@ -16,7 +16,6 @@ import net.minecraft.util.text.translation.I18n;
  * z-position of layers is per enum order.
  * 
  */
-@SuppressWarnings("deprecation")
 public enum PaintLayer
 {
     /** 

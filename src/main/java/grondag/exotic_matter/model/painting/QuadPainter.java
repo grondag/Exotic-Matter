@@ -17,11 +17,7 @@ public abstract class QuadPainter
     protected final ISuperModelState modelState;
     public final Surface surface;
     public final PaintLayer paintLayer;
-    /**
-     * Convenience for paintLayer.textureLayerIndex
-     * Use this for both inputs and outputs; layer-0 values are copied to upper layers before painting
-     */
-    public final int layerIndex;
+    
     protected final ITexturePalette texture;
     
     /**
@@ -39,7 +35,7 @@ public abstract class QuadPainter
      * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
      * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
      */
-    protected abstract void textureQuad(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem);
+    protected abstract void textureQuad(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem);
     
     /**
      * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
@@ -59,7 +55,6 @@ public abstract class QuadPainter
         this.modelState = modelState;
         this.surface = surface;
         this.paintLayer = paintLayer;
-        this.layerIndex = paintLayer.textureLayerIndex;
         
         ITexturePalette tex = modelState.getTexture(paintLayer);
         this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
@@ -91,7 +86,7 @@ public abstract class QuadPainter
      * If isItem = true will bump out quads from block center to provide
      * better depth rendering of layers in item rendering.
      */
-    public final void producePaintedQuad(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem)
+    public final void producePaintedQuad(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         if(!isQuadValidForPainting(inputQuad)) return;
     
@@ -101,14 +96,14 @@ public abstract class QuadPainter
         
         // TODO: Vary color slightly with species, as user-selected option
         
-        this.textureQuad(inputQuad, target, isItem);
+        this.textureQuad(inputQuad, layerIndex, target, isItem);
     }
     
     /**
      * Call from paint quad in sub classes to return results.
      * Handles item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, Consumer<IMutablePolygon> target, boolean isItem)
+    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         if(isItem)
         {
@@ -128,7 +123,7 @@ public abstract class QuadPainter
 //                break;
 //            }
         }
-        modelState.getVertexProcessor(this.paintLayer).process(inputQuad, modelState, paintLayer);
+        modelState.getVertexProcessor(this.paintLayer).process(inputQuad, layerIndex, modelState, paintLayer);
 
         target.accept(inputQuad);
     }

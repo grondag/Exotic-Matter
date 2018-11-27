@@ -66,9 +66,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(firstPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 0) == null)
-                    QuadrantSplitter.splitAndPaint(p, q -> firstPainter.producePaintedQuad(q, firstInnerTarget, isItem), 0);
+                    QuadrantSplitter.splitAndPaint(p, q -> firstPainter.producePaintedQuad(q, 0, firstInnerTarget, isItem), 0);
                 else
-                    firstPainter.producePaintedQuad(p, firstInnerTarget, isItem);
+                    firstPainter.producePaintedQuad(p, 0, firstInnerTarget, isItem);
             }
         };
         
@@ -78,9 +78,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(secondPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 1) == null)
-                    QuadrantSplitter.splitAndPaint(p, q -> secondPainter.producePaintedQuad(q, secondInnerTarget, isItem), 1);
+                    QuadrantSplitter.splitAndPaint(p, q -> secondPainter.producePaintedQuad(q, 1, secondInnerTarget, isItem), 1);
                 else
-                    secondPainter.producePaintedQuad(p, secondInnerTarget, isItem);
+                    secondPainter.producePaintedQuad(p, 1, secondInnerTarget, isItem);
             }
         };
         
@@ -90,9 +90,9 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
             public void accept(@SuppressWarnings("null") IMutablePolygon p)
             {
                 if(thirdPainter.requiresQuadrants() && QuadrantSplitter.uvQuadrant(p, 2) == null)
-                    QuadrantSplitter.splitAndPaint(p, q -> thirdPainter.producePaintedQuad(q, thirdInnerTarget, isItem), 2);
+                    QuadrantSplitter.splitAndPaint(p, q -> thirdPainter.producePaintedQuad(q, 2, thirdInnerTarget, isItem), 2);
                 else
-                    thirdPainter.producePaintedQuad(p, thirdInnerTarget, isItem);
+                    thirdPainter.producePaintedQuad(p, 2, thirdInnerTarget, isItem);
             }
         };
         
@@ -152,7 +152,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 break;
                 
             case 1:
-                this.get(0).producePaintedQuad(q, consumers.get().prepareSingle(target, isItem, this), isItem);
+                consumers.get().prepareSingle(target, isItem, this).accept(q);
                 break;
                 
             case 2:
@@ -160,7 +160,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 if(q.getPipeline().textureFormat().layerCount() != 2)
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.DOUBLE));
 
-                this.get(0).producePaintedQuad(q, consumers.get().prepareDouble(target, isItem, this), isItem);
+                consumers.get().prepareDouble(target, isItem, this).accept(q);
                 break;
                 
             case 3:
@@ -168,7 +168,7 @@ public class PainterList extends SimpleUnorderedArrayList<QuadPainter>
                 if(q.getPipeline().textureFormat().layerCount() != 3)
                     q.setPipeline(ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
 
-                this.get(0).producePaintedQuad(q, consumers.get().prepareTriple(target, isItem, this), isItem);
+                consumers.get().prepareTriple(target, isItem, this).accept(q);
                 break;
                 
             default:

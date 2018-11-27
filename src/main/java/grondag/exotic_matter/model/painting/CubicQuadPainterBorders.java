@@ -46,7 +46,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
     }
 
     @Override
-    public final void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
+    public final void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         quad.setLockUV(layerIndex, true);
         
@@ -81,7 +81,7 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
         quad.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
         quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
         
-        this.postPaintProcessQuadAndOutput(quad, target, isItem);
+        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
     }
     
     

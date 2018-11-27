@@ -24,7 +24,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     }
 
     @Override
-    public void textureQuad(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isItem)
+    public void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
     {
         assert !quad.isLockUV(layerIndex) : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
         
@@ -81,7 +81,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             final int uIndexFinal = uIndex;
             final float uSplitLow = uIndexFinal * tilingDistance;
             
-            uRemainder = splitU(uRemainder, uSplitLow, uSpan, new Consumer<IMutablePolygon>()
+            uRemainder = splitU(uRemainder, layerIndex, uSplitLow, uSpan, new Consumer<IMutablePolygon>()
             {
                 @SuppressWarnings("null")
                 @Override
@@ -93,13 +93,13 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                         final int vIndexFinal = vIndex;
                         final float vSplitLow = vIndexFinal * tilingDistance;
                         
-                        vRemainder = splitV(vRemainder, vSplitLow, vSpan, new Consumer<IMutablePolygon>()
+                        vRemainder = splitV(vRemainder, layerIndex, vSplitLow, vSpan, new Consumer<IMutablePolygon>()
                         {
                             @Override
                             public void accept(IMutablePolygon t)
                             {
                                 // send for final painting and output
-                                paintBoundedQuad(t, target, isItem, salt(salt, uIndexFinal, vIndexFinal));
+                                paintBoundedQuad(t, layerIndex, target, isItem, salt(salt, uIndexFinal, vIndexFinal));
                             }
                         });
                         
@@ -153,7 +153,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
      * If all input vertices are within the given split bounds, will output a single quad
      * offset and scaled as if it had been sliced, and return null.
      */
-    private @Nullable IMutablePolygon splitU(IMutablePolygon input, final float uSplitLow, final float uSpan, Consumer<IMutablePolygon> output)
+    private @Nullable IMutablePolygon splitU(IMutablePolygon input, int layerIndex, final float uSplitLow, final float uSpan, Consumer<IMutablePolygon> output)
     {
         final float uMin = input.getMinU(layerIndex);
         final float uMax = input.getMaxU(layerIndex);
@@ -300,7 +300,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     /**
      * Just like {@link #splitU(IMutablePolygon, float, float, Consumer)} but for the v dimension.
      */
-    private @Nullable IMutablePolygon splitV(IMutablePolygon input, float vSplitLow, float vSpan, Consumer<IMutablePolygon> output)
+    private @Nullable IMutablePolygon splitV(IMutablePolygon input, int layerIndex, float vSplitLow, float vSpan, Consumer<IMutablePolygon> output)
     {
         final float vMin = input.getMinV(layerIndex);
         final float vMax = input.getMaxV(layerIndex);
@@ -431,7 +431,8 @@ public class SurfaceQuadPainterTiled extends QuadPainter
      * texture tile distance.  The provided salt will be used for texture randomization.
      */
     private void paintBoundedQuad(
-            IMutablePolygon quad, 
+            IMutablePolygon quad,
+            int layerIndex,
             Consumer<IMutablePolygon> target, 
             boolean isItem,
             int salt)
@@ -451,7 +452,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         // because earlier iterations may have left us with something else
         if(quad.vertexCount() > 4 || !quad.isConvex())
         {
-            boolean didSplit = quad.toPaintableQuads(p -> postPaintProcessQuadAndOutput(p, target, isItem));
+            boolean didSplit = quad.toPaintableQuads(p -> postPaintProcessQuadAndOutput(p, layerIndex, target, isItem));
             assert didSplit;
             // can release original polys that have been split - splits are new instances 
             // and this current instance is not passed to the consumer nor used in any other way.
@@ -460,7 +461,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         }
         else 
         {
-            this.postPaintProcessQuadAndOutput(quad, target, isItem);
+            this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
         }
     }
     

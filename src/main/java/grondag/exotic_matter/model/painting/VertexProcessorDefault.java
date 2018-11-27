@@ -20,10 +20,9 @@ public class VertexProcessorDefault extends VertexProcessor
     }
     
     @Override
-    public final void process(IMutablePolygon poly, ISuperModelState modelState, PaintLayer paintLayer)
+    public final void process(IMutablePolygon poly, int layerIndex, ISuperModelState modelState, PaintLayer paintLayer)
     {
         int color = modelState.getColorARGB(paintLayer);
-        int layerIndex = paintLayer.textureLayerIndex;
         
         //TODO: remove?  Was causing problems when acuity is enabled because renderpass will be solid
 //        if(modelState.getRenderPass(paintLayer) != BlockRenderLayer.TRANSLUCENT)
