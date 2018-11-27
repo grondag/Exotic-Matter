@@ -95,15 +95,15 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
     
     private float u0;
     private float v0;
-    private int color0;
+    private int color0 = 0xFFFFFFFF;
     
     private float u1;
     private float v1;
-    private int color1;
+    private int color1 = 0xFFFFFFFF;
     
     private float u2;
     private float v2;
-    private int color2;
+    private int color2 = 0xFFFFFFFF;
 
     
     @Override

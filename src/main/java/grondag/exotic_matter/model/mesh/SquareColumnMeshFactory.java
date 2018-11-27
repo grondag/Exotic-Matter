@@ -152,7 +152,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         CornerJoinBlockState bjs = state.getCornerJoin();
         EnumFacing.Axis axis = state.getAxis();
 
-        IMutablePolygon quadInputs = PolyFactory.newPaintable(4);
+        IMutablePolygon quadInputs = PolyFactory.COMMON_POOL.newPaintable(4);
         quadInputs.setLockUV(0, true);
 
         Surface cutSurface = state.isEmissive(PaintLayer.LAMP) ? INSTANCE_CUT_LAMP : INSTANCE_CUT;

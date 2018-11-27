@@ -3,6 +3,7 @@ package grondag.exotic_matter.model.primitives;
 import grondag.exotic_matter.model.primitives.polygon.AbstractPolygon;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPrimitiveFactory;
 import grondag.exotic_matter.model.primitives.polygon.MutablePolygon3x3;
 import grondag.exotic_matter.model.primitives.polygon.MutablePolygon3x4;
 import grondag.exotic_matter.model.primitives.polygon.MutablePolygonNxN;
@@ -21,29 +22,57 @@ import net.minecraft.util.math.MathHelper;
 
 public class PolyFactory
 {
-    public static IMutablePolygon newPaintable(int vertexCount, int layerCount)
-    {
-        // TODO: pool
-        return vertexCount == 4 
-                ? new MutablePolygon3x4().prepare(layerCount)
-                : vertexCount == 3
-                    ? new MutablePolygon3x3().prepare(layerCount)
-                    : new MutablePolygonNxN(MathHelper.log2DeBruijn(vertexCount)).prepare(layerCount, vertexCount);
-    }
-    
     /**
-     * Concise syntax for single layer
+     * Instances in the common pool are stand-alone instances and do not
+     * attempt to ensure locality of reference.  There is no allocation 
+     * management (they simply add themselves back to the pool when released.)<p>
+     * 
+     * They have no overhead/waste of partial allocation but may carry a little
+     * more overhead due to having own array(s) or other internal state
+     * depending on implementation provided.
+     * 
      */
-    public static IMutablePolygon newPaintable(int vertexCount)
+    public static final IPrimitiveFactory COMMON_POOL = new IPrimitiveFactory()
     {
-        return newPaintable(vertexCount, 1);
-    }
+        @Override
+        public IMutablePolygon newPaintable(int vertexCount, int layerCount)
+        {
+            return vertexCount == 4 
+                    ? new MutablePolygon3x4().prepare(layerCount)
+                    : vertexCount == 3
+                        ? new MutablePolygon3x3().prepare(layerCount)
+                        : new MutablePolygonNxN(MathHelper.log2DeBruijn(vertexCount)).prepare(layerCount, vertexCount);
+        }
+        
+        @Override
+        public IMutablePolygon newPaintable(int vertexCount)
+        {
+            return newPaintable(vertexCount, 1);
+        }
 
-    public static IMutableVertex claimMutableVertex()
-    {
-        // TODO pooled
-        return new UnpackedVertex3();
-    }
+        @Override
+        public IMutableVertex claimMutableVertex()
+        {
+            return new UnpackedVertex3();
+        }
+        
+        @Override
+        public IPolygon toPainted(IMutablePolygon mutable)
+        {
+            AbstractPolygon<?> result = MAKERS[mutable.layerCount() - 1][Math.min(2, mutable.vertexCount() - 3)].make(mutable);
+            result.load(mutable);
+            return result;
+        }
+
+        @Override
+        public IMutablePolygon claimCopy(IPolygon template, int vertexCount)
+        {
+            IMutablePolygon result = newPaintable(vertexCount, template.layerCount());
+            ((AbstractPolygon<?>)result).load(template);
+            return result;
+        }
+    };
+
 
     @FunctionalInterface 
     static private interface Maker
@@ -67,29 +96,5 @@ public class PolyFactory
         MAKERS[2][1] = p -> new Polygon3x4();
         MAKERS[2][2] = p -> new Polygon3xN(p.vertexCount());
     }
-    
-    public static IPolygon toPainted(IMutablePolygon mutable)
-    {
-        AbstractPolygon<?> result = MAKERS[mutable.layerCount() - 1][Math.min(2, mutable.vertexCount() - 3)].make(mutable);
-        result.load(mutable);
-        return result;
-    }
 
-    /**
-     * Copy will include vertices only if vertex counts match.
-     */
-    public static IMutablePolygon claimCopy(IPolygon template, int vertexCount)
-    {
-        IMutablePolygon result = newPaintable(vertexCount, template.layerCount());
-        ((AbstractPolygon<?>)result).load(template);
-        return result;
-    }
-    
-    /**
-     * Copy will include vertices.
-     */
-    public static IMutablePolygon claimCopy(IPolygon template)
-    {
-        return claimCopy(template, template.vertexCount());
-    }
 }

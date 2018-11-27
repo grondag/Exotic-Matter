@@ -380,7 +380,7 @@ public class MeshHelper
        @SuppressWarnings("unchecked")
        public static <T extends IPolygon> void addTextureToAllFaces(boolean createMutable, String rawTextureName, float left, float top, float size, float scaleFactor, int color, boolean contractUVs, float uvFraction, Rotation texturRotation, List<T> list)
        {
-           IMutablePolygon template = PolyFactory.newPaintable(4)
+           IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4)
                .setTextureName(0, "hard_science:blocks/" + rawTextureName)
                .setLockUV(0, false)
                .setShouldContractUVs(0, contractUVs);

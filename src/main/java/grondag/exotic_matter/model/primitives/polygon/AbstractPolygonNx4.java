@@ -40,9 +40,9 @@ public abstract class AbstractPolygonNx4<T extends AbstractPolygonNx4<T>> extend
                 this.xyzSetter = (p, x, y, z) -> p.pos0 = Vec3f.create(x, y, z);
                 
                 this.normalGetter = p -> p.normals == null ? null : p.normals.norm0;
-                this.normXGetter = p -> p.normals == null || p.normals.norm0 == null ? 0 : p.normals.norm0.x();
-                this.normYGetter = p -> p.normals == null || p.normals.norm0 == null ? 0 : p.normals.norm0.y();
-                this.normZGetter = p -> p.normals == null || p.normals.norm0 == null ? 0 : p.normals.norm0.z();
+                this.normXGetter = p -> p.normals == null || p.normals.norm0 == null ? Float.NaN : p.normals.norm0.x();
+                this.normYGetter = p -> p.normals == null || p.normals.norm0 == null ? Float.NaN : p.normals.norm0.y();
+                this.normZGetter = p -> p.normals == null || p.normals.norm0 == null ? Float.NaN : p.normals.norm0.z();
                 
                 this.normalSetter = (p, v) -> p.normals().norm0 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm0 = Vec3f.create(x, y, z);
@@ -61,9 +61,9 @@ public abstract class AbstractPolygonNx4<T extends AbstractPolygonNx4<T>> extend
                 this.xyzSetter = (p, x, y, z) -> p.pos1 = Vec3f.create(x, y, z);
                 
                 this.normalGetter = p -> p.normals == null ? null : p.normals.norm1;
-                this.normXGetter = p -> p.normals == null || p.normals.norm1 == null ? 0 : p.normals.norm1.x();
-                this.normYGetter = p -> p.normals == null || p.normals.norm1 == null ? 0 : p.normals.norm1.y();
-                this.normZGetter = p -> p.normals == null || p.normals.norm1 == null ? 0 : p.normals.norm1.z();
+                this.normXGetter = p -> p.normals == null || p.normals.norm1 == null ? Float.NaN : p.normals.norm1.x();
+                this.normYGetter = p -> p.normals == null || p.normals.norm1 == null ? Float.NaN : p.normals.norm1.y();
+                this.normZGetter = p -> p.normals == null || p.normals.norm1 == null ? Float.NaN : p.normals.norm1.z();
                 
                 this.normalSetter = (p, v) -> p.normals().norm1 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm1 = Vec3f.create(x, y, z);
@@ -82,9 +82,9 @@ public abstract class AbstractPolygonNx4<T extends AbstractPolygonNx4<T>> extend
                 this.xyzSetter = (p, x, y, z) -> p.pos2 = Vec3f.create(x, y, z);
                 
                 this.normalGetter = p -> p.normals == null ? null : p.normals.norm2;
-                this.normXGetter = p -> p.normals == null || p.normals.norm2 == null ? 0 : p.normals.norm2.x();
-                this.normYGetter = p -> p.normals == null || p.normals.norm2 == null ? 0 : p.normals.norm2.y();
-                this.normZGetter = p -> p.normals == null || p.normals.norm2 == null ? 0 : p.normals.norm2.z();
+                this.normXGetter = p -> p.normals == null || p.normals.norm2 == null ? Float.NaN : p.normals.norm2.x();
+                this.normYGetter = p -> p.normals == null || p.normals.norm2 == null ? Float.NaN : p.normals.norm2.y();
+                this.normZGetter = p -> p.normals == null || p.normals.norm2 == null ? Float.NaN : p.normals.norm2.z();
                 
                 this.normalSetter = (p, v) -> p.normals().norm2 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm2 = Vec3f.create(x, y, z);
@@ -103,9 +103,9 @@ public abstract class AbstractPolygonNx4<T extends AbstractPolygonNx4<T>> extend
                 this.xyzSetter = (p, x, y, z) -> p.pos3 = Vec3f.create(x, y, z);
                 
                 this.normalGetter = p -> p.normals == null ? null : p.normals.norm3;
-                this.normXGetter = p -> p.normals == null || p.normals.norm3 == null ? 0 : p.normals.norm3.x();
-                this.normYGetter = p -> p.normals == null || p.normals.norm3 == null ? 0 : p.normals.norm3.y();
-                this.normZGetter = p -> p.normals == null || p.normals.norm3 == null ? 0 : p.normals.norm3.z();
+                this.normXGetter = p -> p.normals == null || p.normals.norm3 == null ? Float.NaN : p.normals.norm3.x();
+                this.normYGetter = p -> p.normals == null || p.normals.norm3 == null ? Float.NaN : p.normals.norm3.y();
+                this.normZGetter = p -> p.normals == null || p.normals.norm3 == null ? Float.NaN : p.normals.norm3.z();
                 
                 this.normalSetter = (p, v) -> p.normals().norm3 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm3 = Vec3f.create(x, y, z);

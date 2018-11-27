@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
-import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon.Helper.UVLocker;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
@@ -296,8 +295,6 @@ public interface IMutablePolygon extends IPolygon
         return builder.build();
     }
     
-    void release();
-    
     static void releaseAll(Collection<IMutablePolygon> targets)
     {
         for(IMutablePolygon p : targets)
@@ -438,7 +435,7 @@ public interface IMutablePolygon extends IPolygon
 
     public default IPolygon toPainted()
     {
-        return PolyFactory.toPainted(this);
+        return factory().toPainted(this);
     }
 
     /**

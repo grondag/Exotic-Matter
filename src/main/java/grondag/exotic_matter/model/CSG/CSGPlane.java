@@ -266,19 +266,21 @@ public class CSGPlane
                     // I COPLANAR - J COPLANAR
                     frontQuad.vertex[iFront++] = iVertex;
                     backQuad.vertex[iBack++] = iVertex;
+                    iVertex.retain();
                     break;
                     
                 case 1:
                     // I COPLANAR - J FRONT
                     frontQuad.vertex[iFront++] = iVertex;
                     backQuad.vertex[iBack++] = iVertex;
-
+                    iVertex.retain();
                     break;
                     
                 case 2:
                     // I COPLANAR - J BACK
                     frontQuad.vertex[iFront++] = iVertex;
                     backQuad.vertex[iBack++] = iVertex;
+                    iVertex.retain();
                     break;
                     
                     
@@ -313,6 +315,7 @@ public class CSGPlane
                     
                     frontQuad.vertex[iFront++] = v;
                     backQuad.vertex[iBack++] = v;
+                    v.retain();
                     
                     break;
                 }  
@@ -338,6 +341,7 @@ public class CSGPlane
                     
                     frontQuad.vertex[iFront++] = v;
                     backQuad.vertex[iBack++] = v;
+                    v.retain();
                     
                     break;
                 }

@@ -29,7 +29,7 @@ class TriangleBoxTestPerf
         final float[] polyData = new float[36];
         int trueCount = 0;
         
-        IMutablePolygon poly = PolyFactory.newPaintable(3);
+        IMutablePolygon poly = PolyFactory.COMMON_POOL.newPaintable(3);
         
         for(int i = 0; i < samples; i++)
         {

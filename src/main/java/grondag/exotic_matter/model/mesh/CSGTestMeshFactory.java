@@ -56,7 +56,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     private List<IPolygon> getTestQuads()
     {
-        IMutablePolygon template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
         template.setLockUV(0, true);
         template.setSurface(SURFACE_MAIN);
   

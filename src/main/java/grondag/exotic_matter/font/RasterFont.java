@@ -431,7 +431,7 @@ public class RasterFont extends TextureAtlasSprite
      */
     public void formulaBlockQuadsToList(String text, boolean formatAsForumla, int color, float bumpFactor, boolean leftSide, List<IPolygon> list)
     {
-        IMutablePolygon template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
         template.setTextureName(0, FontHolder.FONT_RESOURCE_STRING_SMALL);
         template.setLockUV(0, false);
         template.setShouldContractUVs(0, false);

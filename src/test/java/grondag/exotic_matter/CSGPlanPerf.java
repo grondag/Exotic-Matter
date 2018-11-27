@@ -22,7 +22,7 @@ public class CSGPlanPerf
         
         for(int i = 0; i < 200000000; i++)
         {
-            IMutableVertex v = PolyFactory.claimMutableVertex();
+            IMutableVertex v = PolyFactory.COMMON_POOL.claimMutableVertex();
             v.setPos(r.nextFloat(), r.nextFloat(), r.nextFloat());
             plane.vertexIncrement(v);
         }

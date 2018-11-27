@@ -358,12 +358,6 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public void release()
-    {
-        // NOOP
-    }
-
-    @Override
     public IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
         super.setVertexLayerImpl(layerIndex, vertexIndex, u, v, color, glow);

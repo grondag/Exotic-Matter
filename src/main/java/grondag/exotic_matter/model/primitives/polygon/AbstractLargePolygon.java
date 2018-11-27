@@ -14,7 +14,8 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     @Override
     public final Vec3f getVertexNormal(int vertexIndex)
     {
-        return vertices()[computeArrayIndex(vertexIndex)].normal();
+        Vec3f result = vertices()[computeArrayIndex(vertexIndex)].normal();
+        return result == null ? getFaceNormal() : result;
     }
     
     @Override

@@ -128,13 +128,11 @@ public class CSGNode
         @Override
         public CSGNode.Root clone()
         {
-            throw new UnsupportedOperationException();
-//            //TODO: if serious about this need to do it without recursion
-//            CSGNode.Root result = new CSGNode.Root(this.plane.clone());
-//            if(this.front != null) result.front = this.front.clone();
-//            if(this.back != null) result.back = this.back.clone();
-//            this.quads.forEach(q -> result.quads.add(q.clone()));
-//            return result;
+            CSGNode.Root result = new CSGNode.Root(this.plane.clone());
+            if(this.front != null) result.front = this.front.clone();
+            if(this.back != null) result.back = this.back.clone();
+            this.quads.forEach(q -> result.quads.add(q.clone()));
+            return result;
         }
         
         /**
@@ -380,13 +378,12 @@ public class CSGNode
     @Override
     protected CSGNode clone()
     {
-        throw new UnsupportedOperationException();
-//        //TODO: if serious about this need to do it without recursion
-//        CSGNode result = new CSGNode(this.plane.clone());
-//        if(this.front != null) result.front = this.front.clone();
-//        if(this.back != null) result.back = this.back.clone();
-//        this.quads.forEach(q -> result.quads.add(q.clone()));
-//        return result;
+        // PERF: poly reference counting is surely a terrible mess throughout
+        CSGNode result = new CSGNode(this.plane.clone());
+        if(this.front != null) result.front = this.front.clone();
+        if(this.back != null) result.back = this.back.clone();
+        this.quads.forEach(q -> result.quads.add(q.clone()));
+        return result;
     }
     
     private void invertNode()

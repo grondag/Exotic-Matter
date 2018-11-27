@@ -269,7 +269,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         assert vertex.length >= vertexCount;
         for(int v = 0; v < vertexCount; v++)
         {
-            IMutableVertex vNew = PolyFactory.claimMutableVertex();
+            IMutableVertex vNew = factory().claimMutableVertex();
             vertex[v] = vNew;
             
             vNew.setPos(getVertexX(v), getVertexY(v), getVertexZ(v));
@@ -366,7 +366,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     default IMutablePolygon claimCopy()
     {
-        return PolyFactory.claimCopy(this);
+        return factory().claimCopy(this);
     }
     
     /**
@@ -374,7 +374,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     public default IMutablePolygon claimCopy(int vertexCount)
     {
-        return PolyFactory.claimCopy(this, vertexCount);
+        return factory().claimCopy(this, vertexCount);
     }
     
     /**
@@ -409,6 +409,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
             if(currentGlow != lastGlow)
             {
                 final int g = currentGlow * 17;
+                
                 vertexLighter.setBlockLightMap(g, g, g, 255);
                 lastGlow = currentGlow;
             }
@@ -514,5 +515,55 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
             }
             return uvData;
         }
+    }
+    
+    /**
+     * Allocation manager for this instance. May or may not be
+     * a pooled allocation manager. If it is pooled, then can 
+     * be used to allocate instances in the same pool
+     * and (if supported) discover and inspect allocated objects
+     * in the same pool.  Not generally intended to be used directly.
+     */
+    default IPrimitiveFactory factory()
+    {
+        return PolyFactory.COMMON_POOL;
+    }
+    
+    /**
+     * Signals to allocation manager this instance is being referenced
+     * by something other than the original requester and will prevent
+     * the object from being recycled if the original allocator releases it.<p>
+     * 
+     * Note that retain count is always 1 when an object is first created,
+     * so if the object is held by the originator there is no need to call this.
+     */
+    default void retain()
+    {
+        
+    }
+    
+    /**
+     * Should be called by when the original reference or another reference
+     * created via {@link #retain()} is no longer held.  <p>
+     * 
+     * When retain count is 0 the object will be returned to its allocation
+     * pool if it has one.
+     */
+    default void release()
+    {
+        
+    }
+
+    /**
+     * Should be called instead of {@link #release()} when this is the last
+     * held reference allocated by this objects factory. Will raise an assertion
+     * error (if enabled) if this is not the last retained instance in the factory pool.<p>
+     * 
+     * For use as a debugging aid - has no functional necessity otherwise.
+     * Also has no effect/meaning for unpooled instances.
+     */
+    default void releaseLast()
+    {
+        
     }
 }

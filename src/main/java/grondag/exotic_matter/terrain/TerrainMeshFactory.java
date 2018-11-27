@@ -106,7 +106,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
     static
     {
-        template = PolyFactory.newPaintable(4);
+        template = PolyFactory.COMMON_POOL.newPaintable(4);
 
         template.setLockUV(0, true);
         template.setSurface(SURFACE_TOP);
@@ -126,11 +126,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
 
             //            qBottom = Poly.claimCopyOf(qBottom).setTag("bottom-simple-" + i);
 
-            terrainNodesSimple[i] = CSGNode.create(ImmutableList.of(qBottom));
+            terrainNodesSimple[i] = CSGNode.create(ImmutableList.of(qBottom.toPainted()));
 
             //            qBottom = Poly.claimCopyOf(qBottom).setTag("bottom-hybrid-" + i);
 
-            terrainNodesHybrid[i] = CSGNode.create(ImmutableList.of(qBottom), false);
+            terrainNodesHybrid[i] = CSGNode.create(ImmutableList.of(qBottom.toPainted()), false);
 
             //            terrainNodesComplex[i] = CSGNode.create(ImmutableList.of(qBottom), true);
 

@@ -233,12 +233,6 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public void release()
-    {
-        // NOOP
-    }
-
-    @Override
     public IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
         super.setVertexLayerImpl(layerIndex, vertexIndex, u, v, color, glow);

@@ -46,7 +46,7 @@ public class CubeInputs
     public IMutablePolygon makePaintableFace(EnumFacing side)
     {
 
-        IMutablePolygon qi = PolyFactory.newPaintable(4, 1);
+        IMutablePolygon qi = PolyFactory.COMMON_POOL.newPaintable(4, 1);
         
         qi.setLockUV(0, true);
         qi.setRotation(0, (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);

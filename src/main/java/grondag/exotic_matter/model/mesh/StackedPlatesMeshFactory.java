@@ -56,7 +56,7 @@ public class StackedPlatesMeshFactory extends ShapeMeshGenerator implements ICol
         final Matrix4f matrix = modelState.getMatrix4f();
         final float height = (meta + 1) / 16;
         
-        IMutablePolygon template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
         template.setRotation(0, Rotation.ROTATE_NONE);
         template.setLockUV(0, true);
 

@@ -15,28 +15,32 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
     @Override
     public final Vec3f getVertexNormal(int vertexIndex)
     {
-        return vertexArray()[vertexIndex].normalGetter.get((T) this);
+        Vec3f result = vertexArray()[vertexIndex].normalGetter.get((T) this);
+        return result == null ? getFaceNormal() : result;
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public float getVertexNormalX(int vertexIndex)
     {
-        return vertexArray()[vertexIndex].normXGetter.get((T) this);
+        float result = vertexArray()[vertexIndex].normXGetter.get((T) this);
+        return Float.isNaN(result) ? this.getFaceNormal().x() : result;
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public float getVertexNormalY(int vertexIndex)
     {
-        return vertexArray()[vertexIndex].normYGetter.get((T) this);
+        float result = vertexArray()[vertexIndex].normYGetter.get((T) this);
+        return Float.isNaN(result) ? this.getFaceNormal().y() : result;
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public float getVertexNormalZ(int vertexIndex)
     {
-        return vertexArray()[vertexIndex].normZGetter.get((T) this);
+        float result = vertexArray()[vertexIndex].normZGetter.get((T) this);
+        return Float.isNaN(result) ? this.getFaceNormal().z() : result;
     }
     
     @SuppressWarnings("unchecked")

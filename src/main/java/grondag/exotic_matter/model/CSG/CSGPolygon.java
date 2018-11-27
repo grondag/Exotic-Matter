@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.CSG;
 
+import java.util.Arrays;
 import java.util.List;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
@@ -41,16 +42,25 @@ public class CSGPolygon
      */
     private CSGPolygon(IPolygon original, final int vCount)
     {
+        //PERF: allocation release/retain is a mess for these all over - see references
         this.vertex = new IMutableVertex[vCount];
         this.original = original;
         this.faceNormal = original.getFaceNormal();
     }
     
-    /** DO NOT USE */
     @Override
     public CSGPolygon clone()
     {
-        throw new UnsupportedOperationException();
+        return new CSGPolygon(this);
+    }      
+           
+    /** specifically for clone */      
+    private CSGPolygon(CSGPolygon poly)        
+    {      
+        this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);      
+        this.original = poly.original;     
+        this.faceNormal = poly.faceNormal;     
+        this.isInverted = poly.isInverted;     
     }
     
     public void flip()

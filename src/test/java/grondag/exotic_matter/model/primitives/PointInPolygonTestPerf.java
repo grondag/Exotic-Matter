@@ -39,7 +39,7 @@ class PointInPolygonTestPerf
 //        double matchArea = 0;
 //        double missArea = 0;
 
-        IMutablePolygon poly = PolyFactory.newPaintable(3);
+        IMutablePolygon poly = PolyFactory.COMMON_POOL.newPaintable(3);
         for(int i = 0; i < samples; i++)
         {
             poly.setVertex(0, r.nextFloat(), r.nextFloat(), r.nextFloat(), 0, 0, 0);

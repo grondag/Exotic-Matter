@@ -21,7 +21,7 @@ public class StairMeshFactory extends AbstractWedgeMeshFactory
 
         Matrix4f matrix = modelState.getMatrix4f();
         
-        IMutablePolygon template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
         template.setRotation(0, Rotation.ROTATE_NONE);
         template.setLockUV(0, true);
 

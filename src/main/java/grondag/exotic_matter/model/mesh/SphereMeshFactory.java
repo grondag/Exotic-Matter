@@ -53,7 +53,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     
     private List<IPolygon> generateQuads()
     {
-        IMutablePolygon template = PolyFactory.newPaintable(4);
+        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
         template.setLockUV(0, false);
         template.setSurface(SURFACE_MAIN);
   
