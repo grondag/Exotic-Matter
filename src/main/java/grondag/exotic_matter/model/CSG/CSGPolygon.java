@@ -135,4 +135,24 @@ public class CSGPolygon
     {
         this.vertex[targetIndex] = source.vertex[sourceIndex];
     }
+    
+    float getVertexX(int vertexIndex)
+    {
+        return vertex[vertexIndex].x();
+    }
+    
+    float getVertexY(int vertexIndex)
+    {
+        return vertex[vertexIndex].y();
+    }
+    
+    float getVertexZ(int vertexIndex)
+    {
+        return vertex[vertexIndex].z();
+    }
+    
+    public void copyInterpolatedVertexFrom(int targetIndex, CSGPolygon from, int fromIndex, CSGPolygon to, int toIndex, float toWeight)
+    {
+        vertex[targetIndex] = from.vertex[fromIndex].interpolate(to.vertex[toIndex], toWeight);
+    }
 }

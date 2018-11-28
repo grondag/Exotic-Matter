@@ -37,7 +37,6 @@ package grondag.exotic_matter.model.CSG;
 import java.awt.Polygon;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
-import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
@@ -244,117 +243,91 @@ public class CSGPlane
 //    {
         final int vcount = poly.vertex.length;
         
-        final IMutableVertex[] verts = poly.vertex;
-        
         CSGPolygon frontQuad = new CSGPolygon(poly, (combinedCount & FRONT_MASK) + 2);
         int iFront = 0;
 
         CSGPolygon backQuad = new CSGPolygon(poly, ((combinedCount & BACK_MASK) >> BACK_SHIFT) + 2);
         int iBack = 0;
 
-
-        IMutableVertex iVertex = verts[vcount - 1];
-        int iType = this.vertexType(iVertex.pos());
+        int i = vcount - 1;
+        int iType = this.vertexType(poly.getPos(i));
         
         for (int j = 0; j < vcount; j++)
         {
-            final IMutableVertex jVertex = verts[j];
-            final int jType = this.vertexType(jVertex.pos());
+            final int jType = this.vertexType(poly.getPos(j));
             
             switch(iType * 3 + jType)
             {
-                case 0:
-                    // I COPLANAR - J COPLANAR
-                    frontQuad.vertex[iFront++] = iVertex;
-                    backQuad.vertex[iBack++] = iVertex;
-                    iVertex.retain();
+                case 0: // I COPLANAR - J COPLANAR
+                case 1: // I COPLANAR - J FRONT
+                case 2: // I COPLANAR - J BACK
+                    frontQuad.copyVertexFrom(iFront++, poly, i);
+                    backQuad.copyVertexFrom(iBack++, poly, i);
                     break;
                     
-                case 1:
-                    // I COPLANAR - J FRONT
-                    frontQuad.vertex[iFront++] = iVertex;
-                    backQuad.vertex[iBack++] = iVertex;
-                    iVertex.retain();
+                case 3: // I FRONT - J COPLANAR
+                case 4: // I FRONT - J FRONT
+                    frontQuad.copyVertexFrom(iFront++, poly, i);
                     break;
                     
-                case 2:
-                    // I COPLANAR - J BACK
-                    frontQuad.vertex[iFront++] = iVertex;
-                    backQuad.vertex[iBack++] = iVertex;
-                    iVertex.retain();
-                    break;
-                    
-                    
-                case 3:
-                    // I FRONT - J COPLANAR
-                    frontQuad.vertex[iFront++] = iVertex;
-                    break;
-                    
-                case 4:
-                    // I FRONT - J FRONT
-                    frontQuad.vertex[iFront++] = iVertex;
+                case 6: // I BACK- J COPLANAR
+                case 8: // I BACK - J BACK
+                    backQuad.copyVertexFrom(iBack++, poly, i);
                     break;
                     
                 case 5:
                 {
                     // I FRONT - J BACK
-                    frontQuad.vertex[iFront++] = iVertex;
+                    frontQuad.copyVertexFrom(iFront++, poly, i);                    
 
                     // Line for interpolated vertex depends on what the next vertex is for this side (front/back).
                     // If the next vertex will be included in this side, we are starting the line connecting
                     // next vertex with previous vertex and should use line from prev. vertex
                     // If the next vertex will NOT be included in this side, we are starting the split line.
                     
-                    final float tx = jVertex.x() - iVertex.x();
-                    final float ty = jVertex.y() - iVertex.y();
-                    final float tz = jVertex.z() - iVertex.z();
+                    final float ix = poly.getVertexX(i);
+                    final float iy = poly.getVertexY(i);
+                    final float iz = poly.getVertexZ(i);
                     
-                    final float iDot = iVertex.x() * this.normalX + iVertex.y() * this.normalY + iVertex.z() * this.normalZ;
+                    final float tx = poly.getVertexX(j) - ix;
+                    final float ty = poly.getVertexY(j) - iy;
+                    final float tz = poly.getVertexZ(j) - iz;
+                    
+                    final float iDot = ix * this.normalX + iy * this.normalY + iz * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
-                    IMutableVertex v = iVertex.interpolate(jVertex, t);
                     
-                    frontQuad.vertex[iFront++] = v;
-                    backQuad.vertex[iBack++] = v;
-                    v.retain();
+                    frontQuad.copyInterpolatedVertexFrom(iFront, poly, i, poly, j, t);
+                    backQuad.copyVertexFrom(iBack++, frontQuad, iFront++);
                     
                     break;
                 }  
                     
-                case 6:
-                    // I BACK- J COPLANAR
-                    backQuad.vertex[iBack++] = iVertex;
-                    break;
-                    
                 case 7:
                 {
                     // I BACK - J FRONT
-                    backQuad.vertex[iBack++] = iVertex;
+                    backQuad.copyVertexFrom(iBack++, poly, i);
                     
                     // see notes for 5
-                    final float tx = jVertex.x() - iVertex.x();
-                    final float ty = jVertex.y() - iVertex.y();
-                    final float tz = jVertex.z() - iVertex.z();
-                    final float iDot = iVertex.x() * this.normalX + iVertex.y() * this.normalY + iVertex.z() * this.normalZ;
+                    final float ix = poly.getVertexX(i);
+                    final float iy = poly.getVertexY(i);
+                    final float iz = poly.getVertexZ(i);
+                    
+                    final float tx = poly.getVertexX(j) - ix;
+                    final float ty = poly.getVertexY(j) - iy;
+                    final float tz = poly.getVertexZ(j) - iz;
+                    
+                    final float iDot = ix * this.normalX + iy * this.normalY + iz * this.normalZ;
                     final float tDot = tx * this.normalX + ty * this.normalY + tz * this.normalZ;
                     float t = (this.dist - iDot) / tDot;
-                    IMutableVertex v = iVertex.interpolate(jVertex, t);
                     
-                    frontQuad.vertex[iFront++] = v;
-                    backQuad.vertex[iBack++] = v;
-                    v.retain();
-                    
+                    frontQuad.copyInterpolatedVertexFrom(iFront, poly, i, poly, j, t);
+                    backQuad.copyVertexFrom(iBack++, frontQuad, iFront++);
                     break;
                 }
-                
-                case 8:
-                    // I BACK - J BACK
-                    backQuad.vertex[iBack++] = iVertex;
-                    break;
-           
             }
             
-            iVertex = jVertex;
+            i = j;
             iType = jType;
         }
         
