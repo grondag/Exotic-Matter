@@ -11,7 +11,6 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 // PERF: reuse instances
 public class CSGPolygon
 {
-    public final Vec3f faceNormal;
     public final IMutableVertex[] vertex;
     public final IPolygon original;
 
@@ -33,7 +32,6 @@ public class CSGPolygon
     {
         this.vertex = new IMutableVertex[vCount];
         this.original = poly.original;
-        this.faceNormal = poly.faceNormal;
         this.isInverted = poly.isInverted;
     }
     
@@ -45,7 +43,6 @@ public class CSGPolygon
         //PERF: allocation release/retain is a mess for these all over - see references
         this.vertex = new IMutableVertex[vCount];
         this.original = original;
-        this.faceNormal = original.getFaceNormal();
     }
     
     @Override
@@ -59,7 +56,6 @@ public class CSGPolygon
     {      
         this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);      
         this.original = poly.original;     
-        this.faceNormal = poly.faceNormal;     
         this.isInverted = poly.isInverted;     
     }
     
@@ -109,12 +105,34 @@ public class CSGPolygon
     /**
      * Will return {@link #VERTEX_NOT_FOUND} (-1) if vertex is not part of this polygon.
      */
-    public int indexForVertex(IMutableVertex v)
+    public int indexForVertex(Vec3f v)
     {
-        for(int i = 0; i < this.vertex.length; i++)
+        final int limit = this.vertexCount();
+        for(int i = 0; i < limit; i++)
         {
-            if(this.vertex[i] == v) return i;
+            if(v.equals(this.getPos(i)))
+                return i;
         }
         return VERTEX_NOT_FOUND;
+    }
+
+    public Vec3f getFaceNormal()
+    {
+        return original.getFaceNormal();
+    }
+    
+    public int vertexCount()
+    {
+        return this.vertex.length;
+    }
+    
+    public Vec3f getPos(int vertexIndex)
+    {
+        return vertex[vertexIndex].pos();
+    }
+    
+    public void copyVertexFrom(int targetIndex, CSGPolygon source, int sourceIndex)
+    {
+        this.vertex[targetIndex] = source.vertex[sourceIndex];
     }
 }

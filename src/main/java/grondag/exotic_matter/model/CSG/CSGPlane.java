@@ -69,7 +69,7 @@ public class CSGPlane
 
     public CSGPlane(CSGPolygon quad)
     {
-        final IVec3f normal = quad.faceNormal;
+        final IVec3f normal = quad.getFaceNormal();
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();
@@ -110,7 +110,7 @@ public class CSGPlane
     private static final int BACK_INCREMENT = 1 << BACK_SHIFT;
     private static final int BACK_MASK = FRONT_MASK << BACK_SHIFT;
     
-    public final int vertexIncrement(IMutableVertex v)
+    public final int vertexIncrement(Vec3f v)
     {
 //        incrementTimer.start();
 //        final int result = vertexIncrementInner(v);
@@ -137,7 +137,7 @@ public class CSGPlane
         }
     }
     
-    private final int vertexType(IMutableVertex v)
+    private final int vertexType(Vec3f v)
     {
         final float t = v.x() * this.normalX + v.y() * this.normalY + v.z() * this.normalZ - this.dist;
         
@@ -198,9 +198,10 @@ public class CSGPlane
 //    {
         int combinedCount = 0;
         
-        for (IMutableVertex v : poly.vertex)
+        final int vCount = poly.vertexCount();
+        for(int i = 0; i < vCount; i++)
         {
-            combinedCount += this.vertexIncrement(v);
+            combinedCount += this.vertexIncrement(poly.getPos(i));
         }
         
         // Put the polygon in the correct list, splitting it when necessary.
@@ -209,7 +210,7 @@ public class CSGPlane
             if(combinedCount == 0)
             {
                 // coplanar
-                final Vec3f faceNorm = poly.faceNormal;
+                final Vec3f faceNorm = poly.getFaceNormal();
                 float t = faceNorm.x() * this.normalX + faceNorm.y() * this.normalY + faceNorm.z() * this.normalZ;
                 if(poly.isInverted) t = -t;
                 
@@ -253,12 +254,12 @@ public class CSGPlane
 
 
         IMutableVertex iVertex = verts[vcount - 1];
-        int iType = this.vertexType(iVertex);
+        int iType = this.vertexType(iVertex.pos());
         
         for (int j = 0; j < vcount; j++)
         {
             final IMutableVertex jVertex = verts[j];
-            final int jType = this.vertexType(jVertex);
+            final int jType = this.vertexType(jVertex.pos());
             
             switch(iType * 3 + jType)
             {

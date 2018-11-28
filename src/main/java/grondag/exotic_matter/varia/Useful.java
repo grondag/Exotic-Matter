@@ -56,6 +56,7 @@ public class Useful
         ArrayList<Vec3i> offsetList = new ArrayList<Vec3i>(offsets);
         offsetList.sort(new Comparator<Vec3i>() {
 
+            @SuppressWarnings("null")
             @Override
             public int compare(@Nullable Vec3i o1, @Nullable Vec3i o2)
             {
@@ -559,7 +560,7 @@ public class Useful
     /**
      * Writes tag value for later reading by {@link #safeEnumFromTag(NBTTagCompound, String, Enum)}
      */
-    public static void saveEnumToTag(NBTTagCompound tag, String tagName, Enum<?> enumValue)
+    public static void saveEnumToTag(NBTTagCompound tag, String tagName, @Nullable Enum<?> enumValue)
     {
         tag.setInteger(tagName, enumValue == null ? 0 : enumValue.ordinal());
     }

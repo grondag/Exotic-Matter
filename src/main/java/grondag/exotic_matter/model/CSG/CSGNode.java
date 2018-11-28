@@ -37,6 +37,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,9 +49,9 @@ import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.util.math.MathHelper;
 
 
@@ -396,6 +397,16 @@ public class CSGNode
         this.back = temp;
     }
     
+    static final ThreadLocal<IntArrayList> joinList = new ThreadLocal<IntArrayList>()
+    {
+        @Override
+        protected IntArrayList initialValue()
+        {
+            return new IntArrayList();
+        }
+    };
+    
+    
     /**
      * Tries to combine two quads that share the given vertex. To join, all must be true:
      * 1) shared edge id
@@ -409,17 +420,17 @@ public class CSGNode
      * 
      * Returns null if quads cannot be joined.
      */
-    private static @Nullable CSGPolygon joinAtVertex(IMutableVertex key, CSGPolygon aQuad, CSGPolygon bQuad)
+    private static @Nullable CSGPolygon joinAtVertex(Vec3f v, CSGPolygon aQuad, CSGPolygon bQuad)
     {
         // quads must be same orientation to be joined
         if(aQuad.isInverted != bQuad.isInverted) return null;
 
-        final int aTargetIndex = aQuad.indexForVertex(key);
+        final int aTargetIndex = aQuad.indexForVertex(v);
         // shouldn't happen, but won't work if does
         if(aTargetIndex == CSGPolygon.VERTEX_NOT_FOUND) 
             return null;
         
-        final int bTargetIndex = bQuad.indexForVertex(key);
+        final int bTargetIndex = bQuad.indexForVertex(v);
         // shouldn't happen, but won't work if does
         if(bTargetIndex == CSGPolygon.VERTEX_NOT_FOUND) 
             return null;
@@ -487,8 +498,12 @@ public class CSGNode
             return null;
         }
         
-        IMutableVertex[] joinedVertex = new IMutableVertex[aSize + bSize - 2];
-        int joinedSize = 0;
+        /** positive values are A poly vertex index + 1
+         *  negative values are negative (B poly vertex index + 1)
+         *  zero values have not been populated
+         */
+        final IntArrayList joinedVertex = joinList.get();
+        joinedVertex.clear();
         
         for(int a = 0; a < aSize; a++)
         {
@@ -496,9 +511,9 @@ public class CSGNode
             if(a == aFirstSharedIndex)
             {
                 //if vertex is on the same line as prev and next vertex, leave it out.
-                if(!aQuad.vertex[aFirstSharedIndex].isOnLine(aQuad.vertex[aBeforeSharedIndex], bQuad.vertex[bAfterSharedIndex]))
+                if(!aQuad.getPos(aFirstSharedIndex).isOnLine(aQuad.getPos(aBeforeSharedIndex), bQuad.getPos(bAfterSharedIndex)))
                 {
-                    joinedVertex[joinedSize++] = aQuad.vertex[a];
+                    joinedVertex.add(a + 1);
                 }
 
                 // add b vertexes except two bQuad vertexes in common with A
@@ -506,33 +521,43 @@ public class CSGNode
                 {
                     int bIndex = bAfterSharedIndex + b;
                     if(bIndex > bMaxIndex) bIndex -= bSize;
-                    joinedVertex[joinedSize++] = bQuad.vertex[bIndex];
+                    joinedVertex.add(-(b + 1));
                 }
             }
             else if(a == aSecondSharedIndex)
             {
                 //if vertex is on the same line as prev and next vertex, leave it out
-                if(!aQuad.vertex[aSecondSharedIndex].isOnLine(aQuad.vertex[aAfterSharedIndex], bQuad.vertex[bBeforeSharedIndex]))
+                if(!aQuad.getPos(aSecondSharedIndex).isOnLine(aQuad.getPos(aAfterSharedIndex), bQuad.getPos(bBeforeSharedIndex)))
                 {
-                    joinedVertex[joinedSize++] = aQuad.vertex[a];
+                    joinedVertex.add(a + 1);
                 }
             }
             else
             {
-                joinedVertex[joinedSize++]  = aQuad.vertex[a];
+                joinedVertex.add(a + 1);
            }
         }   
         
-        if(joinedSize < 3)
+        final int size = joinedVertex.size();
+        
+        if(size < 3)
         {
             assert false : "Bad polygon formation during CSG recombine.";
             return null;
         }
         
-        // actually build the new quad!
-        CSGPolygon joinedQuad = new CSGPolygon(aQuad, joinedSize);
-        System.arraycopy(joinedVertex, 0, joinedQuad.vertex, 0, joinedSize);
         
+        // actually build the new quad!
+        CSGPolygon joinedQuad = new CSGPolygon(aQuad, size);
+        for(int i = 0; i < size; i++)
+        {
+            int j = joinedVertex.getInt(i);
+            if(j > 0)
+                joinedQuad.copyVertexFrom(i, aQuad, j - 1);
+            else
+                joinedQuad.copyVertexFrom(i, bQuad, -j - 1);
+            
+        }
         return joinedQuad;
         
     }
@@ -549,7 +574,7 @@ public class CSGNode
         /**
          * Index of all polys by vertex
          */
-        IdentityHashMap<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap = new IdentityHashMap<>();
+        HashMap<Vec3f, SimpleUnorderedArrayList<CSGPolygon>> vertexMap = new HashMap<>();
         
         quadsIn.forEach(q ->  addPolyToVertexMap(vertexMap, q));
         
@@ -572,10 +597,10 @@ public class CSGNode
         {
             potentialMatchesRemain = false;
             
-            Iterator<Entry<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>>> it = vertexMap.entrySet().iterator();
+            Iterator<Entry<Vec3f, SimpleUnorderedArrayList<CSGPolygon>>> it = vertexMap.entrySet().iterator();
             while(it.hasNext())
             {
-                Entry<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>> entry = it.next();
+                Entry<Vec3f, SimpleUnorderedArrayList<CSGPolygon>> entry = it.next();
                 SimpleUnorderedArrayList<CSGPolygon> bucket = entry.getValue();
                 if(bucket.size() < 2)
                 {
@@ -585,7 +610,7 @@ public class CSGNode
                 else if(bucket.size() == 2)
                 {
                     // eliminate T junctions
-                    IMutableVertex v = entry.getKey();
+                    Vec3f v = entry.getKey();
                     CSGPolygon first = bucket.get(0);
                     CSGPolygon second = bucket.get(1);
                     @Nullable CSGPolygon newPoly = joinAtVertex(v, first, second);
@@ -622,11 +647,18 @@ public class CSGNode
         CSGPolygon polyA = it.next();
         CSGPolygon polyB = it.next();
         
-        for(IMutableVertex vA : polyA.vertex)
+        final int aLimit = polyA.vertexCount();
+        final int bLimit = polyB.vertexCount();
+        
+        for(int a = 0; a < aLimit; a++)
         {
-            for(IMutableVertex vB : polyB.vertex)
+            Vec3f vA = polyA.getPos(a);
+            
+            for(int b = 0; b < bLimit; b++)
             {
-                if(vA == vB)
+                Vec3f vB = polyB.getPos(b);
+                
+                if(vA.equals(vB))
                 {
                     @Nullable CSGPolygon newPoly = joinAtVertex(vA, polyA, polyB);
                     if(newPoly == null)
@@ -644,21 +676,25 @@ public class CSGNode
     }
             
         
-    private static void removePolyFromVertexMap(IdentityHashMap<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, IMutableVertex excludingVertex )
+    private static void removePolyFromVertexMap(HashMap<Vec3f, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly, Vec3f excludingVertex )
     {
-        for(IMutableVertex v : poly.vertex)
+        final int limit = poly.vertexCount();
+        for(int i = 0; i < limit; i++)
         {
-            if(v == excludingVertex) continue;
+            Vec3f v = poly.getPos(i);
+            if(excludingVertex.equals(v)) continue;
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
             if(bucket == null) continue;
             bucket.removeIfPresent(poly);
         }
     }
     
-    private static void addPolyToVertexMap(IdentityHashMap<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    private static void addPolyToVertexMap(HashMap<Vec3f, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
     {
-        for(IMutableVertex v : poly.vertex)
+        final int limit = poly.vertexCount();
+        for(int i = 0; i < limit; i++)
         {
+            Vec3f v = poly.getPos(i);
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
             if(bucket == null)
             {
@@ -673,10 +709,12 @@ public class CSGNode
      * For use during second phase of combined - will not create buckets that are not found.
      * Assumes these have been deleted because only had a single poly in them.
      */
-    private static void addPolyToVertexMapGently(IdentityHashMap<IMutableVertex, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
+    private static void addPolyToVertexMapGently(HashMap<Vec3f, SimpleUnorderedArrayList<CSGPolygon>> vertexMap, CSGPolygon poly )
     {
-        for(IMutableVertex v : poly.vertex)
+        final int limit = poly.vertexCount();
+        for(int i = 0; i < limit; i++)
         {
+            Vec3f v = poly.getPos(i);
             SimpleUnorderedArrayList<CSGPolygon> bucket = vertexMap.get(v);
             if(bucket != null) bucket.add(poly);
         }
