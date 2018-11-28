@@ -72,7 +72,7 @@ public class CSGPlane
         this.normalX = normal.x();
         this.normalY = normal.y();
         this.normalZ = normal.z();
-        this.dist = normalX * quad.vertex[0].x() + normalY * quad.vertex[0].y() + normalZ * quad.vertex[0].z();    
+        this.dist = normalX * quad.getVertexX(0) + normalY * quad.getVertexY(0) + normalZ * quad.getVertexZ(0);    
     }
     
     private CSGPlane(float x, float y, float z, float dist) {
@@ -241,7 +241,7 @@ public class CSGPlane
 //    public static MicroTimer splitSpanningTimer = new MicroTimer("splitSpanningQuad", 10000000);
 //    private void splitSpanningInner(CSGPolygon poly, int combinedCount, CSGSplitAcceptor target)
 //    {
-        final int vcount = poly.vertex.length;
+        final int vcount = poly.vertexCount();
         
         CSGPolygon frontQuad = new CSGPolygon(poly, (combinedCount & FRONT_MASK) + 2);
         int iFront = 0;

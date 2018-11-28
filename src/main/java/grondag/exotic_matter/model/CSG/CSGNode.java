@@ -435,8 +435,8 @@ public class CSGNode
         if(bTargetIndex == CSGPolygon.VERTEX_NOT_FOUND) 
             return null;
 
-        final int aSize = aQuad.vertex.length;
-        final int bSize = bQuad.vertex.length;
+        final int aSize = aQuad.vertexCount();
+        final int bSize = bQuad.vertexCount();
         final int aMaxIndex = aSize - 1;
         final int bMaxIndex = bSize - 1;
 
@@ -471,7 +471,7 @@ public class CSGNode
         int bAfterSharedIndex;
 
         // look for a second matching vertex on either side of known shared vertex
-        if(aQuad.vertex[aAfterTargetIndex] == bQuad.vertex[bBeforeTargetIndex])
+        if(aQuad.getPos(aAfterTargetIndex).equals(bQuad.getPos(bBeforeTargetIndex)))
         {
             aFirstSharedIndex = aTargetIndex;
             aSecondSharedIndex = aAfterTargetIndex;
@@ -482,7 +482,7 @@ public class CSGNode
             aAfterSharedIndex = aSecondSharedIndex == aMaxIndex ? 0 : aSecondSharedIndex + 1;
             bAfterSharedIndex = bAfterTargetIndex;
         }
-        else if(aQuad.vertex[aBeforeTargetIndex] == bQuad.vertex[bAfterTargetIndex])
+        else if(aQuad.getPos(aBeforeTargetIndex).equals(bQuad.getPos(bAfterTargetIndex)))
         {
             aFirstSharedIndex = aBeforeTargetIndex;
             aSecondSharedIndex = aTargetIndex;

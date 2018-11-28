@@ -11,7 +11,7 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 // PERF: reuse instances
 public class CSGPolygon
 {
-    public final IMutableVertex[] vertex;
+    private final IMutableVertex[] vertex;
     public final IPolygon original;
 
     public boolean isInverted;
