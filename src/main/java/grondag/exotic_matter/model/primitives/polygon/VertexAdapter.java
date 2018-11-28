@@ -117,12 +117,6 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
     {
         throw new UnsupportedOperationException();
     }
-
-    @Override
-    public final IMutableVertex flip()
-    {
-        throw new UnsupportedOperationException();
-    }
     
     public static class Fixed extends VertexAdapter<IPolygon>
     {

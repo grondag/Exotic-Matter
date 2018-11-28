@@ -149,15 +149,6 @@ public class UnpackedVertex3 extends AbstractVertex<UnpackedVertex3> implements 
     }
 
     @Override
-    public IMutableVertex flip()
-    {
-        normX = -normX;
-        normY = -normY;
-        normZ = -normZ;
-        return this;
-    }
-
-    @Override
     public void setNormal(@Nullable Vec3f normal)
     {
         if(normal == null)

@@ -28,8 +28,6 @@ public interface IMutableVertex extends IVec3f
 
     public boolean hasNormal();
     
-    public IMutableVertex flip();
-    
     /**
      * Will not retain a reference to normal if it is mutable.
      */

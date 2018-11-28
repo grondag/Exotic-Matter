@@ -19,15 +19,6 @@ public abstract class AbstractPackedVertex<T extends AbstractPackedVertex<T>> ex
         return normal;
     }
 
-    @SuppressWarnings("null")
-    @Override
-    public final IMutableVertex flip()
-    {
-        if(this.normal != null)
-            this.normal = Vec3f.create(-normal.x(), -normal.y(), -normal.z());
-        return this;
-    }
-
     @Override
     public final void setNormal(@Nullable Vec3f normal)
     {

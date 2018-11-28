@@ -344,13 +344,6 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public IMutablePolygon invertFaceNormal()
-    {
-        super.invertFaceNormalImpl();
-        return this;
-    }
-
-    @Override
     public IMutablePolygon setSurface(Surface surface)
     {
         super.setSurfaceImpl(surface);

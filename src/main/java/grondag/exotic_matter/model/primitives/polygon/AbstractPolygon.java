@@ -365,15 +365,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     }
     
     /** supports mutable interface */
-    protected final void invertFaceNormalImpl()
-    {
-        final Vec3f norm = this.faceNormal;
-        if(norm != null)
-            this.faceNormal = Vec3f.create(-norm.x(), -norm.y(), -norm.z());
-    }
-    
-
-    /** supports mutable interface */
     protected final void clearFaceNormalImpl()
     {
         this.faceNormal = null;

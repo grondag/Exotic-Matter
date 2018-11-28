@@ -218,13 +218,6 @@ public class MutablePolygon3x4 extends Polygon3x4 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon invertFaceNormal()
-    {
-        super.invertFaceNormalImpl();
-        return this;
-    }
-
-    @Override
     public IMutablePolygon setSurface(Surface surface)
     {
         super.setSurfaceImpl(surface);

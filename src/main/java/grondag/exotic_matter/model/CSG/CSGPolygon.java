@@ -1,12 +1,10 @@
 package grondag.exotic_matter.model.CSG;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 
 // PERF: reuse instances
@@ -14,20 +12,16 @@ public class CSGPolygon
 {
     static private AtomicInteger nextID = new AtomicInteger(1);
     
-    private final IMutableVertex[] vertex;
-    private final IPolygon poly;
+    private final IMutablePolygon poly;
     private int originID = nextID.getAndIncrement();
-    
     private boolean isInverted;
     
     /**
-     * Copies vertices from original.
+     * Includes vertices from original.
      */
     public CSGPolygon(IPolygon original)
     {
-        this.vertex = new IMutableVertex[original.vertexCount()];
-        this.poly = original;
-        original.claimVertexCopiesToArray(vertex);
+        this.poly = original.claimCopy();
     }
     
     /**
@@ -35,9 +29,8 @@ public class CSGPolygon
      */
     public CSGPolygon(CSGPolygon poly, int vCount)
     {
-        this.vertex = new IMutableVertex[vCount];
         this.originID = poly.originID;
-        this.poly = poly.poly;
+        this.poly = poly.poly.claimCopy(vCount);
         this.isInverted = poly.isInverted;
     }
     
@@ -50,7 +43,6 @@ public class CSGPolygon
     /** specifically for clone */      
     private CSGPolygon(CSGPolygon poly)        
     {      
-        this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);      
         this.poly = poly.poly;
         this.originID = poly.originID;
         this.isInverted = poly.isInverted;     
@@ -78,26 +70,10 @@ public class CSGPolygon
 
     private IMutablePolygon applyInverted()
     {
-        IMutablePolygon result = this.poly.claimCopy(this.vertex.length);
+        IMutablePolygon result = this.poly.claimCopy();
         
-        final int vCount = this.vertex.length;
         if(this.isInverted)
-        {
-            result.invertFaceNormal();
-            
-            //reverse vertex winding order and flip vertex normals
-            for(int i = 0, j = vCount - 1; i < vCount; i++, j--)
-            {
-                result.copyVertexFrom(i, this.vertex[j].flip());
-            }
-        }
-        else
-        {
-            for(int i = 0; i < vCount; i++)
-            {
-                result.copyVertexFrom(i, this.vertex[i]);
-            }
-        }
+            result.flip();
         
         return result;
     }
@@ -125,37 +101,37 @@ public class CSGPolygon
     
     public int vertexCount()
     {
-        return this.vertex.length;
+        return this.poly.vertexCount();
     }
     
     public Vec3f getPos(int vertexIndex)
     {
-        return vertex[vertexIndex].pos();
+        return this.poly.getPos(vertexIndex);
     }
     
     public void copyVertexFrom(int targetIndex, CSGPolygon source, int sourceIndex)
     {
-        this.vertex[targetIndex] = source.vertex[sourceIndex];
+        this.poly.copyVertexFrom(targetIndex, source.poly, sourceIndex);
     }
     
     float getVertexX(int vertexIndex)
     {
-        return vertex[vertexIndex].x();
+        return this.poly.getVertexX(vertexIndex);
     }
     
     float getVertexY(int vertexIndex)
     {
-        return vertex[vertexIndex].y();
+        return this.poly.getVertexY(vertexIndex);
     }
     
     float getVertexZ(int vertexIndex)
     {
-        return vertex[vertexIndex].z();
+        return this.poly.getVertexZ(vertexIndex);
     }
     
     public void copyInterpolatedVertexFrom(int targetIndex, CSGPolygon from, int fromIndex, CSGPolygon to, int toIndex, float toWeight)
     {
-        vertex[targetIndex] = from.vertex[fromIndex].interpolate(to.vertex[toIndex], toWeight);
+        this.poly.copyInterpolatedVertexFrom(targetIndex, from.poly, fromIndex, to.poly, toIndex, toWeight);
     }
     
     public int originID()

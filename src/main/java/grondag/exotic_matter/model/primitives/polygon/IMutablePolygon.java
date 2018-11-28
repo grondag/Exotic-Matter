@@ -17,6 +17,7 @@ import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon.Helper.UVLocker;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
+import grondag.exotic_matter.model.primitives.vertex.UnpackedVertex3;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
@@ -89,6 +90,7 @@ public interface IMutablePolygon extends IPolygon
         final VertexAdapter.Fixed fromAdapter = new VertexAdapter.Fixed();
         final VertexAdapter.Fixed toAdapter = new VertexAdapter.Fixed();
         final Vector4f transform = new Vector4f();
+        final IMutableVertex swapVertex = new UnpackedVertex3();
     }
 
     IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex,float u, float v, int color, int glow);
@@ -274,7 +276,45 @@ public interface IMutablePolygon extends IPolygon
 
     public IMutablePolygon setNominalFace(EnumFacing face);
     
-    IMutablePolygon invertFaceNormal();
+    /**
+     * Reverses winding order, clears face normal and flips vertex normals if present.
+     * Used by CSG.
+     */
+    default IMutablePolygon flip()
+    {
+
+        final Helper help = Helper.get();
+        final IMutableVertex swapVertex = help.swapVertex;
+        final VertexAdapter.Mutable adapter = help.mutableAdapter;
+        
+        final int vCount = this.vertexCount();
+        final int midPoint = (vCount + 1) / 2;
+        for(int low = 0; low < midPoint; low++)
+        {
+            final int high = vCount - low - 1;
+
+            // flip low vertex normal, or mid-point on odd-numbered polys
+            if(hasVertexNormal(low))
+                setVertexNormal(low, -getVertexNormalX(low), -getVertexNormalY(low), -getVertexNormalZ(low));
+            
+            if(low != high)
+            {
+                // flip high vertex normal, or mid-point on odd-numbered polys
+                if(hasVertexNormal(high))
+                    setVertexNormal(high, -getVertexNormalX(high), -getVertexNormalY(high), -getVertexNormalZ(high));
+                
+                // swap low with high
+                adapter.prepare(this, low);
+                swapVertex.copyFrom(adapter);
+                copyVertexFrom(low, this, high);
+                copyVertexFrom(high, swapVertex);
+            }
+        }
+        
+        clearFaceNormal();
+        
+        return this;
+    }
     
     IMutablePolygon setSurface(Surface surface);
 
