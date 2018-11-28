@@ -80,8 +80,8 @@ public abstract class CSGSplitAcceptor
         @Override
         public final void acceptBack(CSGPolygon poly)
         {
-              // not adding back plane polys to the output when
-              // we get to leaf nodes is what does the clipping 
+            // not adding back plane polys to the output when
+            // we get to leaf nodes is what does the clipping 
             CSGNode n = this.currentNode();
             if(n.back != null)
             {

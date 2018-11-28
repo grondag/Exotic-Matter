@@ -211,7 +211,7 @@ public class CSGPlane
                 // coplanar
                 final Vec3f faceNorm = poly.getFaceNormal();
                 float t = faceNorm.x() * this.normalX + faceNorm.y() * this.normalY + faceNorm.z() * this.normalZ;
-                if(poly.isInverted) t = -t;
+                if(poly.isCSGInverted()) t = -t;
                 
                 if(t > 0) 
                         target.acceptCoplanarFront(poly);

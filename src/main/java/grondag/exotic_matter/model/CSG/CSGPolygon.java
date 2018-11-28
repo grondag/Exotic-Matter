@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.CSG;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
@@ -11,17 +12,21 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 // PERF: reuse instances
 public class CSGPolygon
 {
+    static private AtomicInteger nextID = new AtomicInteger(1);
+    
     private final IMutableVertex[] vertex;
-    public final IPolygon original;
-
-    public boolean isInverted;
+    private final IPolygon poly;
+    private int originID = nextID.getAndIncrement();
+    
+    private boolean isInverted;
     
     /**
      * Copies vertices from original.
      */
     public CSGPolygon(IPolygon original)
     {
-        this(original, original.vertexCount());
+        this.vertex = new IMutableVertex[original.vertexCount()];
+        this.poly = original;
         original.claimVertexCopiesToArray(vertex);
     }
     
@@ -31,18 +36,9 @@ public class CSGPolygon
     public CSGPolygon(CSGPolygon poly, int vCount)
     {
         this.vertex = new IMutableVertex[vCount];
-        this.original = poly.original;
+        this.originID = poly.originID;
+        this.poly = poly.poly;
         this.isInverted = poly.isInverted;
-    }
-    
-    /**
-     * Copies original reference and original faceNormal but no vertices.
-     */
-    private CSGPolygon(IPolygon original, final int vCount)
-    {
-        //PERF: allocation release/retain is a mess for these all over - see references
-        this.vertex = new IMutableVertex[vCount];
-        this.original = original;
     }
     
     @Override
@@ -55,15 +51,21 @@ public class CSGPolygon
     private CSGPolygon(CSGPolygon poly)        
     {      
         this.vertex = Arrays.copyOf(poly.vertex, poly.vertex.length);      
-        this.original = poly.original;     
+        this.poly = poly.poly;
+        this.originID = poly.originID;
         this.isInverted = poly.isInverted;     
     }
     
-    public void flip()
+    public void flipCSGInverted()
     {
         this.isInverted = !this.isInverted;
     }
 
+    public boolean isCSGInverted()
+    {
+        return this.isInverted;
+    }
+    
     /**
      * Does NOT retain any references to our vertices.
      */
@@ -76,7 +78,7 @@ public class CSGPolygon
 
     private IMutablePolygon applyInverted()
     {
-        IMutablePolygon result = this.original.claimCopy(this.vertex.length);
+        IMutablePolygon result = this.poly.claimCopy(this.vertex.length);
         
         final int vCount = this.vertex.length;
         if(this.isInverted)
@@ -118,7 +120,7 @@ public class CSGPolygon
 
     public Vec3f getFaceNormal()
     {
-        return original.getFaceNormal();
+        return poly.getFaceNormal();
     }
     
     public int vertexCount()
@@ -154,5 +156,10 @@ public class CSGPolygon
     public void copyInterpolatedVertexFrom(int targetIndex, CSGPolygon from, int fromIndex, CSGPolygon to, int toIndex, float toWeight)
     {
         vertex[targetIndex] = from.vertex[fromIndex].interpolate(to.vertex[toIndex], toWeight);
+    }
+    
+    public int originID()
+    {
+        return this.originID;
     }
 }

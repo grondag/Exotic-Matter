@@ -51,6 +51,7 @@ import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.util.math.MathHelper;
 
@@ -262,14 +263,14 @@ public class CSGNode
         @SuppressWarnings("unchecked")
         public List<IMutablePolygon> recombinedQuads()
         {
-            IdentityHashMap<IPolygon, Object> ancestorBuckets = new IdentityHashMap<>();
+            Int2ObjectOpenHashMap<Object> ancestorBuckets = new Int2ObjectOpenHashMap<>();
             
             for(CSGPolygon quad : this) 
             {
-                Object bucket =  ancestorBuckets.get(quad.original);
+                Object bucket =  ancestorBuckets.get(quad.originID());
                 if(bucket == null)
                 {
-                    ancestorBuckets.put(quad.original, quad);
+                    ancestorBuckets.put(quad.originID(), quad);
                 }
                 else if(bucket instanceof SimpleUnorderedArrayList)
                 {
@@ -280,7 +281,7 @@ public class CSGNode
                     SimpleUnorderedArrayList<CSGPolygon> list = new SimpleUnorderedArrayList<CSGPolygon>();
                     list.add((CSGPolygon) bucket);
                     list.add(quad);
-                    ancestorBuckets.put(quad.original, list);
+                    ancestorBuckets.put(quad.originID(), list);
                 }
             }
             
@@ -389,7 +390,7 @@ public class CSGNode
     
     private void invertNode()
     {
-        this.quads.forEach(q -> q.flip());
+        this.quads.forEach(q -> q.flipCSGInverted());
         this.plane.flip();
 
         CSGNode temp = this.front;
@@ -423,7 +424,7 @@ public class CSGNode
     private static @Nullable CSGPolygon joinAtVertex(Vec3f v, CSGPolygon aQuad, CSGPolygon bQuad)
     {
         // quads must be same orientation to be joined
-        if(aQuad.isInverted != bQuad.isInverted) return null;
+        if(aQuad.isCSGInverted() != bQuad.isCSGInverted()) return null;
 
         final int aTargetIndex = aQuad.indexForVertex(v);
         // shouldn't happen, but won't work if does
