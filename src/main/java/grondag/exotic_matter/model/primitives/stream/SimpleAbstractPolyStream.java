@@ -15,7 +15,7 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     protected final IntArrayList links;
     protected final BitSet marks;
     
-    private final ForwardingPolygon reader = new ForwardingPolygon();
+    protected final ForwardingPolygon reader = new ForwardingPolygon();
     private ForwardingPolygon polyA = new ForwardingPolygon();
     private ForwardingPolygon polyB = new ForwardingPolygon();
     
@@ -53,6 +53,8 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
         readIndex = 0;
         if(polys.size() > 0)
             reader.wrapped = polys.get(0);
+        else
+            reader.wrapped = null;
     }
 
     @Override

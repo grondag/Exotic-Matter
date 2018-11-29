@@ -5,10 +5,10 @@ import javax.annotation.Nullable;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 
 /**
- * Polystream that allows partial mutation of polygons already written.  <p>
+ * Polystream that allows deletion and partial mutation of polygons already written.  <p>
  *
  *Limitiations
- *<li>Cannot delete polygons. (But could mark them or leave them out of link chain.)
+ *<li>Deleted polygons continue to consume RAM.
  *<li>Cannot change vertex count.
  */
 public interface IMutablePolyStream
@@ -51,4 +51,15 @@ public interface IMutablePolyStream
      * Will throw exception if address points to WIP on streams still being written.
      */
     void editorMoveTo(int address);
+    
+    /**
+     * Removes polygon at given address.  Will remove it from link chain if part of one.
+     * Editor position will be as if {@link #editorNext()} had been called.
+     */
+    void editorDelete();
+    
+    /**
+     * Removes polygon at given address.  Will remove it from link chain if part of one.
+     */
+    void delete(int address);
 }
