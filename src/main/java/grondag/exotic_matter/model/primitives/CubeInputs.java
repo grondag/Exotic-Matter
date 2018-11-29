@@ -2,7 +2,7 @@ package grondag.exotic_matter.model.primitives;
 
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
@@ -43,73 +43,64 @@ public class CubeInputs
         this.surfaceInstance = Surface.NO_SURFACE;
     }
     
-    public IMutablePolygon makePaintableFace(EnumFacing side)
+    public void appendFace(IWritablePolyStream stream, EnumFacing side)
     {
-
-        IMutablePolygon qi = PolyFactory.COMMON_POOL.newPaintable(4, 1);
+        final IMutablePolygon q = stream.writer();
         
-        qi.setLockUV(0, true);
-        qi.setRotation(0, (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
-        qi.setTextureName(0, this.textureName);
-        qi.setSurface(this.surfaceInstance);
+        q.setLockUV(0, true);
+        q.setRotation(0, (rotateBottom && side == EnumFacing.DOWN) ? this.textureRotation.clockwise().clockwise() : this.textureRotation);
+        q.setTextureName(0, this.textureName);
+        q.setSurface(this.surfaceInstance);
 
         float minBound = this.isOverlay ? -0.0002f : 0.0f;
         float maxBound = this.isOverlay ? 1.0002f : 1.0f;
-        qi.setNominalFace(side);
+        q.setNominalFace(side);
 
         switch(side)
         {
         case UP:
-            qi.setVertex(0, minBound, maxBound, minBound, u0, v0, this.color);
-            qi.setVertex(1, minBound, maxBound, maxBound, u0, v1, this.color);
-            qi.setVertex(2, maxBound, maxBound, maxBound, u1, v1, this.color);
-            qi.setVertex(3, maxBound, maxBound, minBound, u1, v0, this.color);
+            q.setVertex(0, minBound, maxBound, minBound, u0, v0, this.color);
+            q.setVertex(1, minBound, maxBound, maxBound, u0, v1, this.color);
+            q.setVertex(2, maxBound, maxBound, maxBound, u1, v1, this.color);
+            q.setVertex(3, maxBound, maxBound, minBound, u1, v0, this.color);
             break;
 
         case DOWN:     
-            qi.setVertex(0, maxBound, minBound, maxBound, u0, v1, this.color);
-            qi.setVertex(1, minBound, minBound, maxBound, u1, v1, this.color); 
-            qi.setVertex(2, minBound, minBound, minBound, u1, v0, this.color); 
-            qi.setVertex(3, maxBound, minBound, minBound, u0, v0, this.color);
+            q.setVertex(0, maxBound, minBound, maxBound, u0, v1, this.color);
+            q.setVertex(1, minBound, minBound, maxBound, u1, v1, this.color); 
+            q.setVertex(2, minBound, minBound, minBound, u1, v0, this.color); 
+            q.setVertex(3, maxBound, minBound, minBound, u0, v0, this.color);
             break;
 
         case WEST:
-            qi.setVertex(0, minBound, minBound, minBound, u0, v1, this.color);
-            qi.setVertex(1, minBound, minBound, maxBound, u1, v1, this.color);
-            qi.setVertex(2, minBound, maxBound, maxBound, u1, v0, this.color);
-            qi.setVertex(3, minBound, maxBound, minBound, u0, v0, this.color);
+            q.setVertex(0, minBound, minBound, minBound, u0, v1, this.color);
+            q.setVertex(1, minBound, minBound, maxBound, u1, v1, this.color);
+            q.setVertex(2, minBound, maxBound, maxBound, u1, v0, this.color);
+            q.setVertex(3, minBound, maxBound, minBound, u0, v0, this.color);
             break;
 
         case EAST:
-            qi.setVertex(0, maxBound, minBound, minBound, u1, v1, this.color);
-            qi.setVertex(1, maxBound, maxBound, minBound, u1, v0, this.color);
-            qi.setVertex(2, maxBound, maxBound, maxBound, u0, v0, this.color);
-            qi.setVertex(3, maxBound, minBound, maxBound, u0, v1, this.color);
+            q.setVertex(0, maxBound, minBound, minBound, u1, v1, this.color);
+            q.setVertex(1, maxBound, maxBound, minBound, u1, v0, this.color);
+            q.setVertex(2, maxBound, maxBound, maxBound, u0, v0, this.color);
+            q.setVertex(3, maxBound, minBound, maxBound, u0, v1, this.color);
             break;
 
         case NORTH:
-            qi.setVertex(0, minBound, minBound, minBound, u1, v1, this.color);
-            qi.setVertex(1, minBound, maxBound, minBound, u1, v0, this.color);
-            qi.setVertex(2, maxBound, maxBound, minBound, u0, v0, this.color);
-            qi.setVertex(3, maxBound, minBound, minBound, u0, v1, this.color);
+            q.setVertex(0, minBound, minBound, minBound, u1, v1, this.color);
+            q.setVertex(1, minBound, maxBound, minBound, u1, v0, this.color);
+            q.setVertex(2, maxBound, maxBound, minBound, u0, v0, this.color);
+            q.setVertex(3, maxBound, minBound, minBound, u0, v1, this.color);
             break;
 
         case SOUTH:
-            qi.setVertex(0, minBound, minBound, maxBound, u0, v1, this.color);
-            qi.setVertex(1, maxBound, minBound, maxBound, u1, v1, this.color);
-            qi.setVertex(2, maxBound, maxBound, maxBound, u1, v0, this.color);
-            qi.setVertex(3, minBound, maxBound, maxBound, u0, v0, this.color);
+            q.setVertex(0, minBound, minBound, maxBound, u0, v1, this.color);
+            q.setVertex(1, maxBound, minBound, maxBound, u1, v1, this.color);
+            q.setVertex(2, maxBound, maxBound, maxBound, u1, v0, this.color);
+            q.setVertex(3, minBound, maxBound, maxBound, u0, v0, this.color);
             break;
         }
         
-        return qi;
-    }
-    
-    public IPolygon makePaintedFace(EnumFacing side)
-    {
-        IMutablePolygon temp = makePaintableFace(side);
-        IPolygon result = temp.toPainted();
-        temp.release();
-        return result;
+        stream.append();
     }
 }

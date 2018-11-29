@@ -2,12 +2,9 @@ package grondag.exotic_matter.model.mesh;
 
 import static grondag.exotic_matter.model.state.ModelStateData.STATE_FLAG_NONE;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
-
-import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.block.ISuperBlock;
 import grondag.exotic_matter.model.collision.CubeCollisionHandler;
@@ -18,6 +15,9 @@ import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.CubeInputs;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IPolyStream;
+import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -34,7 +34,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
             .build();
     
     /** never changes so may as well save it */
-    private final List<IPolygon> cachedQuads;
+    private final IPolyStream cachedQuads;
     
     public CubeMeshFactory()
     {
@@ -45,34 +45,39 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     @Override
     public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
-        final int limit = cachedQuads.size();
-        for(int i = 0; i < limit; i++)
-            target.accept(cachedQuads.get(i).claimCopy());
+        if(cachedQuads.isEmpty())
+            return;
+        
+        cachedQuads.origin();
+        IPolygon reader = cachedQuads.reader();
+        
+        do
+            target.accept(reader.claimCopy());
+        while(cachedQuads.next());
     }
     
-    private List<IPolygon> getCubeQuads()
+    private IPolyStream getCubeQuads()
     {
-        CubeInputs result = new CubeInputs();
-        result.color = 0xFFFFFFFF;
-        result.textureRotation = Rotation.ROTATE_NONE;
-        result.isFullBrightness = false;
-        result.u0 = 0;
-        result.v0 = 0;
-        result.u1 = 1;
-        result.v1 = 1;
-        result.isOverlay = false;
-        result.surfaceInstance = SURFACE_MAIN;
+        CubeInputs cube = new CubeInputs();
+        cube.color = 0xFFFFFFFF;
+        cube.textureRotation = Rotation.ROTATE_NONE;
+        cube.isFullBrightness = false;
+        cube.u0 = 0;
+        cube.v0 = 0;
+        cube.u1 = 1;
+        cube.v1 = 1;
+        cube.isOverlay = false;
+        cube.surfaceInstance = SURFACE_MAIN;
         
-        ImmutableList.Builder<IPolygon> builder = ImmutableList.builder();
-       
-        builder.add(result.makePaintedFace(EnumFacing.DOWN));
-        builder.add(result.makePaintedFace(EnumFacing.UP));
-        builder.add(result.makePaintedFace(EnumFacing.EAST));
-        builder.add(result.makePaintedFace(EnumFacing.WEST));
-        builder.add(result.makePaintedFace(EnumFacing.SOUTH));
-        builder.add(result.makePaintedFace(EnumFacing.NORTH));
-       
-        return builder.build();
+        IWritablePolyStream stream = PolyStreams.claimWriter();
+        cube.appendFace(stream, EnumFacing.DOWN);
+        cube.appendFace(stream, EnumFacing.UP);
+        cube.appendFace(stream, EnumFacing.EAST);
+        cube.appendFace(stream, EnumFacing.WEST);
+        cube.appendFace(stream, EnumFacing.NORTH);
+        cube.appendFace(stream, EnumFacing.SOUTH);
+        
+        return stream.convertToReader();
     }
 
 

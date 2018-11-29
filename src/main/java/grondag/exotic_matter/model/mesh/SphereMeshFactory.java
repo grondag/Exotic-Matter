@@ -45,7 +45,6 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
         this.cachedQuads = generateQuads();
     }
 
-    @SuppressWarnings("null")
     @Override
     public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {

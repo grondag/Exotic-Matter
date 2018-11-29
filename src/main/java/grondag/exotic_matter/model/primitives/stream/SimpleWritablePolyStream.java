@@ -92,4 +92,12 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     {
         writer.prepare(layerCount, writer.vertexCount());
     }
+
+    @Override
+    public void appendCopy(IPolygon poly)
+    {
+        if(poly instanceof IMutablePolygon)
+            poly = ((IMutablePolygon)poly).toPainted();
+        this.append(poly);
+    }
 }

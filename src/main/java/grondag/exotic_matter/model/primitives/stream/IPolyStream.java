@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives.stream;
 
-import javax.annotation.Nullable;
-
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 
 public interface IPolyStream
@@ -21,7 +19,7 @@ public interface IPolyStream
      * When stream first created will point to the first poly in the stream.<br>
      * Returns null if at end or first poly has not been written.
      */
-    @Nullable IPolygon reader();
+    IPolygon reader();
     
     /**
      * Moves reader to start of stream.<br>

@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 
 /**
  * Stream that allows appending to end in wip area but
@@ -73,5 +74,10 @@ public interface IWritablePolyStream extends IPolyStream
      * Sets layer count for current writer. Value can be saved as part of defaults. 
      */
     void setLayerCount(int layerCount);
+
+    /**
+     * Makes no change to writer state, except address.
+     */
+    void appendCopy(IPolygon makePaintedFace);
     
 }
