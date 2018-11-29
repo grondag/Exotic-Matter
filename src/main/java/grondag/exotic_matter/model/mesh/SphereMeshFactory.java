@@ -13,9 +13,11 @@ import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IPolyStream;
+import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -35,7 +37,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
             .build();
     
     /** never changes so may as well save it */
-    private final List<IPolygon> cachedQuads;
+    private final IPolyStream cachedQuads;
     
     public SphereMeshFactory()
     {
@@ -43,23 +45,30 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
         this.cachedQuads = generateQuads();
     }
 
+    @SuppressWarnings("null")
     @Override
     public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
     {
-        final int limit = cachedQuads.size();
-        for(int i = 0; i < limit; i++)
-            target.accept(cachedQuads.get(i).claimCopy());
+        if(cachedQuads.isEmpty())
+            return;
+        
+        cachedQuads.origin();
+        IPolygon reader = cachedQuads.reader();
+        
+        do
+            target.accept(reader.claimCopy());
+        while(cachedQuads.next());
     }
     
-    private List<IPolygon> generateQuads()
+    private IPolyStream generateQuads()
     {
-        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
-        template.setLockUV(0, false);
-        template.setSurface(SURFACE_MAIN);
+        IWritablePolyStream stream = PolyStreams.claimWriter();
+        stream.writer().setLockUV(0, false);
+        stream.writer().setSurface(SURFACE_MAIN);
+        stream.saveDefaults();
   
-        List<IPolygon> result = MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, template, false);
-      
-        return result;
+        MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, stream, false);
+        return stream.convertToReader();
     }
 
 

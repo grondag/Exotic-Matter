@@ -14,6 +14,7 @@ import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
@@ -117,7 +118,7 @@ public class MeshHelper
      * Makes a regular icosahedron, which is a very close approximation to a sphere for most purposes.
      * Loosely based on http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
      */
-    public static List<IPolygon> makeIcosahedron(Vec3d center, double radius, IMutablePolygon template, boolean smoothNormals) 
+    public static void makeIcosahedron(Vec3d center, double radius, IWritablePolyStream stream, boolean smoothNormals) 
     {
         /** vertex scale */
         final double s = radius  / (2 * Math.sin(2 * Math.PI / 5));
@@ -154,102 +155,111 @@ public class MeshHelper
         }
         
         // create 20 triangles of the icosahedron
-        List<IPolygon> results = new ArrayList<>(20);
         
-        IMutablePolygon poly = template.claimCopy(3);
+        stream.setVertexCount(3);
+        IMutablePolygon writer = stream.writer();
        
-        Surface.Builder surfBuilder = Surface.builder(poly.getSurface());
+        Surface.Builder surfBuilder = Surface.builder(writer.getSurface());
         if(surfBuilder.topology() == SurfaceTopology.TILED)
         {
             final float uvMax = (float) (2 * s);
-            poly.setMaxU(0, uvMax);
-            poly.setMaxV(0, uvMax);
+            writer.setMaxU(0, uvMax);
+            writer.setMaxV(0, uvMax);
             surfBuilder.withWrapDistance(uvMax);
         }
-        poly.setSurface(surfBuilder.build());
+        writer.setSurface(surfBuilder.build());
         
         //enable texture randomization
         int salt = 0;
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, poly).toPainted());
+        makeIcosahedronFace(true, 0, 11, 5, vertexes, normals, stream);
+        makeIcosahedronFace(false, 4, 5, 11, vertexes, normals, stream);
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 0, 5, 1, vertexes, normals, stream);
+        makeIcosahedronFace(false, 9, 1, 5, vertexes, normals, stream);
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true,  0, 1, 7, vertexes, normals, stream);
+        makeIcosahedronFace(false, 8, 7, 1, vertexes, normals, stream);
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 0, 7, 10, vertexes, normals, stream);
+        makeIcosahedronFace(false, 6, 10, 7, vertexes, normals, stream);
+        
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 0, 10, 11, vertexes, normals, stream);
+        makeIcosahedronFace(false, 2, 11, 10, vertexes, normals, stream);
 
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 5, 4, 9, vertexes, normals, stream);
+        makeIcosahedronFace(false, 3, 9, 4, vertexes, normals, stream);
 
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 11, 2, 4, vertexes, normals, stream);
+        makeIcosahedronFace(false, 3, 4, 2, vertexes, normals, stream);
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 10, 6, 2, vertexes, normals, stream);
+        makeIcosahedronFace(false, 3, 2, 6, vertexes, normals, stream);
         
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, poly).toPainted());
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 7, 8, 6, vertexes, normals, stream);
+        makeIcosahedronFace(false, 3, 6, 8, vertexes, normals, stream);
 
-        poly.setTextureSalt(salt++);
-        results.add(makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, poly).toPainted());
-        results.add(makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, poly).toPainted());
-  
-        poly.release();
+        writer.setTextureSalt(salt++);
+        stream.saveDefaults();
+        makeIcosahedronFace(true, 1, 9, 8, vertexes, normals, stream);
+        makeIcosahedronFace(false, 3, 8, 9, vertexes, normals, stream);
         
-        return results;
     }
     
-    private static IMutablePolygon makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IMutablePolygon template)
+    private static void makeIcosahedronFace(boolean topHalf, int p1, int p2, int p3, Vec3d[] points, @Nullable Vec3d[] normals, IWritablePolyStream stream)
     {
+        IMutablePolygon writer = stream.writer();
         if(normals == null)
         {
             if(topHalf)
             {
-                template.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, null);
-                template.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, null);
-                template.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, null);
+                writer.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, null);
+                writer.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, null);
+                writer.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, null);
             }
             else
             {
-                template.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, null);
-                template.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, null);
-                template.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, null);
+                writer.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, null);
+                writer.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, null);
+                writer.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, null);
             }
         }
         else
         {
             if(topHalf)
             {
-                template.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, normals[p1]);
-                template.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, normals[p2]);
-                template.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, normals[p3]);
+                writer.setVertex(0, points[p1], 1, 1, 0xFFFFFFFF, normals[p1]);
+                writer.setVertex(1, points[p2], 0, 1, 0xFFFFFFFF, normals[p2]);
+                writer.setVertex(2, points[p3], 1, 0, 0xFFFFFFFF, normals[p3]);
             }
             else
             {
-                template.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, normals[p1]);
-                template.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, normals[p2]);
-                template.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, normals[p3]);
+                writer.setVertex(0, points[p1], 0, 0, 0xFFFFFFFF, normals[p1]);
+                writer.setVertex(1, points[p2], 1, 0, 0xFFFFFFFF, normals[p2]);
+                writer.setVertex(2, points[p3], 0, 1, 0xFFFFFFFF, normals[p3]);
             }
         }
         // clear face normal if has been set somehow
-        template.clearFaceNormal();
-        return template;
+        writer.clearFaceNormal();
+        stream.append();
     }
 
     /**

@@ -33,10 +33,11 @@ public interface IMutablePolyStream
     boolean editorNext();
     
     /**
-     * True if editor at end of stream in build order. <br>
+     * False if editor at end of stream in build order. <br>
+     * By extension, also false if stream is empty.<br>
      * Note that WIP is not considered part of stream. 
      */
-    boolean editorAtEnd();
+    boolean editorHasValue();
     
     /**
      * Address of current editor location. Can be used with {@link #editorMoveTo(int)} to return.

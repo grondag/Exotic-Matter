@@ -5,6 +5,7 @@ import java.util.BitSet;
 
 import javax.annotation.Nullable;
 
+import grondag.exotic_matter.model.primitives.polygon.ForwardingPolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -14,8 +15,9 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     protected final IntArrayList links;
     protected final BitSet marks;
     
-    private IPolygon polyA;
-    private IPolygon polyB;
+    private final ForwardingPolygon reader = new ForwardingPolygon();
+    private ForwardingPolygon polyA = new ForwardingPolygon();
+    private ForwardingPolygon polyB = new ForwardingPolygon();
     
     protected int readIndex = 0;
     
@@ -42,26 +44,39 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     @Override
     public @Nullable IPolygon reader()
     {
-        return readIndex < polys.size() ? polys.get(readIndex) : null;
+        return reader;
     }
 
     @Override
     public void origin()
     {
         readIndex = 0;
+        if(polys.size() > 0)
+            reader.wrapped = polys.get(0);
     }
 
     @Override
     public boolean next()
     {
         final int size = polys.size();
-        return readIndex < size ? ++readIndex < size : false;
+        if(readIndex >= size)
+            return false;
+        
+        readIndex++;
+        
+        if(readIndex < size)
+        {
+            reader.wrapped = polys.get(readIndex);
+            return true;
+        }
+        else
+            return false;
     }
 
     @Override
-    public boolean atEnd()
+    public boolean hasValue()
     {
-        return readIndex >= polys.size();
+        return readIndex < polys.size();
     }
 
     @Override
@@ -82,6 +97,7 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     {
         validateIndex(address);
         readIndex = address;
+        reader.wrapped = polys.get(readIndex);
     }
     
     @Override
@@ -141,10 +157,16 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
         
         int link = links.getInt(readIndex);
         if(link == 0)
+        {
+            readIndex = size;
+            reader.wrapped = null;
             return false;
-        
-        moveTo(link - 1);
-        return true;
+        }
+        else
+        {
+            moveTo(link - 1);
+            return true;
+        }
     }
 
     @Override
@@ -163,7 +185,7 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     public IPolygon movePolyA(int address)
     {
         validateIndex(address);
-        polyA = polys.get(address);
+        polyA.wrapped = polys.get(address);
         return polyA;
     }
 
@@ -177,12 +199,14 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
     public IPolygon movePolyB(int address)
     {
         validateIndex(address);
-        polyB = polys.get(address);
+        polyB.wrapped = polys.get(address);
         return polyB;
     }
    
     protected final void append(IPolygon poly)
     {
+        if(readIndex == polys.size())
+            reader.wrapped = poly;
         polys.add(poly);
         links.add(0);
     }
@@ -192,9 +216,16 @@ public abstract class SimpleAbstractPolyStream implements IPolyStream
      */
     protected final void append(IPolygon poly, int linkAddress, boolean mark)
     {
-        marks.set(polys.size(), mark);
+        final int size = polys.size();
+        
+        if(readIndex == size)
+            reader.wrapped = poly;
+        
+        marks.set(size, mark);
         polys.add(poly);
         links.add(linkAddress);
+        
+        
     }
     
     @Override

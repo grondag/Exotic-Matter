@@ -28,9 +28,9 @@ public class SimpleMutablePolyStream extends SimpleWritablePolyStream implements
     }
 
     @Override
-    public boolean editorAtEnd()
+    public boolean editorHasValue()
     {
-        return editIndex >= polys.size();
+        return editIndex < polys.size();
     }
 
     @Override

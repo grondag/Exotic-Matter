@@ -31,10 +31,10 @@ public interface IWritablePolyStream extends IPolyStream
     /**
      * Current poly settings will be used to initialize WIP after append.
      */
-    void setDefaults();
+    void saveDefaults();
     
     /**
-     * Undoes effects of {@link #setDefaults()} so that defaults are for a new poly stream.
+     * Undoes effects of {@link #saveDefaults()} so that defaults are for a new poly stream.
      */
     void clearDefaults();
     
@@ -63,5 +63,15 @@ public interface IWritablePolyStream extends IPolyStream
      * Recommended to cast reference to IPolyStreamReader after using.
      */
     IPolyStream convertToReader();
+
+    /**
+     * Sets vertex count for current writer. Value can be saved as part of defaults. 
+     */
+    void setVertexCount(int vertexCount);
+    
+    /**
+     * Sets layer count for current writer. Value can be saved as part of defaults. 
+     */
+    void setLayerCount(int layerCount);
     
 }

@@ -36,10 +36,11 @@ public interface IPolyStream
     boolean next();
     
     /**
-     * True if reader at end of stream in build order. <br>
+     * False if reader at end of stream in build order. <br>
+     * By extension, also false if stream is empty.<br>
      * Note that WIP is not considered part of stream. 
      */
-    boolean atEnd();
+    boolean hasValue();
     
     /**
      * Address of current reader location. Can be used with {@link #moveTo(int)} to return.

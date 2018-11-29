@@ -11,7 +11,7 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     
     {
         clearDefaults();
-        writer = new MutablePolygonNxN(128);
+        writer = new MutablePolygonNxN(8);
         loadDefaults();
     }
     
@@ -35,7 +35,7 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     }
 
     @Override
-    public void setDefaults()
+    public void saveDefaults()
     {
         defaults.prepare(writer.layerCount(), writer.vertexCount());
         defaults.load(writer);
@@ -44,7 +44,7 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     @Override
     public void clearDefaults()
     {
-        defaults = new MutablePolygonNxN(128);
+        defaults = new MutablePolygonNxN(8);
         defaults.prepare(1, 4);
     }
 
@@ -79,5 +79,17 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     public IPolyStream convertToReader()
     {
         return (IPolyStream) this;
+    }
+
+    @Override
+    public void setVertexCount(int vertexCount)
+    {
+        writer.prepare(writer.layerCount(), vertexCount);
+    }
+
+    @Override
+    public void setLayerCount(int layerCount)
+    {
+        writer.prepare(layerCount, writer.vertexCount());
     }
 }
