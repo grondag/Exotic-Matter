@@ -73,7 +73,6 @@ public class PolyFactory
         }
     };
 
-
     @FunctionalInterface 
     static private interface Maker
     {

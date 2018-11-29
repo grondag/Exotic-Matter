@@ -136,7 +136,7 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     {
         assert layerCount >= 1;
         assert layerCount <= 3;
-        assert vertexCount > 4;
+        assert vertexCount >= 3;
         assert vertexCount <= vertices.length;
         this.layerCount = layerCount;
         this.vertexCount = vertexCount;

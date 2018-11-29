@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.primitives.stream;
 
-public interface IPolyStreamReader
+public enum EncoderTypes
 {
-
+    VERTEX_NORMAL
 }
