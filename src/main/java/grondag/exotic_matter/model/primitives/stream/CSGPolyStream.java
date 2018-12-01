@@ -2,20 +2,15 @@ package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.CSGMutablePolygonNxN;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGMutablePolygon;
-import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGPolygon;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyStream
 {
     protected final IntArrayList tags = new IntArrayList();
     
-    protected final CSGMutablePolygonNxN writerCSG;
-    
     public CSGPolyStream()
     {
         super(new CSGMutablePolygonNxN());
-        writerCSG = (CSGMutablePolygonNxN)this.writer;
         
         reader.markSetter = (b) -> setMark(b);
         reader.markGetter = () -> isMarked();
@@ -48,9 +43,9 @@ public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyS
     @Override
     public void append()
     {
-        boolean mark = writerCSG.isMarked();
-        int tag = writerCSG.getTag();
-        int link = writerCSG.getLink();
+        boolean mark = writer.isMarked();
+        int tag = writer.getTag();
+        int link = writer.getLink();
         int address = this.writerAddress();
         
         super.append();
@@ -58,9 +53,9 @@ public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyS
         setMark(address, mark);
         setLink(address, link);
         
-        writerCSG.setMark(false);
-        writerCSG.setTag(IPolygon.NO_TAG);
-        writerCSG.setLink(IPolygon.NO_LINK);
+        writer.setMark(false);
+        writer.setTag(IPolygon.NO_TAG);
+        writer.setLink(IPolygon.NO_LINK);
     }
 
 
@@ -90,17 +85,11 @@ public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyS
 
 
     @Override
-    public ICSGMutablePolygon writer()
-    {
-        return writerCSG;
-    }
-
-    @Override
     public void copyFromAddress(int address)
     {
         super.copyFromAddress(address);
-        writerCSG.setMark(this.isMarked(address));
-        writerCSG.setTag(this.getTag(address));
+        writer.setMark(this.isMarked(address));
+        writer.setTag(this.getTag(address));
     }
 
 
@@ -110,118 +99,5 @@ public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyS
         int appendIndex = this.writerAddress();
         super.appendCopy(poly);
         this.setMark(appendIndex, poly.isMarked());
-    }
-
-
-    @Override
-    public ICSGPolygon reader()
-    {
-        return reader;
-    }
-
-    @Override
-    public ICSGPolygon polyA()
-    {
-        return polyA;
-    }
-
-    @Override
-    public ICSGPolygon movePolyA(int address)
-    {
-        super.movePolyA(address);
-        return polyA;
-    }
-
-
-    @Override
-    public ICSGPolygon polyB()
-    {
-        return polyB;
-    }
-
-
-    @Override
-    public ICSGPolygon movePolyB(int address)
-    {
-        super.movePolyB(address);
-        return polyB;
-    }
-    
-    @Override
-    public boolean isDeleted()
-    {
-        return super.isDeleted();
-    }
-
-    @Override
-    public void setDeleted()
-    {
-        super.setDeleted();
-    }
-
-    @Override
-    public boolean isDeleted(int address)
-    {
-        return super.isDeleted(address);
-    }
-
-    @Override
-    public void setDeleted(int address)
-    {
-       super.setDeleted(address);
-    }
-
-    @Override
-    public void setMark(boolean isMarked)
-    {
-        super.setMark(isMarked);
-    }
-
-    @Override
-    public void setMark(int address, boolean isMarked)
-    {
-        super.setMark(address, isMarked);
-    }
-
-    @Override
-    public boolean isMarked()
-    {
-        return super.isMarked();
-    }
-
-    @Override
-    public boolean isMarked(int address)
-    {
-        return super.isMarked(address);
-    }
-
-    @Override
-    public void setLink(int linkAddress)
-    {
-        super.setLink(linkAddress);
-    }
-
-    @Override
-    public void setLink(int targetAddress, int linkAddress)
-    {
-        super.setLink(targetAddress, linkAddress);
-    }
-
-    @Override
-    public boolean hasLink()
-    {
-        return super.hasLink();
-    }
-
-    @Override
-    public void clearLink()
-    {
-        super.clearLink();
-    }
-
-    @Override
-    public boolean nextLink()
-    {
-        return super.nextLink();
     }
 }

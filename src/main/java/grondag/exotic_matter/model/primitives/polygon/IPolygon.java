@@ -567,20 +567,29 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         
     }
     
-    /**
-     * Always false for polys that don't implement the marked interface.
-     */
     default boolean isMarked()
     {
         return false;
     }
     
-    /**
-     * Always false for polys that don't implement the deletable interface.
-     */
+    default void flipMark()
+    {
+        this.setMark(!this.isMarked());
+    }
+    
+    default void setMark(boolean isMarked)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
     default boolean isDeleted()
     {
         return false;
+    }
+    
+    default void setDeleted()
+    {
+        throw new UnsupportedOperationException();
     }
     
     /**
@@ -588,12 +597,14 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     public static final int NO_TAG = Integer.MIN_VALUE;
     
-    /**
-     * Always {@link #NO_TAG} for polys that don't implement taggable interface.
-     */
     default int getTag()
     {
         return NO_TAG;
+    }
+    
+    default void setTag(int tag)
+    {
+        throw new UnsupportedOperationException();
     }
     
     /**
@@ -601,12 +612,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      */
     public static final int NO_LINK = Integer.MIN_VALUE;
     
-    /**
-     * Always {@link #NO_LINK} for polys that don't implement linkable interface.
-     * Links are NOT copied automatically when a polygon is copied.
-     */
     default int getLink()
     {
         return NO_LINK;
+    }
+    
+    default void setLink(int link)
+    {
+        throw new UnsupportedOperationException();
     }
 }

@@ -86,4 +86,158 @@ public interface IPolyStream
      *  New stream has no connection with this stream.
      */
     IWritablePolyStream cloneToWritable();
+    
+    /**
+     * Mark this poly or clear the mark for the poly at the read cursor.  Meaning of mark is up to user.<p>
+     * 
+     * This, along with {@link #setLink(int)} are the only 
+     * mutating options allowed on a stream reader.<p>
+     * 
+     * Not meant for concurrent use.
+     */
+    default void setTag(int tag)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Absolute address version of {@link #setMark(boolean)}
+     */
+    default void setTag(int address, int tag)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    default int getTag()
+    {
+        return IPolygon.NO_TAG;
+    }
+    
+    default int getTag(int address)
+    {
+        return IPolygon.NO_TAG;
+    }
+    
+    /**
+     * True if poly at reader position is deleted.
+     */
+    default boolean isDeleted()
+    {
+        return false;
+    }
+    
+    /**
+     * Marks the poly at reader position for deletion.<br>
+     * See {@link #setDeleted(int)}
+     */
+    default void setDeleted()
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * True if poly at given address is deleted.
+     */
+    default boolean isDeleted(int address)
+    {
+        return false;
+    }
+    
+    /**
+     * Marks poly at given address as deleted.
+     * Poly remains in collection but will be
+     * skipped in next... methods.  Streams
+     * that implement this will typically also
+     * have IDeletable polygons that will reflect this change.
+     */
+    default void setDeleted(int address)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Sets link for this poly at the current reader.  Used to create sublists within a stream.<p>
+     * 
+     * This, along with {@link #setMark(boolean)} are the only 
+     * mutating options allowed on a stream reader.<p>
+     * 
+     * Not meant for concurrent use.
+     */
+    default void setLink(int linkAddress)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Sets link for the poly at the target address.  See {@link #setLink(int)}
+     */
+    default void setLink(int targetAddress, int linkAddress)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * True if reader at end of link chain or not in a link chain.
+     */
+    default boolean hasLink()
+    {
+        return false;
+    }
+    
+    /**
+     * Clears any link set by {@link #setLink(int)}
+     */
+    default void clearLink()
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Moves reader to next linked poly, if a link exists.  Returns false if already at end of link chain.
+     */
+    default boolean nextLink()
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Mark this poly or clear the mark for the poly at the read cursor.  Meaning of mark is up to user.<p>
+     * 
+     * This, along with {@link #setLink(int)} are the only 
+     * mutating options allowed on a stream reader.<p>
+     * 
+     * Not meant for concurrent use.
+     */
+    default void setMark(boolean isMarked)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Absolute address version of {@link #setMark(boolean)}
+     */
+    default void setMark(int address, boolean isMarked)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    default boolean isMarked()
+    {
+        return false;
+    }
+    
+    default boolean isMarked(int address)
+    {
+        return false;
+    }
+    
+    default void flipMark()
+    {
+        setMark(!isMarked());
+    }
+    
+    default void flipMark(int address)
+    {
+        setMark(!isMarked(address));
+    }
 }

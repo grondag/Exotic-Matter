@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives.polygon;
 
-import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 
 public interface IPrimitiveFactory
@@ -29,12 +28,12 @@ public interface IPrimitiveFactory
     
     IMutableVertex claimMutableVertex();
     
-    public default ICSGMutablePolygon claimCSGMutable(IPolygon template)
+    public default IMutablePolygon claimCSGMutable(IPolygon template)
     {
         return claimCSGMutable(template, template.vertexCount());
     }
     
-    public default ICSGMutablePolygon claimCSGMutable(IPolygon template, int vertexCount)
+    public default IMutablePolygon claimCSGMutable(IPolygon template, int vertexCount)
     {
         CSGMutablePolygonNxN result = new CSGMutablePolygonNxN();
         result.prepare(template.layerCount(), vertexCount);

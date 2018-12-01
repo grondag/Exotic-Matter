@@ -1,8 +1,7 @@
 package grondag.exotic_matter.model.primitives.polygon;
 
-import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGMutablePolygon;
 
-public class CSGMutablePolygonNxN extends MutablePolygonNxN implements ICSGMutablePolygon
+public class CSGMutablePolygonNxN extends MutablePolygonNxN
 {
     boolean isMarked = false;
     boolean isDeleted = false;
@@ -79,13 +78,13 @@ public class CSGMutablePolygonNxN extends MutablePolygonNxN implements ICSGMutab
     }
 
     @Override
-    public ICSGMutablePolygon claimCopy()
+    public IMutablePolygon claimCopy()
     {
         return factory().claimCSGMutable(this);
     }
 
     @Override
-    public ICSGMutablePolygon claimCopy(int vertexCount)
+    public IMutablePolygon claimCopy(int vertexCount)
     {
         return factory().claimCSGMutable(this, vertexCount);
     }

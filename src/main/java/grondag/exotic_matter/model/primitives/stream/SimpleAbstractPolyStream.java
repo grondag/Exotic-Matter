@@ -123,53 +123,62 @@ public class SimpleAbstractPolyStream implements IPolyStream
         reader.wrapped = polys.get(readIndex);
     }
     
-    protected void setMark(boolean isMarked)
+    @Override
+    public void setMark(boolean isMarked)
     {
         setMark(readIndex, isMarked);
     }
     
-    protected void setMark(int address, boolean isMarked)
+    @Override
+    public void setMark(int address, boolean isMarked)
     {
         validateIndex(address);
         marks.set(address, isMarked);
     }
 
-    protected boolean isMarked()
+    @Override
+    public boolean isMarked()
     {
         return isMarked(readIndex);
     }
     
-    protected boolean isMarked(int address)
+    @Override
+    public boolean isMarked(int address)
     {
         validateIndex(address);
         return marks.get(address);
     }
     
-    protected void setLink(int linkAddress)
+    @Override
+    public void setLink(int linkAddress)
     {
         setLink(readIndex, linkAddress);
     }
     
-    protected void setLink(int targetAddress, int linkAddress)
+    @Override
+    public void setLink(int targetAddress, int linkAddress)
     {
         validateIndex(linkAddress);
         validateIndex(targetAddress);
         links.set(targetAddress, linkAddress + 1);
     }
 
-    protected boolean hasLink()
+    @Override
+    public boolean hasLink()
     {
         validateIndex(readIndex);
         return links.getInt(readIndex) != 0;
     }
 
-    protected void clearLink()
+    @Override
+    public void clearLink()
     {
         validateIndex(readIndex);
         links.set(readIndex, 0);
     }
 
-    protected boolean nextLink()
+    @Override
+    public boolean nextLink()
     {
         final int size = polys.size();
         if(readIndex >= size)
@@ -265,22 +274,26 @@ public class SimpleAbstractPolyStream implements IPolyStream
         return result;
     }
 
-    protected boolean isDeleted()
+    @Override
+    public boolean isDeleted()
     {
         return isDeleted(readIndex);
     }
 
-    protected void setDeleted()
+    @Override
+    public void setDeleted()
     {
         setDeleted(readIndex);
     }
 
-    protected boolean isDeleted(int address)
+    @Override
+    public boolean isDeleted(int address)
     {
         return deletes.get(address);
     }
 
-    protected void setDeleted(int address)
+    @Override
+    public void setDeleted(int address)
     {
         validateIndex(address);
         deletes.set(address);
