@@ -6,4 +6,9 @@ public class PolyStreams
     {
         return new SimpleWritablePolyStream();
     }
+    
+    public static ICSGPolyStream claimCSG()
+    {
+        return new CSGPolyStream();
+    }
 }

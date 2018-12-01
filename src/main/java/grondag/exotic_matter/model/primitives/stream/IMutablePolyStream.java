@@ -53,13 +53,8 @@ public interface IMutablePolyStream
     void editorMoveTo(int address);
     
     /**
-     * Removes polygon at given address.  Will remove it from link chain if part of one.
-     * Editor position will be as if {@link #editorNext()} had been called.
+     * Marks polygon at editor position as deleted.
      */
-    void editorDelete();
+    void editorSetDeleted();
     
-    /**
-     * Removes polygon at given address.  Will remove it from link chain if part of one.
-     */
-    void delete(int address);
 }

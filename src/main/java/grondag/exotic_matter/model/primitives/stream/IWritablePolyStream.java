@@ -78,6 +78,18 @@ public interface IWritablePolyStream extends IPolyStream
     /**
      * Makes no change to writer state, except address.
      */
-    void appendCopy(IPolygon makePaintedFace);
+    void appendCopy(IPolygon poly);
+
+    default void appendAll(IPolyStream stream)
+    {
+        if(stream.isEmpty())
+                return;
+        
+        IPolygon reader = stream.reader();
+        stream.origin();
+        do
+            this.appendCopy(reader);
+        while(stream.next());
+    }
     
 }

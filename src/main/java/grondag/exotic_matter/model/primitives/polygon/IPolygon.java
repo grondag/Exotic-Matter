@@ -566,4 +566,47 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     {
         
     }
+    
+    /**
+     * Always false for polys that don't implement the marked interface.
+     */
+    default boolean isMarked()
+    {
+        return false;
+    }
+    
+    /**
+     * Always false for polys that don't implement the deletable interface.
+     */
+    default boolean isDeleted()
+    {
+        return false;
+    }
+    
+    /**
+     * Improbable non-zero value that signifies no tag set or tag not supported.
+     */
+    public static final int NO_TAG = Integer.MIN_VALUE;
+    
+    /**
+     * Always {@link #NO_TAG} for polys that don't implement taggable interface.
+     */
+    default int getTag()
+    {
+        return NO_TAG;
+    }
+    
+    /**
+     * Improbable non-zero value that signifies no link set or link not supported.
+     */
+    public static final int NO_LINK = Integer.MIN_VALUE;
+    
+    /**
+     * Always {@link #NO_LINK} for polys that don't implement linkable interface.
+     * Links are NOT copied automatically when a polygon is copied.
+     */
+    default int getLink()
+    {
+        return NO_LINK;
+    }
 }

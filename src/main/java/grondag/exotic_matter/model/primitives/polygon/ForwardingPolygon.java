@@ -4,15 +4,62 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.IDeletablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ILinkedPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.IMarkedPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ITaggablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public class ForwardingPolygon implements IPolygon
+public class ForwardingPolygon implements ITaggablePolygon, IMarkedPolygon, IDeletablePolygon, ILinkedPolygon, ICSGPolygon
 {
+    @FunctionalInterface
+    public static interface BooleanGetter
+    {
+        boolean getValue();
+    }
+    
+    @FunctionalInterface
+    public static interface BooleanSetter
+    {
+        void setValue(boolean value);
+    }
+    
+    @FunctionalInterface
+    public static interface IntGetter
+    {
+        int getValue();
+    }
+    
+    @FunctionalInterface
+    public static interface IntSetter
+    {
+        void setValue(int value);
+    }
+    
+    public static final BooleanSetter DEFAULT_BOOL_SETTER = (b) -> {throw new UnsupportedOperationException();};
+    public static final BooleanGetter DEFAULT_BOOL_GETTER = () -> false;
+    
+    public static final IntSetter DEFAULT_INT_SETTER = (i) -> {throw new UnsupportedOperationException();};
+    public static final IntGetter DEFAULT_INT_GETTER = () -> IPolygon.NO_LINK;
+    
     public IPolygon wrapped;
+    
+    public BooleanSetter markSetter = DEFAULT_BOOL_SETTER;
+    public BooleanGetter markGetter = DEFAULT_BOOL_GETTER;
+    
+    public BooleanSetter deletedSetter = DEFAULT_BOOL_SETTER;
+    public BooleanGetter deletedGetter = DEFAULT_BOOL_GETTER;
+    
+    public IntSetter linkSetter = DEFAULT_INT_SETTER;
+    public IntGetter linkGetter = DEFAULT_INT_GETTER;
+    
+    public IntSetter tagSetter = DEFAULT_INT_SETTER;
+    public IntGetter tagGetter = DEFAULT_INT_GETTER;
     
     @Override
     public int vertexCount()
@@ -210,5 +257,53 @@ public class ForwardingPolygon implements IPolygon
     public IRenderPipeline getPipeline()
     {
         return wrapped.getPipeline();
+    }
+
+    @Override
+    public boolean isMarked()
+    {
+        return markGetter.getValue();
+    }
+
+    @Override
+    public void setMark(boolean isMarked)
+    {
+        markSetter.setValue(isMarked);
+    }
+
+    @Override
+    public void setDeleted()
+    {
+        deletedSetter.setValue(true);
+    }
+    
+    @Override
+    public boolean isDeleted()
+    {
+        return deletedGetter.getValue();
+    }
+
+    @Override
+    public void setLink(int link)
+    {
+        linkSetter.setValue(link);
+    }
+
+    @Override
+    public int getLink()
+    {
+        return linkGetter.getValue();
+    }
+    
+    @Override
+    public void setTag(int tag)
+    {
+        tagSetter.setValue(tag);
+    }
+
+    @Override
+    public int getTag()
+    {
+        return tagGetter.getValue();
     }
 }

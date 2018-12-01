@@ -9,9 +9,17 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     protected final MutablePolygonNxN writer;
     private MutablePolygonNxN defaults;
     
+    protected SimpleWritablePolyStream()
     {
         clearDefaults();
         writer = new MutablePolygonNxN(8);
+        loadDefaults();
+    }
+    
+    protected SimpleWritablePolyStream(MutablePolygonNxN writer)
+    {
+        clearDefaults();
+        this.writer = writer;
         loadDefaults();
     }
     

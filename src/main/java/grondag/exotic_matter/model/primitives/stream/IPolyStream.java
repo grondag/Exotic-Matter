@@ -25,7 +25,7 @@ public interface IPolyStream
      * Moves reader to start of stream.<br>
      * Note that WIP is not considered part of stream.
      */
-    void origin();
+    IPolyStream origin();
     
     /**
      * Moves reader to next poly in this stream.  Returns false if already at end.<br>
@@ -52,60 +52,6 @@ public interface IPolyStream
      * Will throw exception if address points to WIP on streams still being written.
      */
     void moveTo(int address);
-    
-    /**
-     * Mark this poly or clear the mark for the poly at the read cursor.  Meaning of mark is up to user.<p>
-     * 
-     * This, along with {@link #setLink(int)} are the only 
-     * mutating options allowed on a stream reader.<p>
-     * 
-     * Not meant for concurrent use.
-     */
-    void setMark(boolean isMarked);
-    
-    /**
-     * Absolute address version of {@link #setMark(boolean)}
-     */
-    void setMark(int address, boolean isMarked);
-
-    boolean isMarked();
-    
-    boolean isMarked(int address);
-    
-    default void flipMark()
-    {
-        setMark(!isMarked());
-    }
-    
-    default void flipMark(int address)
-    {
-        setMark(!isMarked(address));
-    }
-    
-    /**
-     * Sets link for this poly at the current reader.  Used to create sublists within a stream.<p>
-     * 
-     * This, along with {@link #setMark(boolean)} are the only 
-     * mutating options allowed on a stream reader.<p>
-     * 
-     * Not meant for concurrent use.
-     */
-    void setLink(int linkAddress);
-
-    /**
-     * True if reader at end of link chain or not in a link chain.
-     */
-    boolean hasLink();
-    
-    /**
-     * Clears any link set by {@link #setLink(int)}
-     */
-    void clearLink();
-    
-    /**
-     * Moves reader to next linked poly, if a link exists.  Returns false if already at end of link chain.
-     */
-    boolean nextLink();
     
     void release();
     
@@ -140,10 +86,4 @@ public interface IPolyStream
      *  New stream has no connection with this stream.
      */
     IWritablePolyStream cloneToWritable();
-    
-    /**
-     * Claims a new read-only view of this stream. 
-     * If this stream is writable, new stream will reflect ongoing changes.
-     */
-    IPolyStream claimReader();
 }

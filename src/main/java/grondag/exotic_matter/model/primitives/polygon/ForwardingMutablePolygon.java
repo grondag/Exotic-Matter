@@ -5,15 +5,14 @@ import javax.annotation.Nullable;
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
+import grondag.exotic_matter.model.primitives.polygon.IPolygonExt.ICSGMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public class ForwardingMutablePolygon extends ForwardingPolygon implements IMutablePolygon
+public class ForwardingMutablePolygon extends ForwardingPolygon implements IMutablePolygon, ICSGMutablePolygon
 {
-    
-
     @Override
     public IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
