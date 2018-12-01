@@ -1,5 +1,6 @@
 package grondag.exotic_matter.model.CSG;
 
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 
@@ -18,9 +19,43 @@ public class CSGBounds extends AxisAlignedBB
     /**
      * For CSG operations we consider a point on the edge to be intersecting.
      */
+    @Deprecated
     public boolean intersectsWith(AxisAlignedBB other)
     {
         return this.intersects(other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ);
+    }
+    
+    public boolean intersectsWith(IPolygon poly)
+    {
+        float minX = poly.getVertexX(0);
+        float minY = poly.getVertexY(0);
+        float minZ = poly.getVertexZ(0);
+        float maxX = minX;
+        float maxY = minY;
+        float maxZ = minZ;
+        
+        final int vCount = poly.vertexCount();
+        for(int i = 1; i < vCount; i++)
+        {
+            final float x = poly.getVertexX(i);
+            if(x < minX)  
+                minX = x;
+            else if(x > maxX)
+                maxX = x;
+            
+            final float y = poly.getVertexY(i);
+            if(y < minY)  
+                minY = y;
+            else if(y > maxY)
+                maxY = y;
+            
+            final float z = poly.getVertexZ(i);
+            if(z < minZ)  
+                minZ = z;
+            else if(z > maxZ)
+                maxZ = z;
+        }
+        return this.intersects(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     /**
