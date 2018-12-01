@@ -277,7 +277,6 @@ public class SimpleAbstractPolyStream implements IPolyStream
 
     protected boolean isDeleted(int address)
     {
-        validateIndex(address);
         return deletes.get(address);
     }
 
