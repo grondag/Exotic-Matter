@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
-import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.polygon.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
 import grondag.exotic_matter.model.primitives.vertex.UnpackedVertex3;
@@ -291,48 +290,6 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     public IMutablePolygon clearFaceNormal()
     {
         super.clearFaceNormalImpl();
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, FaceVertex tv3, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(side, tv0, tv1, tv2, tv3, topFace);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(FaceVertex vertexIn0, FaceVertex vertexIn1, FaceVertex vertexIn2, FaceVertex vertexIn3, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(vertexIn0, vertexIn1, vertexIn2, vertexIn3, topFace);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(x0, y0, x1, y1, depth, topFace);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing face, float x0, float y0, float x1, float y1, float depth, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(face, x0, y0, x1, y1, depth, topFace);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(EnumFacing side, FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(side, tv0, tv1, tv2, topFace);
-        return this;
-    }
-
-    @Override
-    public IMutablePolygon setupFaceQuad(FaceVertex tv0, FaceVertex tv1, FaceVertex tv2, @Nullable EnumFacing topFace)
-    {
-        super.setupFaceQuadImpl(tv0, tv1, tv2, topFace);
         return this;
     }
 
