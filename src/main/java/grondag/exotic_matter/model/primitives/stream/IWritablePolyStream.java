@@ -9,6 +9,33 @@ import grondag.exotic_matter.model.primitives.polygon.IPolygon;
  */
 public interface IWritablePolyStream extends IPolyStream
 {
+    
+    /**
+     * Current setting for packed normals.
+     * See {@link #setPackedNormals(boolean)}
+     */
+    default boolean usePackedNormals()
+    {
+        return false;
+    }
+    
+    
+    /**
+     * Set to true to compress face and vertex normals.<p>
+     * 
+     * Packed normals are less precise, so should only use 
+     * for streams that will be used for rendering and not 
+     * CSG or other operations.<p>
+     *  
+     * False by default.  Not all stream writers support.
+     * If unsupported, stream will simply ignore.
+     */
+    default void setPackedNormals(boolean usePacked)
+    {
+        // NOOP
+    }
+    
+    
     /**
      * Holds WIP poly data that will be appended by next call to {@link #append()}.
      * Is reset to defaults when append is called. <p>

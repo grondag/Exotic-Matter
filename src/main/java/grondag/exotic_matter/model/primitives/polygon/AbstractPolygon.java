@@ -327,17 +327,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     }
     
     @Override
-    public final boolean hasRenderLayer(BlockRenderLayer layer)
-    {
-        if(getRenderLayer(0) == layer)
-            return true;
-        
-        final int count = this.layerCount();
-        return (count > 1 && getRenderLayer(1) == layer)
-               || (count == 3 && getRenderLayer(2) == layer);
-    }
-    
-    @Override
     public final Vec3f getFaceNormal()
     {
         Vec3f result = this.faceNormal;

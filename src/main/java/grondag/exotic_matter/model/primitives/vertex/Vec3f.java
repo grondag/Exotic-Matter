@@ -2,12 +2,37 @@ package grondag.exotic_matter.model.primitives.vertex;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3i;
+
 public class Vec3f implements IVec3f
 {
 //    private static AtomicInteger createCount = new AtomicInteger();
 //    private static AtomicInteger initCount = new AtomicInteger();
     
     public static final Vec3f ZERO = new Vec3f(0, 0, 0);
+    
+    private static final Vec3f[] FACES = new Vec3f[6];
+
+    static
+    {
+        FACES[EnumFacing.UP.ordinal()] = create(EnumFacing.UP.getDirectionVec());
+        FACES[EnumFacing.DOWN.ordinal()] = create(EnumFacing.DOWN.getDirectionVec());
+        FACES[EnumFacing.EAST.ordinal()] = create(EnumFacing.EAST.getDirectionVec());
+        FACES[EnumFacing.WEST.ordinal()] = create(EnumFacing.WEST.getDirectionVec());
+        FACES[EnumFacing.NORTH.ordinal()] = create(EnumFacing.NORTH.getDirectionVec());
+        FACES[EnumFacing.SOUTH.ordinal()] = create(EnumFacing.SOUTH.getDirectionVec());
+    }
+    
+    public static Vec3f forFace(EnumFacing face)
+    {
+        return FACES[face.ordinal()];
+    }
+    
+    public static Vec3f create(Vec3i vec)
+    {
+        return create(vec.getX(), vec.getY(), vec.getZ());
+    }
     
     public static Vec3f create(float x, float y, float z)
     {
@@ -189,6 +214,4 @@ public class Vec3f implements IVec3f
         else
             return false;
     }
-    
-    
 }

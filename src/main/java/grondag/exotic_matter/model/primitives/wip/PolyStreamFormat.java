@@ -46,9 +46,50 @@ public class PolyStreamFormat
         return NOMINAL_FACE.setValue(face, rawBits);
     }
     
-    public static final int FACE_NORMAL_FORMAT_VIRTUAL = 0;
-    public static final int FACE_NORMAL_FORMAT_CACHED = 1;
+    
+    // Note the packers below that affect poly / vertex layouts need to be adjacent to
+    // each other so that masks can be used as keys for encoders.
+    
+    private static final BitPacker32<PolyStreamFormat>.BooleanElement HAS_LINK = BITPACKER.createBooleanElement();
+    
+    public static boolean isLinked(int rawBits)
+    {
+        return HAS_LINK.getValue(rawBits);
+    }
+    
+    /**
+     * IMPORTANT: changes poly layout and must be set before poly is written.
+     */
+    public static int setLinked(int rawBits, boolean isLinked)
+    {
+        return HAS_LINK.setValue(isLinked, rawBits);
+    }
+    
+    private static final BitPacker32<PolyStreamFormat>.BooleanElement HAS_TAG = BITPACKER.createBooleanElement();
+    
+    public static boolean isTagged(int rawBits)
+    {
+        return HAS_TAG.getValue(rawBits);
+    }
+    
+    /**
+     * IMPORTANT: changes poly layout and must be set before poly is written.
+     */
+    public static int setTagged(int rawBits, boolean isTagged)
+    {
+        return HAS_TAG.setValue(isTagged, rawBits);
+    }
+    
+    /** use full precision face normal - normal needs to be computed from vertices */ 
+    public static final int FACE_NORMAL_FORMAT_FULL_MISSING = 0;
+    /** use full precision face normal - normal has already been computed from vertices */ 
+    public static final int FACE_NORMAL_FORMAT_FULL_PRESENT = 1;
+    /** use quantized normal - normal will be computed when poly is written */ 
     public static final int FACE_NORMAL_FORMAT_QUANTIZED = 2;
+    /** 
+     * use normal of nominal face - used when a poly about to be written is found
+     * to have a face normal that matches the nominal face.  Requires no storage.
+     */
     public static final int FACE_NORMAL_FORMAT_NOMINAL = 3;
     
     private static final BitPacker32<PolyStreamFormat>.IntElement FACE_NORMAL_FORMAT = BITPACKER.createIntElement(4);
@@ -206,7 +247,9 @@ public class PolyStreamFormat
 //    isMutable   2   1       poly    yes yes
 //    vertexCount 128 7       vertex  no  no
 //    nominalFace 6   3       poly    no  no
-    
+
+//    isLinked
+//    isTagged
 //    faceNormal  4   2   Dynamic/Cached/Quantized/Nominal    poly    yes no
 //    uvFormat    2   1   full/half   layer   yes no
     
@@ -230,7 +273,9 @@ public class PolyStreamFormat
     
     static
     {
-        final int polyMask = FACE_NORMAL_FORMAT.comparisonMask()
+        final int polyMask = HAS_LINK.comparisonMask()
+                | HAS_TAG.comparisonMask()
+                | FACE_NORMAL_FORMAT.comparisonMask()
                 | HALF_PRECISION_POLY_UV.comparisonMask()
                 | LAYER_COUNT.comparisonMask()
                 | VERTEX_COLOR_FORMAT.comparisonMask();

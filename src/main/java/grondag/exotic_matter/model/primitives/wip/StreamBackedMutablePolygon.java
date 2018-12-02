@@ -96,8 +96,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon setLayerCount(int layerCount)
     {
-        format = PolyStreamFormat.setLayerCount(format, layerCount);
-        stream.set(baseAddress, format);
+        saveAndLoadFormat(PolyStreamFormat.setLayerCount(format(), layerCount));
         return this;
     }
 
@@ -201,15 +200,21 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon clearFaceNormal()
     {
-        polyEncoder.clearFaceNormal(stream, baseAddress);
+        int normalFormat = PolyStreamFormat.getFaceNormalFormat(format());
+        
+        assert normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING || 
+                normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT
+                : "Face normal clear should only happen for full-precision polys";
+        
+        if(normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT)
+            saveAndLoadFormat(PolyStreamFormat.setFaceNormalFormat(format(), PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING));
         return this;
     }
 
     @Override
     public final IMutablePolygon setNominalFace(EnumFacing face)
     {
-        format = PolyStreamFormat.setNominalFace(format, face);
-        stream.set(baseAddress, format);
+        saveAndLoadFormat(PolyStreamFormat.setNominalFace(format(), face));
         return this;
     }
 

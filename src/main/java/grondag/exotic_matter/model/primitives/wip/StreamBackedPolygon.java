@@ -5,7 +5,6 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
@@ -36,19 +35,12 @@ public class StreamBackedPolygon implements IPolygon
     
     protected GlowEncoder glowEncoder;
     
-    protected int format;
+    protected int format()
+    {
+        return stream.get(baseAddress);
+    }
     
     protected IIntStream stream;
-    
-    /**
-     * Default value should be NO_TAG.
-     */
-    protected Int2IntOpenHashMap tagData;
-    
-    /**
-     * Default value should be NO_LINK.
-     */
-    protected Int2IntOpenHashMap linkData;
     
     /**
      * Reads header from given stream address and
@@ -58,12 +50,21 @@ public class StreamBackedPolygon implements IPolygon
     protected void moveTo(int baseAddress)
     {
         this.baseAddress = baseAddress;
-        setFormat(stream.get(baseAddress));
+        loadFormat();
     }
     
-    protected void setFormat(int format)
+    protected void saveAndLoadFormat(int newFormat)
     {
-        this.format = format;
+        if(newFormat != format())
+        {
+            stream.set(baseAddress, newFormat);
+            loadFormat();
+        }
+    }
+    
+    protected void loadFormat()
+    {
+        final int format = format();
         this.polyEncoder = PolyEncoder.get(format);
         this.vertexEncoder = VertexEncoder.get(format);
         this.glowEncoder = GlowEncoder.get(format);
@@ -74,7 +75,7 @@ public class StreamBackedPolygon implements IPolygon
     @Override
     public final boolean isMarked()
     {
-        return PolyStreamFormat.isMarked(format);
+        return PolyStreamFormat.isMarked(format());
     }
 
     @Override
@@ -86,51 +87,49 @@ public class StreamBackedPolygon implements IPolygon
     @Override
     public final void setMark(boolean isMarked)
     {
-        format = PolyStreamFormat.setMarked(format, isMarked);
-        stream.set(baseAddress, format);
+        saveAndLoadFormat(PolyStreamFormat.setMarked(format(), isMarked));
     }
 
     @Override
     public final boolean isDeleted()
     {
-        return PolyStreamFormat.isDeleted(format);
+        return PolyStreamFormat.isDeleted(format());
     }
 
     @Override
     public final void setDeleted()
     {
-        format = PolyStreamFormat.setDeleted(format, true);
-        stream.set(baseAddress, format);
+        saveAndLoadFormat(PolyStreamFormat.setDeleted(format(), true));
     }
 
     @Override
     public final int getTag()
     {
-        return tagData.get(baseAddress);
+        return polyEncoder.getTag(stream, baseAddress);
     }
 
     @Override
     public final void setTag(int tag)
     {
-        tagData.put(baseAddress, tag);
+        polyEncoder.setTag(stream, baseAddress, tag);
     }
 
     @Override
     public final int getLink()
     {
-        return linkData.get(baseAddress);
+        return polyEncoder.getLink(stream, baseAddress);
     }
 
     @Override
     public final void setLink(int link)
     {
-        linkData.put(baseAddress, link);
+        polyEncoder.setLink(stream, baseAddress, link);
     }
 
     @Override
     public final int vertexCount()
     {
-        return PolyStreamFormat.getVertexColorFormat(format);
+        return PolyStreamFormat.getVertexColorFormat(format());
     }
 
     @Override
@@ -140,16 +139,62 @@ public class StreamBackedPolygon implements IPolygon
         return Vec3f.create(getVertexX(index), getVertexY(index), getVertexZ(index));
     }
 
-    @Override
-    public Vec3f getFaceNormal()
+    /**
+     * Gets current face normal format and if normal needs to
+     * be computed, does so and updates both the normal and the format.<p>
+     * 
+     * Returns the format in effect after any changes have been made.
+     */
+    private int computeNormalAndReturnFormat()
     {
-        return polyEncoder.getFaceNormal(stream, baseAddress);
+        int normFormat = PolyStreamFormat.getFaceNormalFormat(format());
+        if(normFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING)
+        {
+            Vec3f normal = this.computeFaceNormal();
+            polyEncoder.setFaceNormal(stream, normFormat, normal);
+            normFormat = PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT;
+            saveAndLoadFormat(PolyStreamFormat.setFaceNormalFormat(format(), normFormat));
+        }
+        return normFormat;
+    }
+        
+    
+    @Override
+    public final Vec3f getFaceNormal()
+    {
+        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+                ? Vec3f.forFace(getNominalFace())
+                :polyEncoder.getFaceNormal(stream, baseAddress);
     }
 
     @Override
+    public final float getFaceNormalX()
+    {
+        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+                ? Vec3f.forFace(getNominalFace()).x()
+                :polyEncoder.getFaceNormalX(stream, baseAddress);
+    }
+    
+    @Override
+    public final float getFaceNormalY()
+    {
+        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+                ? Vec3f.forFace(getNominalFace()).y()
+                :polyEncoder.getFaceNormalY(stream, baseAddress);
+    }
+    
+    @Override
+    public final float getFaceNormalZ()
+    {
+        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+                ? Vec3f.forFace(getNominalFace()).z()
+                :polyEncoder.getFaceNormalZ(stream, baseAddress);
+    }
+    
+    @Override
     public final EnumFacing getNominalFace()
     {
-        return PolyStreamFormat.getNominalFace(format);
+        return PolyStreamFormat.getNominalFace(format());
     }
 
     @Override
@@ -226,7 +271,7 @@ public class StreamBackedPolygon implements IPolygon
     @Override
     public final int layerCount()
     {
-        return PolyStreamFormat.getLayerCount(format);
+        return PolyStreamFormat.getLayerCount(format());
     }
 
     @Override
@@ -301,12 +346,6 @@ public class StreamBackedPolygon implements IPolygon
     public final boolean isLockUV(int layerIndex)
     {
         return StaticEncoder.isLockUV(stream, baseAddress, layerIndex);
-    }
-
-    @Override
-    public final boolean hasRenderLayer(BlockRenderLayer layer)
-    {
-        return StaticEncoder.hasRenderLayer(stream, baseAddress, layer);
     }
 
     @Override

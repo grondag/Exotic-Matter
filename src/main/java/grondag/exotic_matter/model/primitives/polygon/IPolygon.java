@@ -28,9 +28,24 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public interface IPolygon extends IVertexCollection, IPipelinedQuad
+public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPolygon
 {
     public Vec3f getFaceNormal();
+    
+    public default float getFaceNormalX()
+    {
+        return getFaceNormal().x();
+    }
+
+    public default float getFaceNormalY()
+    {
+        return getFaceNormal().y();
+    }
+    
+    public default float getFaceNormalZ()
+    {
+        return getFaceNormal().z();
+    }
     
     public EnumFacing getNominalFace();
 
@@ -326,7 +341,15 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
 
     boolean isLockUV(int layerIndex);
 
-    public boolean hasRenderLayer(BlockRenderLayer layer);
+    public default boolean hasRenderLayer(BlockRenderLayer layer)
+    {
+        if(getRenderLayer(0) == layer)
+            return true;
+        
+        final int count = this.layerCount();
+        return (count > 1 && getRenderLayer(1) == layer)
+               || (count == 3 && getRenderLayer(2) == layer);
+    }
     
     /**
      * This is Acuity-only.  Acuity assumes quad has only a single render layer.
@@ -584,60 +607,5 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     default void releaseLast()
     {
         
-    }
-    
-    default boolean isMarked()
-    {
-        return false;
-    }
-    
-    default void flipMark()
-    {
-        this.setMark(!this.isMarked());
-    }
-    
-    default void setMark(boolean isMarked)
-    {
-        throw new UnsupportedOperationException();
-    }
-    
-    default boolean isDeleted()
-    {
-        return false;
-    }
-    
-    default void setDeleted()
-    {
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Improbable non-zero value that signifies no tag set or tag not supported.
-     */
-    public static final int NO_TAG = Integer.MIN_VALUE;
-    
-    default int getTag()
-    {
-        return NO_TAG;
-    }
-    
-    default void setTag(int tag)
-    {
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Improbable non-zero value that signifies no link set or link not supported.
-     */
-    public static final int NO_LINK = Integer.MIN_VALUE;
-    
-    default int getLink()
-    {
-        return NO_LINK;
-    }
-    
-    default void setLink(int link)
-    {
-        throw new UnsupportedOperationException();
     }
 }
