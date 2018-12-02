@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.varia.BinaryEnumSet;
+import grondag.exotic_matter.varia.structures.BinaryEnumSet;
 import net.minecraft.util.BlockRenderLayer;
 
 /**

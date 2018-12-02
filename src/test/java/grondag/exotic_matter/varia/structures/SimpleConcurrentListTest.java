@@ -1,11 +1,11 @@
-package grondag.exotic_matter;
+package grondag.exotic_matter.varia.structures;
 
 
 import org.junit.Test;
 
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
 import grondag.exotic_matter.varia.MicroTimer;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import grondag.exotic_matter.varia.structures.SimpleUnorderedArrayList;
 
 public class SimpleConcurrentListTest
 {

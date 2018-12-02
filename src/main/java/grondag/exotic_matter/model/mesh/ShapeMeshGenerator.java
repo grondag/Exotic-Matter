@@ -10,7 +10,7 @@ import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import grondag.exotic_matter.varia.structures.SimpleUnorderedArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;

@@ -1,9 +1,9 @@
-package grondag.exotic_matter;
+package grondag.exotic_matter.varia.structures;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.varia.SimpleUnorderedArraySet;
 import grondag.exotic_matter.varia.structures.KeyedTuple;
+import grondag.exotic_matter.varia.structures.SimpleUnorderedArraySet;
 
 
 public class SimpleUnorderedArraySetTest

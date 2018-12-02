@@ -1,10 +1,8 @@
-package grondag.exotic_matter.varia;
+package grondag.exotic_matter.varia.structures;
 
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-
-import grondag.exotic_matter.varia.structures.AbstractUnorderedArrayList;
 
 /**
  * Lightweight, non-concurrent collection-like class for managing small unordered lists.

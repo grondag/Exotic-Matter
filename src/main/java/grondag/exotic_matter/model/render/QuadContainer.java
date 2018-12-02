@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
 import grondag.exotic_matter.varia.Useful;
+import grondag.exotic_matter.varia.structures.SimpleUnorderedArrayList;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;

@@ -1,4 +1,4 @@
-package grondag.exotic_matter;
+package grondag.exotic_matter.varia.structures;
 
 import org.junit.Test;
 

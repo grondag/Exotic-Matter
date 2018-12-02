@@ -1,6 +1,6 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.varia.BinaryEnumSet;
+import grondag.exotic_matter.varia.structures.BinaryEnumSet;
 import net.minecraft.util.text.translation.I18n;
 
 /**

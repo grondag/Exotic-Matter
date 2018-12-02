@@ -8,7 +8,7 @@ import grondag.acuity.api.TextureFormat;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.varia.SimpleUnorderedArrayList;
+import grondag.exotic_matter.varia.structures.SimpleUnorderedArrayList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 

@@ -1,6 +1,6 @@
 package grondag.exotic_matter.simulator.domain;
 
-import grondag.exotic_matter.varia.BinaryEnumSet;
+import grondag.exotic_matter.varia.structures.BinaryEnumSet;
 
 public enum Privilege
 {

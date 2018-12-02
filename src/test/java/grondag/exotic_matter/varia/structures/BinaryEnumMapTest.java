@@ -1,10 +1,10 @@
-package grondag.exotic_matter;
+package grondag.exotic_matter.varia.structures;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import grondag.exotic_matter.varia.BinaryEnumSet;
+import grondag.exotic_matter.varia.structures.BinaryEnumSet;
 import net.minecraft.util.BlockRenderLayer;
 
 public class BinaryEnumMapTest
