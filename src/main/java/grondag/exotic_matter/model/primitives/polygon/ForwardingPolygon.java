@@ -1,12 +1,9 @@
 package grondag.exotic_matter.model.primitives.polygon;
 
-import com.google.common.collect.ImmutableList.Builder;
-
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
@@ -66,12 +63,6 @@ public class ForwardingPolygon implements IPolygon
     public Vec3f getPos(int index)
     {
         return wrapped.getPos(index);
-    }
-
-    @Override
-    public BlockRenderLayer getRenderLayer()
-    {
-        return wrapped.getRenderLayer();
     }
 
     @Override
@@ -195,9 +186,9 @@ public class ForwardingPolygon implements IPolygon
     }
 
     @Override
-    public int getVertexGlow(int layerIndex, int vertexIndex)
+    public int getVertexGlow(int vertexIndex)
     {
-        return wrapped.getVertexGlow(layerIndex, vertexIndex);
+        return wrapped.getVertexGlow(vertexIndex);
     }
 
     @Override
@@ -234,12 +225,6 @@ public class ForwardingPolygon implements IPolygon
     public BlockRenderLayer getRenderLayer(int layerIndex)
     {
         return wrapped.getRenderLayer(layerIndex);
-    }
-
-    @Override
-    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
-    {
-        wrapped.addBakedQuadsToBuilder(layerIndex, builder, isItem);
     }
 
     @Override

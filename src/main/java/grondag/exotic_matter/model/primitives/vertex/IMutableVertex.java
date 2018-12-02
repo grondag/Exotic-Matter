@@ -60,6 +60,8 @@ public interface IMutableVertex extends IVec3f
         final float newZ = this.z() + (other.z() - this.z()) * otherWeight;
         output.setPos(newX, newY, newZ);
         
+        output.setGlow((int) (getGlow() + (other.getGlow() - getGlow()) * otherWeight));
+        
         if(this.hasNormal() && other.hasNormal())
         {
             final float normX = normalX() + (other.normalX() - normalX()) * otherWeight;
@@ -71,9 +73,7 @@ public interface IMutableVertex extends IVec3f
         else
             output.setNormal(null);
         
-        output.setColorGlow(0, 
-                ColorHelper.interpolate(getColor(0), other.getColor(0), otherWeight), 
-                (int) (getGlow(0) + (other.getGlow(0) - getGlow(0)) * otherWeight));
+        output.setColor(0, ColorHelper.interpolate(getColor(0), other.getColor(0), otherWeight));
         
         output.setUV(0, 
                 getU(0) + (other.getU(0) - getU(0)) * otherWeight, 
@@ -81,9 +81,7 @@ public interface IMutableVertex extends IVec3f
         
         if(layerCount > 1)
         {
-            output.setColorGlow(1, 
-                    ColorHelper.interpolate(getColor(1), other.getColor(1), otherWeight), 
-                    (int) (getGlow(1) + (other.getGlow(1) - getGlow(1)) * otherWeight));
+            output.setColor(1, ColorHelper.interpolate(getColor(1), other.getColor(1), otherWeight));
             
             output.setUV(1, 
                     getU(1) + (other.getU(1) - getU(1)) * otherWeight, 
@@ -91,9 +89,7 @@ public interface IMutableVertex extends IVec3f
             
             if(layerCount == 3)
             {
-                output.setColorGlow(2, 
-                        ColorHelper.interpolate(getColor(2), other.getColor(2), otherWeight), 
-                        (int) (getGlow(2) + (other.getGlow(2) - getGlow(2)) * otherWeight));
+                output.setColor(2, ColorHelper.interpolate(getColor(2), other.getColor(2), otherWeight));
                 
                 output.setUV(2, 
                         getU(2) + (other.getU(2) - getU(2)) * otherWeight, 
@@ -118,17 +114,15 @@ public interface IMutableVertex extends IVec3f
     
     public int getColor(int layerIndex);
 
-    public int getGlow(int layerIndex);
+    public int getGlow();
 
     public float getU(int layerIndex);
     
     public float getV(int layerIndex);
 
-    public void setColorGlow(int layerIndex, int color, int glow);
-
     public void setColor(int layerIndex, int color);
 
-    public void setGlow(int layerIndex, int glow);
+    public void setGlow(int glow);
 
     public void setUV(int layerIndex, float u, float v);
 
@@ -149,20 +143,22 @@ public interface IMutableVertex extends IVec3f
 
         setPos(source.x(), source.y(), source.z());
 
+        setGlow(source.getGlow());
+        
         final int layerCount = source.getLayerCount();
         setLayerCount(layerCount);
         
-        setColorGlow(0, source.getColor(0), source.getGlow(0));
+        setColor(0, source.getColor(0));
         setUV(0, source.getU(0), source.getV(0));
         
         if(layerCount > 1)
         {
-            setColorGlow(1, source.getColor(1), source.getGlow(1));
+            setColor(1, source.getColor(1));
             setUV(1, source.getU(1), source.getV(1));
             
             if(layerCount == 3)
             {
-                setColorGlow(2, source.getColor(2), source.getGlow(2));
+                setColor(2, source.getColor(2));
                 setUV(2, source.getU(2), source.getV(2));
             }
         }

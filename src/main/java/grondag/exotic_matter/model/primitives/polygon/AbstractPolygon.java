@@ -4,17 +4,13 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.collect.ImmutableList.Builder;
-
 import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
-import grondag.exotic_matter.model.render.QuadBakery;
 import grondag.exotic_matter.varia.BitPacker64;
 import grondag.exotic_matter.world.Rotation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
@@ -330,15 +326,6 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
         layerAccess()[layerIndex].textureSetter.set((T) this, textureName);
     }
     
-    /**
-     * This is Acuity-only.  Acuity assumes quad has only a single render layer.
-     */
-    @Override
-    public final BlockRenderLayer getRenderLayer()
-    {
-        return getRenderLayer(0);
-    }
-
     @Override
     public final boolean hasRenderLayer(BlockRenderLayer layer)
     {
@@ -388,16 +375,13 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected abstract void setVertexPosImpl(int vertexIndex, Vec3f pos);
     
     /** supports mutable interface */
-    protected abstract void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow);
+    protected abstract void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color);
     
     /** supports mutable interface */
     protected abstract void setVertexNormalImpl(int vertexIndex, @Nullable Vec3f normal);
 
     /** supports mutable interface */
     protected abstract void setVertexNormalImpl(int vertexIndex, float x, float y, float z);
-    
-    /** supports mutable interface */
-    protected abstract void setVertexColorGlowImpl(int layerIndex, int vertexIndex, int color, int glow);
 
     /** supports mutable interface */
     protected abstract void setVertexColorImpl(int layerIndex, int vertexIndex, int color);
@@ -412,20 +396,13 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected abstract void setVertexVImpl(int layerIndex, int vertexIndex, float v);
     
     /** supports mutable interface */
-    protected abstract void setVertexGlowImpl(int layerIndex, int vertexIndex, int glow);
-
-    
-    @Override
-    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
-    {
-        assert vertexCount() <= 4;
-        builder.add(QuadBakery.createBakedQuad(this, isItem));
-    }
+    protected abstract void setVertexGlowImpl(int vertexIndex, int glow);
 
     /** supports mutable interface */
     protected final void setVertexImpl(int vertexIndex, float x, float y, float z, float u, float v, int color, int glow)
     {
         setVertexPosImpl(vertexIndex, x, y, z);
-        setVertexLayerImpl(0, vertexIndex, u, v, color, glow);
+        setVertexLayerImpl(0, vertexIndex, u, v, color);
+        setVertexGlowImpl(vertexIndex, glow);
     }
 }

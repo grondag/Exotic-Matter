@@ -4,6 +4,8 @@ public interface IVertexCollection
 {
     public int vertexCount();
     
+    // PERF: use value types instead
+    @Deprecated
     public Vec3f getPos(int index);
     
     /**

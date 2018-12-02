@@ -89,9 +89,9 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
     }
 
     @Override
-    public int getGlow(int layerIndex)
+    public int getGlow()
     {
-        return p.getVertexGlow(layerIndex, v);
+        return p.getVertexGlow(v);
     }
 
     @Override
@@ -151,19 +151,13 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
         }
 
         @Override
-        public void setColorGlow(int layerIndex, int color, int glow)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setColor(int layerIndex, int color)
         {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void setGlow(int layerIndex, int glow)
+        public void setGlow(int glow)
         {
             throw new UnsupportedOperationException();
         }
@@ -224,12 +218,6 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
         {
             p.setVertexPos(v, x, y, z);
         }
-        
-        @Override
-        public void setColorGlow(int layerIndex, int color, int glow)
-        {
-            p.setVertexColorGlow(layerIndex, v, color, glow);
-        }
 
         @Override
         public void setColor(int layerIndex, int color)
@@ -238,9 +226,9 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
         }
 
         @Override
-        public void setGlow(int layerIndex, int glow)
+        public void setGlow(int glow)
         {
-            p.setVertexGlow(layerIndex, v, glow);
+            p.setVertexGlow(v, glow);
         }
 
         @Override
@@ -302,21 +290,15 @@ public abstract class VertexAdapter<T extends IPolygon> implements IMutableVerte
         }
         
         @Override
-        public void setColorGlow(int layerIndex, int color, int glow)
-        {
-            p.setVertexColorGlowImpl(layerIndex, v, color, glow);
-        }
-
-        @Override
         public void setColor(int layerIndex, int color)
         {
             p.setVertexColorImpl(layerIndex, v, color);
         }
 
         @Override
-        public void setGlow(int layerIndex, int glow)
+        public void setGlow(int glow)
         {
-            p.setVertexGlowImpl(layerIndex, v, glow);
+            p.setVertexGlowImpl(v, glow);
         }
 
         @Override

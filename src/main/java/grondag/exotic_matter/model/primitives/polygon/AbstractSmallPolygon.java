@@ -80,9 +80,9 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
 
     @SuppressWarnings("unchecked")
     @Override
-    public final int getVertexGlow(int layerIndex, int vertexIndex)
+    public final int getVertexGlow(int vertexIndex)
     {
-        return layerVertexArray()[layerIndex][vertexIndex].glowGetter.get((T) this);
+        return vertexArray()[vertexIndex].glowGetter.get((T) this);
     }
 
     @SuppressWarnings("unchecked")
@@ -99,16 +99,6 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
         return layerVertexArray()[layerIndex][vertexIndex].vGetter.get((T) this);
     }
     
-    /** supports mutable interface */
-    @SuppressWarnings("unchecked")
-    @Override
-    protected final void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
-    {
-        final VertexLayer<T> vl = layerVertexArray()[0][vertexIndex];
-        vl.uvSetter.set((T) this, u, v);
-        vl.colorSetter.set((T) this, color);
-    }
-
     /** supports mutable interface */
     @SuppressWarnings("unchecked")
     @Override
@@ -144,16 +134,6 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
     /** supports mutable interface */
     @SuppressWarnings("unchecked")
     @Override
-    protected final void setVertexColorGlowImpl(int layerIndex, int vertexIndex, int color, int glow)
-    {
-        final VertexLayer<T> vl = layerVertexArray()[layerIndex][vertexIndex];
-        vl.colorSetter.set((T) this, color);
-        vl.glowSetter.set((T) this, glow);
-    }
-
-    /** supports mutable interface */
-    @SuppressWarnings("unchecked")
-    @Override
     protected final void setVertexColorImpl(int layerIndex, int vertexIndex, int color)
     {
         layerVertexArray()[layerIndex][vertexIndex].colorSetter.set((T) this, color);
@@ -183,11 +163,18 @@ public abstract class AbstractSmallPolygon<T extends AbstractSmallPolygon<T>> ex
         layerVertexArray()[layerIndex][vertexIndex].vSetter.set((T) this, v);
     }
     
-    /** supports mutable interface */
+    @Override
+    protected void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color)
+    {
+        setVertexColorImpl(layerIndex, vertexIndex, color);
+        setVertexUVImpl(layerIndex, vertexIndex, u, v);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    protected final void setVertexGlowImpl(int layerIndex, int vertexIndex, int glow)
+    protected void setVertexGlowImpl(int vertexIndex, int glow)
     {
-        layerVertexArray()[layerIndex][vertexIndex].glowSetter.set((T) this, glow);
+        vertexArray()[vertexIndex].glowSetter.set((T)this, glow);
+        
     }
 }

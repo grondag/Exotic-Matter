@@ -103,6 +103,9 @@ public class PolygonAccessor
         public FloatGetter<T> normYGetter;
         public FloatGetter<T> normZGetter;
         public Float3Setter<T> normXYZSetter;
+        
+        public IntGetter<T> glowGetter;
+        public IntSetter<T> glowSetter;
     }
     
     public static class VertexLayer<T>
@@ -114,9 +117,6 @@ public class PolygonAccessor
         public FloatSetter<T> vSetter;
         
         public Float2Setter<T> uvSetter;
-        
-        public IntGetter<T> glowGetter;
-        public IntSetter<T> glowSetter;
 
         public IntGetter<T> colorGetter;
         public IntSetter<T> colorSetter;

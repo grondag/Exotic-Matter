@@ -276,10 +276,11 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
             vNew.setNormal(getVertexNormalX(v), getVertexNormalY(v), getVertexNormalZ(v));
             vNew.setLayerCount(layerCount);
             
+            vNew.setGlow(getVertexGlow(v));
             //PERF: unwind this loop
             for(int l = 0; l < layerCount; l++)
             {
-                vNew.setColorGlow(l, getVertexColor(l, v), getVertexGlow(l, v));
+                vNew.setColor(l, getVertexColor(l, v));
                 vNew.setUV(l, getVertexU(l, v), getVertexV(l, v));
             }
         }
@@ -315,7 +316,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     /** 
      * Will return quad color if vertex color not set.
      */
-    int getVertexGlow(int layerIndex, int vertexIndex);
+    int getVertexGlow(int vertexIndex);
     
     float getVertexU(int layerIndex, int vertexIndex);
     
@@ -326,6 +327,15 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
     boolean isLockUV(int layerIndex);
 
     public boolean hasRenderLayer(BlockRenderLayer layer);
+    
+    /**
+     * This is Acuity-only.  Acuity assumes quad has only a single render layer.
+     */
+    @Override
+    public default BlockRenderLayer getRenderLayer()
+    {
+        return getRenderLayer(0);
+    }
     
     BlockRenderLayer getRenderLayer(int layerIndex);
     
@@ -351,27 +361,32 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         }
     }
     
-    public void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem);
-//    {
-//        produceQuads(q -> builder.add(QuadBakery.createBakedQuad(layerIndex, (IPaintedPoly) q, isItem)));
-//    }
-
-    boolean isEmissive(int textureLayerIndex);
+    public default void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
+    {
+        assert vertexCount() <= 4;
+        builder.add(QuadBakery.createBakedQuad(this, isItem));
+    }
+    
+    boolean isEmissive(int layerIndex);
     
     @Override
     IRenderPipeline getPipeline();
     
+    //TODO: retire in favor of streams
     /**
      * Same vertex count. Includes vertex data.
      */
+    @Deprecated
     default IMutablePolygon claimCopy()
     {
         return factory().claimCopy(this);
     }
     
+    //TODO: retire in favor of streams
     /**
      * Copies non-vertex attributes.  Will include vertex data only if vertex counts match.
      */
+    @Deprecated
     public default IMutablePolygon claimCopy(int vertexCount)
     {
         return factory().claimCopy(this, vertexCount);
@@ -405,7 +420,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         for(int i = 0; i < 4; i++)
         {
             // passing layer 0 glow as an extra data point (for lava)
-            int currentGlow = this.getVertexGlow(0, i);
+            int currentGlow = this.getVertexGlow(i);
             if(currentGlow != lastGlow)
             {
                 final int g = currentGlow * 17;
@@ -517,6 +532,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
         }
     }
     
+    //TODO: retire in favor of streams
     /**
      * Allocation manager for this instance. May or may not be
      * a pooled allocation manager. If it is pooled, then can 
@@ -524,11 +540,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      * and (if supported) discover and inspect allocated objects
      * in the same pool.  Not generally intended to be used directly.
      */
+    @Deprecated
     default IPrimitiveFactory factory()
     {
         return PolyFactory.COMMON_POOL;
     }
     
+    //TODO: retire in favor of streams
     /**
      * Signals to allocation manager this instance is being referenced
      * by something other than the original requester and will prevent
@@ -537,6 +555,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad
      * Note that retain count is always 1 when an object is first created,
      * so if the object is held by the originator there is no need to call this.
      */
+    @Deprecated
     default void retain()
     {
         

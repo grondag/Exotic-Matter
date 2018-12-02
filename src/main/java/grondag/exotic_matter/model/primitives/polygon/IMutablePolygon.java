@@ -130,7 +130,7 @@ public interface IMutablePolygon extends IPolygon
     
     IMutablePolygon setLayerCount(int layerCount);
     
-    IMutablePolygon setEmissive(int textureLayerIndex, boolean emissive);
+    IMutablePolygon setEmissive(int layerIndex, boolean emissive);
     
     /**
      * Assumes layer 0
@@ -177,12 +177,6 @@ public interface IMutablePolygon extends IPolygon
     IMutablePolygon setVertexPos(int vertexIndex, float x, float y, float z);
     
     IMutablePolygon setVertexPos(int vertexIndex, Vec3f pos);
-
-    
-    /**
-     * glow is clamped to allowed values
-     */
-    IMutablePolygon setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow);
     
     IMutablePolygon setVertexColor(int layerIndex, int vertexIndex, int color);
     
@@ -201,7 +195,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * glow is clamped to allowed values
      */
-    IMutablePolygon setVertexGlow(int layerIndex, int vertexIndex, int glow);
+    IMutablePolygon setVertexGlow(int vertexIndex, int glow);
     
     IMutablePolygon setVertexNormal(int vertexIndex,  @Nullable Vec3f normal);
     
@@ -513,7 +507,6 @@ public interface IMutablePolygon extends IPolygon
         for(int v = 0; v < vertexCount; v++)
         {
             setVertexColor(toLayer, v, getVertexColor(fromLayer, v));
-            setVertexGlow(toLayer, v, getVertexGlow(fromLayer, v));
             setVertexU(toLayer, v, getVertexU(fromLayer, v));
             setVertexV(toLayer, v, getVertexV(fromLayer, v));
         }

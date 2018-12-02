@@ -125,13 +125,6 @@ public class ForwardingMutablePolygon extends ForwardingPolygon implements IMuta
     }
 
     @Override
-    public IMutablePolygon setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow)
-    {
-        ((IMutablePolygon)wrapped).setVertexColorGlow(layerIndex, vertexIndex, color, glow);
-        return this;
-    }
-
-    @Override
     public IMutablePolygon setVertexColor(int layerIndex, int vertexIndex, int color)
     {
         ((IMutablePolygon)wrapped).setVertexColor(layerIndex, vertexIndex, color);
@@ -146,9 +139,9 @@ public class ForwardingMutablePolygon extends ForwardingPolygon implements IMuta
     }
 
     @Override
-    public IMutablePolygon setVertexGlow(int layerIndex, int vertexIndex, int glow)
+    public IMutablePolygon setVertexGlow(int vertexIndex, int glow)
     {
-        ((IMutablePolygon)wrapped).setVertexGlow(layerIndex, vertexIndex, glow);
+        ((IMutablePolygon)wrapped).setVertexGlow(vertexIndex, glow);
         return this;
     }
 

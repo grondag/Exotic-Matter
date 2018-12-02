@@ -133,7 +133,7 @@ public class QuadBakery
         int glowBits =  0;
         for(int v = 0; v < 4; v++)
         {   
-            int g = raw.getVertexGlow(layerIndex, v);
+            int g = raw.isEmissive(layerIndex) ? 255 : raw.getVertexGlow(v);
             if(g != 0)
             { 
                 // round to nearest 0-15

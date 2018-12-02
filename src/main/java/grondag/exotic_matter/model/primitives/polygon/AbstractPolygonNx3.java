@@ -12,6 +12,10 @@ public abstract class AbstractPolygonNx3<T extends AbstractPolygonNx3<T>> extend
     Vec3f pos1 = Vec3f.ZERO;
     Vec3f pos2 = Vec3f.ZERO;
     
+    short glow0 = 0;
+    short glow1 = 0;
+    short glow2 = 0;
+    
     static class Normals
     {
         @Nullable Vec3f norm0;
@@ -44,6 +48,9 @@ public abstract class AbstractPolygonNx3<T extends AbstractPolygonNx3<T>> extend
                 
                 this.normalSetter = (p, v) -> p.normals().norm0 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm0 = Vec3f.create(x, y, z);
+                
+                this.glowGetter = v -> v.glow0;
+                this.glowSetter = (v, glow) -> v.glow0 = (short)glow;
             }
         };
         
@@ -65,6 +72,9 @@ public abstract class AbstractPolygonNx3<T extends AbstractPolygonNx3<T>> extend
                 
                 this.normalSetter = (p, v) -> p.normals().norm1 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm1 = Vec3f.create(x, y, z);
+                
+                this.glowGetter = v -> v.glow1;
+                this.glowSetter = (v, glow) -> v.glow1 = (short)glow;
             }
         };
         
@@ -86,6 +96,9 @@ public abstract class AbstractPolygonNx3<T extends AbstractPolygonNx3<T>> extend
                 
                 this.normalSetter = (p, v) -> p.normals().norm2 = v;
                 this.normXYZSetter = (p, x, y, z) -> p.normals().norm2 = Vec3f.create(x, y, z);
+                
+                this.glowGetter = v -> v.glow2;
+                this.glowSetter = (v, glow) -> v.glow2 = (short)glow;
             }
         };
         

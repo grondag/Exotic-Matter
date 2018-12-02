@@ -76,9 +76,9 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     }
 
     @Override
-    public final int getVertexGlow(int layerIndex, int vertexIndex)
+    public final int getVertexGlow(int vertexIndex)
     {
-        return vertices()[computeArrayIndex(vertexIndex)].getGlow(layerIndex);
+        return vertices()[computeArrayIndex(vertexIndex)].getGlow();
     }
 
     @Override
@@ -95,11 +95,11 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
 
     /** supports mutable interface */
     @Override
-    protected final void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
+    protected final void setVertexLayerImpl(int layerIndex, int vertexIndex, float u, float v, int color)
     {
         final IMutableVertex vertex = vertices()[computeArrayIndex(vertexIndex)];
         vertex.setUV(0, u, v);
-        vertex.setColorGlow(0, color, glow);
+        vertex.setColor(0, color);
     }
 
     /** supports mutable interface */
@@ -132,13 +132,6 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     
     /** supports mutable interface */
     @Override
-    protected final void setVertexColorGlowImpl(int layerIndex, int vertexIndex, int color, int glow)
-    {
-        vertices()[computeArrayIndex(vertexIndex)].setColorGlow(layerIndex, color, glow);
-    }
-
-    /** supports mutable interface */
-    @Override
     protected final void setVertexColorImpl(int layerIndex, int vertexIndex, int color)
     {
         vertices()[computeArrayIndex(vertexIndex)].setColor(layerIndex, color);
@@ -167,8 +160,8 @@ public abstract class AbstractLargePolygon<T extends AbstractLargePolygon<T>> ex
     
     /** supports mutable interface */
     @Override
-    protected final void setVertexGlowImpl(int layerIndex, int vertexIndex, int glow)
+    protected final void setVertexGlowImpl(int vertexIndex, int glow)
     {
-        vertices()[computeArrayIndex(vertexIndex)].setGlow(layerIndex, glow);
+        vertices()[computeArrayIndex(vertexIndex)].setGlow(glow);
     }
 }

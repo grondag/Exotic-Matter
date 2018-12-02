@@ -128,6 +128,9 @@ public class PolyTest
         
         for(int v = 0; v < vertexCount; v++)
         {
+            int g = r.nextInt(256);
+            poly.setVertexGlow(v, g);
+            
             float x = r.nextFloat();
             float y = r.nextFloat();
             float z = r.nextFloat();
@@ -174,6 +177,8 @@ public class PolyTest
             assert poly.getVertexNormalX(v) == x;
             assert poly.getVertexNormalY(v) == y;
             assert poly.getVertexNormalZ(v) == z;
+            
+            assert poly.getVertexGlow(v) == g;
             
         }
         
@@ -252,15 +257,12 @@ public class PolyTest
             assert poly.getVertexColor(layer, v) == color;
             int c = r.nextInt();
             poly.setVertexColor(layer, v, c);
-            int g = r.nextInt(256);
-            poly.setVertexGlow(layer, v, g);
             float u = r.nextFloat();
             poly.setVertexU(layer, v, u);
             float vVal = r.nextFloat();
             poly.setVertexV(layer, v, vVal);
             
             assert poly.getVertexColor(layer, v) == c;
-            assert poly.getVertexGlow(layer, v) == g;
             assert poly.getVertexU(layer, v) == u;
             assert poly.getVertexV(layer, v) == vVal;
         }
@@ -286,6 +288,8 @@ public class PolyTest
             assert a.getVertexNormalY(v) == b.getVertexNormalY(v);
             assert a.getVertexNormalZ(v) == b.getVertexNormalZ(v);
             assert a.getVertexNormal(v).equals(b.getVertexNormal(v));
+            
+            assert a.getVertexGlow(v) == b.getVertexGlow(v);
         }
         
         compareLayers(a, b, 0);
@@ -314,7 +318,6 @@ public class PolyTest
         for(int v = 0; v < a.vertexCount(); v++)
         {
             assert a.getVertexColor(layer, v) == b.getVertexColor(layer, v);
-            assert a.getVertexGlow(layer, v) == b.getVertexGlow(layer, v);
             assert a.getVertexU(layer, v) == b.getVertexU(layer, v);
             assert a.getVertexV(layer, v) == b.getVertexV(layer, v);
         }

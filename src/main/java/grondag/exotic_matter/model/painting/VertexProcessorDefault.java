@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.painting;
 
-import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.varia.ColorHelper;
@@ -42,10 +41,11 @@ public class VertexProcessorDefault extends VertexProcessor
             
             for(int i = 0; i < poly.vertexCount(); i++)
             {
-                final float w = poly.getVertexGlow(layerIndex, i) / 255f;
+                final float w = poly.getVertexGlow(i) / 255f;
                 int b = Math.round(lampBrightness * w);
                 int c = ColorHelper.interpolate(color, lampColor, w)  & 0xFFFFFF;
-                poly.setVertexColorGlow(layerIndex, i, c | alpha, b);
+                poly.setVertexColor(layerIndex, i, c | alpha);
+                poly.setVertexGlow(i, b);
             }
         }
         else
@@ -53,11 +53,9 @@ public class VertexProcessorDefault extends VertexProcessor
             // normal shaded surface - tint existing colors, usually WHITE to start with
             for(int i = 0; i < poly.vertexCount(); i++)
             {
-                // if acuity is enabled, will use emissive flag directly
-                final int brightness = ExoticMatter.proxy.isAcuityEnabled() ? 0 : modelState.isEmissive(paintLayer) ? 255 : 0;
                 
                 final int c = ColorHelper.multiplyColor(color, poly.getVertexColor(layerIndex, i));
-                poly.setVertexColorGlow(layerIndex, i, c, brightness);
+                poly.setVertexColor(layerIndex, i, c);
             }
         }
     }

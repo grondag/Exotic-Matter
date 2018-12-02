@@ -15,9 +15,6 @@ public class PackedVertex1 extends AbstractPackedVertex<PackedVertex1>
                 this.colorGetter = v -> v.color0;
                 this.colorSetter = (v, color) -> v.color0 = color;
                 
-                this.glowGetter = v -> v.glow0;
-                this.glowSetter = (v, glow) -> v.glow0 = (short)glow;
-                
                 this.uGetter = v -> v.u0;
                 this.uSetter = (v, u) -> v.u0 = u;
                 
@@ -35,7 +32,6 @@ public class PackedVertex1 extends AbstractPackedVertex<PackedVertex1>
 
     private float u0;
     private float v0;
-    private short glow0;
     private int color0;
     
     @Override

@@ -15,13 +15,6 @@ public abstract class AbstractVertex<T extends AbstractVertex<T>> implements IMu
 
     @SuppressWarnings("unchecked")
     @Override
-    public final int getGlow(int layerIndex)
-    {
-        return layerVertexArray()[layerIndex].glowGetter.get((T) this);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
     public final float getU(int layerIndex)
     {
         return layerVertexArray()[layerIndex].uGetter.get((T) this);
@@ -36,25 +29,9 @@ public abstract class AbstractVertex<T extends AbstractVertex<T>> implements IMu
 
     @SuppressWarnings("unchecked")
     @Override
-    public final void setColorGlow(int layerIndex, int color, int glow)
-    {
-        final VertexLayer<T> access = layerVertexArray()[layerIndex];
-        access.colorSetter.set((T) this, color);
-        access.glowSetter.set((T) this, glow);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
     public final void setColor(int layerIndex, int color)
     {
         layerVertexArray()[layerIndex].colorSetter.set((T) this, color);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final void setGlow(int layerIndex, int glow)
-    {
-        layerVertexArray()[layerIndex].glowSetter.set((T) this, glow);
     }
 
     @SuppressWarnings("unchecked")

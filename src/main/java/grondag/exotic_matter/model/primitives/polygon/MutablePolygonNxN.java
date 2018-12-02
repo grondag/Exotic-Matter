@@ -238,13 +238,6 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public IMutablePolygon setVertexColorGlow(int layerIndex, int vertexIndex, int color, int glow)
-    {
-        super.setVertexColorGlowImpl(layerIndex, vertexIndex, color, glow);
-        return this;
-    }
-
-    @Override
     public IMutablePolygon setVertexColor(int layerIndex, int vertexIndex, int color)
     {
         super.setVertexColorImpl(layerIndex, vertexIndex, color);
@@ -259,9 +252,9 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public IMutablePolygon setVertexGlow(int layerIndex, int vertexIndex, int glow)
+    public IMutablePolygon setVertexGlow(int vertexIndex, int glow)
     {
-        super.setVertexGlowImpl(layerIndex, vertexIndex, glow);
+        super.setVertexGlowImpl(vertexIndex, glow);
         return this;
     }
 
@@ -310,7 +303,8 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     @Override
     public IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
-        super.setVertexLayerImpl(layerIndex, vertexIndex, u, v, color, glow);
+        super.setVertexLayerImpl(layerIndex, vertexIndex, u, v, color);
+        super.setVertexGlowImpl(vertexIndex, glow);
         return this;
     }
 

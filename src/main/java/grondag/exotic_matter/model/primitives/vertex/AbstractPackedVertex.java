@@ -6,6 +6,7 @@ public abstract class AbstractPackedVertex<T extends AbstractPackedVertex<T>> ex
 {
     protected Vec3f pos;
     @Nullable protected Vec3f normal;
+    protected short glow;
     
     @Override
     public final Vec3f pos()
@@ -95,5 +96,17 @@ public abstract class AbstractPackedVertex<T extends AbstractPackedVertex<T>> ex
     public final void setLayerCount(int layerCount)
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public final int getGlow()
+    {
+        return this.glow;
+    }
+    
+    @Override
+    public final void setGlow(int glow)
+    {
+        this.glow = (short)glow;
     }
 }

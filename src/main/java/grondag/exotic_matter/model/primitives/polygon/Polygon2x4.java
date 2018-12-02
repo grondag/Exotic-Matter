@@ -64,9 +64,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
                 this.colorGetter = v -> v.color0_0;
                 this.colorSetter = (v, color) -> v.color0_0 = color;
                 
-                this.glowGetter = v -> v.glow0_0;
-                this.glowSetter = (v, glow) -> v.glow0_0 = (short)glow;
-                
                 this.uGetter = v -> v.u0_0;
                 this.uSetter = (v, u) -> v.u0_0 = u;
                 
@@ -86,9 +83,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
             {
                 this.colorGetter = v -> v.color0_2;
                 this.colorSetter = (v, color) -> v.color0_2 = color;
-                
-                this.glowGetter = v -> v.glow0_2;
-                this.glowSetter = (v, glow) -> v.glow0_2 = (short)glow;
                 
                 this.uGetter = v -> v.u0_2;
                 this.uSetter = (v, u) -> v.u0_2 = u;
@@ -110,9 +104,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
                 this.colorGetter = v -> v.color0_1;
                 this.colorSetter = (v, color) -> v.color0_1 = color;
                 
-                this.glowGetter = v -> v.glow0_1;
-                this.glowSetter = (v, glow) -> v.glow0_1 = (short)glow;
-                
                 this.uGetter = v -> v.u0_1;
                 this.uSetter = (v, u) -> v.u0_1 = u;
                 
@@ -132,9 +123,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
             {
                 this.colorGetter = v -> v.color0_3;
                 this.colorSetter = (v, color) -> v.color0_3 = color;
-                
-                this.glowGetter = v -> v.glow0_3;
-                this.glowSetter = (v, glow) -> v.glow0_3 = (short)glow;
                 
                 this.uGetter = v -> v.u0_3;
                 this.uSetter = (v, u) -> v.u0_3 = u;
@@ -158,9 +146,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
                 this.colorGetter = v -> v.color1_0;
                 this.colorSetter = (v, color) -> v.color1_0 = color;
                 
-                this.glowGetter = v -> v.glow1_0;
-                this.glowSetter = (v, glow) -> v.glow1_0 = (short)glow;
-                
                 this.uGetter = v -> v.u1_0;
                 this.uSetter = (v, u) -> v.u1_0 = u;
                 
@@ -180,9 +165,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
             {
                 this.colorGetter = v -> v.color1_2;
                 this.colorSetter = (v, color) -> v.color1_2 = color;
-                
-                this.glowGetter = v -> v.glow1_2;
-                this.glowSetter = (v, glow) -> v.glow1_2 = (short)glow;
                 
                 this.uGetter = v -> v.u1_2;
                 this.uSetter = (v, u) -> v.u1_2 = u;
@@ -204,9 +186,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
                 this.colorGetter = v -> v.color1_1;
                 this.colorSetter = (v, color) -> v.color1_1 = color;
                 
-                this.glowGetter = v -> v.glow1_1;
-                this.glowSetter = (v, glow) -> v.glow1_1 = (short)glow;
-                
                 this.uGetter = v -> v.u1_1;
                 this.uSetter = (v, u) -> v.u1_1 = u;
                 
@@ -226,9 +205,6 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
             {
                 this.colorGetter = v -> v.color1_3;
                 this.colorSetter = (v, color) -> v.color1_3 = color;
-                
-                this.glowGetter = v -> v.glow1_3;
-                this.glowSetter = (v, glow) -> v.glow1_3 = (short)glow;
                 
                 this.uGetter = v -> v.u1_3;
                 this.uSetter = (v, u) -> v.u1_3 = u;
@@ -259,42 +235,34 @@ public class Polygon2x4 extends AbstractPolygonNx4<Polygon2x4>
     
     private float u0_0;
     private float v0_0;
-    private short glow0_0;
     private int color0_0 = 0xFFFFFFFF;
     
     private float u0_1;
     private float v0_1;
-    private short glow0_1;
     private int color0_1 = 0xFFFFFFFF;
     
     private float u0_2;
     private float v0_2;
-    private short glow0_2;
     private int color0_2 = 0xFFFFFFFF;
     
     private float u0_3;
     private float v0_3;
-    private short glow0_3;
     private int color0_3 = 0xFFFFFFFF;
     
     private float u1_0;
     private float v1_0;
-    private short glow1_0;
     private int color1_0 = 0xFFFFFFFF;
     
     private float u1_1;
     private float v1_1;
-    private short glow1_1;
     private int color1_1 = 0xFFFFFFFF;
     
     private float u1_2;
     private float v1_2;
-    private short glow1_2;
     private int color1_2 = 0xFFFFFFFF;
     
     private float u1_3;
     private float v1_3;
-    private short glow1_3;
     private int color1_3 = 0xFFFFFFFF;
     
     @Override
