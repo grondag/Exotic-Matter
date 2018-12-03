@@ -61,13 +61,15 @@ public class StaticEncoder
     
     public static boolean shouldContractUVs(IIntStream stream, int baseAddress, int layerIndex)
     {
-        return CONTRACT_UV[layerIndex].getValue(stream.get(baseAddress + BIT_OFFSET));
+        // want default to be true - easiest way is to flip here so that 0 bit gives right default
+        return !CONTRACT_UV[layerIndex].getValue(stream.get(baseAddress + BIT_OFFSET));
     }
 
     public static void setContractUVs(IIntStream stream, int baseAddress, int layerIndex, boolean shouldContract)
     {
+        // want default to be true - easiest way is to flip here so that 0 bit gives right default
         final int bits = stream.get(baseAddress + BIT_OFFSET);
-        stream.set(baseAddress + BIT_OFFSET, CONTRACT_UV[layerIndex].setValue(shouldContract, bits));
+        stream.set(baseAddress + BIT_OFFSET, CONTRACT_UV[layerIndex].setValue(!shouldContract, bits));
     }
     
     @SuppressWarnings("unchecked")

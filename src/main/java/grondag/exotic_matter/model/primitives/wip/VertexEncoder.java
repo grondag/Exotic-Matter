@@ -1,26 +1,80 @@
 package grondag.exotic_matter.model.primitives.wip;
 
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.BAD_ADDRESS;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_FLOAT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_FLOAT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_INT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_INT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_X_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_Y_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_Z_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT2;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT2_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT3;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT3_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_INT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_INT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_COLOR_PER_VERTEX_LAYER;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_FORMAT_COUNT;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_FORMAT_SHIFT;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_NORMAL_FACE;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_NORMAL_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_NORMAL_REGULAR;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_UV_BY_LAYER;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getLayerCount;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getVertexColorFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getVertexNormalFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isMutable;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setLayerCount;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setQuantizedPos;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setVertexColorFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setVertexNormalFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setVertexUVFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.vertexFormatKey;
+
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatGetter;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter2;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter3;
-
-import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.*;
-import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.*;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntGetter;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntSetter;
 
 public class VertexEncoder
 {
     private static final VertexEncoder[] ENCODERS = new VertexEncoder[VERTEX_FORMAT_COUNT];
     
+    private static final VertexEncoder MUTABLE;
+    
     static
     {
         for(int i = 0; i < VERTEX_FORMAT_COUNT; i++)
-            ENCODERS[i] = new VertexEncoder(i);
+            ENCODERS[i] = new VertexEncoder(i << VERTEX_FORMAT_SHIFT);
+        
+        int mutableFormat = 0;
+        mutableFormat = setLayerCount(mutableFormat, 3);
+        mutableFormat = setVertexColorFormat(mutableFormat, VERTEX_COLOR_PER_VERTEX_LAYER);
+        mutableFormat = setQuantizedPos(mutableFormat, false);
+        mutableFormat = setVertexNormalFormat(mutableFormat, VERTEX_NORMAL_REGULAR);
+        mutableFormat = setVertexUVFormat(mutableFormat, VERTEX_UV_BY_LAYER);
+        
+        assert getLayerCount(mutableFormat) == 3;
+        assert getVertexColorFormat(mutableFormat) == VERTEX_COLOR_PER_VERTEX_LAYER;
+        
+        MUTABLE = ENCODERS[vertexFormatKey(mutableFormat)];
+        
+        assert MUTABLE.hasColor();
+        assert MUTABLE.hasNormals();
     }
     
+    /**
+     * All mutable formats have same full-feature binary format for data-compatibility with format changes
+     */
     public static VertexEncoder get(int format)
     {
-        return ENCODERS[vertexFormatKey(format)];
+        return isMutable(format) ? MUTABLE : ENCODERS[vertexFormatKey(format)];
     }
 
     private final int vertexStride;
@@ -129,7 +183,7 @@ public class VertexEncoder
         
 
         
-        final int layerCount = PolyStreamFormat.getLayerCount(format);
+        final int layerCount = getLayerCount(format);
         
         // PERF: quantize UV
         getU0 = GET_FLOAT;
@@ -156,7 +210,7 @@ public class VertexEncoder
         offsetU2 = layerCount  == 3 ? offset++ : BAD_ADDRESS;
         offsetV2 = layerCount  == 3 ? offset++ : BAD_ADDRESS;
         
-        hasColor = getVertexColorFormat(format) == PolyStreamFormat.VERTEX_COLOR_PER_VERTEX_LAYER;
+        hasColor = getVertexColorFormat(format) == VERTEX_COLOR_PER_VERTEX_LAYER;
         if(hasColor)
         {
             getColor0 = GET_INT;
@@ -197,17 +251,25 @@ public class VertexEncoder
 
     public Vec3f getVertexNormal(IIntStream stream, int vertexAddress, int vertexIndex)
     {
-        // TODO Auto-generated method stub
-        return null;
+        if(!hasNormals)
+            return null;
+        
+        final int base = vertexAddress + vertexIndex * vertexStride;
+        Vec3f result = Vec3f.create(getNormalX.get(stream, base + offsetNormalX),
+                getNormalY.get(stream, base + offsetNormalY),
+                getNormalZ.get(stream, base + offsetNormalZ));
+        
+        return result == Vec3f.ZERO ? null : result;
     }
 
     // PERF: really used?
     public boolean hasVertexNormal(IIntStream stream, int vertexAddress, int vertexIndex)
     {
+        final int base = vertexAddress + vertexIndex * vertexStride;
         return hasNormals && 
-                (getNormalX.get(stream, vertexAddress + vertexIndex * vertexStride + offsetNormalX) != 0
-                || getNormalY.get(stream, vertexAddress + vertexIndex * vertexStride + offsetNormalY) != 0
-                || getNormalZ.get(stream, vertexAddress + vertexIndex * vertexStride + offsetNormalZ) != 0);
+                (getNormalX.get(stream, base + offsetNormalX) != 0
+                || getNormalY.get(stream, base + offsetNormalY) != 0
+                || getNormalZ.get(stream, base + offsetNormalZ) != 0);
     }
 
     public float getVertexNormalX(IIntStream stream, int vertexAddress, int vertexIndex)
@@ -227,7 +289,7 @@ public class VertexEncoder
 
     public void setVertexNormal(IIntStream stream, int vertexAddress, int vertexIndex, float normalX, float normalY, float normalZ)
     {
-        setNormalXYZ.set(stream, vertexAddress + vertexIndex * vertexStride + offsetPosX, normalX, normalY, normalZ);
+        setNormalXYZ.set(stream, vertexAddress + vertexIndex * vertexStride + offsetNormalX, normalX, normalY, normalZ);
     }
     
     public float getVertexX(IIntStream stream, int vertexAddress, int vertexIndex)

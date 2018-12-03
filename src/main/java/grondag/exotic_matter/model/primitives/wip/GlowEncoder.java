@@ -39,7 +39,10 @@ public abstract class GlowEncoder
         @Override
         public int getGlow(IIntStream stream, int glowAddress, int vertexIndex)
         {
-            return (stream.get(glowAddress + vertexIndex >> 2) >> (vertexIndex & 3)) & 0xFF;
+            final int streamIndex = glowAddress + (vertexIndex >> 2);
+            final int byteIndex = vertexIndex & 3;
+            final int shift = 8 * byteIndex;
+            return (stream.get(streamIndex) >> shift ) & 0xFF;
         }
 
         @Override
@@ -49,18 +52,21 @@ public abstract class GlowEncoder
             final int byteIndex = vertexIndex & 3;
             final int shift = 8 * byteIndex;
             final int mask = 0xFF << shift;
-            stream.set(streamIndex, (stream.get(streamIndex) & ~mask) | ((glow << shift) & mask));
+            stream.set(streamIndex, (stream.get(streamIndex) & ~mask) | ((glow & 0xFF ) << shift));
         }
     };
     
+    /**
+     * All mutable formats will have per-vertex glow.
+     */
     public static GlowEncoder get(int format)
     {
         final int glowFormat = getVertexGlowFormat(format);
-        return glowFormat == VERTEX_GLOW_NONE
-                ? NO_GLOW
+        return glowFormat == VERTEX_GLOW_PER_VERTEX || isMutable(format)
+                ? VERTEX_GLOW
                 : glowFormat == VERTEX_GLOW_SAME
                     ? SAME_GLOW
-                    : VERTEX_GLOW;
+                    : NO_GLOW;
     }
 
     public abstract int getGlow(IIntStream stream, int glowAddress, int vertexIndex);

@@ -1,7 +1,5 @@
 package grondag.exotic_matter;
 
-import static grondag.exotic_matter.model.primitives.PolyFactory.COMMON_POOL;
-
 import java.util.Random;
 
 import org.junit.Test;
@@ -13,18 +11,27 @@ import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.wip.SimpleMutablePolygon;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;;
 
 public class PolyTest
 {
+    private final SimpleMutablePolygon streamPoly = new SimpleMutablePolygon();
+    
+    private IMutablePolygon newPoly(int vertexCount)
+    {
+        //return COMMON_POOL.newPaintable(4);
+        streamPoly.prepare(1, vertexCount);
+        return streamPoly;
+    }
 
     @Test
     public void test()
     {
         
-        IMutablePolygon quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        IMutablePolygon quad = newPoly(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         
         // basic properties
         assert quad.layerCount() == 1;
@@ -48,21 +55,25 @@ public class PolyTest
         quad.release();
         
         //convexity & area tests
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = newPoly(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assert quad.isConvex();
         assert Math.abs(quad.getArea() - 1.0) < QuadHelper.EPSILON;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(3).setupFaceQuad(EnumFacing.UP,
+        quad = newPoly(3).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
                 EnumFacing.NORTH);
+        assert quad.getFaceNormal().equals(Vec3f.forFace(EnumFacing.UP));
+        assert quad.getFaceNormal().equals(quad.computeFaceNormal());
         assert quad.isConvex();
+        assert quad.vertexCount() == 3;
+        
         assert Math.abs(quad.getArea() - 0.5) < QuadHelper.EPSILON;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.UP,
+        quad = newPoly(4).setupFaceQuad(EnumFacing.UP,
                 new FaceVertex(0, 0, 0), 
                 new FaceVertex(1, 0, 0), 
                 new FaceVertex(1, 1, 0), 
@@ -72,23 +83,23 @@ public class PolyTest
         quad.release();
         
         // normal facing calculation
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = newPoly(4).setupFaceQuad(EnumFacing.UP, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assert quad.getNormalFace() == EnumFacing.UP;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = newPoly(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assert quad.getNormalFace() == EnumFacing.DOWN;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
+        quad = newPoly(4).setupFaceQuad(EnumFacing.EAST, 0, 0, 1, 1, 0.5, EnumFacing.UP);
         assert quad.getNormalFace() == EnumFacing.EAST;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
+        quad = newPoly(4).setupFaceQuad(EnumFacing.DOWN, 0, 0, 1, 1, 0.5, EnumFacing.NORTH);
         assert quad.getNormalFace() == EnumFacing.DOWN;
         quad.release();
         
-        quad = COMMON_POOL.newPaintable(4).setupFaceQuad(EnumFacing.SOUTH,
+        quad = newPoly(4).setupFaceQuad(EnumFacing.SOUTH,
                 new FaceVertex(0, 0, 0.1f), 
                 new FaceVertex(1, 0, 0.1f), 
                 new FaceVertex(1, 1, 0), 
@@ -103,7 +114,6 @@ public class PolyTest
             testMutable(vertexCount, 1);
             testMutable(vertexCount, 2);
             testMutable(vertexCount, 3);
-            quad.release();
         }
     }
     
@@ -111,7 +121,7 @@ public class PolyTest
     
     private void testMutable(int vertexCount, int layerCount)
     {
-        IMutablePolygon poly = COMMON_POOL.newPaintable(vertexCount);
+        IMutablePolygon poly = newPoly(vertexCount);
         
         assert poly.vertexCount() == vertexCount;
         

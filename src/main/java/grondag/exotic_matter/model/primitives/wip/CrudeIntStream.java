@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.wip;
 
 import net.minecraft.util.math.MathHelper;
+import scala.actors.threadpool.Arrays;
 
 public class CrudeIntStream implements IIntStream
 {
@@ -9,7 +10,7 @@ public class CrudeIntStream implements IIntStream
     @Override
     public int get(int address)
     {
-        return data[address];
+        return address >= data.length ? 0 : data[address];
     }
 
     @Override
@@ -22,5 +23,11 @@ public class CrudeIntStream implements IIntStream
             data = newData;
         }
         data[address] = value;
+    }
+
+    @Override
+    public void clear()
+    {
+        Arrays.fill(data, 0);
     }
 }

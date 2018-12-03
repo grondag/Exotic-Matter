@@ -10,40 +10,42 @@ public class PolyStreamFormat
 
     private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_MUTABLE = BITPACKER.createBooleanElement();
     
-    public static boolean isMutable(int rawBits)
+    public static boolean isMutable(int formatIn)
     {
-        return IS_MUTABLE.getValue(rawBits);
+        return IS_MUTABLE.getValue(formatIn);
     }
     
-    public static int setMutable(int rawBits, boolean isMarked)
+    public static int setMutable(int formatIn, boolean isMarked)
     {
-        return IS_MUTABLE.setValue(isMarked, rawBits);
+        return IS_MUTABLE.setValue(isMarked, formatIn);
     }
+    
+    public static final int MUTABLE_FLAG = IS_MUTABLE.comparisonMask();
     
     private static final BitPacker32<PolyStreamFormat>.IntElement VERTEX_COUNT = BITPACKER.createIntElement(128);
     
-    public static int getVertexCount(int rawBits)
+    public static int getVertexCount(int formatIn)
     {
-        return 3 + VERTEX_COUNT.getValue(rawBits);
+        return 3 + VERTEX_COUNT.getValue(formatIn);
     }
     
-    public static int setVertexCount(int rawBits, int vertexCount)
+    public static int setVertexCount(int formatIn, int vertexCount)
     {
         assert vertexCount > 2;
         assert vertexCount <= 3 + 127;
-        return VERTEX_COUNT.setValue(vertexCount, rawBits);
+        return VERTEX_COUNT.setValue(vertexCount - 3, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.EnumElement<EnumFacing> NOMINAL_FACE = BITPACKER.createEnumElement(EnumFacing.class);
     
-    public static EnumFacing getNominalFace(int rawBits)
+    public static EnumFacing getNominalFace(int formatIn)
     {
-        return NOMINAL_FACE.getValue(rawBits);
+        return NOMINAL_FACE.getValue(formatIn);
     }
     
-    public static int setNominalFace(int rawBits, EnumFacing face)
+    public static int setNominalFace(int formatIn, EnumFacing face)
     {
-        return NOMINAL_FACE.setValue(face, rawBits);
+        return NOMINAL_FACE.setValue(face, formatIn);
     }
     
     
@@ -52,32 +54,32 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement HAS_LINK = BITPACKER.createBooleanElement();
     
-    public static boolean isLinked(int rawBits)
+    public static boolean isLinked(int formatIn)
     {
-        return HAS_LINK.getValue(rawBits);
+        return HAS_LINK.getValue(formatIn);
     }
     
     /**
      * IMPORTANT: changes poly layout and must be set before poly is written.
      */
-    public static int setLinked(int rawBits, boolean isLinked)
+    public static int setLinked(int formatIn, boolean isLinked)
     {
-        return HAS_LINK.setValue(isLinked, rawBits);
+        return HAS_LINK.setValue(isLinked, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement HAS_TAG = BITPACKER.createBooleanElement();
     
-    public static boolean isTagged(int rawBits)
+    public static boolean isTagged(int formatIn)
     {
-        return HAS_TAG.getValue(rawBits);
+        return HAS_TAG.getValue(formatIn);
     }
     
     /**
      * IMPORTANT: changes poly layout and must be set before poly is written.
      */
-    public static int setTagged(int rawBits, boolean isTagged)
+    public static int setTagged(int formatIn, boolean isTagged)
     {
-        return HAS_TAG.setValue(isTagged, rawBits);
+        return HAS_TAG.setValue(isTagged, formatIn);
     }
     
     /** use full precision face normal - normal needs to be computed from vertices */ 
@@ -94,38 +96,38 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.IntElement FACE_NORMAL_FORMAT = BITPACKER.createIntElement(4);
     
-    public static int getFaceNormalFormat(int rawBits)
+    public static int getFaceNormalFormat(int formatIn)
     {
-        return FACE_NORMAL_FORMAT.getValue(rawBits);
+        return FACE_NORMAL_FORMAT.getValue(formatIn);
     }
     
-    public static int setFaceNormalFormat(int rawBits, int format)
+    public static int setFaceNormalFormat(int formatIn, int format)
     {
-        return FACE_NORMAL_FORMAT.setValue(format, rawBits);
+        return FACE_NORMAL_FORMAT.setValue(format, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement HALF_PRECISION_POLY_UV = BITPACKER.createBooleanElement();
     
-    public static boolean isHalfPrecisionPolyUV(int rawBits)
+    public static boolean isHalfPrecisionPolyUV(int formatIn)
     {
-        return HALF_PRECISION_POLY_UV.getValue(rawBits);
+        return HALF_PRECISION_POLY_UV.getValue(formatIn);
     }
     
-    public static int setHalfPrecisionPolyUV(int rawBits, boolean isHalf)
+    public static int setHalfPrecisionPolyUV(int formatIn, boolean isHalf)
     {
-        return HALF_PRECISION_POLY_UV.setValue(isHalf, rawBits);
+        return HALF_PRECISION_POLY_UV.setValue(isHalf, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.IntElement LAYER_COUNT = BITPACKER.createIntElement(3);
     
-    public static int getLayerCount(int rawBits)
+    public static int getLayerCount(int formatIn)
     {
-        return LAYER_COUNT.getValue(rawBits);
+        return LAYER_COUNT.getValue(formatIn);
     }
     
-    public static int setLayerCount(int rawBits, int layerCount)
+    public static int setLayerCount(int formatIn, int layerCount)
     {
-        return LAYER_COUNT.setValue(layerCount, rawBits);
+        return LAYER_COUNT.setValue(layerCount, formatIn);
     }
     
     /** all vertices are white */
@@ -139,26 +141,26 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.IntElement VERTEX_COLOR_FORMAT = BITPACKER.createIntElement(4);
     
-    public static int getVertexColorFormat(int rawBits)
+    public static int getVertexColorFormat(int formatIn)
     {
-        return VERTEX_COLOR_FORMAT.getValue(rawBits);
+        return VERTEX_COLOR_FORMAT.getValue(formatIn);
     }
     
-    public static int setVertexColorFormat(int rawBits, int format)
+    public static int setVertexColorFormat(int formatIn, int colorFormat)
     {
-        return VERTEX_COLOR_FORMAT.setValue(format, rawBits);
+        return VERTEX_COLOR_FORMAT.setValue(colorFormat, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement QUANTIZED_POS = BITPACKER.createBooleanElement();
     
-    public static boolean isQuantizedPos(int rawBits)
+    public static boolean isQuantizedPos(int formatIn)
     {
-        return QUANTIZED_POS.getValue(rawBits);
+        return QUANTIZED_POS.getValue(formatIn);
     }
     
-    public static int setQuantizedPos(int rawBits, boolean isQuantized)
+    public static int setQuantizedPos(int formatIn, boolean isQuantized)
     {
-        return QUANTIZED_POS.setValue(isQuantized, rawBits);
+        return QUANTIZED_POS.setValue(isQuantized, formatIn);
     }
     
     /** use face normal as vertex normals */
@@ -170,14 +172,14 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.IntElement VERTEX_NORMAL_FORMAT = BITPACKER.createIntElement(3);
     
-    public static int getVertexNormalFormat(int rawBits)
+    public static int getVertexNormalFormat(int formatIn)
     {
-        return VERTEX_NORMAL_FORMAT.getValue(rawBits);
+        return VERTEX_NORMAL_FORMAT.getValue(formatIn);
     }
     
-    public static int setVertexNormalFormat(int rawBits, int format)
+    public static int setVertexNormalFormat(int formatIn, int normFormat)
     {
-        return VERTEX_NORMAL_FORMAT.setValue(format, rawBits);
+        return VERTEX_NORMAL_FORMAT.setValue(normFormat, formatIn);
     }
     
     /** all layers have same UV */
@@ -191,14 +193,14 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.IntElement VERTEX_UV_FORMAT = BITPACKER.createIntElement(4);
     
-    public static int getVertexUVFormat(int rawBits)
+    public static int getVertexUVFormat(int formatIn)
     {
-        return VERTEX_UV_FORMAT.getValue(rawBits);
+        return VERTEX_UV_FORMAT.getValue(formatIn);
     }
     
-    public static int setVertexUVFormat(int rawBits, int format)
+    public static int setVertexUVFormat(int formatIn, int uvFormat)
     {
-        return VERTEX_UV_FORMAT.setValue(format, rawBits);
+        return VERTEX_UV_FORMAT.setValue(uvFormat, formatIn);
     }
     
     /** values are zero for every vertex */
@@ -210,38 +212,38 @@ public class PolyStreamFormat
     
     private static final BitPacker32<PolyStreamFormat>.IntElement VERTEX_GLOW_FORMAT = BITPACKER.createIntElement(3);
     
-    public static int getVertexGlowFormat(int rawBits)
+    public static int getVertexGlowFormat(int formatIn)
     {
-        return VERTEX_GLOW_FORMAT.getValue(rawBits);
+        return VERTEX_GLOW_FORMAT.getValue(formatIn);
     }
-    
-    public static int setVertexGlowFormat(int rawBits, int format)
+
+    public static int setVertexGlowFormat(int formatIn, int glowFormat)
     {
-        return VERTEX_GLOW_FORMAT.setValue(format, rawBits);
+        return VERTEX_GLOW_FORMAT.setValue(glowFormat, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_MARKED = BITPACKER.createBooleanElement();
     
-    public static boolean isMarked(int rawBits)
+    public static boolean isMarked(int formatIn)
     {
-        return IS_MARKED.getValue(rawBits);
+        return IS_MARKED.getValue(formatIn);
     }
     
-    public static int setMarked(int rawBits, boolean isMarked)
+    public static int setMarked(int formatIn, boolean isMarked)
     {
-        return IS_MARKED.setValue(isMarked, rawBits);
+        return IS_MARKED.setValue(isMarked, formatIn);
     }
     
     private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_DELETED = BITPACKER.createBooleanElement();
     
-    public static boolean isDeleted(int rawBits)
+    public static boolean isDeleted(int formatIn)
     {
-        return IS_DELETED.getValue(rawBits);
+        return IS_DELETED.getValue(formatIn);
     }
     
-    public static int setDeleted(int rawBits, boolean isDeleted)
+    public static int setDeleted(int formatIn, boolean isDeleted)
     {
-        return IS_DELETED.setValue(isDeleted, rawBits);
+        return IS_DELETED.setValue(isDeleted, formatIn);
     }
     
 //    isMutable   2   1       poly    yes yes
@@ -263,13 +265,13 @@ public class PolyStreamFormat
 //    isMarked    2   1   stream metadata poly    no  no
 //    isDeleted   2   1   stream metadata poly    no  no
     
-    private final static int POLY_FORMAT_MASK;
-    private final static int POLY_FORMAT_SHIFT;
-    public final static int POLY_FORMAT_COUNT;
+    final static int POLY_FORMAT_MASK;
+    final static int POLY_FORMAT_SHIFT;
+    final static int POLY_FORMAT_COUNT;
     
-    private final static int VERTEX_FORMAT_MASK;
-    private final static int VERTEX_FORMAT_SHIFT;
-    public final static int VERTEX_FORMAT_COUNT;
+    final static int VERTEX_FORMAT_MASK;
+    final static int VERTEX_FORMAT_SHIFT;
+    final static int VERTEX_FORMAT_COUNT;
     
     static
     {
@@ -291,17 +293,17 @@ public class PolyStreamFormat
                 | VERTEX_UV_FORMAT.comparisonMask();
         
         VERTEX_FORMAT_SHIFT = Integer.numberOfTrailingZeros(vertexMask);
-        VERTEX_FORMAT_MASK = vertexMask >> POLY_FORMAT_SHIFT;
+        VERTEX_FORMAT_MASK = vertexMask >> VERTEX_FORMAT_SHIFT;
         VERTEX_FORMAT_COUNT = VERTEX_FORMAT_MASK + 1;
     }
     
-    public static int polyFormatKey(int rawBits)
+    public static int polyFormatKey(int formatIn)
     {
-        return (rawBits >> POLY_FORMAT_SHIFT) & POLY_FORMAT_MASK;
+        return (formatIn >> POLY_FORMAT_SHIFT) & POLY_FORMAT_MASK;
     }
     
-    public static int vertexFormatKey(int rawBits)
+    public static int vertexFormatKey(int formatIn)
     {
-        return (rawBits >> VERTEX_FORMAT_SHIFT) & VERTEX_FORMAT_MASK;
+        return (formatIn >> VERTEX_FORMAT_SHIFT) & VERTEX_FORMAT_MASK;
     }
 }

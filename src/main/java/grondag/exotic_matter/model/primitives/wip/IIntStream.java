@@ -13,4 +13,9 @@ public interface IIntStream
     }
     
     default void release() { }
+
+    /**
+     * Sets all ints in the stream to zero. Does not deallocate any storage.
+     */
+    void clear();
 }

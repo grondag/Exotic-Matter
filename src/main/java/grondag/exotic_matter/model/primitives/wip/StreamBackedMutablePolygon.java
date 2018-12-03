@@ -11,11 +11,12 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
+public abstract class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
 {
     @Override
     public final IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
     {
+        vertexIndex = vertexIndexer.apply(vertexIndex);
         setVertexColor(layerIndex, vertexIndex, color);
         setVertexUV(layerIndex, vertexIndex, u, v);
         setVertexGlow(vertexIndex, glow);
@@ -96,7 +97,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon setLayerCount(int layerCount)
     {
-        saveAndLoadFormat(PolyStreamFormat.setLayerCount(format(), layerCount));
+        setFormat(PolyStreamFormat.setLayerCount(format(), layerCount));
         return this;
     }
 
@@ -110,6 +111,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon setVertex(int vertexIndex, float x, float y, float z, float u, float v, int color, int glow)
     {
+        vertexIndex = vertexIndexer.apply(vertexIndex);
         setVertexPos(vertexIndex, x, y, z);
         setVertexUV(0, vertexIndex, u, v);
         setVertexColor(0, vertexIndex, color);
@@ -120,14 +122,14 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon setVertexPos(int vertexIndex, float x, float y, float z)
     {
-        vertexEncoder.setVertexPos(stream, vertexAddress, vertexIndex, x, y, z);
+        vertexEncoder.setVertexPos(stream, vertexAddress, vertexIndexer.apply(vertexIndex), x, y, z);
         return this;
     }
 
     @Override
     public final IMutablePolygon setVertexPos(int vertexIndex, Vec3f pos)
     {
-        vertexEncoder.setVertexPos(stream, vertexAddress, vertexIndex, pos.x(), pos.y(), pos.z());
+        vertexEncoder.setVertexPos(stream, vertexAddress, vertexIndexer.apply(vertexIndex), pos.x(), pos.y(), pos.z());
         return this;
     }
 
@@ -135,7 +137,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     public final IMutablePolygon setVertexColor(int layerIndex, int vertexIndex, int color)
     {
         if(vertexEncoder.hasColor())
-            vertexEncoder.setVertexColor(stream, vertexAddress, layerIndex, vertexIndex, color);
+            vertexEncoder.setVertexColor(stream, vertexAddress, layerIndex, vertexIndexer.apply(vertexIndex), color);
         else
             polyEncoder.setVertexColor(stream, baseAddress, layerIndex, color);
         return this;
@@ -144,28 +146,28 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon setVertexU(int layerIndex, int vertexIndex, float u)
     {
-        vertexEncoder.setVertexU(stream, vertexAddress, layerIndex, vertexIndex, u);
+        vertexEncoder.setVertexU(stream, vertexAddress, layerIndex, vertexIndexer.apply(vertexIndex), u);
         return this;
     }
     
     @Override
     public final IMutablePolygon setVertexV(int layerIndex, int vertexIndex, float v)
     {
-        vertexEncoder.setVertexV(stream, vertexAddress, layerIndex, vertexIndex, v);
+        vertexEncoder.setVertexV(stream, vertexAddress, layerIndex, vertexIndexer.apply(vertexIndex), v);
         return this;
     }
     
     @Override
     public final IMutablePolygon setVertexUV(int layerIndex, int vertexIndex, float u, float v)
     {
-        vertexEncoder.setVertexUV(stream, vertexAddress, layerIndex, vertexIndex, u, v);
+        vertexEncoder.setVertexUV(stream, vertexAddress, layerIndex, vertexIndexer.apply(vertexIndex), u, v);
         return this;
     }
 
     @Override
     public final IMutablePolygon setVertexGlow(int vertexIndex, int glow)
     {
-        glowEncoder.setGlow(stream, glowAddress, vertexIndex, glow);
+        glowEncoder.setGlow(stream, glowAddress, vertexIndexer.apply(vertexIndex), glow);
         return this;
     }
 
@@ -175,9 +177,9 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         if(vertexEncoder.hasNormals())
         {
             if(normal == null)
-                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndex, 0, 0, 0);
+                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), 0, 0, 0);
             else
-                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndex, normal.x(), normal.y(), normal.z());
+                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), normal.x(), normal.y(), normal.z());
         }
         return this;
     }
@@ -186,7 +188,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     public final IMutablePolygon setVertexNormal(int vertexIndex, float x, float y, float z)
     {
         if(vertexEncoder.hasNormals())
-            vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndex, x, y, z);
+            vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), x, y, z);
         return this;
     }
 
@@ -207,14 +209,14 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
                 : "Face normal clear should only happen for full-precision polys";
         
         if(normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT)
-            saveAndLoadFormat(PolyStreamFormat.setFaceNormalFormat(format(), PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING));
+            setFormat(PolyStreamFormat.setFaceNormalFormat(format(), PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING));
         return this;
     }
 
     @Override
     public final IMutablePolygon setNominalFace(EnumFacing face)
     {
-        saveAndLoadFormat(PolyStreamFormat.setNominalFace(format(), face));
+        setFormat(PolyStreamFormat.setNominalFace(format(), face));
         return this;
     }
 
@@ -234,7 +236,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
             setVertexNormal(targetIndex, source.getVertexNormalX(sourceIndex), source.getVertexNormalY(sourceIndex), source.getVertexNormalZ(sourceIndex));
         }
         else if(vertexEncoder.hasNormals())
-            vertexEncoder.setVertexNormal(stream, vertexAddress, targetIndex, 0, 0, 0);
+            setVertexNormal(targetIndex, 0, 0, 0);
 
         setVertexPos(targetIndex, source.getVertexX(sourceIndex), source.getVertexY(sourceIndex), source.getVertexZ(sourceIndex));
 

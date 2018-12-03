@@ -106,17 +106,17 @@ class StaticEncoderTest
         final int BASE = 23;
         IIntStream stream = new CrudeIntStream();
         
-        assert !StaticEncoder.shouldContractUVs(stream, BASE, 0);
-        assert !StaticEncoder.shouldContractUVs(stream, BASE, 1);
-        assert !StaticEncoder.shouldContractUVs(stream, BASE, 2);
-        
-        StaticEncoder.setContractUVs(stream, BASE, 1, true);
+        assert StaticEncoder.shouldContractUVs(stream, BASE, 0);
         assert StaticEncoder.shouldContractUVs(stream, BASE, 1);
+        assert StaticEncoder.shouldContractUVs(stream, BASE, 2);
+        
         StaticEncoder.setContractUVs(stream, BASE, 1, false);
         assert !StaticEncoder.shouldContractUVs(stream, BASE, 1);
-        
         StaticEncoder.setContractUVs(stream, BASE, 1, true);
-        StaticEncoder.setContractUVs(stream, BASE, 2, true);
+        assert StaticEncoder.shouldContractUVs(stream, BASE, 1);
+        
+        StaticEncoder.setContractUVs(stream, BASE, 1, false);
+        StaticEncoder.setContractUVs(stream, BASE, 2, false);
 
         assert !StaticEncoder.isLockUV(stream, BASE, 0);
         assert !StaticEncoder.isLockUV(stream, BASE, 1);
@@ -170,9 +170,9 @@ class StaticEncoderTest
         StaticEncoder.setSurface(stream, BASE, Surface.NO_SURFACE);
         assert StaticEncoder.getSurface(stream, BASE) == Surface.NO_SURFACE;
         
-        assert !StaticEncoder.shouldContractUVs(stream, BASE, 0);
-        assert StaticEncoder.shouldContractUVs(stream, BASE, 1);
-        assert StaticEncoder.shouldContractUVs(stream, BASE, 2);
+        assert StaticEncoder.shouldContractUVs(stream, BASE, 0);
+        assert !StaticEncoder.shouldContractUVs(stream, BASE, 1);
+        assert !StaticEncoder.shouldContractUVs(stream, BASE, 2);
         
         assert !StaticEncoder.isLockUV(stream, BASE, 0);
         assert StaticEncoder.isLockUV(stream, BASE, 1);

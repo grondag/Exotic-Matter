@@ -1,30 +1,96 @@
 package grondag.exotic_matter.model.primitives.wip;
 
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.BAD_ADDRESS;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_FLOAT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_FLOAT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_HALF_INT_HIGH;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_HALF_INT_LOW;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_INT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_INT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_INT_WHITE;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_X_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_Y_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.GET_NORMAL_Z_QUANTIZED;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT3;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT3_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_FLOAT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_HALF_INT_HIGH;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_HALF_INT_LOW;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_INT;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_INT_FAIL;
+import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.SET_NORMAL_XYZ_QUANTIZED;
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING;
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT;
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL;
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.FACE_NORMAL_FORMAT_QUANTIZED;
-
-import static grondag.exotic_matter.model.primitives.wip.EncoderFunctions.*;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.POLY_FORMAT_COUNT;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.POLY_FORMAT_SHIFT;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_COLOR_PER_VERTEX_LAYER;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_COLOR_SAME;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_COLOR_SAME_BY_LAYER;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.VERTEX_COLOR_WHITE;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getFaceNormalFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getLayerCount;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.getVertexColorFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isHalfPrecisionPolyUV;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isLinked;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isMutable;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isTagged;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.polyFormatKey;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setFaceNormalFormat;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setHalfPrecisionPolyUV;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setLayerCount;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setLinked;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setTagged;
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setVertexColorFormat;
 
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatGetter;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter3;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntGetter;
+import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntSetter;
 import grondag.exotic_matter.varia.structures.ObjectHandle;
 
 public class PolyEncoder
 {
-    private static final PolyEncoder[] ENCODERS = new PolyEncoder[PolyStreamFormat.POLY_FORMAT_COUNT];
+    private static final PolyEncoder[] ENCODERS = new PolyEncoder[POLY_FORMAT_COUNT];
     
     private static final ObjectHandle<String> textureHandler = new ObjectHandle<String>(String.class);
     
+    private static final PolyEncoder MUTABLE;
+    
     static
     {
-        for(int i = 0; i < PolyStreamFormat.POLY_FORMAT_COUNT; i++)
-            ENCODERS[i] = new PolyEncoder(i);
+        for(int i = 0; i < POLY_FORMAT_COUNT; i++)
+            ENCODERS[i] = new PolyEncoder(i << POLY_FORMAT_SHIFT);
+        
+        int mutableFormat = 0;
+        mutableFormat = setLinked(mutableFormat, true);
+        mutableFormat = setTagged(mutableFormat, true);
+        mutableFormat = setFaceNormalFormat(mutableFormat, FACE_NORMAL_FORMAT_FULL_PRESENT);
+        mutableFormat = setHalfPrecisionPolyUV(mutableFormat, false);
+        mutableFormat = setLayerCount(mutableFormat, 3);
+        mutableFormat = setVertexColorFormat(mutableFormat, VERTEX_COLOR_PER_VERTEX_LAYER);
+        
+        assert isLinked(mutableFormat);
+        assert isTagged(mutableFormat);
+        assert getFaceNormalFormat(mutableFormat) == FACE_NORMAL_FORMAT_FULL_PRESENT;
+        assert !isHalfPrecisionPolyUV(mutableFormat);
+        assert getLayerCount(mutableFormat) == 3;
+        assert getVertexColorFormat(mutableFormat) == VERTEX_COLOR_PER_VERTEX_LAYER;
+        
+        MUTABLE = ENCODERS[polyFormatKey(mutableFormat)];
+        
     }
     
+    /**
+     * All mutable formats have same full-feature binary format for data-compatibility with format changes
+     */
     public static PolyEncoder get(int format)
     {
-        return ENCODERS[PolyStreamFormat.polyFormatKey(format)];
+        return isMutable(format) ? MUTABLE : ENCODERS[polyFormatKey(format)];
     }
    
     private final int stride;
@@ -98,7 +164,7 @@ public class PolyEncoder
         final int baseOffset = 1 + StaticEncoder.INTEGER_WIDTH;
         int offset = baseOffset;
         
-        switch(PolyStreamFormat.getFaceNormalFormat(format))
+        switch(getFaceNormalFormat(format))
         {
             case  FACE_NORMAL_FORMAT_FULL_MISSING:
             case  FACE_NORMAL_FORMAT_FULL_PRESENT:
@@ -133,7 +199,7 @@ public class PolyEncoder
                 break;
         }
         
-        final int layerCount = PolyStreamFormat.getLayerCount(format);
+        final int layerCount = getLayerCount(format);
         
         // PERF: implement packed UV encoding
         getU0 = GET_FLOAT;
@@ -209,7 +275,7 @@ public class PolyEncoder
             setTexture2 = SET_INT_FAIL;
         }
         
-        if(PolyStreamFormat.isLinked(format))
+        if(isLinked(format))
         {
             linkOffset = offset++;
             getLink = GET_INT;
@@ -222,7 +288,7 @@ public class PolyEncoder
             setLink = SET_INT_FAIL;
         }
         
-        if(PolyStreamFormat.isTagged(format))
+        if(isTagged(format))
         {
             tagOffset = offset++;
             getTag = GET_INT;
@@ -235,9 +301,9 @@ public class PolyEncoder
             setTag = SET_INT_FAIL;
         }
         
-        switch(PolyStreamFormat.getVertexColorFormat(format))
+        switch(getVertexColorFormat(format))
         {
-            case PolyStreamFormat.VERTEX_COLOR_WHITE:
+            case VERTEX_COLOR_WHITE:
                 getColor0 = GET_INT_WHITE;
                 getColor1 = layerCount > 1 ? GET_INT_WHITE : GET_INT_FAIL;
                 getColor2 = layerCount > 1 ? GET_INT_WHITE : GET_INT_FAIL;
@@ -249,7 +315,7 @@ public class PolyEncoder
                 colorOffset2 = BAD_ADDRESS;
                 break;
                 
-            case PolyStreamFormat.VERTEX_COLOR_SAME:
+            case VERTEX_COLOR_SAME:
                 getColor0 = GET_INT;
                 getColor1 = GET_INT;
                 getColor2 = GET_INT;
@@ -261,7 +327,7 @@ public class PolyEncoder
                 colorOffset2 = colorOffset0;
                 break;
                 
-            case PolyStreamFormat.VERTEX_COLOR_SAME_BY_LAYER:
+            case VERTEX_COLOR_SAME_BY_LAYER:
                 getColor0 = GET_INT;
                 getColor1 = GET_INT;
                 getColor2 = GET_INT;
@@ -274,7 +340,7 @@ public class PolyEncoder
                 break;
                 
             default:
-            case PolyStreamFormat.VERTEX_COLOR_PER_VERTEX_LAYER:
+            case VERTEX_COLOR_PER_VERTEX_LAYER:
                 getColor0 = GET_INT_FAIL;
                 getColor1 = GET_INT_FAIL;
                 getColor2 = GET_INT_FAIL;
