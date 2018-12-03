@@ -51,6 +51,7 @@ import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter3;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntGetter;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntSetter;
+import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.structures.ObjectHandle;
 
 public class PolyEncoder

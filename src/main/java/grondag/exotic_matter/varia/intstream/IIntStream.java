@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.varia.intstream;
 
 public interface IIntStream
 {

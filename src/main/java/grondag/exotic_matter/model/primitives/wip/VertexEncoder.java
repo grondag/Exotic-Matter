@@ -41,6 +41,7 @@ import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter2;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter3;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntGetter;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.IntSetter;
+import grondag.exotic_matter.varia.intstream.IIntStream;
 
 public class VertexEncoder
 {

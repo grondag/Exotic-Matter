@@ -2,6 +2,8 @@ package grondag.exotic_matter.model.primitives.wip;
 
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.*;
 
+import grondag.exotic_matter.varia.intstream.IIntStream;
+
 public abstract class GlowEncoder
 {
     private static final GlowEncoder NO_GLOW = new GlowEncoder()

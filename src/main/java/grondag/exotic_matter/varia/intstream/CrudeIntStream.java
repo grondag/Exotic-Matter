@@ -1,4 +1,4 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.varia.intstream;
 
 import net.minecraft.util.math.MathHelper;
 import scala.actors.threadpool.Arrays;

@@ -4,6 +4,7 @@ import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker32;
+import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.structures.ObjectHandle;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;

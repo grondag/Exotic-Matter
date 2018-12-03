@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.wip;
 
 import grondag.exotic_matter.varia.NormalQuantizer;
+import grondag.exotic_matter.varia.intstream.IIntStream;
 
 public abstract class EncoderFunctions
 {
