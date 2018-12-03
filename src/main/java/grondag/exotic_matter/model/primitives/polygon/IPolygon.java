@@ -606,6 +606,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
      */
     default void releaseLast()
     {
-        
+        release();
     }
 }

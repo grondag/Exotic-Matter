@@ -18,8 +18,8 @@ import grondag.acuity.api.TextureFormat;
 import grondag.acuity.api.UniformUpdateFrequency;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.varia.intstream.CrudeIntStream;
 import grondag.exotic_matter.varia.intstream.IIntStream;
+import grondag.exotic_matter.varia.intstream.IntStreams;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 
@@ -106,7 +106,7 @@ class StaticEncoderTest
     void test()
     {
         final int BASE = 23;
-        IIntStream stream = new CrudeIntStream();
+        IIntStream stream = IntStreams.claim();
         
         assert StaticEncoder.shouldContractUVs(stream, BASE, 0);
         assert StaticEncoder.shouldContractUVs(stream, BASE, 1);
@@ -187,6 +187,8 @@ class StaticEncoderTest
         assert StaticEncoder.getRenderLayer(stream, BASE, 1) == BlockRenderLayer.CUTOUT;
         
         assert StaticEncoder.getTextureSalt(stream, BASE) == 1;
+        
+        stream.release();
     }
 
 }
