@@ -21,15 +21,28 @@ public class StreamBackedPolygon implements IPolygon
     protected PolyEncoder polyEncoder;
     
     /**
-     * Stream address where vertex data starts.
-     * Set when format changes.
+     * Offset from base address where vertex data starts.<br>
+     * Set when format changes
+     */
+    protected int vertexOffset = NO_ADDRESS; 
+    
+    /**
+     * Stream address where vertex data starts.<br>
+     * Set when format or address changes
      */
     protected int vertexAddress = NO_ADDRESS;
     
     protected VertexEncoder vertexEncoder;
     
     /**
-     * Start of vertex glow data, if present.
+     * Offset from base address where glow data starts.<br>
+     * Set when format changes.
+     */
+    protected int glowOffset = NO_ADDRESS; 
+    
+    /**
+     * Start of vertex glow data, if present.<br>
+     * Set when format or address changes.
      */
     protected int glowAddress = NO_ADDRESS;
     
@@ -68,8 +81,10 @@ public class StreamBackedPolygon implements IPolygon
         this.polyEncoder = PolyEncoder.get(format);
         this.vertexEncoder = VertexEncoder.get(format);
         this.glowEncoder = GlowEncoder.get(format);
-        this.vertexAddress = polyEncoder.stride();
-        this.glowAddress = vertexAddress + vertexEncoder.stride() * vertexCount();
+        this.vertexOffset = 1 + StaticEncoder.INTEGER_WIDTH +  polyEncoder.stride();
+        this.glowOffset = vertexOffset + vertexEncoder.vertexStride() * vertexCount();
+        this.vertexAddress = baseAddress + vertexOffset;
+        this.glowAddress = baseAddress + glowOffset;
     }
 
     @Override

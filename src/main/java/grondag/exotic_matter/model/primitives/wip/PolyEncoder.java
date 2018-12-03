@@ -26,78 +26,72 @@ public class PolyEncoder
     {
         return ENCODERS[PolyStreamFormat.polyFormatKey(format)];
     }
-    
    
-            
-    //////////////////////////////////////////////////////////////
-    /// END STATIC MEMBERS
-    //////////////////////////////////////////////////////////////
+    private final int stride;
     
-    private final FloatGetterBase getNormalX;
+    private final FloatGetter getNormalX;
     private final int getNormalXOffset;
-    private final FloatGetterBase getNormalY;
+    private final FloatGetter getNormalY;
     private final int getNormalYOffset;
-    private final FloatGetterBase getNormalZ;
+    private final FloatGetter getNormalZ;
     private final int getNormalZOffset;
     
-    private final FloatSetterBase3 setNormalXYZ;
+    private final FloatSetter3 setNormalXYZ;
     
-    private final FloatGetterBase getU0;
-    private final FloatGetterBase getV0;
-    private final FloatSetterBase setU0;
-    private final FloatSetterBase setV0;
+    private final FloatGetter getU0;
+    private final FloatGetter getV0;
+    private final FloatSetter setU0;
+    private final FloatSetter setV0;
     private final int minUOffset0;
     private final int maxUOffset0;
     private final int minVOffset0;
     private final int maxVOffset0;
     
-    private final FloatGetterBase getU1;
-    private final FloatGetterBase getV1;
-    private final FloatSetterBase setU1;
-    private final FloatSetterBase setV1;
+    private final FloatGetter getU1;
+    private final FloatGetter getV1;
+    private final FloatSetter setU1;
+    private final FloatSetter setV1;
     private final int minUOffset1;
     private final int maxUOffset1;
     private final int minVOffset1;
     private final int maxVOffset1;
     
-    private final FloatGetterBase getU2;
-    private final FloatGetterBase getV2;
-    private final FloatSetterBase setU2;
-    private final FloatSetterBase setV2;
+    private final FloatGetter getU2;
+    private final FloatGetter getV2;
+    private final FloatSetter setU2;
+    private final FloatSetter setV2;
     private final int minUOffset2;
     private final int maxUOffset2;
     private final int minVOffset2;
     private final int maxVOffset2;
     
     private final int linkOffset;
-    private final IntGetterBase getLink;
-    private final IntSetterBase setLink;
+    private final IntGetter getLink;
+    private final IntSetter setLink;
     
     private final int tagOffset;
-    private final IntGetterBase getTag;
-    private final IntSetterBase setTag;
+    private final IntGetter getTag;
+    private final IntSetter setTag;
     
-    private final IntGetterBase getTexture0;
-    private final IntSetterBase setTexture0;
-    private final IntGetterBase getTexture1;
-    private final IntSetterBase setTexture1;
-    private final IntGetterBase getTexture2;
-    private final IntSetterBase setTexture2;
+    private final IntGetter getTexture0;
+    private final IntSetter setTexture0;
+    private final IntGetter getTexture1;
+    private final IntSetter setTexture1;
+    private final IntGetter getTexture2;
+    private final IntSetter setTexture2;
     /** holds first two textures */
     private final int textureOffset01;
     private final int textureOffset2;
     
-    private final IntGetterBase getColor0;
-    private final IntSetterBase setColor0;
-    private final IntGetterBase getColor1;
-    private final IntSetterBase setColor1;
-    private final IntGetterBase getColor2;
-    private final IntSetterBase setColor2;
+    private final IntGetter getColor0;
+    private final IntSetter setColor0;
+    private final IntGetter getColor1;
+    private final IntSetter setColor1;
+    private final IntGetter getColor2;
+    private final IntSetter setColor2;
     private final int colorOffset0;
     private final int colorOffset1;
     private final int colorOffset2;
-    
-    private final int stride;
     
     private PolyEncoder(int format)
     {
@@ -139,7 +133,7 @@ public class PolyEncoder
                 break;
         }
         
-        final float layerCount = PolyStreamFormat.getLayerCount(format);
+        final int layerCount = PolyStreamFormat.getLayerCount(format);
         
         // PERF: implement packed UV encoding
         getU0 = GET_FLOAT;
@@ -471,5 +465,4 @@ public class PolyEncoder
         else
             setColor2.set(stream, baseAddress + colorOffset2, color);
     }
-    
 }

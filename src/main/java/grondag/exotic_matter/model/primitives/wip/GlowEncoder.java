@@ -1,22 +1,69 @@
 package grondag.exotic_matter.model.primitives.wip;
 
-public class GlowEncoder
-{
+import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.*;
 
+public abstract class GlowEncoder
+{
+    private static final GlowEncoder NO_GLOW = new GlowEncoder()
+    {
+        @Override
+        public int getGlow(IIntStream stream, int glowAddress, int vertexIndex)
+        {
+            return 0;
+        }
+
+        @Override
+        public void setGlow(IIntStream stream, int glowAddress, int vertexIndex, int glow)
+        {
+            throw new UnsupportedOperationException();
+        }
+    };
+            
+    private static final GlowEncoder SAME_GLOW = new GlowEncoder()
+    {
+        @Override
+        public int getGlow(IIntStream stream, int glowAddress, int vertexIndex)
+        {
+            return stream.get(glowAddress);
+        }
+
+        @Override
+        public void setGlow(IIntStream stream, int glowAddress, int vertexIndex, int glow)
+        {
+            stream.set(glowAddress, glow);
+        }
+    };
+    
+    private static final GlowEncoder VERTEX_GLOW = new GlowEncoder()
+    {
+        @Override
+        public int getGlow(IIntStream stream, int glowAddress, int vertexIndex)
+        {
+            return (stream.get(glowAddress + vertexIndex >> 2) >> (vertexIndex & 3)) & 0xFF;
+        }
+
+        @Override
+        public void setGlow(IIntStream stream, int glowAddress, int vertexIndex, int glow)
+        {
+            final int streamIndex = glowAddress + (vertexIndex >> 2);
+            final int byteIndex = vertexIndex & 3;
+            final int shift = 8 * byteIndex;
+            final int mask = 0xFF << shift;
+            stream.set(streamIndex, (stream.get(streamIndex) & ~mask) | ((glow << shift) & mask));
+        }
+    };
+    
     public static GlowEncoder get(int format)
     {
-        // TODO Auto-generated method stub
-        return null;
+        final int glowFormat = getVertexGlowFormat(format);
+        return glowFormat == VERTEX_GLOW_NONE
+                ? NO_GLOW
+                : glowFormat == VERTEX_GLOW_SAME
+                    ? SAME_GLOW
+                    : VERTEX_GLOW;
     }
 
-    public int getGlow(IIntStream stream, int glowAddress, int vertexIndex)
-    {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+    public abstract int getGlow(IIntStream stream, int glowAddress, int vertexIndex);
 
-    public void setGlow(IIntStream stream, int glowAddress, int vertexIndex, int glow)
-    {
-        // TODO Auto-generated method stub
-    }
+    public abstract void setGlow(IIntStream stream, int glowAddress, int vertexIndex, int glow);
 }
