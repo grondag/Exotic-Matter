@@ -90,9 +90,9 @@ public class CommonEventHandler
         workingModel.setTexture(PaintLayer.BASE, grondag.exotic_matter.init.ModTextures.BLOCK_NOISE_MODERATE);
         workingModel.setColorRGB(PaintLayer.BASE, 0xEBF0F5);
         workingModel.setTexture(PaintLayer.MIDDLE, grondag.exotic_matter.init.ModTextures.BLOCK_COBBLE);
-        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFFFFFF);
+        workingModel.setColorRGB(PaintLayer.MIDDLE, 0xFF4444);
         workingModel.setTranslucent(PaintLayer.MIDDLE, true);
-        workingModel.setAlpha(PaintLayer.MIDDLE, 0x18);
+        workingModel.setAlpha(PaintLayer.MIDDLE, 32);
         workingModel.setEmissive(PaintLayer.MIDDLE, true);
         workingModel.setTexture(PaintLayer.OUTER, grondag.exotic_matter.init.ModTextures.BORDER_SMOOTH_BLEND);
         workingModel.setColorRGB(PaintLayer.OUTER, 0xD7FFFF);

@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives.wip;
 
 import javax.annotation.Nullable;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
@@ -11,7 +10,7 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public abstract class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
+public class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
 {
     @Override
     public final IMutablePolygon setVertexLayer(int layerIndex, int vertexIndex, float u, float v, int color, int glow)
@@ -93,11 +92,16 @@ public abstract class StreamBackedMutablePolygon extends StreamBackedPolygon imp
         return this;
     }
 
-    //FIXME: should throw exception if not a fixed format
+    /**
+     * Throws exception if not a mutable format.
+     */
     @Override
     public final IMutablePolygon setLayerCount(int layerCount)
     {
-        setFormat(PolyStreamFormat.setLayerCount(format(), layerCount));
+        final int format = format();
+        if(!PolyStreamFormat.isMutable(format))
+            throw new UnsupportedOperationException("Cannot change layer count on immutable polygon");
+        setFormat(PolyStreamFormat.setLayerCount(format, layerCount));
         return this;
     }
 
@@ -193,9 +197,9 @@ public abstract class StreamBackedMutablePolygon extends StreamBackedPolygon imp
     }
 
     @Override
-    public final IMutablePolygon setPipeline(IRenderPipeline pipeline)
+    public final IMutablePolygon setPipelineIndex(int pipelineIndex)
     {
-        StaticEncoder.setPipeline(stream, baseAddress, pipeline);
+        StaticEncoder.setPipelineIndex(stream, baseAddress, pipelineIndex);
         return this;
     }
 
@@ -240,25 +244,78 @@ public abstract class StreamBackedMutablePolygon extends StreamBackedPolygon imp
 
         setVertexPos(targetIndex, source.getVertexX(sourceIndex), source.getVertexY(sourceIndex), source.getVertexZ(sourceIndex));
 
-        setVertexGlow(targetIndex, source.getVertexGlow(sourceIndex));
+        if(glowEncoder.glowFormat() == PolyStreamFormat.VERTEX_GLOW_PER_VERTEX)
+            setVertexGlow(targetIndex, source.getVertexGlow(sourceIndex));
+        else if(targetIndex == 0 && glowEncoder.glowFormat() == PolyStreamFormat.VERTEX_GLOW_SAME)
+            setVertexGlow(0, source.getVertexGlow(sourceIndex));
         
         final int layerCount = source.layerCount();
         assert layerCount <= layerCount();
         
-        setVertexColor(0, targetIndex, source.getVertexColor(0, sourceIndex));
-        setVertexUV(0, targetIndex, source.getVertexU(0, sourceIndex), source.getVertexV(0, sourceIndex));
-        
-        if(layerCount > 1)
+        if(vertexEncoder.hasColor())
         {
-            setVertexColor(1, targetIndex, source.getVertexColor(1, sourceIndex));
+            setVertexColor(0, targetIndex, source.getVertexColor(0, sourceIndex));
+            if(layerCount > 1)
+            {
+                setVertexColor(1, targetIndex, source.getVertexColor(1, sourceIndex));
+                
+                if(layerCount == 3)
+                    setVertexColor(2, targetIndex, source.getVertexColor(2, sourceIndex));
+            }
+        }
+        
+        setVertexUV(0, targetIndex, source.getVertexU(0, sourceIndex), source.getVertexV(0, sourceIndex));
+        if(vertexEncoder.multiUV() && layerCount > 1)
+        {
             setVertexUV(1, targetIndex, source.getVertexU(1, sourceIndex), source.getVertexV(1, sourceIndex));
             
             if(layerCount == 3)
-            {
-                setVertexColor(2, targetIndex, source.getVertexColor(2, sourceIndex));
                 setVertexUV(2, targetIndex, source.getVertexU(2, sourceIndex), source.getVertexV(2, sourceIndex));
-            }
         }
+        
         return this;
+    }
+
+    /**
+     * Will copy all poly and poly layer attributes. Layer counts must match.
+     * Will copy vertices if requested, but vertex counts must match or will throw exception.
+     */
+    public void copyFrom(IPolygon polyIn, boolean includeVertices)
+    {
+        setNominalFace(polyIn.getNominalFace());
+        setPipeline(polyIn.getPipeline());
+        setSurface(polyIn.getSurface());
+        // should not ever be needed, && may cause problems
+        //clearFaceNormal();
+        
+        final int layerCount = polyIn.layerCount();
+        assert layerCount == layerCount();
+        
+        for(int l = 0; l < layerCount; l++)
+        {
+            setMaxU(l, polyIn.getMaxU(l));
+            setMaxV(l, polyIn.getMaxV(l));
+            setMinU(l, polyIn.getMinU(l));
+            setMinV(l, polyIn.getMinV(l));
+            setEmissive(l, polyIn.isEmissive(l));
+            setRenderLayer(l, polyIn.getRenderLayer(l));
+            setLockUV(l, polyIn.isLockUV(l));
+            setShouldContractUVs(l, polyIn.shouldContractUVs(l));
+            setRotation(l, polyIn.getRotation(l));
+            setTextureName(l, polyIn.getTextureName(l));
+            setTextureSalt(polyIn.getTextureSalt());
+        }
+        
+        if(includeVertices)
+        {
+            final int vertexCount = polyIn.vertexCount();
+            if(vertexCount() == vertexCount)
+            {
+                for(int i = 0; i < vertexCount; i++)
+                    this.copyVertexFrom(i, polyIn, i);
+            }
+            else
+                throw new UnsupportedOperationException("Polygon vertex counts must match when copying vertex data.");
+        }
     }
 }

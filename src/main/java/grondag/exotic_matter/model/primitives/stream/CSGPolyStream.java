@@ -54,8 +54,8 @@ public class CSGPolyStream extends SimpleWritablePolyStream implements ICSGPolyS
         setLink(address, link);
         
         writer.setMark(false);
-        writer.setTag(IPolygon.NO_TAG);
-        writer.setLink(IPolygon.NO_LINK);
+        writer.setTag(IPolygon.NO_LINK_OR_TAG);
+        writer.setLink(IPolygon.NO_LINK_OR_TAG);
     }
 
 

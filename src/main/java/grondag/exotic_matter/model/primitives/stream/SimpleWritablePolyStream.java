@@ -72,21 +72,9 @@ public class SimpleWritablePolyStream extends SimpleAbstractPolyStream implement
     }
 
     @Override
-    public IPolyStream cloneToReader()
+    public IReadOnlyPolyStream releaseAndConvertToReader(int formatFlags)
     {
-        SimpleWritablePolyStream result = new SimpleWritablePolyStream();
-        final int limit = this.size();
-        for(int i = 0; i < limit; i++)
-        {
-            result.append(polys.get(i), links.getInt(i), marks.get(i));
-        }
-        return result;
-    }
-
-    @Override
-    public IPolyStream convertToReader()
-    {
-        return (IPolyStream) this;
+        return (IReadOnlyPolyStream) this;
     }
 
     @Override

@@ -206,7 +206,13 @@ public interface IMutablePolygon extends IPolygon
     
     IMutablePolygon setVertexNormal(int vertexIndex, float x, float y, float z);
     
-    IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline);
+    default IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
+    {
+        setPipelineIndex(pipeline == null ? 0 : pipeline.getIndex());
+        return this;
+    }
+    
+    IMutablePolygon setPipelineIndex(int pipelineIndex);
     
     IMutablePolygon clearFaceNormal();
 

@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives.wip;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -10,7 +9,7 @@ import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 
-public abstract class StreamBackedPolygon implements IPolygon
+public class StreamBackedPolygon implements IPolygon
 {
     protected static final int NO_ADDRESS = -1;
     
@@ -54,12 +53,18 @@ public abstract class StreamBackedPolygon implements IPolygon
     
     protected GlowEncoder glowEncoder;
     
+    /**
+     * Count of ints consumed in stream.<br>
+     * Set when format or address changes.
+     */
+    protected int stride = 0;
+    
+    protected IIntStream stream;
+    
     protected int format()
     {
         return stream.get(baseAddress);
     }
-    
-    protected IIntStream stream;
     
     /**
      * Reads header from given stream address and
@@ -89,10 +94,30 @@ public abstract class StreamBackedPolygon implements IPolygon
         this.polyEncoder = PolyEncoder.get(format);
         this.vertexEncoder = VertexEncoder.get(format);
         this.glowEncoder = GlowEncoder.get(format);
-        this.vertexOffset = 1 + StaticEncoder.INTEGER_WIDTH +  polyEncoder.stride();
+        this.vertexOffset = PolyStreamFormat.polyStride(format, false);
         this.glowOffset = vertexOffset + vertexEncoder.vertexStride() * vertexCount;
         this.vertexAddress = baseAddress + vertexOffset;
         this.glowAddress = baseAddress + glowOffset;
+        this.stride = glowOffset + glowEncoder.stride(format);
+        assert this.stride == PolyStreamFormat.polyStride(format, true);
+    }
+    
+    /**
+     * Use when stream is in an invalid state and 
+     * want us to blow up if accessed.
+     */
+    public void invalidate()
+    {
+        baseAddress = EncoderFunctions.BAD_ADDRESS;
+        stride = 0;
+    }
+    
+    /**
+     * Number of ints consumed by the current format
+     */
+    public final int stride()
+    {
+        return stride;
     }
 
     @Override
@@ -384,9 +409,9 @@ public abstract class StreamBackedPolygon implements IPolygon
     }
 
     @Override
-    public IRenderPipeline getPipeline()
+    public int getPipelineIndex()
     {
-        return StaticEncoder.getPipeline(stream, baseAddress);
+        return StaticEncoder.getPipelineIndex(stream, baseAddress);
     }
 
 }

@@ -43,9 +43,9 @@ public class SimpleAbstractPolyStream implements IPolyStream
     }
     
     @Override
-    public int size()
+    public boolean isEmpty()
     {
-        return polys.size();
+        return polys.isEmpty();
     }
 
     @Override
@@ -66,7 +66,7 @@ public class SimpleAbstractPolyStream implements IPolyStream
     }
     
     @Override
-    public IPolyStream origin()
+    public void origin()
     {
         readIndex = 0;
         if(polys.size() > 0)
@@ -74,7 +74,6 @@ public class SimpleAbstractPolyStream implements IPolyStream
         else
             reader.wrapped = null;
         checkDeleted();
-        return this;
     }
 
     @Override
@@ -185,7 +184,7 @@ public class SimpleAbstractPolyStream implements IPolyStream
             return false;
         
         int link = links.getInt(readIndex);
-        if(link == IPolygon.NO_LINK)
+        if(link == IPolygon.NO_LINK_OR_TAG)
         {
             readIndex = size;
             reader.wrapped = null;
@@ -258,20 +257,6 @@ public class SimpleAbstractPolyStream implements IPolyStream
         marks.set(size, mark);
         polys.add(poly);
         links.add(linkAddress);
-        
-        
-    }
-    
-    @Override
-    public IWritablePolyStream cloneToWritable()
-    {
-        SimpleWritablePolyStream result = new SimpleWritablePolyStream();
-        final int limit = this.size();
-        for(int i = 0; i < limit; i++)
-        {
-            result.append(polys.get(i), links.getInt(i), marks.get(i));
-        }
-        return result;
     }
 
     @Override

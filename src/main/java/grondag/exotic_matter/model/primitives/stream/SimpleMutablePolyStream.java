@@ -97,26 +97,7 @@ public class SimpleMutablePolyStream extends SimpleWritablePolyStream implements
     }
     
     @Override
-    public IPolyStream cloneToReader()
-    {
-        return cloneToWritable();
-    }
-
-    @Override
-    public IWritablePolyStream cloneToWritable()
-    {
-        SimpleWritablePolyStream result = new SimpleWritablePolyStream();
-        final int limit = this.size();
-        for(int i = 0; i < limit; i++)
-        {
-            if(!isDeleted(i))
-                result.append(polys.get(i), links.getInt(i), marks.get(i));
-        }
-        return result;
-    }
-
-    @Override
-    public IPolyStream convertToReader()
+    public IReadOnlyPolyStream releaseAndConvertToReader()
     {
         throw new UnsupportedOperationException("Mutable poly streams can't be directly converted.");
     }

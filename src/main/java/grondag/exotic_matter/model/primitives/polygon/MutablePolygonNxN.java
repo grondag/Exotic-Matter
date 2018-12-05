@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives.polygon;
 
 import javax.annotation.Nullable;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.IMutableVertex;
@@ -273,9 +272,9 @@ public class MutablePolygonNxN extends AbstractLargePolygon<MutablePolygonNxN> i
     }
 
     @Override
-    public IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
+    public IMutablePolygon setPipelineIndex(int pipelineIndex)
     {
-        super.setPipelineImpl(pipeline);
+        super.setPipelineIndexImpl(pipelineIndex);
         return this;
     }
 

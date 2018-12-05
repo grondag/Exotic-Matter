@@ -45,6 +45,9 @@ import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setLin
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setTagged;
 import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.setVertexColorFormat;
 
+import javax.annotation.Nullable;
+
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatGetter;
 import grondag.exotic_matter.model.primitives.wip.EncoderFunctions.FloatSetter;
@@ -395,25 +398,42 @@ public class PolyEncoder
     {
         return getNormalZ.get(stream, baseAddress + getNormalZOffset);
     }
+    
+    /**
+     * Replaces zeros with NO_LINK_OR_TAG and
+     * replaces NO_LINK_OR_TAG with zeros.
+     */
+    protected static int swapLinkTagValue(int valueIn)
+    {
+        return valueIn == 0 
+                ? IPolygon.NO_LINK_OR_TAG
+                : valueIn == IPolygon.NO_LINK_OR_TAG
+                    ? 0 
+                    : valueIn;
+    }
 
     public final int getTag(IIntStream stream, int baseAddress)
     {
-        return getTag.get(stream, baseAddress + tagOffset);
+        // want to return NO_TAG if never set, so swap with default (zero) value here
+        return swapLinkTagValue(getTag.get(stream, baseAddress + tagOffset));
     }
 
     public final void setTag(IIntStream stream, int baseAddress, int tag)
     {
-        setTag.set(stream, baseAddress + tagOffset, tag);
+        // want to return NO_TAG if never set, so swap with default (zero) value here
+        setTag.set(stream, baseAddress + tagOffset, swapLinkTagValue(tag));
     }
 
     public final int getLink(IIntStream stream, int baseAddress)
     {
-        return getLink.get(stream, baseAddress + linkOffset);
+        // want to return NO_LINK if never set, so swap with default (zero) value here
+        return swapLinkTagValue(getLink.get(stream, baseAddress + linkOffset));
     }
 
     public final void setLink(IIntStream stream, int baseAddress, int link)
     {
-        setLink.set(stream, baseAddress + linkOffset, link);
+        // want to return NO_LINK if never set, so swap with default (zero) value here
+        setLink.set(stream, baseAddress + linkOffset, swapLinkTagValue(link));
     }
     
     public final float getMaxU(IIntStream stream, int baseAddress, int layerIndex)
@@ -492,7 +512,7 @@ public class PolyEncoder
             setV2.set(stream, baseAddress + minVOffset2, minV);
     }
 
-    public final String getTextureName(IIntStream stream, int baseAddress, int layerIndex)
+    public final @Nullable String getTextureName(IIntStream stream, int baseAddress, int layerIndex)
     {
         final int handle = layerIndex == 0 
                 ? getTexture0.get(stream, baseAddress + textureOffset01)
@@ -500,12 +520,12 @@ public class PolyEncoder
                     ? getTexture1.get(stream, baseAddress + textureOffset01)
                     : getTexture2.get(stream, baseAddress + textureOffset2);
         
-        return textureHandler.fromHandle(handle);
+        return handle == 0 ? null : textureHandler.fromHandle(handle);
     }
     
-    public final void setTextureName(IIntStream stream, int baseAddress, int layerIndex, String textureName)
+    public final void setTextureName(IIntStream stream, int baseAddress, int layerIndex, @Nullable String textureName)
     {
-        final int handle = textureHandler.toHandle(textureName);
+        final int handle = textureName == null ? 0 : textureHandler.toHandle(textureName);
         if(layerIndex == 0)
             setTexture0.set(stream, baseAddress + textureOffset01, handle);
         else if(layerIndex == 1)

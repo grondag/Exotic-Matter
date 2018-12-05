@@ -4,8 +4,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import grondag.acuity.api.IRenderPipeline;
-import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.polygon.PolygonAccessor.Layer;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -111,7 +109,7 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     protected void copyPolyAttributesFrom(IPolygon template)
     {
         setNominalFaceImpl(template.getNominalFace());
-        setPipelineImpl(template.getPipeline());
+        setPipelineIndexImpl(template.getPipelineIndex());
         setSurfaceImpl(template.getSurface());
         clearFaceNormalImpl();
         
@@ -162,16 +160,15 @@ public abstract class AbstractPolygon<T extends AbstractPolygon<T>>  implements 
     }
 
     @Override
-    public final IRenderPipeline getPipeline()
+    public final int getPipelineIndex()
     {
-        return ClientProxy.acuityPipeline(PIPELINE_INDEX.getValue(this));
+        return PIPELINE_INDEX.getValue(this);
     }
 
     /** supports mutable interface */
-    protected final void setPipelineImpl(@Nullable IRenderPipeline pipeline)
+    protected final void setPipelineIndexImpl(int pipelineIndex)
     {
-        final int index = pipeline == null ? 0 : pipeline.getIndex();
-        PIPELINE_INDEX.setValue(index, this);
+        PIPELINE_INDEX.setValue(pipelineIndex, this);
     }
     
     @Override

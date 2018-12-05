@@ -17,7 +17,7 @@ import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
-import grondag.exotic_matter.model.primitives.stream.PolyStreams;
+import grondag.exotic_matter.model.primitives.wip.PolyStreams2;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -69,7 +69,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         cube.isOverlay = false;
         cube.surfaceInstance = SURFACE_MAIN;
         
-        IWritablePolyStream stream = PolyStreams.claimWriter();
+        IWritablePolyStream stream = PolyStreams2.claimWritable();
         cube.appendFace(stream, EnumFacing.DOWN);
         cube.appendFace(stream, EnumFacing.UP);
         cube.appendFace(stream, EnumFacing.EAST);
@@ -77,7 +77,16 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         cube.appendFace(stream, EnumFacing.NORTH);
         cube.appendFace(stream, EnumFacing.SOUTH);
         
-        return stream.convertToReader();
+        //TODO: remove
+        stream.origin();
+        assert stream.reader().vertexCount() == 4;
+        
+        IPolyStream result = stream.releaseAndConvertToReader();
+        
+        result.origin();
+        assert result.reader().vertexCount() == 4;
+        
+        return result;
     }
 
 

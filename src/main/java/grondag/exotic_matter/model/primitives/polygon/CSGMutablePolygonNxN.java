@@ -5,8 +5,8 @@ public class CSGMutablePolygonNxN extends MutablePolygonNxN
 {
     boolean isMarked = false;
     boolean isDeleted = false;
-    int tag = IPolygon.NO_TAG;
-    int link = IPolygon.NO_LINK;
+    int tag = IPolygon.NO_LINK_OR_TAG;
+    int link = IPolygon.NO_LINK_OR_TAG;
     
     public CSGMutablePolygonNxN()
     {

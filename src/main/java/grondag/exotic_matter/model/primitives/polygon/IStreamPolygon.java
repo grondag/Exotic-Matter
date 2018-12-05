@@ -39,13 +39,13 @@ public interface IStreamPolygon
     }
     
     /**
-     * Improbable non-zero value that signifies no tag set or tag not supported.
+     * Improbable non-zero value that signifies no link set or link not supported.
      */
-    public static final int NO_TAG = Integer.MIN_VALUE;
+    public static final int NO_LINK_OR_TAG = Integer.MIN_VALUE;
     
     default int getTag()
     {
-        return NO_TAG;
+        return NO_LINK_OR_TAG;
     }
     
     default void setTag(int tag)
@@ -53,14 +53,10 @@ public interface IStreamPolygon
         throw new UnsupportedOperationException();
     }
     
-    /**
-     * Improbable non-zero value that signifies no link set or link not supported.
-     */
-    public static final int NO_LINK = Integer.MIN_VALUE;
     
     default int getLink()
     {
-        return NO_LINK;
+        return NO_LINK_OR_TAG;
     }
     
     default void setLink(int link)

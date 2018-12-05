@@ -76,22 +76,24 @@ public interface IWritablePolyStream extends IPolyStream
      */
     void copyFromAddress(int address);
   
-    
     /**
-     * Claims a read-only copy of this stream, leaving this writer and stream intact.
-     *  New stream will not reflect ongoing changes.
+     * Releases this stream and returns an immutable reader stream.
+     * The reader strip will use non-pooled heap memory and thus 
+     * should only be used for streams with a significant lifetime
+     * to prevent needless garbage collection.<p>
+     * 
+     * The reader stream will not include deleted polygons, and will
+     * only include tag, link or bounds metadata if those flags are specified.
      */
-    IPolyStream cloneToReader();
-    
-    
-    /**
-     * Locks this stream for changes and returns self as reader reference.
-     * Does NOT release this stream because it is still intact but operating as a reader.
-     * Any calls to write operations will fail after this is called.
-     * Recommended to cast reference to IPolyStreamReader after using.
-     */
-    IPolyStream convertToReader();
+    IReadOnlyPolyStream releaseAndConvertToReader(int formatFlags);
 
+    /**
+     * Version of {@link #releaseAndConvertToReader(int)} that strips all metadata.
+     */
+    default IReadOnlyPolyStream releaseAndConvertToReader()
+    {
+        return releaseAndConvertToReader(0);
+    }
     /**
      * Sets vertex count for current writer. Value can be saved as part of defaults. 
      */

@@ -132,6 +132,8 @@ public class VertexEncoder
     private final int offsetU2;
     private final int offsetV2;
     
+    private final boolean multiUV;
+    
     private VertexEncoder(int format)
     {
         int offset = 0;
@@ -187,6 +189,9 @@ public class VertexEncoder
         final int layerCount = getLayerCount(format);
         
         // PERF: quantize UV
+        
+        multiUV = PolyStreamFormat.getVertexUVFormat(format) == PolyStreamFormat.VERTEX_UV_BY_LAYER;
+        
         getU0 = GET_FLOAT;
         getV0 = GET_FLOAT;
         setU0 = SET_FLOAT;
@@ -195,21 +200,21 @@ public class VertexEncoder
         offsetU0 = offset++;
         offsetV0 = offset++;
         
-        getU1 = layerCount > 1 ? GET_FLOAT : GET_FLOAT_FAIL;
-        getV1 = layerCount > 1 ? GET_FLOAT : GET_FLOAT_FAIL;
-        setU1 = layerCount > 1 ? SET_FLOAT : SET_FLOAT_FAIL;
-        setV1 = layerCount > 1 ? SET_FLOAT : SET_FLOAT_FAIL;
-        setUV1 = layerCount > 1 ? SET_FLOAT2 : SET_FLOAT2_FAIL;
-        offsetU1 = layerCount > 1 ? offset++ : BAD_ADDRESS;
-        offsetV1 = layerCount > 1 ? offset++ : BAD_ADDRESS;
+        getU1 = multiUV && layerCount > 1 ? GET_FLOAT : GET_FLOAT_FAIL;
+        getV1 = multiUV && layerCount > 1 ? GET_FLOAT : GET_FLOAT_FAIL;
+        setU1 = multiUV && layerCount > 1 ? SET_FLOAT : SET_FLOAT_FAIL;
+        setV1 = multiUV && layerCount > 1 ? SET_FLOAT : SET_FLOAT_FAIL;
+        setUV1 = multiUV && layerCount > 1 ? SET_FLOAT2 : SET_FLOAT2_FAIL;
+        offsetU1 = multiUV && layerCount > 1 ? offset++ : BAD_ADDRESS;
+        offsetV1 = multiUV && layerCount > 1 ? offset++ : BAD_ADDRESS;
         
-        getU2 = layerCount  == 3 ? GET_FLOAT : GET_FLOAT_FAIL;
-        getV2 = layerCount  == 3 ? GET_FLOAT : GET_FLOAT_FAIL;
-        setU2 = layerCount  == 3 ? SET_FLOAT : SET_FLOAT_FAIL;
-        setV2 = layerCount  == 3 ? SET_FLOAT : SET_FLOAT_FAIL;
-        setUV2 = layerCount  == 3 ? SET_FLOAT2 : SET_FLOAT2_FAIL;
-        offsetU2 = layerCount  == 3 ? offset++ : BAD_ADDRESS;
-        offsetV2 = layerCount  == 3 ? offset++ : BAD_ADDRESS;
+        getU2 = multiUV && layerCount  == 3 ? GET_FLOAT : GET_FLOAT_FAIL;
+        getV2 = multiUV && layerCount  == 3 ? GET_FLOAT : GET_FLOAT_FAIL;
+        setU2 = multiUV && layerCount  == 3 ? SET_FLOAT : SET_FLOAT_FAIL;
+        setV2 = multiUV && layerCount  == 3 ? SET_FLOAT : SET_FLOAT_FAIL;
+        setUV2 = multiUV && layerCount  == 3 ? SET_FLOAT2 : SET_FLOAT2_FAIL;
+        offsetU2 = multiUV && layerCount  == 3 ? offset++ : BAD_ADDRESS;
+        offsetV2 = multiUV && layerCount  == 3 ? offset++ : BAD_ADDRESS;
         
         hasColor = getVertexColorFormat(format) == VERTEX_COLOR_PER_VERTEX_LAYER;
         if(hasColor)
@@ -383,5 +388,13 @@ public class VertexEncoder
             setUV1.set(stream, vertexAddress + vertexIndex * vertexStride + offsetU1, u, v);
         else
             setUV2.set(stream, vertexAddress + vertexIndex * vertexStride + offsetU2, u, v);
+    }
+
+    /**
+     * True unless single layer or all layers have same uv.
+     */
+    public boolean multiUV()
+    {
+        return multiUV;
     }
 }

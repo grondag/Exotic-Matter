@@ -1,7 +1,5 @@
 package grondag.exotic_matter.model.primitives.wip;
 
-import grondag.acuity.api.IRenderPipeline;
-import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.varia.BitPacker32;
 import grondag.exotic_matter.varia.intstream.IIntStream;
@@ -38,15 +36,15 @@ public class StaticEncoder
         stream.set(baseAddress + TEXTURE_PIPELINE_OFFSET, pipelineVal | handle);
     }
     
-    public static IRenderPipeline getPipeline(IIntStream stream, int baseAddress)
+    public static int getPipelineIndex(IIntStream stream, int baseAddress)
     {
-        return ClientProxy.acuityPipeline(stream.get(baseAddress + TEXTURE_PIPELINE_OFFSET) >>> 16);
+        return stream.get(baseAddress + TEXTURE_PIPELINE_OFFSET) >>> 16;
     }
 
-    public static void setPipeline(IIntStream stream, int baseAddress, IRenderPipeline pipeline)
+    public static void setPipelineIndex(IIntStream stream, int baseAddress, int pipelineIndex)
     {
         final int surfaceVal = stream.get(baseAddress + TEXTURE_PIPELINE_OFFSET) & 0x0000FFFF;
-        stream.set(baseAddress + TEXTURE_PIPELINE_OFFSET, surfaceVal | (pipeline.getIndex() << 16));
+        stream.set(baseAddress + TEXTURE_PIPELINE_OFFSET, surfaceVal | (pipelineIndex << 16));
     }
     
     @SuppressWarnings("unchecked")

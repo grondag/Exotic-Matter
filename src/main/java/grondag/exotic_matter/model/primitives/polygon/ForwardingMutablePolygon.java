@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives.polygon;
 
 import javax.annotation.Nullable;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -160,9 +159,9 @@ public class ForwardingMutablePolygon extends ForwardingPolygon implements IMuta
     }
 
     @Override
-    public IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
+    public IMutablePolygon setPipelineIndex(int pipelineIndex)
     {
-        ((IMutablePolygon)wrapped).setPipeline(pipeline);
+        ((IMutablePolygon)wrapped).setPipelineIndex(pipelineIndex);
         return this;
     }
 

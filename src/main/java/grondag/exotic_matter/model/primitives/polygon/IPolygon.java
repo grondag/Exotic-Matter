@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import grondag.acuity.api.IPipelinedQuad;
 import grondag.acuity.api.IPipelinedVertexConsumer;
 import grondag.acuity.api.IRenderPipeline;
-import grondag.acuity.api.TextureFormat;
+import grondag.exotic_matter.ClientProxy;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.QuadHelper;
@@ -329,7 +329,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
     int getVertexColor(int layerIndex, int vertexIndex);
     
     /** 
-     * Will return quad color if vertex color not set.
+     * Will return zero if vertex color not set.
      */
     int getVertexGlow(int vertexIndex);
     
@@ -392,8 +392,13 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
     
     boolean isEmissive(int layerIndex);
     
+    int getPipelineIndex();
+    
     @Override
-    IRenderPipeline getPipeline();
+    default IRenderPipeline getPipeline()
+    {
+        return ClientProxy.acuityPipeline(getPipelineIndex());
+    }
     
     //TODO: retire in favor of streams
     /**
@@ -413,15 +418,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
     public default IMutablePolygon claimCopy(int vertexCount)
     {
         return factory().claimCopy(this, vertexCount);
-    }
-    
-    /**
-     * Convenient shorthand for null check and texture format lookup.
-     */
-    public default @Nullable TextureFormat textureFormat()
-    {
-        final IRenderPipeline p = this.getPipeline();
-        return p == null ? null : p.textureFormat();
     }
     
     @Override

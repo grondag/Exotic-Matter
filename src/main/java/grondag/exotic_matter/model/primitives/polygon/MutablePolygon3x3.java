@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives.polygon;
 
 import javax.annotation.Nullable;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -148,9 +147,9 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
     }
 
     @Override
-    public IMutablePolygon setPipeline(@Nullable IRenderPipeline pipeline)
+    public IMutablePolygon setPipelineIndex(int pipelineIndex)
     {
-        super.setPipelineImpl(pipeline);
+        super.setPipelineIndexImpl(pipelineIndex);
         return this;
     }
 

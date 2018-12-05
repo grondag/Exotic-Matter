@@ -16,7 +16,7 @@ public class CSGBounds extends AxisAlignedBB
         float maxY = Float.MIN_VALUE;
         float maxZ = Float.MIN_VALUE;
         
-        if(forPolygons.size() > 0)
+        if(!forPolygons.isEmpty())
         {
             IPolygon reader = forPolygons.reader();
             forPolygons.origin();

@@ -4,15 +4,7 @@ import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 
 public interface IPolyStream
 {
-    /**
-     * Number of polys in stream.  Does not include unappended WIP.
-     */
-    int size();
-    
-    default boolean isEmpty()
-    {
-        return size() == 0;
-    }
+    boolean isEmpty();
     
     /**
      * Reference to poly at current read address.<br>
@@ -25,7 +17,7 @@ public interface IPolyStream
      * Moves reader to start of stream.<br>
      * Note that WIP is not considered part of stream.
      */
-    IPolyStream origin();
+    void origin();
     
     /**
      * Moves reader to next poly in this stream.  Returns false if already at end.<br>
@@ -82,12 +74,6 @@ public interface IPolyStream
     IPolygon movePolyB(int address);
     
     /**
-     * Claims a writable copy of this stream, leaving this stream intact.
-     *  New stream has no connection with this stream.
-     */
-    IWritablePolyStream cloneToWritable();
-    
-    /**
      * Mark this poly or clear the mark for the poly at the read cursor.  Meaning of mark is up to user.<p>
      * 
      * This, along with {@link #setLink(int)} are the only 
@@ -110,12 +96,12 @@ public interface IPolyStream
 
     default int getTag()
     {
-        return IPolygon.NO_TAG;
+        return IPolygon.NO_LINK_OR_TAG;
     }
     
     default int getTag(int address)
     {
-        return IPolygon.NO_TAG;
+        return IPolygon.NO_LINK_OR_TAG;
     }
     
     /**

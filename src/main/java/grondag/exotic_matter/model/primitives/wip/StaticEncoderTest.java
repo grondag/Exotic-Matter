@@ -163,7 +163,7 @@ class StaticEncoderTest
         StaticEncoder.setSurface(stream, BASE, S1);
         assert StaticEncoder.getSurface(stream, BASE) == S1;
         
-        StaticEncoder.setPipeline(stream, BASE, pipe);
+        StaticEncoder.setPipelineIndex(stream, BASE, pipe.getIndex());
         
         StaticEncoder.setSurface(stream, 47, S2);
         assert StaticEncoder.getSurface(stream, BASE) == S1;

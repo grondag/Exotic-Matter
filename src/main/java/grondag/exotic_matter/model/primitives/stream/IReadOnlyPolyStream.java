@@ -8,7 +8,7 @@ package grondag.exotic_matter.model.primitives.stream;
  * but IWritablePolyStream may be.  Use to exclude mutable streams 
  * from use cases where they would cause problems.
  */
-public interface IReadOnlyStream extends IPolyStream
+public interface IReadOnlyPolyStream extends IPolyStream
 {
 
 }

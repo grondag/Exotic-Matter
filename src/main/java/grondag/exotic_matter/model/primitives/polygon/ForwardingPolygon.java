@@ -1,6 +1,5 @@
 package grondag.exotic_matter.model.primitives.polygon;
 
-import grondag.acuity.api.IRenderPipeline;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
@@ -37,7 +36,7 @@ public class ForwardingPolygon implements IPolygon
     public static final BooleanGetter DEFAULT_BOOL_GETTER = () -> false;
     
     public static final IntSetter DEFAULT_INT_SETTER = (i) -> {throw new UnsupportedOperationException();};
-    public static final IntGetter DEFAULT_INT_GETTER = () -> IPolygon.NO_LINK;
+    public static final IntGetter DEFAULT_INT_GETTER = () -> IPolygon.NO_LINK_OR_TAG;
     
     public IPolygon wrapped;
     
@@ -234,9 +233,9 @@ public class ForwardingPolygon implements IPolygon
     }
 
     @Override
-    public IRenderPipeline getPipeline()
+    public int getPipelineIndex()
     {
-        return wrapped.getPipeline();
+        return wrapped.getPipelineIndex();
     }
 
     @Override
