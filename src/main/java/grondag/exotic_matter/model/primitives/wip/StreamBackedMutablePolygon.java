@@ -282,6 +282,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
      */
     public void copyFrom(IPolygon polyIn, boolean includeVertices)
     {
+        // PERF: make this faster for other stream-based polys
         setNominalFace(polyIn.getNominalFace());
         setPipeline(polyIn.getPipeline());
         setSurface(polyIn.getSurface());

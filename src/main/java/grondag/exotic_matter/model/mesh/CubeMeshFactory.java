@@ -77,10 +77,6 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         cube.appendFace(stream, EnumFacing.NORTH);
         cube.appendFace(stream, EnumFacing.SOUTH);
         
-        //TODO: remove
-        stream.origin();
-        assert stream.reader().vertexCount() == 4;
-        
         IPolyStream result = stream.releaseAndConvertToReader();
         
         result.origin();

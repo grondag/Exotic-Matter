@@ -32,6 +32,7 @@ public class StaticEncoder
     {
         final int pipelineVal = stream.get(baseAddress + TEXTURE_PIPELINE_OFFSET) & 0xFFFF0000;
         final int handle = surfaceHandler.toHandle(surface);
+        assert handle > 0;
         assert handle <= 0xFFFF;
         stream.set(baseAddress + TEXTURE_PIPELINE_OFFSET, pipelineVal | handle);
     }

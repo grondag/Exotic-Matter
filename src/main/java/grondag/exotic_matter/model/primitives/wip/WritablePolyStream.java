@@ -20,6 +20,8 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     }
 
     protected final StreamBackedMutablePolygon writer;
+    protected final StreamBackedPolygon copyFrom = new StreamBackedPolygon();
+    
     protected IIntStream writerStream;
     protected IIntStream defaultStream;
     protected int formatFlags = 0;
@@ -33,6 +35,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     void prepare(int formatFlags)
     {
         super.prepare(IntStreams.claim());
+        copyFrom.stream = stream;
         defaultStream = IntStreams.claim();
         writerStream = IntStreams.claim();
         writer.stream = writerStream;
@@ -45,6 +48,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public void release()
     {
         super.release();
+        copyFrom.stream = null;
         defaultStream.release();
         writerStream.release();
         defaultStream = null;
@@ -109,8 +113,8 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public void copyFromAddress(int address)
     {
         validateAddress(address);
-        internal.moveTo(address);
-        super.appendCopy(internal, formatFlags);
+        copyFrom.moveTo(address);
+        super.appendCopy(copyFrom, formatFlags);
     }
 
     @Override

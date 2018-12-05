@@ -65,7 +65,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
         stream.writer().setLockUV(0, false);
         stream.writer().setSurface(SURFACE_MAIN);
         stream.saveDefaults();
-  
+        
         MeshHelper.makeIcosahedron(new Vec3d(.5, .5, .5), 0.6, stream, false);
         return stream.releaseAndConvertToReader();
     }

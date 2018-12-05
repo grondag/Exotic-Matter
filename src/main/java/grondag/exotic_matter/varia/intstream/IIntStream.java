@@ -9,7 +9,7 @@ public interface IIntStream
     default void copyFrom(int targetAddress, IIntStream source, int sourceAddress, int length)
     {
         for(int i = 0; i < length; i++)
-            set(targetAddress + i, source.get(sourceAddress + 1));
+            set(targetAddress + i, source.get(sourceAddress + i));
     }
     
     default void release() { }

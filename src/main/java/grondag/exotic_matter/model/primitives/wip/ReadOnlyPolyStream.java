@@ -8,18 +8,7 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
 {
     void load(WritablePolyStream streamIn, int formatFlags)
     {
-        int capacity = 0;
-        
-        if(!streamIn.isEmpty())
-        {
-            streamIn.origin();
-            IPolygon reader = streamIn.reader();
-            do
-                capacity += PolyStreamFormat.minimalFixedSize(reader, formatFlags);
-            while(streamIn.next());
-        }
-        
-        prepare(IntStreams.claim(capacity));
+        prepare(IntStreams.claim(streamIn.stream.capacity()));
         
         if(!streamIn.isEmpty())
         {

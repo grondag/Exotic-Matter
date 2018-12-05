@@ -106,6 +106,8 @@ public abstract class AbstractPolyStream implements IPolyStream
         polyA.stream = stream;
         polyB.stream = stream;
         internal.stream =stream;
+        originAddress = 0;
+        writeAddress = 0;
         
         // force error on read
         reader.invalidate();
@@ -122,8 +124,8 @@ public abstract class AbstractPolyStream implements IPolyStream
         polyA.stream = null;
         polyB.stream = null;
         internal.stream = null;
-        stream = null;
         stream.release();
+        stream = null;
     }
 
     @Override

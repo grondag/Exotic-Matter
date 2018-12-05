@@ -167,6 +167,7 @@ public class MeshHelper
             writer.setMaxV(0, uvMax);
             surfBuilder.withWrapDistance(uvMax);
         }
+        
         writer.setSurface(surfBuilder.build());
         
         //enable texture randomization
