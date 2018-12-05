@@ -4,7 +4,7 @@ import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IReadOnlyPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
-import grondag.exotic_matter.varia.intstream.FixedIntStream;
+import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 
 public class WritablePolyStream extends AbstractPolyStream implements IWritablePolyStream
@@ -20,24 +20,22 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     }
 
     protected final StreamBackedMutablePolygon writer;
-    protected final FixedIntStream writerStream;
-    protected final FixedIntStream defaultStream;
+    protected IIntStream writerStream;
+    protected IIntStream defaultStream;
     protected int formatFlags = 0;
     
     public WritablePolyStream()
     {
         writer = new StreamBackedMutablePolygon();
-        
-        // PERF: consider using regular streams here once fast copy in place
-        defaultStream = new FixedIntStream(MAX_STRIDE);
-        writerStream = new FixedIntStream(8192);
-        writer.stream = writerStream;
         writer.baseAddress = 0;
     }
     
     void prepare(int formatFlags)
     {
         super.prepare(IntStreams.claim());
+        defaultStream = IntStreams.claim();
+        writerStream = IntStreams.claim();
+        writer.stream = writerStream;
         this.formatFlags = formatFlags | PolyStreamFormat.MUTABLE_FLAG;
         clearDefaults();
         loadDefaults();
@@ -47,6 +45,11 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public void release()
     {
         super.release();
+        defaultStream.release();
+        writerStream.release();
+        defaultStream = null;
+        writerStream = null;
+        PolyStreams2.release(this);
     }
 
     @Override
@@ -71,7 +74,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public void saveDefaults()
     {
         defaultStream.clear();
-        System.arraycopy(writerStream.data, 0, defaultStream.data, 0, PolyStreamFormat.polyStride(writer.format(), false));
+        defaultStream.copyFrom(0, writerStream, 0, PolyStreamFormat.polyStride(writer.format(), false));
     }
 
     @Override
@@ -98,7 +101,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public void loadDefaults()
     {
         writerStream.clear();
-        System.arraycopy(defaultStream.data, 0, writerStream.data, 0, MAX_STRIDE);
+        writerStream.copyFrom(0, defaultStream, 0, MAX_STRIDE);
         writer.loadFormat();
     }
 
@@ -113,7 +116,9 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public IReadOnlyPolyStream releaseAndConvertToReader(int formatFlags)
     {
-        return new ReadOnlyPolyStream(this, formatFlags);
+        IReadOnlyPolyStream result = PolyStreams2.claimReadOnly(this, formatFlags);
+        release();
+        return result;
     }
 
     @Override

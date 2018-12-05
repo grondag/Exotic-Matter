@@ -2,13 +2,12 @@ package grondag.exotic_matter.model.primitives.wip;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IReadOnlyPolyStream;
-import grondag.exotic_matter.varia.intstream.FixedIntStream;
+import grondag.exotic_matter.varia.intstream.IntStreams;
 
 public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyPolyStream
 {
-    public ReadOnlyPolyStream(WritablePolyStream streamIn, int formatFlags)
+    void load(WritablePolyStream streamIn, int formatFlags)
     {
-        super();
         int capacity = 0;
         
         if(!streamIn.isEmpty())
@@ -20,7 +19,7 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
             while(streamIn.next());
         }
         
-        prepare(new FixedIntStream(capacity));
+        prepare(IntStreams.claim(capacity));
         
         if(!streamIn.isEmpty())
         {
@@ -30,5 +29,14 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
                 this.appendCopy(reader, formatFlags);
             while(streamIn.next());
         }
+        
+        this.stream.compact();
+    }
+    
+    @Override
+    public void release()
+    {
+        super.release();
+        PolyStreams2.release(this);
     }
 }

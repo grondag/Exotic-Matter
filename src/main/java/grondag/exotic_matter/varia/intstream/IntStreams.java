@@ -8,33 +8,29 @@ import net.minecraft.util.math.MathHelper;
 
 public abstract class IntStreams
 {
-//    static final int SMALL_BLOCK_SIZE = 256;
-//    static final int BLOCK_SIZE_FACTOR = 4;
-    
-    static final int LARGE_BLOCK_SIZE = 1024;
-    static final int LARGE_BLOCK_MASK = LARGE_BLOCK_SIZE - 1;
-    static final int LARGE_BLOCK_SHIFT = Integer.bitCount(LARGE_BLOCK_MASK);
-    
+    static final int BLOCK_SIZE = 1024;
+    static final int BLOCK_MASK = BLOCK_SIZE - 1;
+    static final int BLOCK_SHIFT = Integer.bitCount(BLOCK_MASK);
     
     private static final ArrayBlockingQueue<SimpleStream> simpleStreams = new ArrayBlockingQueue<>(256);
     
     private static final ArrayBlockingQueue<int[]> bigBlocks = new ArrayBlockingQueue<>(256);
     
-    private static final int[] EMPTY = new int[LARGE_BLOCK_SIZE];
+    private static final int[] EMPTY = new int[BLOCK_SIZE];
     
-    private static int[] claimBig()
+    private static int[] claimBlock()
     {
         int[] result = bigBlocks.poll();
         if(result == null)
-            return new int[LARGE_BLOCK_SIZE];
+            return new int[BLOCK_SIZE];
         else
         {
-            System.arraycopy(EMPTY, 0, result, 0, LARGE_BLOCK_SIZE);
+            System.arraycopy(EMPTY, 0, result, 0, BLOCK_SIZE);
             return result;
         }
     }
     
-    private static void releaseBig(int[] block)
+    private static void releaseBlock(int[] block)
     {
         //TODO: remove message
         if(!bigBlocks.offer(block))
@@ -52,7 +48,7 @@ public abstract class IntStreams
     
     public static IIntStream claim()
     {
-        return claim(LARGE_BLOCK_SIZE);
+        return claim(BLOCK_SIZE);
     }
     
     private static void release(SimpleStream freeStream)
@@ -68,27 +64,47 @@ public abstract class IntStreams
     {
         int[][] blocks = new int[64][];
         
+        int blockCount = 0;
         int capacity = 0;
+        boolean isCompact = false;
         
         private void checkAddress(int address)
         {
             if(address >= capacity)
             {
-                int current = capacity >> LARGE_BLOCK_SHIFT;
-                int needed =  (address >> LARGE_BLOCK_SHIFT) + 1;
-                
-                if(needed > blocks.length)
+                if(isCompact)
                 {
-                    int newMax = MathHelper.smallestEncompassingPowerOfTwo(needed);
+                    // uncompact
+                    int[] lastBlock = blocks[blockCount - 1];
+                    int[] newBlock = claimBlock();
+                    
+                    System.arraycopy(lastBlock, 0, newBlock, 0, lastBlock.length);
+                    blocks[blockCount - 1] = newBlock;
+                    
+                    capacity = BLOCK_SIZE * blockCount;
+                    isCompact = false;
+                    
+                    // if big enough after uncompacting, then we are done
+                    if(address < capacity)
+                        return;
+                }
+                
+                int currentBlocks = capacity >> BLOCK_SHIFT;
+                int blocksNeeded =  (address >> BLOCK_SHIFT) + 1;
+                
+                if(blocksNeeded > blocks.length)
+                {
+                    int newMax = MathHelper.smallestEncompassingPowerOfTwo(blocksNeeded);
                     int[][] newBlocks = new int[newMax][];
                     System.arraycopy(blocks, 0, newBlocks, 0, blocks.length);
                     blocks = newBlocks;
                 }
                 
-                for(int i = current; i < needed; i++)
-                    blocks[i] = claimBig();
+                for(int i = currentBlocks; i < blocksNeeded; i++)
+                    blocks[i] = claimBlock();
                 
-                capacity = needed << LARGE_BLOCK_SHIFT;
+                capacity = blocksNeeded << BLOCK_SHIFT;
+                blockCount = blocksNeeded;
             }
         }
         
@@ -96,7 +112,7 @@ public abstract class IntStreams
         public int get(int address)
         {
             return address < capacity
-                    ? blocks[address >> LARGE_BLOCK_SHIFT][address & LARGE_BLOCK_MASK]
+                    ? blocks[address >> BLOCK_SHIFT][address & BLOCK_MASK]
                     : 0;
         }
 
@@ -107,13 +123,19 @@ public abstract class IntStreams
 
         public void releaseBlocks()
         {
-            int current = capacity >> LARGE_BLOCK_SHIFT;
-            if(current > 0)
-                for(int i = 0; i < current; i++)
+            if(blockCount > 0)
+            {
+                // don't reuse last block if it isn't a block size
+                final int skipIndex = isCompact ? -1 : blockCount - 1;
+                
+                for(int i = 0; i < blockCount; i++)
                 {
-                    releaseBig(blocks[i]);
+                    if(i != skipIndex)
+                        releaseBlock(blocks[i]);
                     blocks[i] = null;
                 }
+            }
+            blockCount = 0;
             capacity = 0;
         }
 
@@ -121,16 +143,24 @@ public abstract class IntStreams
         public void set(int address, int value)
         {
             checkAddress(address);
-            blocks[address >> LARGE_BLOCK_SHIFT][address & LARGE_BLOCK_MASK] = value;
+            blocks[address >> BLOCK_SHIFT][address & BLOCK_MASK] = value;
         }
 
         @Override
         public void clear()
         {
-            int current = capacity >> LARGE_BLOCK_SHIFT;
-            if(current > 0)
-                for(int i = 0; i < current; i++)
-                    System.arraycopy(EMPTY, 0, blocks[i], 0, LARGE_BLOCK_SIZE);
+            // drop last block if we are compacted
+            if(isCompact)
+            {
+                blockCount--;
+                capacity = blockCount * BLOCK_SIZE;
+                blocks[blockCount] = null;
+                isCompact = false;
+            }
+            
+            if(blockCount > 0)
+                for(int i = 0; i < blockCount; i++)
+                    System.arraycopy(EMPTY, 0, blocks[i], 0, BLOCK_SIZE);
             
         }
 
@@ -146,7 +176,55 @@ public abstract class IntStreams
             // PERF: special case handling using ArrayCopy for faster transfer
             IIntStream.super.copyFrom(targetAddress, source, sourceAddress, length);
         }
-        
-        
+
+        @Override
+        public void compact()
+        {
+            if(isCompact || blockCount == 0)
+                return;
+            
+            int targetBlock = blockCount - 1;
+            
+            while(targetBlock >= 0)
+            {
+                int[] block = blocks[targetBlock];
+                int i = BLOCK_SIZE - 1;
+                while(i >= 0 && block[i] == 0)
+                    i--;
+                
+                if(i == -1)
+                {
+                    // release empty blocks
+                    releaseBlock(block);
+                    blocks[targetBlock] = null;
+                    blockCount--;
+                    capacity -= BLOCK_SIZE;
+                }
+                else if(i == BLOCK_SIZE - 1)
+                {
+                    // ending on a block boundary so no need to compact
+                    return;
+                }
+                else
+                {
+                    // partially full block
+                    final int shortSize = i + 1;
+                    int[] shortBlock = new int[shortSize];
+                    System.arraycopy(block, 0, shortBlock, 0, shortSize);
+                    releaseBlock(block);
+                    blocks[targetBlock] = shortBlock;
+                    capacity = (blockCount - 1) * BLOCK_SIZE + shortSize;
+                    isCompact = true;
+                    return;
+                }
+                targetBlock--;
+            }
+        }
+
+        @Override
+        public int capacity()
+        {
+            return capacity;
+        }
     }
 }
