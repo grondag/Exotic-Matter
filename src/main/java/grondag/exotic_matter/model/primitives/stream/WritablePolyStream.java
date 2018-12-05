@@ -1,9 +1,7 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.stream.IReadOnlyPolyStream;
-import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 
@@ -53,7 +51,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writerStream.release();
         defaultStream = null;
         writerStream = null;
-        PolyStreams2.release(this);
+        PolyStreams.release(this);
     }
 
     @Override
@@ -120,7 +118,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public IReadOnlyPolyStream releaseAndConvertToReader(int formatFlags)
     {
-        IReadOnlyPolyStream result = PolyStreams2.claimReadOnly(this, formatFlags);
+        IReadOnlyPolyStream result = PolyStreams.claimReadOnly(this, formatFlags);
         release();
         return result;
     }

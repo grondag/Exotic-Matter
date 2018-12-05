@@ -1,7 +1,7 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives.stream;
 
-import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.MUTABLE_FLAG;
-import static grondag.exotic_matter.model.primitives.wip.PolyStreamFormat.isMutable;
+import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.MUTABLE_FLAG;
+import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isMutable;
 
 import grondag.exotic_matter.varia.intstream.IntStreams;
 

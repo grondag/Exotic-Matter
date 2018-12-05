@@ -1,7 +1,6 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.stream.IReadOnlyPolyStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 
 public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyPolyStream
@@ -26,6 +25,6 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
     public void release()
     {
         super.release();
-        PolyStreams2.release(this);
+        PolyStreams.release(this);
     }
 }

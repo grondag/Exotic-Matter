@@ -1,7 +1,6 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 
 public abstract class AbstractPolyStream implements IPolyStream

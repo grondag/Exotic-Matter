@@ -1,6 +1,8 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives;
 
 import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +20,7 @@ import grondag.acuity.api.TextureFormat;
 import grondag.acuity.api.UniformUpdateFrequency;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
+import grondag.exotic_matter.model.primitives.stream.StaticEncoder;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 import grondag.exotic_matter.world.Rotation;
@@ -41,49 +44,49 @@ class StaticEncoderTest
         }
 
         @Override
-        public void uniform1f(String name, UniformUpdateFrequency frequency, Consumer<IUniform1f> initializer)
+        public void uniform1f(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform1f> initializer)
         {
             
         }
 
         @Override
-        public void uniform2f(String name, UniformUpdateFrequency frequency, Consumer<IUniform2f> initializer)
+        public void uniform2f(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform2f> initializer)
         {
             
         }
 
         @Override
-        public void uniform3f(String name, UniformUpdateFrequency frequency, Consumer<IUniform3f> initializer)
+        public void uniform3f(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform3f> initializer)
         {
             
         }
 
         @Override
-        public void uniform4f(String name, UniformUpdateFrequency frequency, Consumer<IUniform4f> initializer)
+        public void uniform4f(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform4f> initializer)
         {
             
         }
 
         @Override
-        public void uniform1i(String name, UniformUpdateFrequency frequency, Consumer<IUniform1i> initializer)
+        public void uniform1i(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform1i> initializer)
         {
             
         }
 
         @Override
-        public void uniform2i(String name, UniformUpdateFrequency frequency, Consumer<IUniform2i> initializer)
+        public void uniform2i(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform2i> initializer)
         {
             
         }
 
         @Override
-        public void uniform3i(String name, UniformUpdateFrequency frequency, Consumer<IUniform3i> initializer)
+        public void uniform3i(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform3i> initializer)
         {
             
         }
 
         @Override
-        public void uniform4i(String name, UniformUpdateFrequency frequency, Consumer<IUniform4i> initializer)
+        public void uniform4i(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniform4i> initializer)
         {
             
         }
@@ -95,7 +98,7 @@ class StaticEncoderTest
         }
 
         @Override
-        public void uniformMatrix4f(String name, UniformUpdateFrequency frequency, Consumer<IUniformMatrix4f> initializer)
+        public void uniformMatrix4f(@Nullable String name, @Nullable UniformUpdateFrequency frequency, @Nullable Consumer<IUniformMatrix4f> initializer)
         {
             
         }

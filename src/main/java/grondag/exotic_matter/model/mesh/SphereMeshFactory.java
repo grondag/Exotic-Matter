@@ -17,7 +17,7 @@ import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
-import grondag.exotic_matter.model.primitives.wip.PolyStreams2;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -61,7 +61,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     
     private IPolyStream generateQuads()
     {
-        IWritablePolyStream stream = PolyStreams2.claimWritable();
+        IWritablePolyStream stream = PolyStreams.claimWritable();
         stream.writer().setLockUV(0, false);
         stream.writer().setSurface(SURFACE_MAIN);
         stream.saveDefaults();

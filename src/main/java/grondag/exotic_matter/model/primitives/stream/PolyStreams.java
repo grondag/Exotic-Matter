@@ -1,11 +1,8 @@
-package grondag.exotic_matter.model.primitives.wip;
+package grondag.exotic_matter.model.primitives.stream;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-import grondag.exotic_matter.model.primitives.stream.IReadOnlyPolyStream;
-import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
-
-public class PolyStreams2
+public class PolyStreams
 {
     public static final int FORMAT_TAGS = PolyStreamFormat.HAS_TAG_FLAG;
     public static final int FORMAT_LINKS = PolyStreamFormat.HAS_LINK_FLAG;
