@@ -61,7 +61,7 @@ public abstract class IntStreams
      */
     private static class SimpleStream  implements IIntStream
     {
-        int[][] blocks = new int[64][];
+        int[][] blocks = new int[16][];
         
         int blockCount = 0;
         int capacity = 0;

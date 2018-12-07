@@ -448,13 +448,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
                 lastGlow = currentGlow;
             }
             
-            //TODO: REMOVE
-            final Vec3f norm = getVertexNormal(i);
-            assert MathHelper.epsilonEquals(norm.length(), 1f);
-            assert getVertexNormalX(i) == norm.x();
-            assert getVertexNormalY(i) == norm.y();
-            assert getVertexNormalZ(i) == norm.z();
-            
             switch(layerCount)
             {
             case 1:

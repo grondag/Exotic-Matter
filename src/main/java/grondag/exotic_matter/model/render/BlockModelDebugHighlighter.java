@@ -111,12 +111,11 @@ public class BlockModelDebugHighlighter
             IVec3f n = quad.getVertexNormal(i);
             
             // only draw vertex normals that differ from the standard side normals
-            //TODO:  put back
-//            int zeroCount = 0;
-//            if(Math.abs(n.x()) < 0.0000001) zeroCount++; 
-//            if(Math.abs(n.y()) < 0.0000001) zeroCount++;
-//            if(Math.abs(n.z()) < 0.0000001) zeroCount++; 
-//            if(zeroCount == 2) return;
+            int zeroCount = 0;
+            if(Math.abs(n.x()) < 0.0000001) zeroCount++; 
+            if(Math.abs(n.y()) < 0.0000001) zeroCount++;
+            if(Math.abs(n.z()) < 0.0000001) zeroCount++; 
+            if(zeroCount == 2) return;
             
             double px = v.x() + d0;
             double py = v.y() + d1;

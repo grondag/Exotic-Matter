@@ -379,15 +379,6 @@ public class PolyStreamFormat
             if(allSameGlow && v > 0 && polyIn.getVertexGlow(v) != firstGlow)
                 allSameGlow = false;
 
-            
-            //TODO: remove
-            if(allFaceNormal && polyIn.hasVertexNormal(v))
-            {
-                Vec3f norm = polyIn.getVertexNormal(v);
-                if(norm == null)
-                    norm = polyIn.getVertexNormal(v);
-            }
-            
             // vertex normal
             if(allFaceNormal && polyIn.hasVertexNormal(v) && !polyIn.getVertexNormal(v).equals(faceNormal))
                 allFaceNormal = false;

@@ -233,10 +233,6 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon copyVertexFrom(int targetIndex, IPolygon source, int sourceIndex)
     {
-        //TODO: remove
-        Vec3f sourceNorm = source.getVertexNormal(sourceIndex);
-        assert sourceNorm == null || MathHelper.epsilonEquals(source.getVertexNormal(sourceIndex).length(), 1f);
-        
         if(source.hasVertexNormal(sourceIndex))
         {
             assert vertexEncoder.hasNormals();
@@ -319,16 +315,6 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
             {
                 for(int i = 0; i < vertexCount; i++)
                     this.copyVertexFrom(i, polyIn, i);
-                
-                //TODO: remove
-                for(int i = 0; i < vertexCount; i++)
-                {
-                    Vec3f n = getVertexNormal(i);
-                    if(n == null)
-                        n = getVertexNormal(i);
-                    if(!MathHelper.epsilonEquals(n.length(), 1f))
-                        n = getVertexNormal(i);
-                }
             }
             else
                 throw new UnsupportedOperationException("Polygon vertex counts must match when copying vertex data.");
