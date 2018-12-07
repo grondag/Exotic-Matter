@@ -191,52 +191,52 @@ public class StreamBackedPolygon implements IPolygon
      * Gets current face normal format and if normal needs to
      * be computed, does so and updates both the normal and the format.<p>
      * 
-     * Returns the format in effect after any changes have been made.
+     * Returns true if nominal face normal should be used.
      */
-    private int computeNormalAndReturnFormat()
+    private boolean checkFaceNormal()
     {
-        int normFormat = PolyStreamFormat.getFaceNormalFormat(format());
-        if(normFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING)
+        final int normalFormat = PolyStreamFormat.getFaceNormalFormat(format());
+        if(normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL)
+            return true;
+        else if (normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_COMPUTED && Float.isNaN(polyEncoder.getFaceNormalX(stream, baseAddress)))
         {
-            Vec3f normal = this.computeFaceNormal();
-            polyEncoder.setFaceNormal(stream, normFormat, normal);
-            normFormat = PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT;
-            setFormat(PolyStreamFormat.setFaceNormalFormat(format(), normFormat));
+                Vec3f normal = this.computeFaceNormal();
+                polyEncoder.setFaceNormal(stream, baseAddress, normal);
         }
-        return normFormat;
+        return false;
     }
         
     
     @Override
     public final Vec3f getFaceNormal()
     {
-        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+        return checkFaceNormal() 
                 ? Vec3f.forFace(getNominalFace())
-                :polyEncoder.getFaceNormal(stream, baseAddress);
+                : polyEncoder.getFaceNormal(stream, baseAddress);
     }
 
     @Override
     public final float getFaceNormalX()
     {
-        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+        return checkFaceNormal() 
                 ? Vec3f.forFace(getNominalFace()).x()
-                :polyEncoder.getFaceNormalX(stream, baseAddress);
+                : polyEncoder.getFaceNormalX(stream, baseAddress);
     }
     
     @Override
     public final float getFaceNormalY()
     {
-        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+        return checkFaceNormal() 
                 ? Vec3f.forFace(getNominalFace()).y()
-                :polyEncoder.getFaceNormalY(stream, baseAddress);
+                : polyEncoder.getFaceNormalY(stream, baseAddress);
     }
     
     @Override
     public final float getFaceNormalZ()
     {
-        return computeNormalAndReturnFormat() == PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL
+        return checkFaceNormal() 
                 ? Vec3f.forFace(getNominalFace()).z()
-                :polyEncoder.getFaceNormalZ(stream, baseAddress);
+                : polyEncoder.getFaceNormalZ(stream, baseAddress);
     }
     
     @Override
@@ -255,7 +255,7 @@ public class StreamBackedPolygon implements IPolygon
     @Deprecated
     public final Vec3f getVertexNormal(int vertexIndex)
     {
-        return vertexEncoder.hasNormals()
+        return vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
                 ? vertexEncoder.getVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
                 : getFaceNormal();
     }
@@ -263,33 +263,31 @@ public class StreamBackedPolygon implements IPolygon
     @Override
     public final boolean hasVertexNormal(int vertexIndex)
     {
-        return vertexEncoder.hasNormals()
-                ? vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
-                : false;
+        return vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex));
     }
 
     @Override
     public final float getVertexNormalX(int vertexIndex)
     {
-        return vertexEncoder.hasNormals()
+        return vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
                 ? vertexEncoder.getVertexNormalX(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
-                : polyEncoder.getFaceNormalX(stream, baseAddress);
+                : getFaceNormalX();
     }
 
     @Override
     public final float getVertexNormalY(int vertexIndex)
     {
-        return vertexEncoder.hasNormals()
+        return vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
                 ? vertexEncoder.getVertexNormalY(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
-                : polyEncoder.getFaceNormalY(stream, baseAddress);
+                : getFaceNormalY();
     }
 
     @Override
     public final float getVertexNormalZ(int vertexIndex)
     {
-        return vertexEncoder.hasNormals()
+        return vertexEncoder.hasVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
                 ? vertexEncoder.getVertexNormalZ(stream, vertexAddress, vertexIndexer.apply(vertexIndex))
-                : polyEncoder.getFaceNormalZ(stream, baseAddress);
+                : getFaceNormalZ();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IStreamReaderPolygon;
 
 public interface IPolyStream
 {
@@ -9,9 +10,21 @@ public interface IPolyStream
     /**
      * Reference to poly at current read address.<br>
      * When stream first created will point to the first poly in the stream.<br>
-     * Returns null if at end or first poly has not been written.
+     * Returns null if at end or first poly has not been written.<br>
+     * 
+     * THIS READ IS NOT THREAD-SAFE and should only be used the allocating thread.
      */
     IPolygon reader();
+    
+    /**
+     * Claims a reader appropriate for concurrent access.  Will fail for streams that are mutable.<p>
+     * 
+     * Reader must be released after use or stream can never be recycled to the pool when released.
+     */
+    default IStreamReaderPolygon claimThreadSafeReader()
+    {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Moves reader to start of stream.<br>

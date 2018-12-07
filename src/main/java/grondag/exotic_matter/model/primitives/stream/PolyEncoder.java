@@ -19,9 +19,9 @@ import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET
 import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET_HALF_INT_LOW;
 import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET_INT;
 import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET_INT_FAIL;
+import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET_INT_WHITE;
 import static grondag.exotic_matter.model.primitives.stream.EncoderFunctions.SET_NORMAL_XYZ_QUANTIZED;
-import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING;
-import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT;
+import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.FACE_NORMAL_FORMAT_COMPUTED;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.FACE_NORMAL_FORMAT_NOMINAL;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.FACE_NORMAL_FORMAT_QUANTIZED;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.POLY_FORMAT_COUNT;
@@ -65,6 +65,8 @@ public class PolyEncoder
     
     private static final PolyEncoder MUTABLE;
     
+    private static final float MISSING_NORMAL = Float.NaN;
+    
     static
     {
         for(int i = 0; i < POLY_FORMAT_COUNT; i++)
@@ -73,14 +75,14 @@ public class PolyEncoder
         int mutableFormat = 0;
         mutableFormat = setLinked(mutableFormat, true);
         mutableFormat = setTagged(mutableFormat, true);
-        mutableFormat = setFaceNormalFormat(mutableFormat, FACE_NORMAL_FORMAT_FULL_PRESENT);
+        mutableFormat = setFaceNormalFormat(mutableFormat, FACE_NORMAL_FORMAT_COMPUTED);
         mutableFormat = setHalfPrecisionPolyUV(mutableFormat, false);
         mutableFormat = setLayerCount(mutableFormat, 3);
         mutableFormat = setVertexColorFormat(mutableFormat, VERTEX_COLOR_PER_VERTEX_LAYER);
         
         assert isLinked(mutableFormat);
         assert isTagged(mutableFormat);
-        assert getFaceNormalFormat(mutableFormat) == FACE_NORMAL_FORMAT_FULL_PRESENT;
+        assert getFaceNormalFormat(mutableFormat) == FACE_NORMAL_FORMAT_COMPUTED;
         assert !isHalfPrecisionPolyUV(mutableFormat);
         assert getLayerCount(mutableFormat) == 3;
         assert getVertexColorFormat(mutableFormat) == VERTEX_COLOR_PER_VERTEX_LAYER;
@@ -106,6 +108,7 @@ public class PolyEncoder
     private final FloatGetter getNormalZ;
     private final int getNormalZOffset;
     
+    private final FloatSetter3 clearNormal;
     private final FloatSetter3 setNormalXYZ;
     
     private final FloatGetter getU0;
@@ -170,8 +173,7 @@ public class PolyEncoder
         
         switch(getFaceNormalFormat(format))
         {
-            case  FACE_NORMAL_FORMAT_FULL_MISSING:
-            case  FACE_NORMAL_FORMAT_FULL_PRESENT:
+            case  FACE_NORMAL_FORMAT_COMPUTED:
                 getNormalXOffset = offset++; 
                 getNormalX = GET_FLOAT;
                 getNormalYOffset = offset++; 
@@ -179,6 +181,7 @@ public class PolyEncoder
                 getNormalZOffset = offset++; 
                 getNormalZ = GET_FLOAT;
                 setNormalXYZ = SET_FLOAT3;
+                clearNormal  = SET_FLOAT3;
                 break;
                 
             default:
@@ -190,6 +193,7 @@ public class PolyEncoder
                 getNormalZOffset = -1;
                 getNormalZ = GET_FLOAT_FAIL;
                 setNormalXYZ = SET_FLOAT3_FAIL;
+                clearNormal  = SET_FLOAT3_FAIL;
                 break;
                 
             case  FACE_NORMAL_FORMAT_QUANTIZED:
@@ -200,6 +204,7 @@ public class PolyEncoder
                 getNormalY = GET_NORMAL_Y_QUANTIZED;
                 getNormalZ = GET_NORMAL_Z_QUANTIZED;
                 setNormalXYZ = SET_NORMAL_XYZ_QUANTIZED;
+                clearNormal  = SET_FLOAT3_FAIL;
                 break;
         }
         
@@ -310,10 +315,10 @@ public class PolyEncoder
             case VERTEX_COLOR_WHITE:
                 getColor0 = GET_INT_WHITE;
                 getColor1 = layerCount > 1 ? GET_INT_WHITE : GET_INT_FAIL;
-                getColor2 = layerCount > 1 ? GET_INT_WHITE : GET_INT_FAIL;
-                setColor0 = SET_INT_FAIL;
-                setColor1 = SET_INT_FAIL;
-                setColor2 = SET_INT_FAIL;
+                getColor2 = layerCount == 3 ? GET_INT_WHITE : GET_INT_FAIL;
+                setColor0 = SET_INT_WHITE;
+                setColor1 = layerCount > 1 ? SET_INT_WHITE : SET_INT_FAIL;
+                setColor2 = layerCount == 3 ? SET_INT_WHITE : SET_INT_FAIL;
                 colorOffset0 = BAD_ADDRESS;
                 colorOffset1 = BAD_ADDRESS;
                 colorOffset2 = BAD_ADDRESS;
@@ -368,7 +373,6 @@ public class PolyEncoder
     public final void setFaceNormal(IIntStream stream, int baseAddress, Vec3f normal)
     {
         setFaceNormal(stream, baseAddress, normal.x(), normal.y(), normal.z());
-        
     }
     
     public final void setFaceNormal(IIntStream stream, int baseAddress, float x, float y, float z)
@@ -376,10 +380,18 @@ public class PolyEncoder
         setNormalXYZ.set(stream, baseAddress + getNormalXOffset, x, y, z);
     }
     
+    public final void clearFaceNormal(IIntStream stream, int baseAddress)
+    {
+        clearNormal.set(stream, baseAddress + getNormalXOffset, MISSING_NORMAL, MISSING_NORMAL, MISSING_NORMAL);
+    }
+    
     public final Vec3f getFaceNormal(IIntStream stream, int baseAddress)
     {
+        final float x = getNormalX.get(stream, baseAddress + getNormalXOffset);
+        if(Float.isNaN(x))
+            return null;
         return Vec3f.create(
-                getNormalX.get(stream, baseAddress + getNormalXOffset), 
+                x, 
                 getNormalY.get(stream, baseAddress + getNormalYOffset), 
                 getNormalZ.get(stream, baseAddress + getNormalZOffset));
     }

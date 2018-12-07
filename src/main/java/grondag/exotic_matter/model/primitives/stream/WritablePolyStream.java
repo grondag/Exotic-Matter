@@ -43,9 +43,9 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     }
 
     @Override
-    public void release()
+    protected void doRelease()
     {
-        super.release();
+        super.doRelease();
         copyFrom.stream = null;
         defaultStream.release();
         writerStream.release();
@@ -75,6 +75,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public void saveDefaults()
     {
+        writer.clearFaceNormal();
         defaultStream.clear();
         defaultStream.copyFrom(0, writerStream, 0, PolyStreamFormat.polyStride(writer.format(), false));
     }
@@ -95,6 +96,8 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writer.setMaxV(1, 1f);
         writer.setMaxV(2, 1f);
         
+        writer.clearFaceNormal();
+        
         writer.stream = writerStream;
         writer.loadFormat();
     }
@@ -105,14 +108,6 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writerStream.clear();
         writerStream.copyFrom(0, defaultStream, 0, MAX_STRIDE);
         writer.loadFormat();
-    }
-
-    @Override
-    public void copyFromAddress(int address)
-    {
-        validateAddress(address);
-        copyFrom.moveTo(address);
-        super.appendCopy(copyFrom, formatFlags);
     }
 
     @Override
@@ -138,6 +133,6 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public void appendCopy(IPolygon poly)
     {
-        super.appendCopy(poly, PolyStreamFormat.minimalFixedFormat(poly, formatFlags));
+        super.appendCopy(poly, formatFlags);
     }
 }

@@ -53,7 +53,6 @@ public abstract class IntStreams
     
     private static void release(SimpleStream freeStream)
     {
-        freeStream.releaseBlocks();
         simpleStreams.offer(freeStream);
     }
     
@@ -121,7 +120,7 @@ public abstract class IntStreams
             checkAddress(sizeHint - 1);
         }
 
-        public void releaseBlocks()
+        private void releaseBlocks()
         {
             if(blockCount > 0)
             {
@@ -137,6 +136,7 @@ public abstract class IntStreams
             }
             blockCount = 0;
             capacity = 0;
+            isCompact = false;
         }
 
         @Override
@@ -167,6 +167,7 @@ public abstract class IntStreams
         @Override
         public void release()
         {
+            releaseBlocks();
             IntStreams.release(this);
         }
 

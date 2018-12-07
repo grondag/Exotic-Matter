@@ -22,11 +22,12 @@ import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IStreamReaderPolygon;
+import grondag.exotic_matter.model.primitives.stream.DispatchPolyStream;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.render.QuadContainer;
 import grondag.exotic_matter.model.render.RenderLayout;
-import grondag.exotic_matter.model.render.RenderUtil;
 import grondag.exotic_matter.model.state.ISuperModelState;
-import grondag.exotic_matter.model.varia.SparseLayerMapBuilder.SparseLayerMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -52,56 +53,25 @@ public class SuperDispatcher
     public static final SuperDispatcher INSTANCE = new SuperDispatcher();
     public static final String RESOURCE_BASE_NAME = "super_dispatcher";
 
-    private final SparseLayerMapBuilder[] layerMapBuilders;
-    
     public final DispatchDelegate[] delegates;
     
     //custom loading cache is at least 2X faster than guava LoadingCache for our use case
-    private final ObjectSimpleLoadingCache<ISuperModelState, SparseLayerMap> modelCache = new ObjectSimpleLoadingCache<ISuperModelState, SparseLayerMap>(new BlockCacheLoader(),  0xFFFF);
+    private final ObjectSimpleLoadingCache<ISuperModelState, DispatchPolyStream> modelCache = new ObjectSimpleLoadingCache<ISuperModelState, DispatchPolyStream>(new BlockCacheLoader(),  0xFFFF);
     private final ObjectSimpleLoadingCache<ISuperModelState, SimpleItemBlockModel> itemCache = new ObjectSimpleLoadingCache<ISuperModelState, SimpleItemBlockModel>(new ItemCacheLoader(), 0xFFF);
     /** contains quads for use by block damage rendering based on shape only and with appropriate UV mapping*/
     private final ObjectSimpleLoadingCache<ISuperModelState, QuadContainer> damageCache = new ObjectSimpleLoadingCache<ISuperModelState, QuadContainer>(new DamageCacheLoader(), 0x4FF);
     
-    private class BlockCacheLoader implements ObjectSimpleCacheLoader<ISuperModelState, SparseLayerMap>
+    private class BlockCacheLoader implements ObjectSimpleCacheLoader<ISuperModelState, DispatchPolyStream>
     {
 		@Override
-		public SparseLayerMap load(ISuperModelState key) {
-			
-		    RenderLayout renderLayout = key.getRenderLayout();
-
-		    // PERF: make threadlocal
-            QuadContainer.Builder[] containers = new QuadContainer.Builder[RenderUtil.RENDER_LAYER_COUNT];
-            int containerCount = 0;
-            
-		    for(BlockRenderLayer layer : RenderUtil.RENDER_LAYERS)
-            {
-		        if(renderLayout.containsBlockRenderLayer(layer))
-		            containers[containerCount++] = new QuadContainer.Builder(layer);
-            }
-            
-		    final int finalCount = containerCount;
+		public DispatchPolyStream load(ISuperModelState key)
+		{
+		    // PERF: need a way to release these when no longer needed in the cache
+		    // add finalizer parameter to cache
 		    
-		    // PERF: When Acuity is enabled this whole structure is inefficient.  
-		    // Also inefficient without because too many checks and adding same polys to mutliple containers.
-		    // TODO: No way to handle pipelined polygons that render in both translucent and solid (will there be any?)
-		    provideFormattedQuads(key, false, p -> 
-		    {
-		        for(int i = 0; i < finalCount; i++)
-		        {
-		            QuadContainer.Builder c = containers[i];
-		            if(p.hasRenderLayer(c.layer))
-		                c.accept(p);
-		        }
-		        
-		    });
-		    
-			SparseLayerMap result = layerMapBuilders[renderLayout.ordinal].makeNewMap();
-			for(int i = 0; i < finalCount; i++)
-            {
-                QuadContainer.Builder c = containers[i];
-                result.set(c.layer, c.build());
-            }
-			
+		    DispatchPolyStream result = PolyStreams.claimDispatch();
+		    provideFormattedQuads(key, false, result);
+		    result.build();
 			return result;
 		}
     }
@@ -157,13 +127,6 @@ public class SuperDispatcher
     
     private SuperDispatcher()
     {
-        this.layerMapBuilders = new SparseLayerMapBuilder[RenderLayout.COMBINATION_COUNT];
-
-        for(int i = 0; i < RenderLayout.COMBINATION_COUNT; i++)
-        {
-            this.layerMapBuilders[i] = new SparseLayerMapBuilder(RenderLayout.ALL_LAYOUTS.get(i).blockLayerList);
-        }
-        
         this.delegates = new DispatchDelegate[RenderLayout.ALL_LAYOUTS.size()];
         for(RenderLayout layout : RenderLayout.ALL_LAYOUTS)
         {
@@ -182,16 +145,7 @@ public class SuperDispatcher
     {
         if(!modelState.getRenderLayout().containsBlockRenderLayer(BlockRenderLayer.SOLID)) return 0;
 
-        SparseLayerMap map = modelCache.get(modelState);
-        
-
-        QuadContainer container = map.get(BlockRenderLayer.SOLID);
-        if(container == null) 
-        {
-            ExoticMatter.INSTANCE.warn("Missing model for occlusion key.");
-            return 0;
-        }
-        return container.getOcclusionHash(face);
+        return modelCache.get(modelState).getOcclusionHash(face);
     }
     
     private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
@@ -264,16 +218,17 @@ public class SuperDispatcher
          */
         public void forAllPaintedQuads(IExtendedBlockState state, Consumer<IPolygon> consumer)
         {
-            ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
+            final ISuperModelState modelState = state.getValue(ISuperBlock.MODEL_STATE);
+            final IStreamReaderPolygon reader = modelCache.get(modelState).claimThreadSafeReader();
             
-            SparseLayerMap map = modelCache.get(modelState);
-            for(QuadContainer qc : map.getAll())
+            if(reader.hasValue())
             {
-                if(qc != null)
-                {
-                    qc.forEachPaintedQuad(consumer);
-                }
+                do
+                    consumer.accept(reader);
+                while(reader.next());
             }
+                
+            reader.release();
         }
         
         @Override
@@ -282,22 +237,48 @@ public class SuperDispatcher
             return forLayer == null || this.blockRenderLayout.containsBlockRenderLayer(forLayer);
         }
         
+        private void produceQuadsInner(IStreamReaderPolygon reader, int firstAddress, IPipelinedQuadConsumer quadConsumer)
+        {
+            if(firstAddress == IPolygon.NO_LINK_OR_TAG)
+                return;
+            
+            reader.moveTo(firstAddress);
+            
+            do
+                quadConsumer.accept(reader);
+            while(reader.nextLink());
+        }
+        
         @Override
         public void produceQuads(@SuppressWarnings("null") IPipelinedQuadConsumer quadConsumer)
         {
             @SuppressWarnings("null")
-            ISuperModelState modelState = ((IExtendedBlockState)quadConsumer.blockState()).getValue(ISuperBlock.MODEL_STATE);
-            SparseLayerMap map = modelCache.get(modelState);
-            QuadContainer qc = map.get(MinecraftForgeClient.getRenderLayer());
-            if(qc != null)
-            {
-                qc.forEachPaintedQuad(null, q -> quadConsumer.accept(q));
-                for(EnumFacing face : EnumFacing.VALUES)
-                {
-                    if(quadConsumer.shouldOutputSide(face))
-                            qc.forEachPaintedQuad(face, q -> quadConsumer.accept(q));
-                }
-            }
+            final ISuperModelState modelState = ((IExtendedBlockState)quadConsumer.blockState()).getValue(ISuperBlock.MODEL_STATE);
+            final DispatchPolyStream stream = modelCache.get(modelState);
+            final IStreamReaderPolygon reader = stream.claimThreadSafeReader();
+            final BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
+           
+            produceQuadsInner(reader, stream.firstAddress(layer, null), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.DOWN))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.DOWN), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.UP))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.UP), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.EAST))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.EAST), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.WEST))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.WEST), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.NORTH))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.NORTH), quadConsumer);
+            
+            if(quadConsumer.shouldOutputSide(EnumFacing.SOUTH))
+                produceQuadsInner(reader, stream.firstAddress(layer, EnumFacing.SOUTH), quadConsumer);
+            
+            reader.release();
         }
         
         @Override
@@ -312,9 +293,10 @@ public class SuperDispatcher
         {
             if(state == null) return QuadHelper.EMPTY_QUAD_LIST;
     
-            ISuperModelState modelState = ((IExtendedBlockState)state).getValue(ISuperBlock.MODEL_STATE);
+            final ISuperModelState modelState = ((IExtendedBlockState)state).getValue(ISuperBlock.MODEL_STATE);
             
-            BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
+            final BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
+            
             
             // If no renderIntent set then probably getting request from block breaking
             if(layer == null)
@@ -324,11 +306,25 @@ public class SuperDispatcher
             }
             else
             {
-                SparseLayerMap map = modelCache.get(modelState);
-                QuadContainer container = map.get(layer);
-                if(container == null)
-                        return QuadHelper.EMPTY_QUAD_LIST;
-                return container.getBakedQuads(side);
+                final DispatchPolyStream stream = modelCache.get(modelState);
+                
+                final int address = stream.firstAddress(layer, side);
+                if(address == IPolygon.NO_LINK_OR_TAG)
+                    return ImmutableList.of();
+                
+                // PERF - will be bad when Acuity disabled. Maybe implement IBakedQuad interface in 1.13?
+                // Would need to finalize concurrent readers so that streams get released
+                final ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
+                final IStreamReaderPolygon reader = stream.claimThreadSafeReader();
+                
+                reader.moveTo(address);
+                do
+                    reader.addBakedQuadsToBuilder(layer, builder, false);
+                while(reader.nextLink());
+                
+                reader.release();
+                
+                return builder.build();
             }
         }
          

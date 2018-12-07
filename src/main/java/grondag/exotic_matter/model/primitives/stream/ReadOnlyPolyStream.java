@@ -22,9 +22,9 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
     }
     
     @Override
-    public void release()
+    protected void doRelease()
     {
-        super.release();
+        super.doRelease();
         PolyStreams.release(this);
     }
 }

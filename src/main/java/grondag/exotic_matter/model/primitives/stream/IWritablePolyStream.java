@@ -72,11 +72,6 @@ public interface IWritablePolyStream extends IPolyStream
     void loadDefaults();
     
     /**
-     * Loads WIP with poly at given stream.
-     */
-    void copyFromAddress(int address);
-  
-    /**
      * Releases this stream and returns an immutable reader stream.
      * The reader strip will use non-pooled heap memory and thus 
      * should only be used for streams with a significant lifetime

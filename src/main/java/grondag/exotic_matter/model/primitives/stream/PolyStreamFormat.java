@@ -103,16 +103,14 @@ public class PolyStreamFormat
     }
     
     /** use full precision face normal - normal needs to be computed from vertices */ 
-    public static final int FACE_NORMAL_FORMAT_FULL_MISSING = 0;
-    /** use full precision face normal - normal has already been computed from vertices */ 
-    public static final int FACE_NORMAL_FORMAT_FULL_PRESENT = 1;
+    public static final int FACE_NORMAL_FORMAT_COMPUTED = 0;
     /** use quantized normal - normal will be computed when poly is written */ 
-    public static final int FACE_NORMAL_FORMAT_QUANTIZED = 2;
+    public static final int FACE_NORMAL_FORMAT_QUANTIZED = 1;
     /** 
      * use normal of nominal face - used when a poly about to be written is found
      * to have a face normal that matches the nominal face.  Requires no storage.
      */
-    public static final int FACE_NORMAL_FORMAT_NOMINAL = 3;
+    public static final int FACE_NORMAL_FORMAT_NOMINAL = 2;
     
     private static final BitPacker32<PolyStreamFormat>.IntElement FACE_NORMAL_FORMAT = BITPACKER.createIntElement(4);
     
@@ -359,8 +357,7 @@ public class PolyStreamFormat
         if(faceNormal.equals(Vec3f.forFace(nominalFace)))
             result =  setFaceNormalFormat(result, FACE_NORMAL_FORMAT_NOMINAL);
         else
-            result =  setFaceNormalFormat(result, FACE_NORMAL_FORMAT_FULL_MISSING);
-        
+            result =  setFaceNormalFormat(result, FACE_NORMAL_FORMAT_COMPUTED);
         
         boolean allFaceNormal = true;
         int firstGlow = polyIn.getVertexGlow(0);
@@ -382,6 +379,15 @@ public class PolyStreamFormat
             if(allSameGlow && v > 0 && polyIn.getVertexGlow(v) != firstGlow)
                 allSameGlow = false;
 
+            
+            //TODO: remove
+            if(allFaceNormal && polyIn.hasVertexNormal(v))
+            {
+                Vec3f norm = polyIn.getVertexNormal(v);
+                if(norm == null)
+                    norm = polyIn.getVertexNormal(v);
+            }
+            
             // vertex normal
             if(allFaceNormal && polyIn.hasVertexNormal(v) && !polyIn.getVertexNormal(v).equals(faceNormal))
                 allFaceNormal = false;
@@ -439,7 +445,7 @@ public class PolyStreamFormat
         else
             result = setVertexColorFormat(result, VERTEX_COLOR_PER_VERTEX_LAYER);
         
-        return result;
+        return result & ~MUTABLE_FLAG;
     }
 
     /**

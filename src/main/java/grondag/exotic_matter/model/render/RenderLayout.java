@@ -9,8 +9,7 @@ import net.minecraft.util.BlockRenderLayer;
 
 /**
  * Answers question how many layers a block/model can render in.  
- * Used for two big things: size dispatch containers
- * and respond to inquries from renderer about which layers a block can render in. <p>
+ * Used to respond to inquiries from renderer about which layers a block can render in. <p>
  * 
  * Regular class to allow static access during enum initialization.
  *

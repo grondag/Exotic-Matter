@@ -1,7 +1,6 @@
 package grondag.exotic_matter.model.render;
 
 import java.util.List;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -9,8 +8,6 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.vertex.IVec3f;
-import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.varia.structures.SimpleUnorderedArrayList;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.BlockRenderLayer;
@@ -118,8 +115,7 @@ public class QuadContainer
 
     private int computeOcclusionHash(EnumFacing face)
     {
-        //PERF: make this guy threadlocal
-        QuadListKeyBuilder keyBuilder = new QuadListKeyBuilder(face);
+        QuadListKeyBuilder keyBuilder = QuadListKeyBuilder.prepareThreadLocal(face);
         this.forEachPaintedQuad(face, keyBuilder);
         return keyBuilder.getQuadListKey();
     }
@@ -178,90 +174,6 @@ public class QuadContainer
             if(sourceList == null) return 0;
             sourceList.copyToArray(targetArray, firstOpenIndex);
             return sourceList.size();
-        }
-    }
-
-
-    private static class QuadListKeyBuilder implements Consumer<IPolygon>
-    {
-        private final int axis0;
-        private final int axis1;
-
-        private TreeSet<Long> vertexKeys = new TreeSet<Long>();
-
-        private QuadListKeyBuilder(EnumFacing face)
-        {
-            switch(face.getAxis())
-            {
-            case X:
-                axis0 = 1;
-                axis1 = 2;
-                break;
-            case Y:
-                axis0 = 0;
-                axis1 = 2;
-                break;
-            case Z:
-            default:
-                axis0 = 0;
-                axis1 = 1;
-                break;
-            }
-        }
-
-        /** call after piping vertices into this instance */
-        private int getQuadListKey()
-        {
-            long key = 0L;
-            for(Long vk : vertexKeys)
-            {
-                key += Useful.longHash(vk); 
-            }
-            return (int)(key & 0xFFFFFFFF);     
-        }
-
-        private void acceptVertex(float x, float y, float z)
-        {
-            float v0 = 0, v1 = 0;
-            switch(axis0)
-            {
-                case 0:
-                    v0 = x;
-                    break;
-                case 1:
-                    v0 = y;
-                    break;
-                case 2:
-                    v0 = z;
-                    break;
-            }
-            
-            switch(axis1)
-            {
-                case 0:
-                    v1 = x;
-                    break;
-                case 1:
-                    v1 = y;
-                    break;
-                case 2:
-                    v1 = z;
-                    break;
-            }
-            //don't need to check which element - position is the only one included
-            vertexKeys.add(((long)(Float.floatToRawIntBits(v0)) | ((long)(Float.floatToRawIntBits(v1)) << 32)));
-        }
-
-        @Override
-        public void accept(@SuppressWarnings("null") IPolygon t)
-        {
-            final int limit = t.vertexCount();
-            for(int i = 0; i < limit; i++)
-            {
-                IVec3f v = t.getPos(i);
-                this.acceptVertex(v.x(), v.y(), v.z());
-            }
-            
         }
     }
 }

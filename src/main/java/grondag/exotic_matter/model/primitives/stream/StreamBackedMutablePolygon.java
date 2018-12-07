@@ -9,6 +9,7 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.MathHelper;
 
 public class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
 {
@@ -181,7 +182,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         if(vertexEncoder.hasNormals())
         {
             if(normal == null)
-                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), 0, 0, 0);
+                vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), Float.NaN, Float.NaN, Float.NaN);
             else
                 vertexEncoder.setVertexNormal(stream, vertexAddress, vertexIndexer.apply(vertexIndex), normal.x(), normal.y(), normal.z());
         }
@@ -208,12 +209,10 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     {
         int normalFormat = PolyStreamFormat.getFaceNormalFormat(format());
         
-        assert normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING || 
-                normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT
-                : "Face normal clear should only happen for full-precision polys";
+        assert normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_COMPUTED
+                : "Face normal clear should only happen for full-precision normals";
         
-        if(normalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_PRESENT)
-            setFormat(PolyStreamFormat.setFaceNormalFormat(format(), PolyStreamFormat.FACE_NORMAL_FORMAT_FULL_MISSING));
+        polyEncoder.clearFaceNormal(stream, baseAddress);
         return this;
     }
 
@@ -234,13 +233,17 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
     @Override
     public final IMutablePolygon copyVertexFrom(int targetIndex, IPolygon source, int sourceIndex)
     {
+        //TODO: remove
+        Vec3f sourceNorm = source.getVertexNormal(sourceIndex);
+        assert sourceNorm == null || MathHelper.epsilonEquals(source.getVertexNormal(sourceIndex).length(), 1f);
+        
         if(source.hasVertexNormal(sourceIndex))
         {
             assert vertexEncoder.hasNormals();
             setVertexNormal(targetIndex, source.getVertexNormalX(sourceIndex), source.getVertexNormalY(sourceIndex), source.getVertexNormalZ(sourceIndex));
         }
         else if(vertexEncoder.hasNormals())
-            setVertexNormal(targetIndex, 0, 0, 0);
+            setVertexNormal(targetIndex, null);
 
         setVertexPos(targetIndex, source.getVertexX(sourceIndex), source.getVertexY(sourceIndex), source.getVertexZ(sourceIndex));
 
@@ -252,16 +255,14 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         final int layerCount = source.layerCount();
         assert layerCount <= layerCount();
         
-        if(vertexEncoder.hasColor())
+        // do for all vertices even if all the same - slightly wasteful but fewer logic paths
+        setVertexColor(0, targetIndex, source.getVertexColor(0, sourceIndex));
+        if(layerCount > 1)
         {
-            setVertexColor(0, targetIndex, source.getVertexColor(0, sourceIndex));
-            if(layerCount > 1)
-            {
-                setVertexColor(1, targetIndex, source.getVertexColor(1, sourceIndex));
-                
-                if(layerCount == 3)
-                    setVertexColor(2, targetIndex, source.getVertexColor(2, sourceIndex));
-            }
+            setVertexColor(1, targetIndex, source.getVertexColor(1, sourceIndex));
+            
+            if(layerCount == 3)
+                setVertexColor(2, targetIndex, source.getVertexColor(2, sourceIndex));
         }
         
         setVertexUV(0, targetIndex, source.getVertexU(0, sourceIndex), source.getVertexV(0, sourceIndex));
@@ -280,14 +281,18 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
      * Will copy all poly and poly layer attributes. Layer counts must match.
      * Will copy vertices if requested, but vertex counts must match or will throw exception.
      */
-    public void copyFrom(IPolygon polyIn, boolean includeVertices)
+    public final void copyFrom(IPolygon polyIn, boolean includeVertices)
     {
         // PERF: make this faster for other stream-based polys
         setNominalFace(polyIn.getNominalFace());
         setPipeline(polyIn.getPipeline());
         setSurface(polyIn.getSurface());
-        // should not ever be needed, && may cause problems
-        //clearFaceNormal();
+        
+        final int faceNormalFormat = PolyStreamFormat.getFaceNormalFormat(format());
+        if(faceNormalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_COMPUTED)
+                clearFaceNormal();
+        else if(faceNormalFormat == PolyStreamFormat.FACE_NORMAL_FORMAT_QUANTIZED)
+            polyEncoder.setFaceNormal(stream, faceNormalFormat, polyIn.getFaceNormal());
         
         final int layerCount = polyIn.layerCount();
         assert layerCount == layerCount();
@@ -314,9 +319,21 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
             {
                 for(int i = 0; i < vertexCount; i++)
                     this.copyVertexFrom(i, polyIn, i);
+                
+                //TODO: remove
+                for(int i = 0; i < vertexCount; i++)
+                {
+                    Vec3f n = getVertexNormal(i);
+                    if(n == null)
+                        n = getVertexNormal(i);
+                    if(!MathHelper.epsilonEquals(n.length(), 1f))
+                        n = getVertexNormal(i);
+                }
             }
             else
                 throw new UnsupportedOperationException("Polygon vertex counts must match when copying vertex data.");
+            
+            
         }
     }
 }

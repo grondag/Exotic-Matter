@@ -71,6 +71,11 @@ public abstract class EncoderFunctions
     public static final IntGetter GET_INT = (stream, address) -> stream.get(address);
 
     public static final IntGetter GET_INT_WHITE = (stream, address) -> 0xFFFFFFFF;
+    public static final IntSetter SET_INT_WHITE = (stream, address, value) -> 
+    {
+        if(value != 0xFFFFFFFF)
+            throw new UnsupportedOperationException();
+    };
     
     public static final IntGetter GET_HALF_INT_LOW = (stream, address) -> stream.get(address) & 0xFFFF;
     public static final IntGetter GET_HALF_INT_HIGH = (stream, address) -> (stream.get(address) >>> 16) & 0xFFFF;
@@ -109,5 +114,4 @@ public abstract class EncoderFunctions
     public static final FloatGetter GET_NORMAL_Z_QUANTIZED = (stream, address) -> NormalQuantizer.unpackZ(stream.get(address));
     public static final FloatSetter3 SET_NORMAL_XYZ_QUANTIZED = (stream, address, x, y, z) 
             -> stream.set(address, NormalQuantizer.pack(x, y, z));
-
 }

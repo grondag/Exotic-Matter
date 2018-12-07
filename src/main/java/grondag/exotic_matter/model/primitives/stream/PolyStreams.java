@@ -10,6 +10,7 @@ public class PolyStreams
     
     private static final ArrayBlockingQueue<WritablePolyStream> writables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<ReadOnlyPolyStream> readables = new ArrayBlockingQueue<>(256);
+    private static final ArrayBlockingQueue<DispatchPolyStream> dispatches = new ArrayBlockingQueue<>(256);
     
     public static IWritablePolyStream claimWritable()
     {
@@ -39,10 +40,23 @@ public class PolyStreams
         return result;
     }
 
-    public static void release(ReadOnlyPolyStream freeStream)
+    static void release(ReadOnlyPolyStream freeStream)
     {
         readables.offer(freeStream);
     }
     
+    public static DispatchPolyStream claimDispatch()
+    {
+        DispatchPolyStream result = dispatches.poll();
+        if(result == null)
+            result = new DispatchPolyStream();
+        result.prepare();
+        return result;
+    }
+    
+    static void release(DispatchPolyStream freeStream)
+    {
+        dispatches.offer(freeStream);
+    }
     
 }

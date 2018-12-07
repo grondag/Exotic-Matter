@@ -1,6 +1,11 @@
 package grondag.exotic_matter.model.primitives.stream;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IStreamReaderPolygon;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 
 public abstract class AbstractPolyStream implements IPolyStream
@@ -12,19 +17,28 @@ public abstract class AbstractPolyStream implements IPolyStream
      * Some streams with additional metadata may
      * start at something other than zero.
      */
-    protected int originAddress = 0;
+    protected int originAddress;
     
     /**
      * Address where next append will occur.
      * Equivalently, shows how many ints have
      * been written after {@link #originAddress}.
      */
-    protected int writeAddress = 0;
+    protected int writeAddress;
     
     protected final StreamBackedPolygon reader = new StreamBackedPolygon();
     protected final StreamBackedPolygon polyA = new StreamBackedPolygon();
     protected final StreamBackedPolygon polyB = new StreamBackedPolygon();
     protected final StreamBackedMutablePolygon internal = new StreamBackedMutablePolygon();
+    
+    /**
+     * Value used to initialize origin and writer for new streams and on reset.
+     * Override if stream needs to pack metadatq at front.
+     */
+    protected int newOrigin()
+    {
+        return 0;
+    }
     
     protected final boolean isValidAddress(int address)
     {
@@ -56,27 +70,32 @@ public abstract class AbstractPolyStream implements IPolyStream
             reader.moveTo(originAddress);
     }
 
-    @Override
-    public boolean next()
+    protected boolean moveReaderToNext(StreamBackedPolygon targetReader)
     {
-        int currentAddress = reader.baseAddress;
+        int currentAddress = targetReader.baseAddress;
         if(currentAddress >= writeAddress || currentAddress == EncoderFunctions.BAD_ADDRESS)
             return false;
         
-        int nextAddress = currentAddress + reader.stride();
+        int nextAddress = currentAddress + targetReader.stride();
         if(nextAddress >= writeAddress)
             return false;
         
-        reader.moveTo(nextAddress);
+        targetReader.moveTo(nextAddress);
         
-        while(reader.isDeleted() && currentAddress < writeAddress)
+        while(targetReader.isDeleted() && currentAddress < writeAddress)
         {
-            nextAddress = currentAddress + reader.stride();
-            reader.moveTo(nextAddress);
+            nextAddress = currentAddress + targetReader.stride();
+            targetReader.moveTo(nextAddress);
             currentAddress = nextAddress;
         }
         
         return currentAddress < writeAddress;
+    }
+    
+    @Override
+    public boolean next()
+    {
+        return moveReaderToNext(this.reader);
     }
 
     @Override
@@ -100,13 +119,14 @@ public abstract class AbstractPolyStream implements IPolyStream
 
     void prepare(IIntStream stream)
     {
+        didRelease.set(false);
         this.stream = stream;
+        originAddress = newOrigin();
         reader.stream = stream;
         polyA.stream = stream;
         polyB.stream = stream;
         internal.stream =stream;
-        originAddress = 0;
-        writeAddress = 0;
+        writeAddress = originAddress;
         
         // force error on read
         reader.invalidate();
@@ -116,7 +136,16 @@ public abstract class AbstractPolyStream implements IPolyStream
     }
     
     @Override
-    public void release()
+    public final void release()
+    {
+        if(didRelease.compareAndSet(false, true) && readerCount.get() == 0)
+            doRelease();
+    }
+    
+    /**
+     * Will be called after release is called and no more concurrent readers are active.
+     */
+    protected void doRelease()
     {
         reader.invalidate();
         reader.stream = null;
@@ -237,31 +266,36 @@ public abstract class AbstractPolyStream implements IPolyStream
         reader.setLink(IPolygon.NO_LINK_OR_TAG);
     }
 
-    @Override
-    public boolean nextLink()
+    protected boolean moveReaderToNextLink(StreamBackedPolygon targetReader)
     {
-        int currentAddress = reader.baseAddress;
+        int currentAddress = targetReader.baseAddress;
         if(currentAddress >= writeAddress || currentAddress == EncoderFunctions.BAD_ADDRESS)
             return false;
         
-        int nextAddress = reader.getLink();
+        int nextAddress = targetReader.getLink();
         if(nextAddress == IPolygon.NO_LINK_OR_TAG || nextAddress >= writeAddress)
             return false;
         
-        reader.moveTo(nextAddress);
+        targetReader.moveTo(nextAddress);
         currentAddress = nextAddress;
         
-        while(currentAddress < writeAddress && reader.isDeleted())
+        while(currentAddress < writeAddress && targetReader.isDeleted())
         {
-            nextAddress = reader.getLink();
+            nextAddress = targetReader.getLink();
             if(nextAddress == IPolygon.NO_LINK_OR_TAG || nextAddress >= writeAddress)
                 return false;
             
-            reader.moveTo(nextAddress);
+            targetReader.moveTo(nextAddress);
             currentAddress = nextAddress;
         }
         
-        return currentAddress < writeAddress && !reader.isDeleted();
+        return currentAddress < writeAddress && !targetReader.isDeleted();
+    }
+    
+    @Override
+    public boolean nextLink()
+    {
+        return moveReaderToNextLink(this.reader);
     }
 
     @Override
@@ -292,7 +326,7 @@ public abstract class AbstractPolyStream implements IPolyStream
         return internal.isMarked();
     }
 
-    protected void appendCopy(IPolygon polyIn, int withFormat)
+    protected final void appendCopy(IPolygon polyIn, int withFormat)
     {
         final boolean needReaderLoad = reader.baseAddress == writeAddress;
         final int newFormat = PolyStreamFormat.minimalFixedFormat(polyIn, withFormat);
@@ -303,5 +337,89 @@ public abstract class AbstractPolyStream implements IPolyStream
         
         if(needReaderLoad)
             reader.loadFormat();
+    }
+    
+    private static class ThreadSafeReader extends StreamBackedPolygon implements IStreamReaderPolygon
+    {
+        AbstractPolyStream polyStream;
+
+        @Override
+        public final void release()
+        {
+            super.release();
+            if(polyStream.readerCount.decrementAndGet() == 0 && polyStream.didRelease.get() == true)
+                polyStream.doRelease();
+            stream = null;
+            polyStream = null;
+            safeReaders.offer(this);
+        }
+
+        @Override
+        public final void retain()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final void releaseLast()
+        {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public void moveTo(int address)
+        {
+            super.moveTo(address);
+        }
+
+        @Override
+        public boolean hasValue()
+        {
+            return polyStream.isValidAddress(baseAddress);
+        }
+
+        @Override
+        public boolean next()
+        {
+            return polyStream.moveReaderToNext(this);
+        }
+
+        @Override
+        public boolean nextLink()
+        {
+            return polyStream.moveReaderToNextLink(this);
+        }
+    }
+    
+    private static final ArrayBlockingQueue<ThreadSafeReader> safeReaders = new ArrayBlockingQueue<>(256);
+    
+    /**
+     * True once our release method has been called. Reset on prepare.
+     */
+    protected final AtomicBoolean didRelease = new AtomicBoolean();
+    protected final AtomicInteger readerCount = new AtomicInteger();
+    
+    
+    /**
+     * Should only be exposed for streams that are immutable.
+     */
+    protected IStreamReaderPolygon claimThreadSafeReaderImpl()
+    {
+        readerCount.incrementAndGet();
+        
+        if(this.didRelease.get())
+        {
+            readerCount.decrementAndGet();
+            throw new UnsupportedOperationException("Cannot claim threadsafe reader on released stream.");
+        }
+        
+        ThreadSafeReader reader = safeReaders.poll();
+        if(reader == null)
+            reader = new ThreadSafeReader();
+        
+        reader.polyStream = this;
+        reader.stream = this.stream;
+        reader.moveTo(this.originAddress);
+        return reader;
     }
 }
