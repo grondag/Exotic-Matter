@@ -90,7 +90,7 @@ public class PolyStreamFormat
     public static final int HAS_BOUNDS_FLAG = HAS_BOUNDS.comparisonMask();
     
     /**
-     * If true, then polygon has bounds data. Used for CSG.
+     * If true, then polygon has bounds/plane distance data. Used for CSG.
      */
     public static boolean isBounded(int formatIn)
     {

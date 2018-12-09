@@ -33,6 +33,7 @@ import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.VER
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getFaceNormalFormat;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getLayerCount;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getVertexColorFormat;
+import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isBounded;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isHalfPrecisionPolyUV;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isLinked;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isMutable;
@@ -165,6 +166,17 @@ public class PolyEncoder
     private final int colorOffset0;
     private final int colorOffset1;
     private final int colorOffset2;
+    
+    private final FloatGetter getBounds;
+    private final FloatSetter setBounds;
+    private final FloatSetter3 setBounds3;
+    private final int boundsDistOffset;
+    private final int boundsMinXOffset;
+    private final int boundsMinYOffset;
+    private final int boundsMinZOffset;
+    private final int boundsMaxXOffset;
+    private final int boundsMaxYOffset;
+    private final int boundsMaxZOffset;
     
     private PolyEncoder(int format)
     {
@@ -361,6 +373,18 @@ public class PolyEncoder
                 colorOffset2 = BAD_ADDRESS;
                 break;
         }
+        
+        final boolean bounded = isBounded(format);
+        getBounds = bounded ? GET_FLOAT : GET_FLOAT_FAIL;
+        setBounds = bounded ? SET_FLOAT : SET_FLOAT_FAIL;
+        setBounds3 = bounded ? SET_FLOAT3 : SET_FLOAT3_FAIL;
+        boundsDistOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMinXOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMinYOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMinZOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMaxXOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMaxYOffset = bounded ? offset++ : BAD_ADDRESS;
+        boundsMaxZOffset = bounded ? offset++ : BAD_ADDRESS;
         
         stride = offset - baseOffset;
     }
@@ -563,5 +587,51 @@ public class PolyEncoder
             setColor1.set(stream, baseAddress + colorOffset1, color);
         else
             setColor2.set(stream, baseAddress + colorOffset2, color);
+    }
+    
+    public final float getBoundsDist(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsDistOffset);
+    }
+    
+    public final void setBoundsDist(IIntStream stream, int baseAddress, float dist)
+    {
+        this.setBounds.set(stream, baseAddress + boundsDistOffset, dist);
+    }
+    
+    public final float getBoundsMinX(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMinXOffset);
+    }
+    
+    public final float getBoundsMinY(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMinYOffset);
+    }
+    
+    public final float getBoundsMinZ(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMinZOffset);
+    }
+    
+    public final float getBoundsMaxX(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMaxXOffset);
+    }
+    
+    public final float getBoundsMaxY(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMaxYOffset);
+    }
+    
+    public final float getBoundsMaxZ(IIntStream stream, int baseAddress)
+    {
+        return getBounds.get(stream, baseAddress + boundsMaxZOffset);
+    }
+    
+    public final void setBounds(IIntStream stream, int baseAddress, float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+    {
+        this.setBounds3.set(stream, baseAddress + boundsMinXOffset, minX, minY, minZ);
+        this.setBounds3.set(stream, baseAddress + boundsMaxXOffset, maxX, maxY, maxZ);
     }
 }
