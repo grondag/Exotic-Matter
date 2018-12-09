@@ -86,20 +86,20 @@ public class PolyStreamFormat
         return HAS_TAG.setValue(isTagged, formatIn);
     }
     
-    private static final BitPacker32<PolyStreamFormat>.BooleanElement HAS_BOUNDS = BITPACKER.createBooleanElement();
-    public static final int HAS_BOUNDS_FLAG = HAS_BOUNDS.comparisonMask();
+    private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_CSG = BITPACKER.createBooleanElement();
+    public static final int CSG_FLAG = IS_CSG.comparisonMask();
     
     /**
      * If true, then polygon has bounds/plane distance data. Used for CSG.
      */
-    public static boolean isBounded(int formatIn)
+    public static boolean isCSG(int formatIn)
     {
-        return HAS_BOUNDS.getValue(formatIn);
+        return IS_CSG.getValue(formatIn);
     }
     
-    public static int setBounded(int formatIn, boolean isBounded)
+    public static int setCSG(int formatIn, boolean isCsg)
     {
-        return HAS_BOUNDS.setValue(isBounded, formatIn);
+        return IS_CSG.setValue(isCsg, formatIn);
     }
     
     /** use full precision face normal - normal needs to be computed from vertices */ 
@@ -296,7 +296,7 @@ public class PolyStreamFormat
     {
         final int polyMask = HAS_LINK.comparisonMask()
                 | HAS_TAG.comparisonMask()
-                | HAS_BOUNDS.comparisonMask()
+                | IS_CSG.comparisonMask()
                 | FACE_NORMAL_FORMAT.comparisonMask()
                 | HALF_PRECISION_POLY_UV.comparisonMask()
                 | LAYER_COUNT.comparisonMask()

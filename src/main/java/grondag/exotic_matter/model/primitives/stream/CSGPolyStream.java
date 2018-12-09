@@ -82,27 +82,27 @@ public class CSGPolyStream extends MutablePolyStream
     
     private void expandStreamBounds(IPolygon withPoly)
     {
-        float f = internal.boundsMinX();
+        float f = internal.csgMinX();
         if(f < minX)
             minX = f;
         
-        f = internal.boundsMinY();
+        f = internal.csgMinY();
         if(f < minY)
             minY = f;
         
-        f = internal.boundsMinZ();
+        f = internal.csgMinZ();
         if(f < minZ)
             minZ = f;
         
-        f = internal.boundsMaxX();
+        f = internal.csgMaxX();
         if(f > maxX)
             maxX = f;
         
-        f = internal.boundsMaxY();
+        f = internal.csgMaxY();
         if(f > maxY)
             maxY = f;
         
-        f = internal.boundsMaxZ();
+        f = internal.csgMaxZ();
         if(f > maxZ)
             maxZ = f;
     }
@@ -140,8 +140,8 @@ public class CSGPolyStream extends MutablePolyStream
      */
     public boolean intersectsWith(IPolygon poly)
     {
-        if(poly.hasPrecomputedBounds())
-            return intersectsWith(poly.boundsMinX(), poly.boundsMinY(), poly.boundsMinZ(), poly.boundsMaxX(), poly.boundsMaxY(), poly.boundsMaxZ());
+        if(poly.isCSG())
+            return intersectsWith(poly.csgMinX(), poly.csgMinY(), poly.csgMinZ(), poly.csgMaxX(), poly.csgMaxY(), poly.csgMaxZ());
         else
         {
             float minX = poly.getVertexX(0);

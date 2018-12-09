@@ -33,7 +33,7 @@ import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.VER
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getFaceNormalFormat;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getLayerCount;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.getVertexColorFormat;
-import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isBounded;
+import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isCSG;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isHalfPrecisionPolyUV;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isLinked;
 import static grondag.exotic_matter.model.primitives.stream.PolyStreamFormat.isMutable;
@@ -167,16 +167,16 @@ public class PolyEncoder
     private final int colorOffset1;
     private final int colorOffset2;
     
-    private final FloatGetter getBounds;
-    private final FloatSetter setBounds;
-    private final FloatSetter3 setBounds3;
-    private final int boundsDistOffset;
-    private final int boundsMinXOffset;
-    private final int boundsMinYOffset;
-    private final int boundsMinZOffset;
-    private final int boundsMaxXOffset;
-    private final int boundsMaxYOffset;
-    private final int boundsMaxZOffset;
+    private final FloatGetter getCsgBounds;
+    private final FloatSetter setCsgBounds;
+    private final FloatSetter3 setCsgBounds3;
+    private final int csgDistOffset;
+    private final int csgMinXOffset;
+    private final int csgMinYOffset;
+    private final int csgMinZOffset;
+    private final int csgMaxXOffset;
+    private final int csgMaxYOffset;
+    private final int csgMaxZOffset;
     
     private PolyEncoder(int format)
     {
@@ -374,17 +374,17 @@ public class PolyEncoder
                 break;
         }
         
-        final boolean bounded = isBounded(format);
-        getBounds = bounded ? GET_FLOAT : GET_FLOAT_FAIL;
-        setBounds = bounded ? SET_FLOAT : SET_FLOAT_FAIL;
-        setBounds3 = bounded ? SET_FLOAT3 : SET_FLOAT3_FAIL;
-        boundsDistOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMinXOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMinYOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMinZOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMaxXOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMaxYOffset = bounded ? offset++ : BAD_ADDRESS;
-        boundsMaxZOffset = bounded ? offset++ : BAD_ADDRESS;
+        final boolean isCSG = isCSG(format);
+        getCsgBounds = isCSG ? GET_FLOAT : GET_FLOAT_FAIL;
+        setCsgBounds = isCSG ? SET_FLOAT : SET_FLOAT_FAIL;
+        setCsgBounds3 = isCSG ? SET_FLOAT3 : SET_FLOAT3_FAIL;
+        csgDistOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMinXOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMinYOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMinZOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMaxXOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMaxYOffset = isCSG ? offset++ : BAD_ADDRESS;
+        csgMaxZOffset = isCSG ? offset++ : BAD_ADDRESS;
         
         stride = offset - baseOffset;
     }
@@ -589,49 +589,49 @@ public class PolyEncoder
             setColor2.set(stream, baseAddress + colorOffset2, color);
     }
     
-    public final float getBoundsDist(IIntStream stream, int baseAddress)
+    public final float getCsgDist(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsDistOffset);
+        return getCsgBounds.get(stream, baseAddress + csgDistOffset);
     }
     
-    public final void setBoundsDist(IIntStream stream, int baseAddress, float dist)
+    public final void setCsgDist(IIntStream stream, int baseAddress, float dist)
     {
-        this.setBounds.set(stream, baseAddress + boundsDistOffset, dist);
+        this.setCsgBounds.set(stream, baseAddress + csgDistOffset, dist);
     }
     
-    public final float getBoundsMinX(IIntStream stream, int baseAddress)
+    public final float getCsgMinX(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMinXOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMinXOffset);
     }
     
-    public final float getBoundsMinY(IIntStream stream, int baseAddress)
+    public final float getCsgMinY(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMinYOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMinYOffset);
     }
     
-    public final float getBoundsMinZ(IIntStream stream, int baseAddress)
+    public final float getCsgMinZ(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMinZOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMinZOffset);
     }
     
-    public final float getBoundsMaxX(IIntStream stream, int baseAddress)
+    public final float getCsgMaxX(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMaxXOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMaxXOffset);
     }
     
-    public final float getBoundsMaxY(IIntStream stream, int baseAddress)
+    public final float getCsgMaxY(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMaxYOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMaxYOffset);
     }
     
-    public final float getBoundsMaxZ(IIntStream stream, int baseAddress)
+    public final float getCsgMaxZ(IIntStream stream, int baseAddress)
     {
-        return getBounds.get(stream, baseAddress + boundsMaxZOffset);
+        return getCsgBounds.get(stream, baseAddress + csgMaxZOffset);
     }
     
-    public final void setBounds(IIntStream stream, int baseAddress, float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+    public final void setCsgBounds(IIntStream stream, int baseAddress, float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
     {
-        this.setBounds3.set(stream, baseAddress + boundsMinXOffset, minX, minY, minZ);
-        this.setBounds3.set(stream, baseAddress + boundsMaxXOffset, maxX, maxY, maxZ);
+        this.setCsgBounds3.set(stream, baseAddress + csgMinXOffset, minX, minY, minZ);
+        this.setCsgBounds3.set(stream, baseAddress + csgMaxXOffset, maxX, maxY, maxZ);
     }
 }

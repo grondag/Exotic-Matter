@@ -413,45 +413,45 @@ public class StreamBackedPolygon implements IPolygon
     }
 
     @Override
-    public float planeDistance()
+    public float csgPlaneDistance()
     {
-        return polyEncoder.getBoundsDist(stream, baseAddress);
+        return polyEncoder.getCsgDist(stream, baseAddress);
     }
     
     @Override
-    public float boundsMinX()
+    public float csgMinX()
     {
-        return polyEncoder.getBoundsMinX(stream, baseAddress);
+        return polyEncoder.getCsgMinX(stream, baseAddress);
     }
     
     @Override
-    public float boundsMinY()
+    public float csgMinY()
     {
-        return polyEncoder.getBoundsMinY(stream, baseAddress);
+        return polyEncoder.getCsgMinY(stream, baseAddress);
     }
     
     @Override
-    public float boundsMinZ()
+    public float csgMinZ()
     {
-        return polyEncoder.getBoundsMinZ(stream, baseAddress);
+        return polyEncoder.getCsgMinZ(stream, baseAddress);
     }
     
     @Override
-    public float boundsMaxX()
+    public float csgMaxX()
     {
-        return polyEncoder.getBoundsMaxX(stream, baseAddress);
+        return polyEncoder.getCsgMaxX(stream, baseAddress);
     }
     
     @Override
-    public float boundsMaxY()
+    public float csgMaxY()
     {
-        return polyEncoder.getBoundsMaxY(stream, baseAddress);
+        return polyEncoder.getCsgMaxY(stream, baseAddress);
     }
     
     @Override
-    public float boundsMaxZ()
+    public float csgMaxZ()
     {
-        return polyEncoder.getBoundsMaxZ(stream, baseAddress);
+        return polyEncoder.getCsgMaxZ(stream, baseAddress);
     }
     
     public void updateBounds()
@@ -466,7 +466,7 @@ public class StreamBackedPolygon implements IPolygon
         // Distance to plane of poly can be computed from any vertex.
         // At this point min/max values are the same as vertex 0 xyz
         // so can avoid looking them up by computing distance here.
-        polyEncoder.setBoundsDist(stream, baseAddress, 
+        polyEncoder.setCsgDist(stream, baseAddress, 
                 getFaceNormalX() * minX + getFaceNormalY() * minY + getFaceNormalZ() * minZ); 
         
         final int limit = vertexCount() - 1;
@@ -491,6 +491,6 @@ public class StreamBackedPolygon implements IPolygon
                 maxZ = f;
         }
         
-        polyEncoder.setBounds(stream, baseAddress, minX, minY, minZ, maxX, maxY, maxZ);
+        polyEncoder.setCsgBounds(stream, baseAddress, minX, minY, minZ, maxX, maxY, maxZ);
     }
 }
