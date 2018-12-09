@@ -15,7 +15,7 @@ public class CSGPolyStream extends MutablePolyStream
     void prepare()
     {
         super.prepare(IntStreams.claim());
-        resetBounds();
+        clearStreamBounds();
     }
     
     @Override
@@ -67,10 +67,10 @@ public class CSGPolyStream extends MutablePolyStream
         super.appendCopy(polyIn, withFormat);
         internal.moveTo(boundsAddress);
         internal.updateBounds();
-        updateBounds(internal);
+        expandStreamBounds(internal);
     }
     
-    private void resetBounds()
+    private void clearStreamBounds()
     {
         minX = Float.MAX_VALUE;
         minY = Float.MAX_VALUE;
@@ -80,7 +80,7 @@ public class CSGPolyStream extends MutablePolyStream
         maxZ = Float.MIN_VALUE;
     }
     
-    private void updateBounds(IPolygon withPoly)
+    private void expandStreamBounds(IPolygon withPoly)
     {
         float f = internal.boundsMinX();
         if(f < minX)
@@ -111,18 +111,94 @@ public class CSGPolyStream extends MutablePolyStream
      * Call after polys are deleted and the deletion
      * may have significantly reduced overall mesh bounds.
      */
-    public void refreshStreamBounds()
+    public void rebuildStreamBounds()
     {
         final int readerPos = reader.baseAddress;
         
-        resetBounds();
+        clearStreamBounds();
         if(origin())
         {
             do
-                updateBounds(reader);
+                expandStreamBounds(reader);
             while(next());
         }
         
         reader.moveTo(readerPos);
+    }
+    
+    /**
+     * For CSG operations we consider a point on the edge to be intersecting.  
+     */
+    public boolean intersectsWith(double xMin, double yMin, double zMin, double xMax, double yMax, double zMax)
+    {
+
+        return this.minX <= xMax && this.maxX >= xMin && this.minY <= yMax && this.maxY >= yMin && this.minZ <= zMax && this.maxZ >= zMin;
+    }
+    
+    /**
+     * For CSG operations we consider a point on the edge to be intersecting.  
+     */
+    public boolean intersectsWith(IPolygon poly)
+    {
+        if(poly.hasPrecomputedBounds())
+            return intersectsWith(poly.boundsMinX(), poly.boundsMinY(), poly.boundsMinZ(), poly.boundsMaxX(), poly.boundsMaxY(), poly.boundsMaxZ());
+        else
+        {
+            float minX = poly.getVertexX(0);
+            float minY = poly.getVertexY(0);
+            float minZ = poly.getVertexZ(0);
+            float maxX = minX;
+            float maxY = minY;
+            float maxZ = minZ;
+            
+            final int vCount = poly.vertexCount();
+            for(int i = 1; i < vCount; i++)
+            {
+                final float x = poly.getVertexX(i);
+                if(x < minX)  
+                    minX = x;
+                else if(x > maxX)
+                    maxX = x;
+                
+                final float y = poly.getVertexY(i);
+                if(y < minY)  
+                    minY = y;
+                else if(y > maxY)
+                    maxY = y;
+                
+                final float z = poly.getVertexZ(i);
+                if(z < minZ)  
+                    minZ = z;
+                else if(z > maxZ)
+                    maxZ = z;
+            }
+            return intersectsWith(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+    }
+    
+    /**
+     * For CSG operations we consider a point on the edge to be intersecting.  
+     */
+    public boolean intersectsWith(CSGPolyStream stream)
+    {
+        return intersectsWith(stream.boundsMinX(), stream.boundsMinY(), stream.boundsMinZ(), stream.boundsMaxX(), stream.boundsMaxY(), stream.boundsMaxZ());
+    }
+
+    public void invert()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void clipTo(CSGPolyStream b)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void recombineQuads()
+    {
+        // TODO Auto-generated method stub
+        
     }
 }

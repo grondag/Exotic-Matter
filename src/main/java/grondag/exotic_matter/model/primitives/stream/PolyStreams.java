@@ -84,6 +84,12 @@ public class PolyStreams
         return result;
     }
     
+    public static CSGPolyStream claimCSG(IPolyStream stream)
+    {
+        CSGPolyStream result = claimCSG();
+        result.appendAll(stream);
+        return result;
+    }
     static void release(CSGPolyStream freeStream)
     {
         csgStreams.offer(freeStream);
