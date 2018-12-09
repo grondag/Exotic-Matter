@@ -13,7 +13,6 @@ import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
@@ -46,7 +45,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         if(cachedQuads.isEmpty())
             return;
@@ -55,7 +54,7 @@ public class SphereMeshFactory extends ShapeMeshGenerator implements ICollisionH
         IPolygon reader = cachedQuads.reader();
         
         do
-            target.accept(reader.claimCopy());
+            target.accept(reader);
         while(cachedQuads.next());
     }
     

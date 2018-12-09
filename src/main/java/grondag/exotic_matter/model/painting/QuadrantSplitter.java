@@ -1,11 +1,11 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.world.FaceCorner;
 
 /**
@@ -81,15 +81,25 @@ public class QuadrantSplitter
         }
     }
     
-    public static final void splitAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, int layerIndex)
+    /**
+     * Stream editor must be at split position. <br>
+     * May move editor but returns editor to position at call time if it does so.<br>
+     * If split occurs, poly at editor position will be marked deleted.<p>
+     * 
+     * May also move reader, and does not restore reader position if it does so.
+     */
+    public static final void split(IMutablePolyStream stream, int layerIndex)
     {
+        final int editorAddress = stream.editorAddress();
+        final IPolygon reader = stream.reader(editorAddress);
+        
         int lowCount = 0;
         int highCount = 0;
-        final int vCount = quad.vertexCount();
+        final int vCount = reader.vertexCount();
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertexU(layerIndex, i));
+            final int t = vertexType(reader.getVertexU(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -98,53 +108,61 @@ public class QuadrantSplitter
         
         if(lowCount == 0)
             // all on on high side
-            splitVAndPaint(quad, target, true, layerIndex);
+            splitV(stream, editorAddress, true, layerIndex);
         else if(highCount == 0)
             // all on low side
-            splitVAndPaint(quad, target, false, layerIndex);
+            splitV(stream, editorAddress, false, layerIndex);
         else
         {
             // spanning
-            IMutablePolygon high = quad.claimCopy(highCount + 2);
-            int iHighVertex = 0;
+            IMutablePolygon writer = stream.writer();
             
-            IMutablePolygon low = quad.claimCopy(lowCount + 2);
+            int highAddress = stream.writerAddress();
+            int iHighVertex = 0;
+            stream.setVertexCount(highCount + 2);
+            writer.copyFrom(reader, false);
+            stream.append();
+            
+            int lowAddress = stream.writerAddress();
             int iLowVertex = 0;
+            stream.setVertexCount(lowCount + 2);
+            writer.copyFrom(reader, false);
+            stream.append();
             
             int iThis = vCount - 1;
-            float uThis = quad.getVertexU(layerIndex, iThis);
+            float uThis = reader.getVertexU(layerIndex, iThis);
             int thisType = vertexType(uThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final float uNext = quad.getVertexU(layerIndex, iNext);
+                final float uNext = reader.getVertexU(layerIndex, iNext);
                 final int nextType = vertexType(uNext);
                 
                 if(thisType == EDGE)
                 {
-                    high.copyVertexFrom(iHighVertex++, quad, iThis);
-                    low.copyVertexFrom(iLowVertex++, quad, iThis);
+                    stream.editor(highAddress).copyVertexFrom(iHighVertex++, reader, iThis);
+                    stream.editor(lowAddress).copyVertexFrom(iLowVertex++, reader, iThis);
                 }
                 else if(thisType == HIGH)
                 {
-                    high.copyVertexFrom(iHighVertex++, quad, iThis);
+                    stream.editor(highAddress).copyVertexFrom(iHighVertex++, reader, iThis);
                     if(nextType == LOW)
                     {
                         final float dist = (0.5f - uThis) / (uNext - uThis);
-                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
-                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        stream.editor(lowAddress).copyInterpolatedVertexFrom(iLowVertex, reader, iThis, reader, iNext, dist);
+                        stream.editor(highAddress).copyVertexFrom(iHighVertex, stream.polyA(lowAddress), iLowVertex);
                         iLowVertex++;
                         iHighVertex++;
                     }
                 }
                 else
                 {
-                    low.copyVertexFrom(iLowVertex++, quad, iThis);
+                    stream.editor(lowAddress).copyVertexFrom(iLowVertex++, reader, iThis);
                     if(nextType == HIGH)
                     {
                         final float dist = (0.5f - uThis) / (uNext - uThis);
-                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
-                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        stream.editor(lowAddress).copyInterpolatedVertexFrom(iLowVertex, reader, iThis, reader, iNext, dist);
+                        stream.editor(highAddress).copyVertexFrom(iHighVertex, stream.polyA(lowAddress), iLowVertex);
                         iLowVertex++;
                         iHighVertex++;
                     }
@@ -154,23 +172,28 @@ public class QuadrantSplitter
                 thisType = nextType;
             }
             
-            splitVAndPaint(high, target, true, layerIndex);
-            splitVAndPaint(low, target, false, layerIndex);
+            reader.setDeleted();
             
-            // quad isn't passed on so release it
-            quad.release();
+            splitV(stream, highAddress, true, layerIndex);
+            splitV(stream, lowAddress, false, layerIndex);
+            
+            // restore editor position if we moved it
+            if(stream.editorAddress() != editorAddress)
+                stream.moveEditor(editorAddress);
         }
     }
     
-    private static final void splitVAndPaint(IMutablePolygon quad, Consumer<IMutablePolygon> target, boolean isHighU, int layerIndex)
+    private static final void splitV(IMutablePolyStream stream, int polyAddress, boolean isHighU, int layerIndex)
     {
+        final IPolygon reader = stream.reader(polyAddress);
+        
         int lowCount = 0;
         int highCount = 0;
-        final int vCount = quad.vertexCount();
+        final int vCount = reader.vertexCount();
         
         for(int i = 0; i < vCount; i++)
         {
-            final int t = vertexType(quad.getVertexV(layerIndex, i));
+            final int t = vertexType(reader.getVertexV(layerIndex, i));
             if(t == HIGH)
                 highCount++;
             else if(t == LOW)
@@ -179,53 +202,61 @@ public class QuadrantSplitter
         
         if(lowCount == 0)
             // all on on high side
-            target.accept(quad);
+            return;
         else if(highCount == 0)
             // all on low side
-            target.accept(quad);
+            return;
         else
         {
             // spanning
-            IMutablePolygon high = quad.claimCopy(highCount + 2);
-            int iHighVertex = 0;
+            IMutablePolygon writer = stream.writer();
             
-            IMutablePolygon low = quad.claimCopy(lowCount + 2);
+            int highAddress = stream.writerAddress();
+            int iHighVertex = 0;
+            stream.setVertexCount(highCount + 2);
+            writer.copyFrom(reader, false);
+            stream.append();
+            
+            int lowAddress = stream.writerAddress();
             int iLowVertex = 0;
+            stream.setVertexCount(lowCount + 2);
+            writer.copyFrom(reader, false);
+            stream.append();
             
             int iThis = vCount - 1;
-            float vThis = quad.getVertexV(layerIndex, iThis);
+            float vThis = reader.getVertexV(layerIndex, iThis);
             int thisType = vertexType(vThis);
                     
             for(int iNext = 0; iNext < vCount; iNext++)
             {
-                final float vNext = quad.getVertexV(layerIndex, iNext);
+                final float vNext = reader.getVertexV(layerIndex, iNext);
                 final int nextType = vertexType(vNext);
                 
                 if(thisType == EDGE)
                 {
-                    high.copyVertexFrom(iHighVertex++, quad, iThis);
-                    low.copyVertexFrom(iLowVertex++, quad, iThis);
+                    stream.editor(highAddress).copyVertexFrom(iHighVertex++, reader, iThis);
+                    stream.editor(lowAddress).copyVertexFrom(iLowVertex++, reader, iThis);
                 }
                 else if(thisType == HIGH)
                 {
-                    high.copyVertexFrom(iHighVertex++, quad, iThis);
+                    stream.editor(highAddress).copyVertexFrom(iHighVertex++, reader, iThis);
                     if(nextType == LOW)
                     {
                         final float dist = (0.5f - vThis) / (vNext - vThis);
-                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
-                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        stream.editor(lowAddress).copyInterpolatedVertexFrom(iLowVertex, reader, iThis, reader, iNext, dist);
+                        stream.editor(highAddress).copyVertexFrom(iHighVertex, stream.polyA(lowAddress), iLowVertex);
                         iLowVertex++;
                         iHighVertex++;
                     }
                 }
                 else
                 {
-                    low.copyVertexFrom(iLowVertex++, quad, iThis);
+                    stream.editor(lowAddress).copyVertexFrom(iLowVertex++, reader, iThis);
                     if(nextType == HIGH)
                     {
                         final float dist = (0.5f - vThis) / (vNext - vThis);
-                        low.copyInterpolatedVertexFrom(iLowVertex, quad, iThis, quad, iNext, dist);
-                        high.copyVertexFrom(iHighVertex, low, iLowVertex);
+                        stream.editor(lowAddress).copyInterpolatedVertexFrom(iLowVertex, reader, iThis, reader, iNext, dist);
+                        stream.editor(highAddress).copyVertexFrom(iHighVertex, stream.polyA(lowAddress), iLowVertex);
                         iLowVertex++;
                         iHighVertex++;
                     }
@@ -235,11 +266,7 @@ public class QuadrantSplitter
                 thisType = nextType;
             }
             
-            target.accept(high);
-            target.accept(low);
-            
-            // quad isn't passed on so release it
-            quad.release();
+            reader.setDeleted();
         }
     }
     

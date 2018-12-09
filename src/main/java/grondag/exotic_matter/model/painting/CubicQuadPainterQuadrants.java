@@ -1,9 +1,9 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.function.Consumer;
-
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.FaceCorner;
 import net.minecraft.util.EnumFacing;
@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing;
  * Quads must have a nominal face.
  * Will split quads that span quadrants.
  */
-public class CubicQuadPainterQuadrants extends CubicQuadPainter
+public abstract class CubicQuadPainterQuadrants extends QuadPainter
 {
     private static final TextureQuadrant[][] TEXTURE_MAP = new TextureQuadrant[FaceCorner.values().length][CornerJoinFaceState.values().length];
     
@@ -42,44 +42,40 @@ public class CubicQuadPainterQuadrants extends CubicQuadPainter
             }
         }
     }
-    
-    public CubicQuadPainterQuadrants(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+
+    public static void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        super(modelState, surface, paintLayer);
-    }
-    
-    protected CornerJoinFaceState faceState(EnumFacing face)
-    {
-        return this.modelState.getCornerJoin().getFaceJoinState(face);
-    }
-    
-    @Override
-    protected final void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
-    {
-        quad.setLockUV(layerIndex, true);
-    
-        final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(quad, layerIndex);
-        if(quadrant == null) 
-            return;
+        IMutablePolygon editor = stream.editor();
         
-        final EnumFacing nominalFace = quad.getNominalFace();
-        if(nominalFace == null) return;
-        
-        final int textureVersion = this.texture.textureVersionMask() 
-                & (this.textureHashForFace(nominalFace) >> (quadrant.ordinal() * 4));
-        
-        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
-        
-        final CornerJoinFaceState faceState = this.faceState(nominalFace);
-        
-        TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(quad, layerIndex, quadrant);
-        
-        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
-    }
-    
-    @Override
-    public final boolean requiresQuadrants()
-    {
-        return true;
+        do
+        {
+            int layerIndex = firstAvailableTextureLayer(editor);
+            editor.setLockUV(layerIndex, true);
+            editor.assignLockedUVCoordinates(layerIndex);
+            
+            final FaceCorner quadrant = QuadrantSplitter.uvQuadrant(editor, layerIndex);
+            if(quadrant == null)
+            {
+                QuadrantSplitter.split(stream, layerIndex);
+                // skip the (now-deleted) original and paint split outputs later in loop
+                assert editor.isDeleted();
+                continue;
+            }
+            
+            final EnumFacing nominalFace = editor.getNominalFace();
+            ITexturePalette tex = getTexture(modelState, paintLayer);
+            final int textureVersion = tex.textureVersionMask() 
+                    & (textureHashForFace(nominalFace, tex, modelState) >> (quadrant.ordinal() * 4));
+            
+            editor.setTextureName(layerIndex, tex.getTextureName(textureVersion));
+            editor.setShouldContractUVs(layerIndex, true);
+            
+            final CornerJoinFaceState faceState = modelState.getCornerJoin().getFaceJoinState(nominalFace);
+            
+            TEXTURE_MAP[quadrant.ordinal()][faceState.ordinal()].applyForQuadrant(editor, layerIndex, quadrant);
+            
+            commonPostPaint(editor, layerIndex, modelState, paintLayer);
+            
+        } while(stream.editorNext());
     }
 }

@@ -1,51 +1,19 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.function.Consumer;
-
 import grondag.exotic_matter.model.primitives.FaceQuadInputs;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.world.Rotation;
 import grondag.exotic_matter.world.SimpleJoin;
 import grondag.exotic_matter.world.SimpleJoinFaceState;
 import net.minecraft.util.EnumFacing;
 
 
-public class CubicQuadPainterMasonry extends CubicQuadPainter
+public abstract class CubicQuadPainterMasonry extends QuadPainter
 {
     protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.VALUES.length][SimpleJoinFaceState.values().length];
-
-    protected final SimpleJoin bjs;
-    
-    public CubicQuadPainterMasonry(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
-    {
-        super(modelState, surface, paintLayer);
-        this.bjs = modelState.getMasonryJoin();
-    }
-    
-    @Override
-    public final void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
-    {
-        quad.setLockUV(layerIndex, true);
-        
-        // face won't be null - checked in validation method
-        final EnumFacing face = quad.getNominalFace();
-        
-        SimpleJoinFaceState fjs = SimpleJoinFaceState.find(face, this.bjs);
-        
-        FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][fjs.ordinal()];
-        
-        if(inputs == null) return;
-            
-        quad.setRotation(layerIndex, inputs.rotation);
-        quad.setMinU(layerIndex, inputs.flipU ? 1 : 0);
-        quad.setMinV(layerIndex, inputs.flipV ? 1 : 0);
-        quad.setMaxU(layerIndex, inputs.flipU ? 0 : 1);
-        quad.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
-        quad.setTextureName(layerIndex, this.texture.getTextureName(this.textureVersionForFace(face), inputs.textureOffset));
-        
-        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
-    }
     
     private static enum Textures
     {
@@ -83,5 +51,38 @@ public class CubicQuadPainterMasonry extends CubicQuadPainter
 
             FACE_INPUTS[face.ordinal()][SimpleJoinFaceState.ALL.ordinal()] = new FaceQuadInputs( Textures.ALL.ordinal(), Rotation.ROTATE_NONE, false, false);
         }
+    }
+
+    public static void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer)
+    {
+        IMutablePolygon editor = stream.editor();
+        do
+        {
+            final SimpleJoin bjs = modelState.getMasonryJoin();
+            final EnumFacing face = editor.getNominalFace();
+            final SimpleJoinFaceState fjs = SimpleJoinFaceState.find(face, bjs);
+            final FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][fjs.ordinal()];
+            
+            // if can't identify a face, skip texturing
+            if(inputs == null) 
+                return;
+                
+            final int layerIndex = firstAvailableTextureLayer(editor);
+            editor.setLockUV(layerIndex, true);
+            editor.assignLockedUVCoordinates(layerIndex);
+            
+            editor.setRotation(layerIndex, inputs.rotation);
+            editor.setMinU(layerIndex, inputs.flipU ? 1 : 0);
+            editor.setMinV(layerIndex, inputs.flipV ? 1 : 0);
+            editor.setMaxU(layerIndex, inputs.flipU ? 0 : 1);
+            editor.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
+            
+            final ITexturePalette tex = getTexture(modelState, paintLayer);
+            editor.setTextureName(layerIndex, tex.getTextureName(
+                    textureVersionForFace(face, tex, modelState), inputs.textureOffset));
+            
+            commonPostPaint(editor, layerIndex, modelState, paintLayer);
+            
+        } while(stream.editorNext());
     }
 }

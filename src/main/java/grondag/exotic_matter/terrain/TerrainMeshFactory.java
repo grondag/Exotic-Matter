@@ -24,7 +24,6 @@ import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.PolyFactory;
-import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
@@ -871,10 +870,11 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, final Consumer<IPolygon> target)
     {
-        final Consumer<IMutablePolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
-                ? QuadHelper.makeRecoloring(target) : target;
+        // TODO: restore this feature, but generalize to all meshes and put in block dispatcher
+//        final Consumer<IMutablePolygon> wrapped = ConfigXM.BLOCKS.enableTerrainQuadDebugRender
+//                ? QuadHelper.makeRecoloring(target) : target;
 
                 // Hot terrain blocks that border non-hot blocks need a subdivided mesh
                 // for smooth vertex shading. So that we can still use a long key and avoid
@@ -902,7 +902,7 @@ public class TerrainMeshFactory extends ShapeMeshGenerator implements ICollision
                 {
                     final int limit = c.size();
                     for(int i = 0; i < limit; i++)
-                        wrapped.accept(c.get(i).claimCopy());
+                        target.accept(c.get(i));
                 }
     }
 

@@ -9,6 +9,7 @@ public class PolyStreams
     public static final int FORMAT_BOUNDS = PolyStreamFormat.HAS_BOUNDS_FLAG;
     
     private static final ArrayBlockingQueue<WritablePolyStream> writables = new ArrayBlockingQueue<>(256);
+    private static final ArrayBlockingQueue<MutablePolyStream> mutables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<ReadOnlyPolyStream> readables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<DispatchPolyStream> dispatches = new ArrayBlockingQueue<>(256);
     
@@ -29,6 +30,20 @@ public class PolyStreams
     static void release(WritablePolyStream freeStream)
     {
         writables.offer(freeStream);
+    }
+    
+    public static IMutablePolyStream claimMutable(int formatFlags)
+    {
+        MutablePolyStream result = mutables.poll();
+        if(result == null)
+            result = new MutablePolyStream();
+        result.prepare(formatFlags);
+        return result;
+    }
+    
+    static void release(MutablePolyStream freeStream)
+    {
+        mutables.offer(freeStream);
     }
 
     public static IReadOnlyPolyStream claimReadOnly(WritablePolyStream writablePolyStream, int formatFlags)

@@ -7,6 +7,7 @@ import javax.vecmath.Matrix4f;
 import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
@@ -14,7 +15,7 @@ import net.minecraft.util.EnumFacing;
 public class WedgeMeshFactory extends AbstractWedgeMeshFactory
 {
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         // Axis for this shape is along the face of the sloping surface
         // Four rotations x 3 axes gives 12 orientations - one for each edge of a cube.

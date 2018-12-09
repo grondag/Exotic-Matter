@@ -1,11 +1,16 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import grondag.acuity.api.TextureFormat;
+import grondag.exotic_matter.ClientProxy;
+import grondag.exotic_matter.ExoticMatter;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.state.ISuperModelState;
 
 /**
@@ -14,89 +19,109 @@ import grondag.exotic_matter.model.state.ISuperModelState;
  * passes through painted quad to another consumer.
  *
  */
-public class QuadPaintManager
+public class QuadPaintManager implements Consumer<IPolygon>
 {
-    private static ThreadLocal<Manager> managers = ThreadLocal.withInitial(() -> new Manager());
+    private static ThreadLocal<QuadPaintManager> managers = ThreadLocal.withInitial(() -> new QuadPaintManager());
 
-    public static final Consumer<IMutablePolygon> provideReadyConsumer(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
+    public static final QuadPaintManager get()
     {
-        Manager result = managers.get();
-        result.clear();
-        result.modelState = modelState;
-        result.isItem = isItem;
-        result.target = target;
-        return result;
+        return managers.get();
     }
-    
-    private static class Manager implements Consumer<IMutablePolygon>
+
+    private final IdentityHashMap<Surface, IMutablePolyStream> surfaces = new IdentityHashMap<Surface, IMutablePolyStream>();
+
+    @Override
+    public void accept(@SuppressWarnings("null") IPolygon poly)
     {
-        private ISuperModelState modelState;
-        private boolean isItem; 
-        private Consumer<IPolygon> target;
+        IMutablePolyStream stream = surfaces.computeIfAbsent(poly.getSurface(), p -> PolyStreams.claimMutable(0));
+
+        int address = stream.writerAddress();
+        stream.appendCopy(poly);
+        stream.moveEditor(address);
+        IMutablePolygon editor = stream.editor();
         
-        private ArrayDeque<PainterList> emptyLists
-             = new ArrayDeque<PainterList>(8);
+        //expects all input polys to be single-layer
+        assert editor.layerCount() == 1;
         
+        //assign three layers for painting and then correct after paint occurs
+        editor.setLayerCount(3);
         
-        private final IdentityHashMap<Surface, PainterList> surfaces
-            = new IdentityHashMap<>();
+        // should have no textures assigned at start
+        assert editor.getTextureName(0) == null;
+        assert editor.getTextureName(1) == null;
+        assert editor.getTextureName(2) == null;
         
-        private void clear()
+        // Copy generator UVs (quad and vertex) 
+        // from layer 0 to upper layers.  
+        float f = editor.getMinU(0);
+        editor.setMinU(1, f);
+        editor.setMinU(2, f);
+        f = editor.getMaxU(0);
+        editor.setMaxU(1, f);
+        editor.setMaxU(2, f);
+        f = editor.getMinV(0);
+        editor.setMinV(1, f);
+        editor.setMinV(2, f);
+        f = editor.getMaxV(0);
+        editor.setMaxV(1, f);
+        editor.setMaxV(2, f);
+        
+        final int vertexCount = editor.vertexCount();
+        for(int i = 0; i < vertexCount; i++)
         {
-            for(PainterList list : surfaces.values())
-            {
-                list.clear();
-                emptyLists.add(list);
-            }
-            surfaces.clear();
+            int c = editor.getVertexColor(0, i);
+            editor.setVertexColor(1, i, c);
+            editor.setVertexColor(2, i, c);
+            
+            float u = editor.getVertexU(0, i);
+            float v = editor.getVertexV(0, i);
+            editor.setVertexUV(1, i, u, v);
+            editor.setVertexUV(2, i, u, v);
         }
-        
-        private PainterList paintersForSurface(Surface surface)
+    }
+
+    @SuppressWarnings("null")
+    public void producePaintedQuads(final ISuperModelState modelState, final boolean isItem, final Consumer<IPolygon> target)
+    {
+        for(Entry<Surface, IMutablePolyStream> entry : surfaces.entrySet())
         {
-            PainterList result = surfaces.get(surface);
-            if(result == null)
+            Surface surface = entry.getKey();
+            IMutablePolyStream stream = entry.getValue();
+
+            for(PaintLayer paintLayer : PaintLayer.VALUES)
+                if(modelState.isLayerEnabled(paintLayer) && !surface.isLayerDisabled(paintLayer) && stream.editorOrigin())
+                    QuadPainterFactory.getPainter(modelState, surface, paintLayer).paintQuads(stream, modelState, paintLayer);
+
+            if(stream.editorOrigin())
             {
-                result =  emptyLists.isEmpty() 
-                        ? new PainterList()
-                        : emptyLists.pop();
-                        
-                for(PaintLayer l : PaintLayer.VALUES)
+                final IMutablePolygon editor = stream.editor();
+                do
                 {
-                    if(modelState.isLayerEnabled(l) && !surface.isLayerDisabled(l))
+                    // omit polys that weren't textured by any painter
+                    if(editor.getTextureName(0) != null)
                     {
-                        result.add(QuadPainterFactory.getPainterForSurface(modelState, surface, l));
-                    }
-                }
+                        final int layerCount = editor.getTextureName(1) == null 
+                                ? 1 : editor.getTextureName(2) == null
+                                    ? 2 : 3;
                         
-                surfaces.put(surface, result);
-            }
-            return result;
-        }
-        
-        @Override
-        public void accept(@SuppressWarnings("null") IMutablePolygon poly)
-        {
-            PainterList painters = paintersForSurface(poly.getSurface());
-            int layerCount = painters.size();
-            
-            if(layerCount == 0) return;
-            
-            assert layerCount <= 3;
-            
-            // add layers and propagate layer-specific values if applicable
-            if(layerCount > 1)
-            {
-                poly.setLayerCount(layerCount);
-                poly.propagateLayerProperties();
+                        editor.setLayerCount(layerCount);
+                        
+                        // make sure has an appropriate pipeline, some models may set up before we get here
+                        if(layerCount > 1 && ExoticMatter.proxy.isAcuityEnabled() 
+                                && editor.getPipeline().textureFormat().layerCount() != layerCount)
+                            editor.setPipeline(layerCount == 2 
+                                ? ClientProxy.acuityDefaultPipeline(TextureFormat.DOUBLE)
+                                : ClientProxy.acuityDefaultPipeline(TextureFormat.TRIPLE));
+                    }
+                    
+                    target.accept(editor);
+                }
+                while(stream.editorNext());
             }
             
-            // do this here to avoid doing it for all painters
-            // and because the quadrant split test requires it.
-            poly.assignAllLockedUVCoordinates();
-            
-            painters.producePaintedQuads(poly, target, isItem);
-          
+            stream.release();
         }
-      
+
+        surfaces.clear();
     }
 }

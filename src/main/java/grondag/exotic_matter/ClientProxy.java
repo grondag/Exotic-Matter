@@ -114,7 +114,6 @@ public class ClientProxy extends CommonProxy implements IAcuityListener
         return acuity;
     }
     
-    @SuppressWarnings("null")
     @Override
     public boolean isAcuityEnabled()
     {

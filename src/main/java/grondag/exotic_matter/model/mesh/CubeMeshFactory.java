@@ -13,7 +13,6 @@ import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
 import grondag.exotic_matter.model.primitives.CubeInputs;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
@@ -43,7 +42,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         if(cachedQuads.isEmpty())
             return;
@@ -52,7 +51,7 @@ public class CubeMeshFactory extends ShapeMeshGenerator
         IPolygon reader = cachedQuads.reader();
         
         do
-            target.accept(reader.claimCopy());
+            target.accept(reader);
         while(cachedQuads.next());
     }
     

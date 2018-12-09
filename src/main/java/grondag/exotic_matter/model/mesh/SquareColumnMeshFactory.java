@@ -15,6 +15,7 @@ import grondag.exotic_matter.model.primitives.FaceVertex;
 import grondag.exotic_matter.model.primitives.PolyFactory;
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.ModelStateData;
 import grondag.exotic_matter.model.state.StateFormat;
@@ -99,7 +100,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         FaceSpec spec = new FaceSpec(getCutCount(modelState), areCutsOnEdge(modelState));
         
@@ -145,7 +146,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         return SideShape.PARTIAL;
     }
 
-    private void makeFaceQuads(ISuperModelState state, @Nullable EnumFacing face, FaceSpec spec, Consumer<IMutablePolygon> target)  
+    private void makeFaceQuads(ISuperModelState state, @Nullable EnumFacing face, FaceSpec spec, Consumer<IPolygon> target)  
     {
         if (face == null) return;
 
@@ -168,7 +169,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         quadInputs.release();
     }
 
-    private void makeSideFace(EnumFacing face, IMutablePolygon template, CornerJoinFaceState fjs, FaceSpec spec, EnumFacing.Axis axis, Surface cutSurface, Consumer<IMutablePolygon> target)
+    private void makeSideFace(EnumFacing face, IMutablePolygon template, CornerJoinFaceState fjs, FaceSpec spec, EnumFacing.Axis axis, Surface cutSurface, Consumer<IPolygon> target)
     {
         if(fjs == CornerJoinFaceState.NO_FACE) return;
         
@@ -373,7 +374,7 @@ public class SquareColumnMeshFactory extends ShapeMeshGenerator
         }
     }
 
-    private void makeCapFace(EnumFacing face, IMutablePolygon template, CornerJoinFaceState fjs, FaceSpec spec, EnumFacing.Axis axis, Surface cutSurface, Consumer<IMutablePolygon> target)
+    private void makeCapFace(EnumFacing face, IMutablePolygon template, CornerJoinFaceState fjs, FaceSpec spec, EnumFacing.Axis axis, Surface cutSurface, Consumer<IPolygon> target)
     {
         if(fjs == CornerJoinFaceState.NO_FACE) return;
 

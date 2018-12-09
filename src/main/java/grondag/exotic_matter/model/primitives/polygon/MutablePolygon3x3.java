@@ -216,4 +216,10 @@ public class MutablePolygon3x3 extends Polygon3x3 implements IMutablePolygon
         copyVertexFromImpl(targetIndex, source, sourceIndex);
         return this;
     }
+    
+    @Override
+    public void copyFrom(IPolygon polyIn, boolean includeVertices)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

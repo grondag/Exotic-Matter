@@ -1,18 +1,25 @@
 package grondag.exotic_matter.model.painting;
 
-import javax.annotation.Nullable;
-
+import grondag.exotic_matter.model.painting.QuadPainter.IPaintMethod;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TextureScale;
 
 public class QuadPainterFactory
 {
-    // PERF: make painters threadlocal
-    
-    public static @Nullable QuadPainter getPainterForSurface(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+    private static IPaintMethod DO_NOTHING = new IPaintMethod()
     {
-        if(surface.isLayerDisabled(paintLayer)) return null;
+        @Override
+        public void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer)
+        {
+            // Live up to our name...
+        }
+    };
+            
+    public static IPaintMethod getPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+    {
+        if(surface.isLayerDisabled(paintLayer)) return DO_NOTHING;
         
         ITexturePalette texture = modelState.getTexture(paintLayer);
         
@@ -25,7 +32,7 @@ public class QuadPainterFactory
             case SIMPLE:
             case BIGTEX_ANIMATED:
             case SPLIT_X_8:
-                return new SurfaceQuadPainterTiled(modelState, surface, paintLayer);
+                return SurfaceQuadPainterTiled::paintQuads;
                 
             case BORDER_13:
                 return null;
@@ -44,28 +51,28 @@ public class QuadPainterFactory
             case BIGTEX_ANIMATED:
             case SPLIT_X_8:
                 return(texture.textureScale() == TextureScale.SINGLE)
-                        ? new CubicQuadPainterTiles(modelState, surface, paintLayer)
-                        : new CubicQuadPainterBigTex(modelState, surface, paintLayer);
+                        ? CubicQuadPainterTiles::paintQuads
+                        : CubicQuadPainterBigTex::paintQuads;
                 
             case BORDER_13:
                  return surface.allowBorders
-                         ? new CubicQuadPainterBorders(modelState, surface, paintLayer)
+                         ? CubicQuadPainterBorders::paintQuads
                          : null;
                 
             case MASONRY_5:
                 return surface.allowBorders
-                        ? new CubicQuadPainterMasonry(modelState, surface, paintLayer)
+                        ? CubicQuadPainterMasonry::paintQuads
                         : null;
             
             case QUADRANT_CONNECTED:
                 return surface.allowBorders
-                        ? new CubicQuadPainterQuadrants(modelState, surface, paintLayer)
+                        ? CubicQuadPainterQuadrants::paintQuads
                         : null;
                 
             default:
                 return null;
             }
-
+    
         default:
             return null;
         }

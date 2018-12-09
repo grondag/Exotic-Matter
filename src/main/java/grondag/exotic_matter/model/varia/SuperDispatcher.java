@@ -150,8 +150,9 @@ public class SuperDispatcher
     
     private void provideFormattedQuads(ISuperModelState modelState, boolean isItem, Consumer<IPolygon> target)
     {
-        final Consumer<IMutablePolygon> manager = QuadPaintManager.provideReadyConsumer(modelState, isItem, target);
-        modelState.getShape().meshFactory().produceShapeQuads(modelState, manager);
+        final QuadPaintManager paintManager = QuadPaintManager.get();
+        modelState.getShape().meshFactory().produceShapeQuads(modelState, paintManager);
+        paintManager.producePaintedQuads(modelState, isItem, target);
     }
     
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack)

@@ -458,67 +458,6 @@ public interface IMutablePolygon extends IPolygon
     }
     
     /**
-     * Assigns locked UV coordinates in all layers that require them.
-     */
-    default IMutablePolygon assignAllLockedUVCoordinates()
-    {
-        if(isLockUV(0))
-            assignLockedUVCoordinates(0);
-        final int layerCount = this.layerCount();
-        if(layerCount > 1)
-        {
-            if(isLockUV(1))
-                assignLockedUVCoordinates(1);
-            
-            if(layerCount == 3 && isLockUV(2))
-                assignLockedUVCoordinates(2);
-        }
-        return this;
-    }
-    
-    /**
-     * Copies all layer-specific properties (quad and vertex) 
-     * from layer 0 to upper layers.  To be called by quad painter
-     * after setting layerCount to something other than 1 for
-     * multi-layer painting schemes.
-     */
-    default IMutablePolygon propagateLayerProperties()
-    {
-        if(layerCount() > 1)
-        {
-            copyLayerProperties(0, 1);
-            if(layerCount() == 3)
-                copyLayerProperties(0, 2);
-        }
-        return this;
-    }
-    
-    /**
-     * For use in {@link #propagateLayerProperties()}
-     */
-    default void copyLayerProperties(int fromLayer, int toLayer)
-    {
-        setEmissive(toLayer, isEmissive(fromLayer));
-        setLockUV(toLayer, isLockUV(fromLayer));
-        setMinU(toLayer, getMinU(fromLayer));
-        setMaxU(toLayer, getMaxU(fromLayer));
-        setMinV(toLayer, getMinV(fromLayer));
-        setMaxV(toLayer, getMaxV(fromLayer));
-        setRenderLayer(toLayer, getRenderLayer(fromLayer));
-        setRotation(toLayer, getRotation(fromLayer));
-        setShouldContractUVs(toLayer, shouldContractUVs(fromLayer));
-        setTextureName(toLayer, getTextureName(fromLayer));
-        
-        final int vertexCount = vertexCount();
-        for(int v = 0; v < vertexCount; v++)
-        {
-            setVertexColor(toLayer, v, getVertexColor(fromLayer, v));
-            setVertexU(toLayer, v, getVertexU(fromLayer, v));
-            setVertexV(toLayer, v, getVertexV(fromLayer, v));
-        }
-    }
-    
-    /**
      * Adds given offsets to u,v values of each vertex.
      */
     default IMutablePolygon offsetVertexUV(int layerIndex, float uShift, float vShift)
@@ -586,19 +525,24 @@ public interface IMutablePolygon extends IPolygon
         return this;
     }
 
+    //TODO: remove in favor of stream operations
+    @Deprecated
     public default IPolygon toPainted()
     {
         return factory().toPainted(this);
     }
 
+    //TODO: remove in favor of stream operations
     /**
      * Wraps list as a consumer and calls {@link #toPaintableQuads(Consumer)}
      */
+    @Deprecated
     public default boolean toPaintableQuads(List<IMutablePolygon> list)
     {
         return toPaintableQuads(Helper.get().listAdapter.prepare(list));
     }
     
+    //TODO: remove in favor of stream operations
     /**
      * If this poly is a tri or a convex quad, simply passes to consumer and returns false.<p>
      * 
@@ -607,6 +551,7 @@ public interface IMutablePolygon extends IPolygon
      * 
      * Return value of true signals to release this poly if it is no longer needed for processing.
      */
+    @Deprecated
     public default boolean toPaintableQuads(Consumer<IMutablePolygon> consumer)
     {
         if(vertexCount() <= 4 && this.isConvex())
@@ -741,4 +686,10 @@ public interface IMutablePolygon extends IPolygon
         this.setNominalFace(QuadHelper.computeFaceForNormal(vec4));
         return this;
     }
+
+    /**
+     * Will copy all poly and poly layer attributes. Layer counts must match.
+     * Will copy vertices if requested, but vertex counts must match or will throw exception.
+     */
+    void copyFrom(IPolygon polyIn, boolean includeVertices);
 }

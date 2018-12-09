@@ -116,4 +116,11 @@ public interface IWritablePolyStream extends IPolyStream
         while(stream.next());
     }
     
+    /**
+     * If the poly at the given address is a tri or a convex quad, does nothing and returns IStreamPolygon#NO_ADDRESS.<p>
+     * 
+     * If the poly is a concave quad or higher-order polygon, appends new polys split from this one at end of
+     * the stream, marks the poly at the given address as deleted, and returns the address of the first split output.<p>
+     */
+    public int splitIfNeeded(int targetAddress);
 }

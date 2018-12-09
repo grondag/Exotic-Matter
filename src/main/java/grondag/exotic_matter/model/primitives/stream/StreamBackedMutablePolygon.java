@@ -9,7 +9,6 @@ import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.MathHelper;
 
 public class StreamBackedMutablePolygon extends StreamBackedPolygon implements IMutablePolygon
 {
@@ -273,10 +272,7 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         return this;
     }
 
-    /**
-     * Will copy all poly and poly layer attributes. Layer counts must match.
-     * Will copy vertices if requested, but vertex counts must match or will throw exception.
-     */
+    @Override
     public final void copyFrom(IPolygon polyIn, boolean includeVertices)
     {
         // PERF: make this faster for other stream-based polys
@@ -293,6 +289,8 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         final int layerCount = polyIn.layerCount();
         assert layerCount == layerCount();
         
+        setTextureSalt(polyIn.getTextureSalt());
+
         for(int l = 0; l < layerCount; l++)
         {
             setMaxU(l, polyIn.getMaxU(l));
@@ -305,7 +303,6 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
             setShouldContractUVs(l, polyIn.shouldContractUVs(l));
             setRotation(l, polyIn.getRotation(l));
             setTextureName(l, polyIn.getTextureName(l));
-            setTextureSalt(polyIn.getTextureSalt());
         }
         
         if(includeVertices)

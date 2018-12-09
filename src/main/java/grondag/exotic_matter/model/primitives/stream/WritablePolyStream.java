@@ -2,6 +2,7 @@ package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IStreamPolygon;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 
@@ -22,15 +23,22 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     
     protected IIntStream writerStream;
     protected IIntStream defaultStream;
+    
+    /**
+     * Format flags used for the writer polygon. Always includes mutable flag.
+     * Also the main stream format for mutable subclass.
+     */
     protected int formatFlags = 0;
     
     public WritablePolyStream()
     {
         writer = new StreamBackedMutablePolygon();
+        // note this never changes - writer stream is dedicated, 
+        // and we already write at the start of it
         writer.baseAddress = 0;
     }
     
-    void prepare(int formatFlags)
+    protected void prepare(int formatFlags)
     {
         super.prepare(IntStreams.claim());
         copyFrom.stream = stream;
@@ -69,7 +77,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public void append()
     {
-        super.appendCopy(writer, formatFlags);
+        appendCopy(writer, formatFlags);
     }
 
     @Override
@@ -133,6 +141,56 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     @Override
     public void appendCopy(IPolygon poly)
     {
-        super.appendCopy(poly, formatFlags);
+        appendCopy(poly, formatFlags);
+    }
+
+    @Override
+    public int splitIfNeeded(int targetAddress)
+    {
+        internal.moveTo(targetAddress);
+        if(internal.vertexCount() <= 4 && internal.isConvex())
+            return IStreamPolygon.NO_ADDRESS;
+        
+        int firstSplitAddress = this.writerAddress();
+
+        int head = internal.vertexCount() - 1;
+        int tail = 2;
+        setVertexCount(4);
+        writer.copyFrom(internal, false);
+        writer.copyVertexFrom(0, internal, head);
+        writer.copyVertexFrom(1, internal, 0);
+        writer.copyVertexFrom(2, internal, 1);
+        writer.copyVertexFrom(3, internal, tail);
+        append();
+
+        while(head - tail > 1)
+        {
+            final int vCount = head - tail == 2 ? 3 : 4;
+            setVertexCount(vCount);
+            writer.copyFrom(internal, false);
+            writer.copyVertexFrom(0, internal, head);
+            writer.copyVertexFrom(1, internal, tail);
+            writer.copyVertexFrom(2, internal, ++tail);
+            if(vCount == 4)
+            {
+                writer.copyVertexFrom(3, internal,--head);
+                
+                // if we end up with a convex quad
+                // backtrack and output a tri instead
+                if(!writer.isConvex())
+                {
+                    head++;
+                    tail--;
+                    setVertexCount(3);
+                    writer.copyFrom(internal, false);
+                    writer.copyVertexFrom(0, internal, head);
+                    writer.copyVertexFrom(1, internal, tail);
+                    writer.copyVertexFrom(2, internal, ++tail);
+                }
+            }
+            append();
+        }
+        internal.setDeleted();
+        return firstSplitAddress;
     }
 }

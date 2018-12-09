@@ -1,12 +1,15 @@
 package grondag.exotic_matter.model.painting;
 
 import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
+import java.util.function.IntConsumer;
 
 import grondag.exotic_matter.model.primitives.QuadHelper;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.polygon.IStreamPolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TextureRotationType;
 import grondag.exotic_matter.varia.Useful;
 import net.minecraft.util.EnumFacing;
@@ -16,110 +19,15 @@ import net.minecraft.util.math.MathHelper;
  * 
  * See {@link SurfaceTopology#TILED}
  */
-public class SurfaceQuadPainterTiled extends QuadPainter
+public abstract class SurfaceQuadPainterTiled extends QuadPainter
 {
-    public SurfaceQuadPainterTiled(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
-    {
-        super(modelState, surface, paintLayer);
-    }
-
-    @Override
-    public void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
-    {
-        assert !quad.isLockUV(layerIndex) : "Tiled surface quad painter received quad with lockUV semantics.  Not expected";
-        
-        final boolean uFlipped = quad.getMaxU(layerIndex) < quad.getMinU(layerIndex);
-        final boolean vFlipped = quad.getMaxV(layerIndex) < quad.getMinV(layerIndex);
-        
-        final Surface surfIn = quad.getSurface();
-        final EnumFacing face = quad.getNominalFace();
-        final int salt = (quad.getTextureSalt() << 3) + (face == null ? 0 : face.ordinal());
-        
-        /**
-         * The smallest UV distance that can be tiled with single texture.
-         * Equivalently, the size of each tile in the tiling grid.
-         * If no wrap, is simply the texture size.  If we wrap, then
-         * pick the distance that gives the texture scaling closest to 1:1.
-         * 
-         */
-        final float tilingDistance = tilingDistance(surfIn.uvWrapDistance, this.texture.textureScale().sliceCount);
-        
-        /**
-         * See if we will need to split the quad on a UV boundary.<p>
-         * 
-         * Test on span > tile distance isn't sufficient because uv span might fit within a single
-         * texture tile distance but actually start or end mid-texture.<p>
-         */
-        
-        final int uMinIndex = uFlipped 
-                ? MathHelper.ceil(quad.getMinU(layerIndex) / tilingDistance)
-                : MathHelper.floor(quad.getMinU(layerIndex) / tilingDistance);
-        
-        final int uMaxIndex = uFlipped 
-                ? MathHelper.floor(quad.getMaxU(layerIndex) / tilingDistance)
-                : MathHelper.ceil(quad.getMaxU(layerIndex) / tilingDistance);
-
-        final int vMinIndex = vFlipped 
-                ? MathHelper.ceil(quad.getMinV(layerIndex) / tilingDistance)
-                : MathHelper.floor(quad.getMinV(layerIndex) / tilingDistance);
-        
-        final int vMaxIndex = vFlipped 
-                ? MathHelper.floor(quad.getMaxV(layerIndex) / tilingDistance)
-                : MathHelper.ceil(quad.getMaxV(layerIndex) / tilingDistance);
-        
-        final int uStep = uFlipped ? -1 : 1;
-        final int vStep = vFlipped ? -1 : 1;
-        
-        final float uSpan = uStep * tilingDistance;
-        final float vSpan = vStep * tilingDistance;
-            
-        IMutablePolygon uRemainder = quad;
-        
-        // do the splits
-        for(int uIndex = uMinIndex; uIndex != uMaxIndex;  uIndex += uStep)
-        {
-            final int uIndexFinal = uIndex;
-            final float uSplitLow = uIndexFinal * tilingDistance;
-            
-            uRemainder = splitU(uRemainder, layerIndex, uSplitLow, uSpan, new Consumer<IMutablePolygon>()
-            {
-                @SuppressWarnings("null")
-                @Override
-                public void accept(IMutablePolygon t)
-                {
-                    IMutablePolygon vRemainder = t;
-                    for(int vIndex = vMinIndex; vIndex != vMaxIndex;  vIndex += vStep)
-                    {
-                        final int vIndexFinal = vIndex;
-                        final float vSplitLow = vIndexFinal * tilingDistance;
-                        
-                        vRemainder = splitV(vRemainder, layerIndex, vSplitLow, vSpan, new Consumer<IMutablePolygon>()
-                        {
-                            @Override
-                            public void accept(IMutablePolygon t)
-                            {
-                                // send for final painting and output
-                                paintBoundedQuad(t, layerIndex, target, isItem, salt(salt, uIndexFinal, vIndexFinal));
-                            }
-                        });
-                        
-                        if(vRemainder == null) break;
-                    }
-                }
-            });
-            
-            if(uRemainder == null) break;
-        }
-    }
-    
     /**
      * The smallest UV distance that can be tiled with single texture.
      * Equivalently, the size of each tile in the tiling grid.
      * If no wrap, is simply the texture size.  If we wrap, then
      * pick the distance that gives the texture scaling closest to 1:1.
-     * 
      */
-    private float tilingDistance(float uvWrapDistance, int textureScale)
+    private static float tilingDistance(float uvWrapDistance, int textureScale)
     {
         // if wrap disabled use texture scale and paint at 1:1
         if(uvWrapDistance <= QuadHelper.EPSILON) return textureScale;
@@ -139,25 +47,33 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     }
     
     /**
-     * Slices off a quad between low bound + span, with the assumption that 
-     * no vertices are below the lower bound and sends the output to the consumer.<p>  
      * 
-     * Output quads will have uMin/uMax of 0,1 correpsondint to the given split bounds
+     * If quad at the target address is within the given u bounds, does nothing
+     * to it and passes address to consumer, and then returns {@link IStreamPolygon#NO_ADDRESS};
+     * 
+     * Otherwise, slices off a quad from the poly at the target address, with u value
+     * between low bound + span, with the assumption no vertices are below the lower bound. 
+     * Appends the new quad to the end of the stream, and passes its address to the consumer.
+     * The original quad is marked as deleted.<p>
+     * 
+     * Output quads will have uMin/uMax of 0,1 corresponding to the given split bounds
      * and all vertices will be scaled to that range. This will be true even for quads 
      * that covered a multiple or fraction of a 0-1 range, or which were offset. <p>
      * 
-     * Returns a new quad without the sliced-off portion. (IOW, with new interpolated vertexes.)
+     * Also appends a new quad containing the remnants of the original polygon less the slice.
      * This remainder quad will have the same uMin/uMax as the input quad, and all
-     * vertices will remain scaled to that range.<p>
+     * vertices will remain scaled to that range. Address of remainder quad is the return value.<p>
      * 
-     * If all input vertices are within the given split bounds, will output a single quad
-     * offset and scaled as if it had been sliced, and return null.
+     * EXCEPT, if all remainder vertices are within the given split bounds, will instead 
+     * apply offset and scaled as if it had been sliced, and pass it to the consumer.
+     * Will then return {@link IStreamPolygon#NO_ADDRESS}.
      */
-    private @Nullable IMutablePolygon splitU(IMutablePolygon input, int layerIndex, final float uSplitLow, final float uSpan, Consumer<IMutablePolygon> output)
+    private static int splitU(IMutablePolyStream stream, int targetAddress, int layerIndex, final float uSplitLow, final float uSpan, IntConsumer vSplitter)
     {
-        final float uMin = input.getMinU(layerIndex);
-        final float uMax = input.getMaxU(layerIndex);
-        final int vCountIn = input.vertexCount();
+        IPolygon reader = stream.reader(targetAddress);
+        final float uMin = reader.getMinU(layerIndex);
+        final float uMax = reader.getMaxU(layerIndex);
+        final int vCountIn = reader.vertexCount();
         
         // PERF: make this threadlocal
         final float[] vertexU = new float[vCountIn];
@@ -171,7 +87,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         for(int i = 0; i < vCountIn; i++)
         {
             // vertex u where 0 corresponds to low split and 1 to high split
-            final float u = (uMin + input.getVertexU(layerIndex, i) * (uMax - uMin) - uSplitLow) / uSpan;
+            final float u = (uMin + reader.getVertexU(layerIndex, i) * (uMax - uMin) - uSplitLow) / uSpan;
             vertexU[i] = u;
             
             final int t = vertexType(u);
@@ -181,24 +97,28 @@ public class SurfaceQuadPainterTiled extends QuadPainter
                 sliceCount++;
         }
         
-        // if nothing to slice return unmodified; no output to consumer
+        // if nothing to slice do nothing and stop iteration - should not happen
         if(sliceCount == 0)
-            return input;
+        {
+            assert false;
+            return IStreamPolygon.NO_ADDRESS;
+        }
         
         // if this is the last slice,  bring into 0-1 min/max and send to output
         if(remainderCount == 0)
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            input.setMinU(layerIndex, flipped ? 1 : 0);
-            input.setMaxU(layerIndex, flipped ? 0 : 1);
+            IMutablePolygon editor = stream.editor(targetAddress);
+            editor.setMinU(layerIndex, flipped ? 1 : 0);
+            editor.setMaxU(layerIndex, flipped ? 0 : 1);
             
             for(int i = 0; i < vCountIn; i++)
             {
-                input.setVertexU(layerIndex, i, vertexU[i]);
+                editor.setVertexU(layerIndex, i, vertexU[i]);
             }
-            output.accept(input);
-            return null;
+            vSplitter.accept(targetAddress);
+            return IStreamPolygon.NO_ADDRESS;
         }
         
         // if we get to here, take slice and return remainder
@@ -206,12 +126,20 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitU = (uSplitLow + uSpan) / (uMax - uMin);
         
-        IMutablePolygon slice = input.claimCopy(sliceCount + 2);
-        slice.setMinU(layerIndex, flipped ? 1 : 0);
-        slice.setMaxU(layerIndex, flipped ? 0 : 1);
+        final IMutablePolygon writer = stream.writer();
+        
+        final int sliceAddress = stream.writerAddress();
+        stream.setVertexCount(sliceCount + 2);
+        writer.copyFrom(reader, false);
+        writer.setMinU(layerIndex, flipped ? 1 : 0);
+        writer.setMaxU(layerIndex, flipped ? 0 : 1);
+        stream.append();
         int iSliceVertex = 0;
         
-        IMutablePolygon remainder = input.claimCopy(remainderCount + 2);
+        final int remainderAddress = stream.writerAddress();
+        stream.setVertexCount(remainderCount + 2);
+        writer.copyFrom(reader, false);
+        stream.append();
         int iRemainderVertex = 0;
         
         float uThis = vertexU[vCountIn - 1];
@@ -226,22 +154,23 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             
             if(thisType == EDGE)
             {
-                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
+                stream.editor(sliceAddress).copyVertexFrom(iSliceVertex, reader, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
                 iSliceVertex++;
-                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                stream.editor(remainderAddress).copyVertexFrom(iRemainderVertex, reader, iThis);
                 iRemainderVertex++;
             }
             else if(thisType == SLICE)
             {
-                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
+                stream.editor(sliceAddress).copyVertexFrom(iSliceVertex, reader, iThis).setVertexU(layerIndex, iSliceVertex, uThis);
                 iSliceVertex++;
                 if(nextType == REMAINDER)
                 {
                     final float dist = (vertexSplitU - uThis) / (uNext - uThis);
-                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
+                    stream.editor(remainderAddress).copyInterpolatedVertexFrom(iRemainderVertex, reader, iThis, reader, iNext, dist);
                     
+                    final IPolygon remainder = stream.polyA(remainderAddress);
                     final float uNew = (uMin + remainder.getVertexU(layerIndex, iRemainderVertex) * (uMax - uMin) - uSplitLow) / uSpan;
-                    slice.setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
+                    stream.editor(sliceAddress).setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
                     
                     iRemainderVertex++;
                     iSliceVertex++;
@@ -249,15 +178,16 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             }
             else
             {
-                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                stream.editor(remainderAddress).copyVertexFrom(iRemainderVertex, reader, iThis);
                 iRemainderVertex++;
                 if(nextType == SLICE)
                 {
                     final float dist = (vertexSplitU - uThis) / (uNext - uThis);
-                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
+                    stream.editor(remainderAddress).copyInterpolatedVertexFrom(iRemainderVertex, reader, iThis, reader, iNext, dist);
                     
+                    final IPolygon remainder = stream.polyA(remainderAddress);
                     final float uNew = (uMin + remainder.getVertexU(layerIndex, iRemainderVertex) * (uMax - uMin) - uSplitLow) / uSpan;
-                    slice.setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
+                    stream.editor(sliceAddress).setVertexUV(layerIndex, iSliceVertex, uNew, remainder.getVertexV(layerIndex, iRemainderVertex));
                     
                     iRemainderVertex++;
                     iSliceVertex++;
@@ -269,19 +199,19 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             thisType = nextType;
         }
         
-        // input no longer needed so release storage
-        input.release();
+        // input poly no longer valid so delete
+        reader.setDeleted();
         
-        output.accept(slice);
-        return remainder;
-        
+        vSplitter.accept(sliceAddress);
+        return remainderAddress;
     }
 
+    
     private static final int EDGE = 0;
     private static final int REMAINDER = 1;
     private static final int SLICE = 2;
     
-    private final int vertexType(float uvCoord)
+    private static final int vertexType(float uvCoord)
     {
         if(uvCoord >= 1 - QuadHelper.EPSILON)
         {
@@ -300,11 +230,12 @@ public class SurfaceQuadPainterTiled extends QuadPainter
     /**
      * Just like {@link #splitU(IMutablePolygon, float, float, Consumer)} but for the v dimension.
      */
-    private @Nullable IMutablePolygon splitV(IMutablePolygon input, int layerIndex, float vSplitLow, float vSpan, Consumer<IMutablePolygon> output)
+    private static int splitV(IMutablePolyStream stream, int targetAddress, int layerIndex, float vSplitLow, float vSpan, IntConsumer output)
     {
-        final float vMin = input.getMinV(layerIndex);
-        final float vMax = input.getMaxV(layerIndex);
-        final int vCountIn = input.vertexCount();
+        IPolygon reader = stream.reader(targetAddress);
+        final float vMin = reader.getMinV(layerIndex);
+        final float vMax = reader.getMaxV(layerIndex);
+        final int vCountIn = reader.vertexCount();
         // PERF: make this threadlocal
         final float[] vertexV = new float[vCountIn];
         final boolean flipped = vSpan < 0;
@@ -317,7 +248,7 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         for(int i = 0; i < vCountIn; i++)
         {
             // vertex u where 0 corresponds to low split and 1 to high split
-            final float v = (vMin + input.getVertexV(layerIndex, i) * (vMax - vMin) - vSplitLow) / vSpan;
+            final float v = (vMin + reader.getVertexV(layerIndex, i) * (vMax - vMin) - vSplitLow) / vSpan;
             vertexV[i] = v;
             
             final int t = vertexType(v);
@@ -329,22 +260,26 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         
         // if nothing to slice return unmodified; no output to consumer
         if(sliceCount == 0)
-            return input;
+        {
+            assert false;
+            return IStreamPolygon.NO_ADDRESS;
+        }
         
         // if this is the last slice,  bring into 0-1 min/max and send to output
         if(remainderCount == 0)
         {
             assert sliceCount > 0 : "degenerate u split - no remainder and no quads in slice";
             
-            input.setMinV(layerIndex, flipped ? 1 : 0);
-            input.setMaxV(layerIndex, flipped ? 0 : 1);
+            IMutablePolygon editor = stream.editor(targetAddress);
+            editor.setMinV(layerIndex, flipped ? 1 : 0);
+            editor.setMaxV(layerIndex, flipped ? 0 : 1);
             
             for(int i = 0; i < vCountIn; i++)
             {
-                input.setVertexV(layerIndex, i, vertexV[i]);
+                editor.setVertexV(layerIndex, i, vertexV[i]);
             }
-            output.accept(input);
-            return null;
+            output.accept(targetAddress);
+            return IStreamPolygon.NO_ADDRESS;
         }
         
         // if we get to here, take slice and return remainder
@@ -352,12 +287,20 @@ public class SurfaceQuadPainterTiled extends QuadPainter
         /** point on 0-1 on input vertex scale that separates slice and remainder */
         final float vertexSplitV = (vSplitLow + vSpan) / (vMax - vMin);
         
-        IMutablePolygon slice = input.claimCopy(sliceCount + 2);
-        slice.setMinV(layerIndex, flipped ? 1 : 0);
-        slice.setMaxV(layerIndex, flipped ? 0 : 1);
+        final IMutablePolygon writer = stream.writer();
+        
+        final int sliceAddress = stream.writerAddress();
+        stream.setVertexCount(sliceCount + 2);
+        writer.copyFrom(reader, false);
+        writer.setMinV(layerIndex, flipped ? 1 : 0);
+        writer.setMaxV(layerIndex, flipped ? 0 : 1);
+        stream.append();
         int iSliceVertex = 0;
         
-        IMutablePolygon remainder = input.claimCopy(remainderCount + 2);
+        final int remainderAddress = stream.writerAddress();
+        stream.setVertexCount(remainderCount + 2);
+        writer.copyFrom(reader, false);
+        stream.append();
         int iRemainderVertex = 0;
         
         float vThis = vertexV[vCountIn - 1];
@@ -372,22 +315,23 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             
             if(thisType == EDGE)
             {
-                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
+                stream.editor(sliceAddress).copyVertexFrom(iSliceVertex, reader, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
                 iSliceVertex++;
-                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                stream.editor(remainderAddress).copyVertexFrom(iRemainderVertex, reader, iThis);
                 iRemainderVertex++;
             }
             else if(thisType == SLICE)
             {
-                slice.copyVertexFrom(iSliceVertex, input, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
+                stream.editor(sliceAddress).copyVertexFrom(iSliceVertex, reader, iThis).setVertexV(layerIndex, iSliceVertex, vThis);
                 iSliceVertex++;
                 if(nextType == REMAINDER)
                 {
                     final float dist = (vertexSplitV - vThis) / (vNext - vThis);
-                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
+                    stream.editor(remainderAddress).copyInterpolatedVertexFrom(iRemainderVertex, reader, iThis, reader, iNext, dist);
                     
+                    final IPolygon remainder = stream.polyA(remainderAddress);
                     final float vNew = (vMin + remainder.getVertexV(layerIndex, iRemainderVertex) * (vMax - vMin) - vSplitLow) / vSpan;
-                    slice.setVertexUV(layerIndex, iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
+                    stream.editor(sliceAddress).setVertexUV(layerIndex, iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
                     
                     iRemainderVertex++;
                     iSliceVertex++;
@@ -395,15 +339,16 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             }
             else
             {
-                remainder.copyVertexFrom(iRemainderVertex, input, iThis);
+                stream.editor(remainderAddress).copyVertexFrom(iRemainderVertex, reader, iThis);
                 iRemainderVertex++;
                 if(nextType == SLICE)
                 {
                     final float dist = (vertexSplitV - vThis) / (vNext - vThis);
-                    remainder.copyInterpolatedVertexFrom(iRemainderVertex, input, iThis, input, iNext, dist);
+                    stream.editor(remainderAddress).copyInterpolatedVertexFrom(iRemainderVertex, reader, iThis, reader, iNext, dist);
                     
+                    final IPolygon remainder = stream.polyA(remainderAddress);
                     final float vNew = (vMin + remainder.getVertexV(layerIndex, iRemainderVertex) * (vMax - vMin) - vSplitLow) / vSpan;
-                    slice.setVertexUV(layerIndex,  iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
+                    stream.editor(sliceAddress).setVertexUV(layerIndex,  iSliceVertex, remainder.getVertexU(layerIndex, iRemainderVertex), vNew);
                     
                     iRemainderVertex++;
                     iSliceVertex++;
@@ -415,65 +360,139 @@ public class SurfaceQuadPainterTiled extends QuadPainter
             thisType = nextType;
         }
         
-        // input no longer needed so release storage
-        input.release();
+        // input no longer valid so delete
+        reader.setDeleted();
         
-        output.accept(slice);
-        return remainder;
-    }
-            
-    
-    /**
-     * Completes painting after quads are split along tile boundaries (if needed) or it has been
-     * determined that no split is needed. The input quad will be mutated.<p>
-     * 
-     * The uv min/max on the quad should be 0-1, where 1 represents a single
-     * texture tile distance.  The provided salt will be used for texture randomization.
-     */
-    private void paintBoundedQuad(
-            IMutablePolygon quad,
-            int layerIndex,
-            Consumer<IMutablePolygon> target, 
-            boolean isItem,
-            int salt)
-    {
-        // Note that we could do some randomization via texture offset, but that would
-        // be more complicated and might force us to do additional splits on some models (would it?)
-        // For now, always use uv 0,0 as tiling origin.
-        
-        int textureVersion = this.texture.textureVersionMask() & (salt >> 4);
-        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersion));
-        
-        quad.setRotation(layerIndex, this.texture.rotation().rotationType() == TextureRotationType.RANDOM
-          ? Useful.offsetEnumValue(this.texture.rotation().rotation, (salt >> 16) & 3)
-          : this.texture.rotation().rotation);
-        
-        // confirm is still a convex quad or tri
-        // because earlier iterations may have left us with something else
-        if(quad.vertexCount() > 4 || !quad.isConvex())
-        {
-            boolean didSplit = quad.toPaintableQuads(p -> postPaintProcessQuadAndOutput(p, layerIndex, target, isItem));
-            assert didSplit;
-            // can release original polys that have been split - splits are new instances 
-            // and this current instance is not passed to the consumer nor used in any other way.
-            if(didSplit)
-                quad.release();
-        }
-        else 
-        {
-            this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
-        }
-    }
-    
-    private int salt(int textureSalt, int uIndex, int vIndex)
-    {
-        return MathHelper.hash((textureSalt << 16) | (uIndex << 8) | vIndex);
+        output.accept(sliceAddress);
+        return remainderAddress;
     }
 
-    @Override
-    protected boolean isQuadValidForPainting(IMutablePolygon inputQuad)
+    public static void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        return true;
+        /** 
+         * We add new polys, none of which need to be repainted by this routine.
+         * So, when we get to this address we know we are done.
+         */
+        final int limitAddress = stream.writerAddress();
+        
+        IMutablePolygon editor = stream.editor();
+        do
+        {
+            // may move editor so save address and restore at end
+            final int editorAddress = stream.editorAddress();
+            
+            // if the poly was added after we started we are done
+            if(editorAddress >= limitAddress)
+                break;
+            
+            final int layerIndex = firstAvailableTextureLayer(editor);
+            final Surface surfIn = editor.getSurface();
+            final EnumFacing face = editor.getNominalFace();
+            final ITexturePalette tex = getTexture(modelState, paintLayer);
+            
+            /**
+             * The smallest UV distance that can be tiled with single texture.
+             * Equivalently, the size of each tile in the tiling grid.
+             * If no wrap, is simply the texture size.  If we wrap, then
+             * pick the distance that gives the texture scaling closest to 1:1.
+             * 
+             */
+            final float tilingDistance = tilingDistance(surfIn.uvWrapDistance, tex.textureScale().sliceCount);
+            
+            /**
+             * See if we will need to split the quad on a UV boundary.<p>
+             * 
+             * Test on span > tile distance isn't sufficient because uv span might fit within a single
+             * texture tile distance but actually start or end mid-texture.<p>
+             */
+
+            final boolean uFlipped = editor.getMaxU(layerIndex) < editor.getMinU(layerIndex);
+            final int uMinIndex = uFlipped 
+                    ? MathHelper.ceil(editor.getMinU(layerIndex) / tilingDistance)
+                    : MathHelper.floor(editor.getMinU(layerIndex) / tilingDistance);
+            
+            final int uMaxIndex = uFlipped 
+                    ? MathHelper.floor(editor.getMaxU(layerIndex) / tilingDistance)
+                    : MathHelper.ceil(editor.getMaxU(layerIndex) / tilingDistance);
+
+            final boolean vFlipped = editor.getMaxV(layerIndex) < editor.getMinV(layerIndex);
+            final int vMinIndex = vFlipped 
+                    ? MathHelper.ceil(editor.getMinV(layerIndex) / tilingDistance)
+                    : MathHelper.floor(editor.getMinV(layerIndex) / tilingDistance);
+            
+            final int vMaxIndex = vFlipped 
+                    ? MathHelper.floor(editor.getMaxV(layerIndex) / tilingDistance)
+                    : MathHelper.ceil(editor.getMaxV(layerIndex) / tilingDistance);
+                    
+            final int uStep = uFlipped ? -1 : 1;
+            final int vStep = vFlipped ? -1 : 1;
+            
+            final float uSpan = uStep * tilingDistance;
+            final float vSpan = vStep * tilingDistance;
+                        
+            final int baseSalt = (editor.getTextureSalt() << 3) | (face == null ? 6 : face.ordinal());
+
+            int uRemainder = editorAddress;
+            
+            // do the splits
+            for(int uIndex = uMinIndex; uIndex != uMaxIndex;  uIndex += uStep)
+            {
+                final int uIndexFinal = uIndex;
+                final float uSplitLow = uIndexFinal * tilingDistance;
+                
+                uRemainder = splitU(stream, uRemainder, layerIndex, uSplitLow, uSpan, vTargetAddress ->
+                {
+                    int vRemainder = vTargetAddress;
+                    for(int vIndex = vMinIndex; vIndex != vMaxIndex;  vIndex += vStep)
+                    {
+                        final int vIndexFinal = vIndex;
+                        final float vSplitLow = vIndexFinal * tilingDistance;
+                        
+                        vRemainder = splitV(stream, vRemainder, layerIndex, vSplitLow, vSpan, outputAddress ->
+                        {
+                            // final painting and output
+                            
+                            // If we get to this point, quad is within tile boundaries (if needed) and all
+                            // needed splits have happened. 
+
+                            // The uv min/max on the quad should be 0-1, where 1 represents a single
+                            // texture tile distance.  The provided salt will be used for texture randomization.
+                           
+                            // salt at this point will be original salt plus u,v indexes in higher bits (if applicable)
+                            // add face if have it to make faces different and then hash it.
+                            // Note that we could do some randomization via texture offset, but that would
+                            // be more complicated and might force us to do additional splits on some models (would it?)
+                            // For now, always use uv 0,0 as tiling origin.
+                            
+                           final int salt = MathHelper.hash(baseSalt| (uIndexFinal << 16) | (vIndexFinal << 22));
+                           int textureVersion = tex.textureVersionMask() & (salt >> 4);
+                           editor.setTextureName(layerIndex, tex.getTextureName(textureVersion));
+
+                           editor.setRotation(layerIndex, tex.rotation().rotationType() == TextureRotationType.RANDOM
+                                   ? Useful.offsetEnumValue(tex.rotation().rotation, (salt >> 16) & 3)
+                                           : tex.rotation().rotation);
+
+                           editor.setLockUV(layerIndex, false);
+                           commonPostPaint(editor, layerIndex, modelState, paintLayer);
+                           
+                           // earlier UV splits may have left us with something other than a convex quad or tri
+                           // doing this last to avoid have to loop through the splits
+                           if(stream.splitIfNeeded(editorAddress) != IStreamPolygon.NO_ADDRESS)
+                           {
+                               assert editor.isDeleted();
+                           }
+                        });
+                        
+                        if(vRemainder == IStreamPolygon.NO_ADDRESS) break;
+                    }
+                });
+                
+                if(uRemainder == IStreamPolygon.NO_ADDRESS) break;
+            }
+            
+            // restore editor position for iteration
+            stream.moveEditor(editorAddress);
+            
+        } while(stream.editorNext());
     }
-   
 }

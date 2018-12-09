@@ -1,16 +1,16 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.function.Consumer;
-
 import grondag.exotic_matter.model.primitives.FaceQuadInputs;
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
+import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.world.CornerJoinBlockState;
 import grondag.exotic_matter.world.CornerJoinFaceState;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
 
-public class CubicQuadPainterBorders extends CubicQuadPainter
+public abstract class CubicQuadPainterBorders extends QuadPainter
 {
     protected final static FaceQuadInputs[][] FACE_INPUTS = new FaceQuadInputs[EnumFacing.VALUES.length][CornerJoinFaceState.values().length];
 
@@ -35,55 +35,6 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
      * Used only when a border is rendered in the solid layer.  Declared at module level so that we can check for it.
      */
     private final static FaceQuadInputs NO_BORDER = new FaceQuadInputs(TEXTURE_JOIN_ALL_NO_CORNERS, Rotation.ROTATE_NONE, false, false);
-    
-    
-    protected final CornerJoinBlockState bjs;
-    
-    public CubicQuadPainterBorders(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
-    {
-        super(modelState, surface, paintLayer);
-        this.bjs = modelState.getCornerJoin();
-    }
-
-    @Override
-    public final void textureQuad(IMutablePolygon quad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
-    {
-        quad.setLockUV(layerIndex, true);
-        
-        EnumFacing face = quad.getNominalFace();
-
-        FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][ bjs.getFaceJoinState(face).ordinal()];
-
-        if(inputs == null) return;
-        
-        // don't render the "no border" texture unless this is a tile of some kind
-        if(inputs == NO_BORDER && !this.texture.renderNoBorderAsTile())
-        {
-            // if this is a multi-texture quad then simply set the alpha 
-            // to zero - we still need to emit the quad
-            if(quad.layerCount() > 1)
-            {
-                for(int i = 0; i < quad.vertexCount(); i++)
-                {
-                    quad.setVertexColor(layerIndex, i, 0x00FFFFFF);
-                }
-            }
-            // if using vanilla rendering just skip it
-            else
-                return;
-        }
-        
-        quad.setRotation(layerIndex, inputs.rotation);
-//        cubeInputs.rotateBottom = false;
-        quad.setMinU(layerIndex, inputs.flipU ? 1 : 0);
-        quad.setMinV(layerIndex, inputs.flipV ? 1 : 0);
-        quad.setMaxU(layerIndex, inputs.flipU ? 0 : 1);
-        quad.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
-        quad.setTextureName(layerIndex, this.texture.getTextureName(textureVersionForFace(face), inputs.textureOffset));
-        
-        this.postPaintProcessQuadAndOutput(quad, layerIndex, target, isItem);
-    }
-    
     
     static
     {
@@ -164,5 +115,43 @@ public class CubicQuadPainterBorders extends CubicQuadPainter
                 }
             }
         }
+    }
+
+    public static void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer)
+    {
+        IMutablePolygon editor = stream.editor();
+        do
+        {
+            
+            CornerJoinBlockState bjs = modelState.getCornerJoin();
+            EnumFacing face = editor.getNominalFace();
+            FaceQuadInputs inputs = FACE_INPUTS[face.ordinal()][ bjs.getFaceJoinState(face).ordinal()];
+            
+            // if can't identify a face, skip texturing
+            if(inputs == null) 
+                continue;
+
+            final ITexturePalette tex = getTexture(modelState, paintLayer);
+            
+            // don't render the "no border" texture unless this is a tile of some kind
+            if(inputs == NO_BORDER && !tex.renderNoBorderAsTile())
+                continue;
+
+            int layerIndex = firstAvailableTextureLayer(editor);
+            editor.setLockUV(layerIndex, true);
+            editor.assignLockedUVCoordinates(layerIndex);
+            
+            editor.setRotation(layerIndex, inputs.rotation);
+//            cubeInputs.rotateBottom = false;
+            editor.setMinU(layerIndex, inputs.flipU ? 1 : 0);
+            editor.setMinV(layerIndex, inputs.flipV ? 1 : 0);
+            editor.setMaxU(layerIndex, inputs.flipU ? 0 : 1);
+            editor.setMaxV(layerIndex, inputs.flipV ? 0 : 1);
+            editor.setTextureName(layerIndex, tex.getTextureName(
+                    textureVersionForFace(face, tex, modelState), inputs.textureOffset));
+            
+            commonPostPaint(editor, layerIndex, modelState, paintLayer);
+            
+        } while(stream.editorNext());
     }
 }

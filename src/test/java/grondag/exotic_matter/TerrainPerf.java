@@ -2,9 +2,11 @@ package grondag.exotic_matter;
 
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
+import java.util.function.Consumer;
 
 import org.junit.Test;
 
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.state.ModelState;
 import grondag.exotic_matter.terrain.TerrainMeshFactory;
 
@@ -40,7 +42,15 @@ public class TerrainPerf
               return;
           }
         
-         
+        Consumer<IPolygon> sink = new Consumer<IPolygon>()
+        {
+            @Override
+            public void accept(IPolygon t)
+            {
+                // NOOP
+            }
+        };
+        
         for(int i = 0; i < 64; i++)
         {
             TerrainMeshFactory mesher = new TerrainMeshFactory();
@@ -65,7 +75,7 @@ public class TerrainPerf
                 final long start = System.nanoTime();
                 try
                 {
-                    mesher.getShapeQuads(modelState);
+                    mesher.produceShapeQuads(modelState, sink);;
                 }
                 catch(Exception e)
                 {

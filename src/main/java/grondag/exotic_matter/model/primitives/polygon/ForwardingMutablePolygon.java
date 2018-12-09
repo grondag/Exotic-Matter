@@ -234,4 +234,10 @@ public class ForwardingMutablePolygon extends ForwardingPolygon implements IMuta
         ((IMutablePolygon)wrapped).copyVertexFrom(targetIndex, source, sourceIndex);
         return this;
     }
+
+    @Override
+    public void copyFrom(IPolygon polyIn, boolean includeVertices)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

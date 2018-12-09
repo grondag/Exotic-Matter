@@ -47,11 +47,11 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     }
 
     @Override
-    public void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target)
+    public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
         final int limit = cachedQuads.size();
         for(int i = 0; i < limit; i++)
-            target.accept(cachedQuads.get(i).claimCopy());
+            target.accept(cachedQuads.get(i));
     }
     
     private List<IPolygon> getTestQuads()

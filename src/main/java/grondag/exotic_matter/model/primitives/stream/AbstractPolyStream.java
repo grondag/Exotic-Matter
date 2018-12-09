@@ -64,10 +64,20 @@ public abstract class AbstractPolyStream implements IPolyStream
     }
 
     @Override
-    public void origin()
+    public boolean origin()
     {
-        if(!isEmpty())
+        if(isEmpty())
+        {
+            reader.invalidate();
+            return false;
+        }
+        else
+        {
             reader.moveTo(originAddress);
+            if(reader.isDeleted())
+                next();
+            return hasValue();
+        }
     }
 
     protected boolean moveReaderToNext(StreamBackedPolygon targetReader)
@@ -117,6 +127,13 @@ public abstract class AbstractPolyStream implements IPolyStream
         reader.moveTo(address);
     }
 
+    @Override
+    public IPolygon reader(int address)
+    {
+        moveTo(address);
+        return reader;
+    }
+    
     void prepare(IIntStream stream)
     {
         didRelease.set(false);
@@ -163,10 +180,16 @@ public abstract class AbstractPolyStream implements IPolyStream
     }
 
     @Override
-    public IPolygon movePolyA(int address)
+    public void movePolyA(int address)
     {
         validateAddress(address);
         polyA.moveTo(address);
+    }
+    
+    @Override
+    public IPolygon polyA(int address)
+    {
+        movePolyA(address);
         return polyA;
     }
 
@@ -177,10 +200,16 @@ public abstract class AbstractPolyStream implements IPolyStream
     }
 
     @Override
-    public IPolygon movePolyB(int address)
+    public void movePolyB(int address)
     {
         validateAddress(address);
         polyA.moveTo(address);
+    }
+    
+    @Override
+    public IPolygon polyB(int address)
+    {
+        movePolyB(address);
         return polyB;
     }
 
@@ -326,7 +355,7 @@ public abstract class AbstractPolyStream implements IPolyStream
         return internal.isMarked();
     }
 
-    protected final void appendCopy(IPolygon polyIn, int withFormat)
+    protected void appendCopy(IPolygon polyIn, int withFormat)
     {
         final boolean needReaderLoad = reader.baseAddress == writeAddress;
         final int newFormat = PolyStreamFormat.minimalFixedFormat(polyIn, withFormat);

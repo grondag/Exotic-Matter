@@ -537,7 +537,7 @@ public class PolyEncoder
     
     public final void setTextureName(IIntStream stream, int baseAddress, int layerIndex, @Nullable String textureName)
     {
-        final int handle = textureName == null ? 0 : textureHandler.toHandle(textureName);
+        final int handle = textureName == null || textureName.isEmpty() ? 0 : textureHandler.toHandle(textureName);
         if(layerIndex == 0)
             setTexture0.set(stream, baseAddress + textureOffset01, handle);
         else if(layerIndex == 1)

@@ -1,79 +1,69 @@
 package grondag.exotic_matter.model.painting;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.IMutablePolyStream;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.texture.ITexturePalette;
 import grondag.exotic_matter.model.texture.TexturePaletteRegistry;
 import grondag.exotic_matter.model.texture.TextureScale;
+import grondag.exotic_matter.varia.Useful;
 import grondag.exotic_matter.world.Rotation;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
+
 
 public abstract class QuadPainter
 {
-    protected final ISuperModelState modelState;
-    public final Surface surface;
-    public final PaintLayer paintLayer;
-    
-    protected final ITexturePalette texture;
-    
-    /**
-     * Assigns specific texture and texture rotation based on model state and information
-     * in the polygon and assigned surface. Also handles UV mapping for the assigned texture.<p>
-     * 
-     * Implementations can and should assume locked UV coordinates are assigned before 
-     * this is called if UV locking is enabled for the quad<p>
-     * 
-     * At this point {@link #isQuadValidForPainting(IPaintablePolygon)} has been checked and is true. 
-     * Input quad will already be a clone and can be modified directly if expedient.
-     * RenderLayer, lighting mode and color will already be set.<p>
-     * 
-     * Resulting quad(s), if any, must be output using {@link #postPaintProcessQuadAndOutput(IMutablePolygon, List, boolean)}.
-     * This is ugly because have to pass through the outputList and isItem parameter - but didn't want to instantiate
-     * a new collection for painters that output more than one quad.  Should improve this next time painting is refactored.
-     */
-    protected abstract void textureQuad(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem);
-    
-    /**
-     * True if the painter requires quads that are split into quadrants split at u,v 0.5, 0.5 in
-     * order to apply quandrant-style textures.  If true, quads will be split into quadrants 
-     * (if not already generated that way) before being passed to <em>all</em> painters.<p>
-     * 
-     * Must be done for all painters (not just quadrant painters) to prevent z-fighting during
-     * render caused by differences in FP rounding between to similar but not identical surfaces.<p>
-     */
-    public boolean requiresQuadrants()
+    @FunctionalInterface
+    public static interface IPaintMethod
     {
-        return false;
+        /**
+         * Assigns specific texture and texture rotation based on model state 
+         * and information in the polygon and surface. Also handles texture UV mapping.<p>
+         * 
+         * Implementations can and should assume locked UV coordinates are assigned before 
+         * this is called if UV locking is enabled for the quad<p>
+         * 
+         * Implementation should claim and use first render layer with a null texture name.<br>
+         * (Claim by assigning a non-null texture name.)
+         * 
+         * Any polys in the input stream that are split should be deleted and new polys appended to the stream.<p>
+         * 
+         * Implementation may assume stream is non-empty and stream editor is at origin.<p>
+         * 
+         */
+        void paintQuads(IMutablePolyStream stream, ISuperModelState modelState, PaintLayer paintLayer);
+    }
+
+    public static int firstAvailableTextureLayer(IPolygon poly)
+    {
+        return poly.getTextureName(0) == null
+                ? 0
+                : poly.getTextureName(1) == null
+                    ? 1
+                    : 2;
     }
     
-    public QuadPainter(ISuperModelState modelState, Surface surface, PaintLayer paintLayer)
+    protected static ITexturePalette getTexture(ISuperModelState modelState, PaintLayer paintLayer)
     {
-        this.modelState = modelState;
-        this.surface = surface;
-        this.paintLayer = paintLayer;
-        
         ITexturePalette tex = modelState.getTexture(paintLayer);
-        this.texture = tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
+        return tex == TexturePaletteRegistry.NONE ? modelState.getTexture(PaintLayer.BASE) : tex;
     }
-    
-    protected abstract boolean isQuadValidForPainting(IMutablePolygon inputQuad);
     
     /**
      * True if painter will render a solid surface. When Acuity API is enabled
      * this signals that overlay textures can be packed into single quad.
      */
-    public boolean isSolid()
+    public static boolean isSolid(ISuperModelState modelState, PaintLayer paintLayer)
     {
-        switch(this.paintLayer)
+        switch(paintLayer)
         {
         case BASE:
         case CUT:
         case LAMP:
-            return !this.modelState.isTranslucent(this.paintLayer);
+            return !modelState.isTranslucent(paintLayer);
             
         case MIDDLE:
         case OUTER:
@@ -83,32 +73,20 @@ public abstract class QuadPainter
     }
     
     /**
-     * If isItem = true will bump out quads from block center to provide
-     * better depth rendering of layers in item rendering.
-     */
-    public final void producePaintedQuad(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
-    {
-        if(!isQuadValidForPainting(inputQuad)) return;
-    
-        inputQuad.setRenderLayer(layerIndex, modelState.getRenderPass(paintLayer));
-     
-        inputQuad.setEmissive(layerIndex, modelState.isEmissive(paintLayer));
-        
-        // TODO: Vary color slightly with species, as user-selected option
-        
-        this.textureQuad(inputQuad, layerIndex, target, isItem);
-    }
-    
-    /**
      * Call from paint quad in sub classes to return results.
      * Handles item scaling, then adds to the output list.
      */
-    protected final void postPaintProcessQuadAndOutput(IMutablePolygon inputQuad, int layerIndex, Consumer<IMutablePolygon> target, boolean isItem)
+    protected static void commonPostPaint(IMutablePolygon editor, int layerIndex, ISuperModelState modelState, PaintLayer paintLayer)
     {
-        if(isItem)
-        {
-            // FIXME: not going to work with new primitives w/ shared geometry
-            // move this to baking if still needed
+        editor.setRenderLayer(layerIndex, modelState.getRenderPass(paintLayer));
+        editor.setEmissive(layerIndex, modelState.isEmissive(paintLayer));
+        
+        modelState.getVertexProcessor(paintLayer).process(editor, layerIndex, modelState, paintLayer);
+        
+        // FIXME: not going to work with new primitives w/ shared geometry
+        // move this to baking if still needed
+//        if(isItem)
+//        {
 //            switch(this.paintLayer)
 //            {
 //            case MIDDLE:
@@ -122,10 +100,7 @@ public abstract class QuadPainter
 //            default:
 //                break;
 //            }
-        }
-        modelState.getVertexProcessor(this.paintLayer).process(inputQuad, layerIndex, modelState, paintLayer);
-
-        target.accept(inputQuad);
+//        }
     }
     
     /** 
@@ -143,35 +118,35 @@ public abstract class QuadPainter
      * vertex onto the plane of the quad's nominal face. 
      * Setting UV coordinates on a quad with lockUV=true has no effect.
      */
-    protected static Vec3i getSurfaceVector(Vec3i vec, EnumFacing face, TextureScale scale)
+    protected static Vec3i getSurfaceVector(int blockX, int blockY, int blockZ, EnumFacing face, TextureScale scale)
     {
         //PERF: reuse instances?
         
         int sliceCountMask = scale.sliceCountMask;
-        int x = vec.getX() & sliceCountMask;
-        int y = vec.getY() & sliceCountMask;
-        int z = vec.getZ() & sliceCountMask;
+        int x = blockX & sliceCountMask;
+        int y = blockY & sliceCountMask;
+        int z = blockZ & sliceCountMask;
         
         switch(face)
         {
         case EAST:
-            return new Vec3i(sliceCountMask - z, sliceCountMask - y, -vec.getX());
+            return new Vec3i(sliceCountMask - z, sliceCountMask - y, -blockX);
         
         case WEST:
-            return new Vec3i(z, sliceCountMask - y, vec.getX());
+            return new Vec3i(z, sliceCountMask - y, blockX);
         
         case NORTH:
-            return new Vec3i(sliceCountMask - x, sliceCountMask - y, vec.getZ());
+            return new Vec3i(sliceCountMask - x, sliceCountMask - y, blockZ);
         
         case SOUTH:
-            return new Vec3i(x, sliceCountMask - y, -vec.getZ());
+            return new Vec3i(x, sliceCountMask - y, -blockZ);
         
         case DOWN:
-            return new Vec3i(x, sliceCountMask - z, vec.getY());
+            return new Vec3i(x, sliceCountMask - z, blockY);
     
         case UP:
         default:
-            return new Vec3i(x, z, -vec.getY());
+            return new Vec3i(x, z, -blockY);
         }
     }
     
@@ -197,6 +172,71 @@ public abstract class QuadPainter
         default:
             return vec;
         
+        }
+    }
+    
+    protected static int textureVersionForFace(EnumFacing face, ITexturePalette tex, ISuperModelState modelState)
+    {
+        if(tex.textureVersionCount() == 0) return 0;
+        return textureHashForFace(face, tex, modelState) & tex.textureVersionMask();
+    }
+    
+    protected static int textureHashForFace(EnumFacing face, ITexturePalette tex, ISuperModelState modelState)
+    {
+        final int species = modelState.hasSpecies() ? modelState.getSpecies() : 0;
+        final int speciesBits = species << 16;
+        final int shift = tex.textureScale().power;
+        
+        switch(face)
+        {
+            case DOWN:
+            case UP:
+            {
+                final int yBits = (((modelState.getPosX() >> shift) & 0xFF) << 8) | ((modelState.getPosZ() >> shift) & 0xFF) | speciesBits;
+                return MathHelper.hash(yBits);
+            }
+            
+            case EAST:
+            case WEST:
+            {
+                final int xBits = (((modelState.getPosY() >> shift) & 0xFF) << 8) | ((modelState.getPosZ() >> shift) & 0xFF) | speciesBits;
+                return MathHelper.hash(xBits);
+            }
+            
+            case NORTH:
+            case SOUTH:
+            {
+                final int zBits = (((modelState.getPosX() >> shift) & 0xFF) << 8) | ((modelState.getPosY() >> shift) & 0xFF) | speciesBits;
+                return MathHelper.hash(zBits);
+            }
+            
+            default:
+                return 0;
+        }
+    }
+    
+    /** 
+     * Gives randomized (if applicable) texture rotation for the given face.
+     * If texture rotation type is FIXED, gives the textures default rotation.
+     * If texture rotation type is CONSISTENT, is based on species only. 
+     * If texture rotation type is RANDOM, is based on position (chunked by texture size) and species (if applies).
+     */
+    protected static Rotation textureRotationForFace(EnumFacing face, ITexturePalette tex, ISuperModelState modelState)
+    {
+        final int species = modelState.hasSpecies() ? modelState.getSpecies() : 0;
+        switch(tex.rotation().rotationType())
+        {
+            case CONSISTENT:
+                return species == 0 
+                    ? tex.rotation().rotation
+                    : Useful.offsetEnumValue(tex.rotation().rotation, MathHelper.hash(species) & 3);
+                
+            case FIXED:
+            default:
+                return tex.rotation().rotation;
+                
+            case RANDOM:
+                return Useful.offsetEnumValue(tex.rotation().rotation, (textureHashForFace(face, tex, modelState) >> 8) & 3);
         }
     }
 }

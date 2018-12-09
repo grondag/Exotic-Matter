@@ -17,6 +17,11 @@ public interface IPolyStream
     IPolygon reader();
     
     /**
+     * Moves reader and returns it.
+     */
+    IPolygon reader(int address);
+    
+    /**
      * Claims a reader appropriate for concurrent access.  Will fail for streams that are mutable.<p>
      * 
      * Reader must be released after use or stream can never be recycled to the pool when released.
@@ -28,9 +33,12 @@ public interface IPolyStream
     
     /**
      * Moves reader to start of stream.<br>
-     * Note that WIP is not considered part of stream.
+     * Note that WIP is not considered part of stream.<p>
+     * 
+     * Returns true if reader has a value, meaning 
+     * stream not empty & not all polys are deleted.
      */
-    void origin();
+    boolean origin();
     
     /**
      * Moves reader to next poly in this stream.  Returns false if already at end.<br>
@@ -74,7 +82,13 @@ public interface IPolyStream
     /**
      * Sets address for {@link #polyA()} and returns same as convenience.
      */
-    IPolygon movePolyA(int address);
+    void movePolyA(int address);
+    
+    
+    /**
+     * Sets address for {@link #polyA()} and returns same as convenience.
+     */
+    IPolygon polyA(int address);
     
     /**
      * Secondary instance of {@link #polyA()}. For interpolation.
@@ -84,7 +98,12 @@ public interface IPolyStream
     /**
      * Secondary instance of {@link #movePolyA(int)}.  For interpolation.
      */
-    IPolygon movePolyB(int address);
+    void movePolyB(int address);
+    
+    /**
+     * Secondary instance of {@link #polyA(int)}.  For interpolation.
+     */
+    IPolygon polyB(int address);
     
     /**
      * Mark this poly or clear the mark for the poly at the read cursor.  Meaning of mark is up to user.<p>

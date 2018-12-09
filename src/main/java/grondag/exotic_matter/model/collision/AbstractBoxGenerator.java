@@ -2,10 +2,10 @@ package grondag.exotic_matter.model.collision;
 
 import java.util.function.Consumer;
 
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
+import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 
-public abstract class AbstractBoxGenerator implements Consumer<IMutablePolygon>
+public abstract class AbstractBoxGenerator implements Consumer<IPolygon>
 {
     // diameters
     static final float D1 = 0.5f;
@@ -34,14 +34,12 @@ public abstract class AbstractBoxGenerator implements Consumer<IMutablePolygon>
     
     @SuppressWarnings("null")
     @Override
-    public final void accept(IMutablePolygon poly)
+    public final void accept(IPolygon poly)
     {
         acceptTriangle(poly.getPos(0), poly.getPos(1), poly.getPos(2));
         
         if(poly.vertexCount() == 4)
             acceptTriangle(poly.getPos(0), poly.getPos(2), poly.getPos(3));
-        
-        poly.release();
     }
     
     protected abstract void acceptTriangle(IVec3f v0, IVec3f v1, IVec3f v2);

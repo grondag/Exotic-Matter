@@ -60,28 +60,12 @@ public abstract class ShapeMeshGenerator
     public abstract int geometricSkyOcclusion(ISuperModelState modelState);
 
     /**
-     * Generator will output MUTABLE polygons and they will be quads or tris.
-     * Generator will not hold references to any of the polys and they should
-     * be released when no longer needed.
+     * Generator will output polygons and they will be quads or tris.<p>
+     * 
+     * Consumer MUST NOT hold references to any of the polys received.
      */
-    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IMutablePolygon> target);
+    public abstract void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target);
     
-
-    //TODO: remove
-    /**
-     * Use {@link #produceShapeQuads(ISuperModelState, Consumer)} if possible
-     */
-    @Deprecated
-    public final Collection<IPolygon> getShapeQuads(ISuperModelState modelState)
-    {
-        SimpleUnorderedArrayList<IPolygon> result = new SimpleUnorderedArrayList<>();
-        this.produceShapeQuads(modelState, p -> 
-        {
-            result.accept(p.toPainted());
-            p.release();
-        });
-        return result;
-    }
     
     /** Returns true if geometry is a full 1x1x1 cube. */
     public abstract boolean isCube(ISuperModelState modelState);
