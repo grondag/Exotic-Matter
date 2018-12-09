@@ -25,6 +25,11 @@ public class ReadOnlyPolyStream extends AbstractPolyStream implements IReadOnlyP
     protected void doRelease()
     {
         super.doRelease();
+    }
+
+    @Override
+    protected void returnToPool()
+    {
         PolyStreams.release(this);
     }
 }

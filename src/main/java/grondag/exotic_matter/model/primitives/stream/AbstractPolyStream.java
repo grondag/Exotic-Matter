@@ -156,8 +156,17 @@ public abstract class AbstractPolyStream implements IPolyStream
     public final void release()
     {
         if(didRelease.compareAndSet(false, true) && readerCount.get() == 0)
+        {
             doRelease();
+            returnToPool();
+        }
     }
+    
+    /**
+     * Called after {@link #doRelease()} to return this instance to allocation pool.
+     * Not part of {@link #doRelease()} to allow call of super.doRelease.
+     */
+    protected abstract void returnToPool();
     
     /**
      * Will be called after release is called and no more concurrent readers are active.

@@ -28,7 +28,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPolygon
+public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPolygon, ICSGPolygon
 {
     public Vec3f getFaceNormal();
     

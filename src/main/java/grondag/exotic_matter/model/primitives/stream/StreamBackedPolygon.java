@@ -412,4 +412,85 @@ public class StreamBackedPolygon implements IPolygon
         return StaticEncoder.getPipelineIndex(stream, baseAddress);
     }
 
+    @Override
+    public float planeDistance()
+    {
+        return polyEncoder.getBoundsDist(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMinX()
+    {
+        return polyEncoder.getBoundsMinX(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMinY()
+    {
+        return polyEncoder.getBoundsMinY(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMinZ()
+    {
+        return polyEncoder.getBoundsMinZ(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMaxX()
+    {
+        return polyEncoder.getBoundsMaxX(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMaxY()
+    {
+        return polyEncoder.getBoundsMaxY(stream, baseAddress);
+    }
+    
+    @Override
+    public float boundsMaxZ()
+    {
+        return polyEncoder.getBoundsMaxZ(stream, baseAddress);
+    }
+    
+    public void updateBounds()
+    {
+        float minX = getVertexX(0);
+        float maxX = minX;
+        float minY = getVertexY(0);
+        float maxY = minY;
+        float minZ = getVertexZ(0);
+        float maxZ = minZ;
+        
+        // Distance to plane of poly can be computed from any vertex.
+        // At this point min/max values are the same as vertex 0 xyz
+        // so can avoid looking them up by computing distance here.
+        polyEncoder.setBoundsDist(stream, baseAddress, 
+                getFaceNormalX() * minX + getFaceNormalY() * minY + getFaceNormalZ() * minZ); 
+        
+        final int limit = vertexCount() - 1;
+        for(int i = 1; i < limit; i++)
+        {
+            float f = getVertexX(i);
+            if(f < minX)
+                minX = f;
+            else if(f > maxX)
+                maxX = f;
+            
+            f = getVertexY(i);
+            if(f < minY)
+                minY = f;
+            else if(f > maxY)
+                maxY = f;
+            
+            f = getVertexZ(i);
+            if(f < minZ)
+                minZ = f;
+            else if(f > maxZ)
+                maxZ = f;
+        }
+        
+        polyEncoder.setBounds(stream, baseAddress, minX, minY, minZ, maxX, maxY, maxZ);
+    }
 }

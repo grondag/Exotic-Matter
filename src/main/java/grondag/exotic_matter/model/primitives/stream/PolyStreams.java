@@ -9,7 +9,8 @@ public class PolyStreams
     public static final int FORMAT_BOUNDS = PolyStreamFormat.HAS_BOUNDS_FLAG;
     
     private static final ArrayBlockingQueue<WritablePolyStream> writables = new ArrayBlockingQueue<>(256);
-    private static final ArrayBlockingQueue<MutablePolyStream> mutables = new ArrayBlockingQueue<>(256);
+    private static final ArrayBlockingQueue<MutablePolyStream> mutables = new ArrayBlockingQueue<>(128);
+    private static final ArrayBlockingQueue<CSGPolyStream> csgStreams = new ArrayBlockingQueue<>(128);
     private static final ArrayBlockingQueue<ReadOnlyPolyStream> readables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<DispatchPolyStream> dispatches = new ArrayBlockingQueue<>(256);
     
@@ -74,4 +75,17 @@ public class PolyStreams
         dispatches.offer(freeStream);
     }
     
+    public static CSGPolyStream claimCSG()
+    {
+        CSGPolyStream result = csgStreams.poll();
+        if(result == null)
+            result = new CSGPolyStream();
+        result.prepare();
+        return result;
+    }
+    
+    static void release(CSGPolyStream freeStream)
+    {
+        csgStreams.offer(freeStream);
+    }
 }

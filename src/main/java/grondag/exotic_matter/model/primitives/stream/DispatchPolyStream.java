@@ -165,9 +165,14 @@ public class DispatchPolyStream extends AbstractPolyStream implements IReadOnlyP
     protected void doRelease()
     {
         super.doRelease();
-        PolyStreams.release(this);
     }
 
+    @Override
+    protected void returnToPool()
+    {
+        PolyStreams.release(this);
+    }
+    
     @Override
     public final IStreamReaderPolygon claimThreadSafeReader()
     {

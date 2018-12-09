@@ -19,6 +19,11 @@ public class MutablePolyStream extends WritablePolyStream implements IMutablePol
     {
         super.doRelease();
         editor.stream = null;
+    }
+    
+    @Override
+    protected void returnToPool()
+    {
         PolyStreams.release(this);
     }
     

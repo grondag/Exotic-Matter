@@ -59,9 +59,14 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writerStream.release();
         defaultStream = null;
         writerStream = null;
-        PolyStreams.release(this);
     }
 
+    @Override
+    protected void returnToPool()
+    {
+        PolyStreams.release(this);
+    }
+    
     @Override
     public IMutablePolygon writer()
     {
