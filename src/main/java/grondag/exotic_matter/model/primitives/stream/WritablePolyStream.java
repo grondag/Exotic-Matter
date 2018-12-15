@@ -2,7 +2,6 @@ package grondag.exotic_matter.model.primitives.stream;
 
 import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.polygon.IStreamPolygon;
 import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 
@@ -80,9 +79,10 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     }
 
     @Override
-    public void append()
+    public final void append()
     {
         appendCopy(writer, formatFlags);
+        loadDefaults();
     }
 
     @Override
@@ -154,7 +154,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     {
         internal.moveTo(targetAddress);
         if(internal.vertexCount() <= 4 && internal.isConvex())
-            return IStreamPolygon.NO_ADDRESS;
+            return IPolygon.NO_LINK_OR_TAG;
         
         int firstSplitAddress = this.writerAddress();
 

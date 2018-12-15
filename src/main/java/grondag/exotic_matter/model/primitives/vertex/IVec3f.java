@@ -93,18 +93,33 @@ public interface IVec3f
     }
 
     /**
-     * True if this point is on the line formed by the two given points.
+     * True if point i,j,k is on line formed by x0,y0,z0 and x1, y1, z1.<p>
+     * 
+     * Will return false for points that are "very close" to each other
+     * because there essentially isn't enough resolution to make a firm
+     * determination of what the line is.
+     */
+    public static boolean isPointOnLine(float i, float j, float k, float x0, float y0, float z0, float x1, float y1, float z1)
+    {
+        // points have to be far enough apart to form a line
+        float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
+        if(ab < QuadHelper.EPSILON * 5) return false;
+        
+        float bThis = Useful.distance(i, j, k, x1, y1, z1);
+        float aThis = Useful.distance(x0, y0, z0, i, j, k);
+        return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);
+    }
+    
+    /**
+     * True if this point is on the line formed by the two given points.<p>
+     * 
      * Will return false for points that are "very close" to each other
      * because there essentially isn't enough resolution to make a firm
      * determination of what the line is.
      */
     public default boolean isOnLine(float x0, float y0, float z0, float x1, float y1, float z1)
     {
-        float ab = Useful.distance(x0, y0, z0, x1, y1, z1);
-        if(ab < QuadHelper.EPSILON * 5) return false;
-        float bThis = Useful.distance(this.x(), this.y(), this.z(), x1, y1, z1);
-        float aThis = Useful.distance(x0, y0, z0, this.x(), this.y(), this.z());
-        return(Math.abs(ab - bThis - aThis) < QuadHelper.EPSILON);
+        return isPointOnLine(this.x(), this.y(), this.z(), x0, y0, z0, x1, y1, z1);
     }
 
     public default boolean isOnLine(IVec3f v0, IVec3f v1)

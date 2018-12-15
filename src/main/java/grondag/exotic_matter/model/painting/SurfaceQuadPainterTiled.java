@@ -101,7 +101,7 @@ public abstract class SurfaceQuadPainterTiled extends QuadPainter
         if(sliceCount == 0)
         {
             assert false;
-            return IStreamPolygon.NO_ADDRESS;
+            return IPolygon.NO_LINK_OR_TAG;
         }
         
         // if this is the last slice,  bring into 0-1 min/max and send to output
@@ -118,7 +118,7 @@ public abstract class SurfaceQuadPainterTiled extends QuadPainter
                 editor.setVertexU(layerIndex, i, vertexU[i]);
             }
             vSplitter.accept(targetAddress);
-            return IStreamPolygon.NO_ADDRESS;
+            return IPolygon.NO_LINK_OR_TAG;
         }
         
         // if we get to here, take slice and return remainder
@@ -262,7 +262,7 @@ public abstract class SurfaceQuadPainterTiled extends QuadPainter
         if(sliceCount == 0)
         {
             assert false;
-            return IStreamPolygon.NO_ADDRESS;
+            return IPolygon.NO_LINK_OR_TAG;
         }
         
         // if this is the last slice,  bring into 0-1 min/max and send to output
@@ -279,7 +279,7 @@ public abstract class SurfaceQuadPainterTiled extends QuadPainter
                 editor.setVertexV(layerIndex, i, vertexV[i]);
             }
             output.accept(targetAddress);
-            return IStreamPolygon.NO_ADDRESS;
+            return IPolygon.NO_LINK_OR_TAG;
         }
         
         // if we get to here, take slice and return remainder
@@ -477,17 +477,17 @@ public abstract class SurfaceQuadPainterTiled extends QuadPainter
                            
                            // earlier UV splits may have left us with something other than a convex quad or tri
                            // doing this last to avoid have to loop through the splits
-                           if(stream.splitIfNeeded(editorAddress) != IStreamPolygon.NO_ADDRESS)
+                           if(stream.splitIfNeeded(editorAddress) != IPolygon.NO_LINK_OR_TAG)
                            {
                                assert editor.isDeleted();
                            }
                         });
                         
-                        if(vRemainder == IStreamPolygon.NO_ADDRESS) break;
+                        if(vRemainder == IPolygon.NO_LINK_OR_TAG) break;
                     }
                 });
                 
-                if(uRemainder == IStreamPolygon.NO_ADDRESS) break;
+                if(uRemainder == IPolygon.NO_LINK_OR_TAG) break;
             }
             
             // restore editor position for iteration

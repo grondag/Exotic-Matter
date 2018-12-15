@@ -168,9 +168,7 @@ public class PolyEncoder
     private final int colorOffset2;
     
     private final FloatGetter getCsgBounds;
-    private final FloatSetter setCsgBounds;
     private final FloatSetter3 setCsgBounds3;
-    private final int csgDistOffset;
     private final int csgMinXOffset;
     private final int csgMinYOffset;
     private final int csgMinZOffset;
@@ -376,9 +374,7 @@ public class PolyEncoder
         
         final boolean isCSG = isCSG(format);
         getCsgBounds = isCSG ? GET_FLOAT : GET_FLOAT_FAIL;
-        setCsgBounds = isCSG ? SET_FLOAT : SET_FLOAT_FAIL;
         setCsgBounds3 = isCSG ? SET_FLOAT3 : SET_FLOAT3_FAIL;
-        csgDistOffset = isCSG ? offset++ : BAD_ADDRESS;
         csgMinXOffset = isCSG ? offset++ : BAD_ADDRESS;
         csgMinYOffset = isCSG ? offset++ : BAD_ADDRESS;
         csgMinZOffset = isCSG ? offset++ : BAD_ADDRESS;
@@ -587,16 +583,6 @@ public class PolyEncoder
             setColor1.set(stream, baseAddress + colorOffset1, color);
         else
             setColor2.set(stream, baseAddress + colorOffset2, color);
-    }
-    
-    public final float getCsgDist(IIntStream stream, int baseAddress)
-    {
-        return getCsgBounds.get(stream, baseAddress + csgDistOffset);
-    }
-    
-    public final void setCsgDist(IIntStream stream, int baseAddress, float dist)
-    {
-        this.setCsgBounds.set(stream, baseAddress + csgDistOffset, dist);
     }
     
     public final float getCsgMinX(IIntStream stream, int baseAddress)

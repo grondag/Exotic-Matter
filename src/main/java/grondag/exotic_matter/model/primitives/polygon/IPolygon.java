@@ -67,6 +67,22 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
+    public static final int VERTEX_NOT_FOUND = -1;
+    
+    /**
+     * Will return {@link #VERTEX_NOT_FOUND} (-1) if vertex is not found in this polygon.
+     */
+    public default int indexForVertex(Vec3f v)
+    {
+        final int limit = this.vertexCount();
+        for(int i = 0; i < limit; i++)
+        {
+            if(v.equals(this.getPos(i)))
+                return i;
+        }
+        return VERTEX_NOT_FOUND;
+    }
+    
     public default boolean isConvex()
     {
         return QuadHelper.isConvex(this);

@@ -319,4 +319,15 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
             
         }
     }
+    
+    /**
+     * Specialized version for CSG operations.
+     * Never includes vertex info and does include marks and tags.
+     */
+    public void copyFromCSG(IPolygon polyIn)
+    {
+        copyFrom(polyIn, false);
+        setTag(polyIn.getTag());
+        setMark(polyIn.isMarked());
+    }
 }

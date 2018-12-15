@@ -33,7 +33,7 @@ package grondag.exotic_matter.model.CSG2;
  */
 
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
-import grondag.exotic_matter.model.primitives.stream.CSGPolyStream;
+import grondag.exotic_matter.model.primitives.stream.CsgPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IPolyStream;
 import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
 import grondag.exotic_matter.model.primitives.stream.PolyStreams;
@@ -61,8 +61,8 @@ public abstract class CSG
      */
     public static void difference(IPolyStream a, IPolyStream b, IWritablePolyStream output)
     {
-        CSGPolyStream bCSG = PolyStreams.claimCSG(b);
-        CSGPolyStream intersect = PolyStreams.claimCSG();
+        CsgPolyStream bCSG = PolyStreams.claimCSG(b);
+        CsgPolyStream intersect = PolyStreams.claimCSG();
 
         // add all of A outside of B bounds
         IPolygon p = a.reader();
@@ -80,11 +80,10 @@ public abstract class CSG
         bCSG.clipTo(intersect);
         bCSG.invert();
         bCSG.clipTo(intersect);
-        bCSG.invert();
-        intersect.appendAll(bCSG);
         intersect.invert();
-        intersect.recombineQuads();
-        output.appendAll(intersect);
+        
+        bCSG.outputRecombinedQuads(output);
+        intersect.outputRecombinedQuads(output);
         
         bCSG.release();
         intersect.release();
@@ -108,19 +107,20 @@ public abstract class CSG
      */
     public static void intersect(IPolyStream a, IPolyStream b, IWritablePolyStream output)
     {
-        CSGPolyStream aCSG = PolyStreams.claimCSG(a);
-        CSGPolyStream bCSG = PolyStreams.claimCSG(b);
+        CsgPolyStream aCSG = PolyStreams.claimCSG(a);
+        CsgPolyStream bCSG = PolyStreams.claimCSG(b);
         
         aCSG.invert();
         bCSG.clipTo(aCSG);
         bCSG.invert();
         aCSG.clipTo(bCSG);
         bCSG.clipTo(aCSG);
-        aCSG.appendAll(bCSG);
-        aCSG.invert();
-        aCSG.recombineQuads();
         
-        output.appendAll(aCSG);
+        aCSG.invert();
+        bCSG.invert();
+        
+        aCSG.outputRecombinedQuads(output);
+        bCSG.outputRecombinedQuads(output);
 
         aCSG.release();
         bCSG.release();
@@ -145,8 +145,8 @@ public abstract class CSG
      */
     public static void union(IPolyStream a, IPolyStream b, IWritablePolyStream output)
     {
-        CSGPolyStream bCSG = PolyStreams.claimCSG(b);
-        CSGPolyStream intersect = PolyStreams.claimCSG();
+        CsgPolyStream bCSG = PolyStreams.claimCSG(b);
+        CsgPolyStream intersect = PolyStreams.claimCSG();
         
         // output all of A outside of B
         IPolygon p = a.reader();
@@ -174,9 +174,9 @@ public abstract class CSG
             bCSG.invert();
             bCSG.clipTo(intersect);
             bCSG.invert();
-            intersect.appendAll(bCSG);
-            intersect.recombineQuads();
-            output.appendAll(intersect);
+            
+            intersect.outputRecombinedQuads(output);
+            bCSG.outputRecombinedQuads(output);
         } 
         
         bCSG.release();

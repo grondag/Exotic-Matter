@@ -411,12 +411,6 @@ public class StreamBackedPolygon implements IPolygon
     {
         return StaticEncoder.getPipelineIndex(stream, baseAddress);
     }
-
-    @Override
-    public float csgPlaneDistance()
-    {
-        return polyEncoder.getCsgDist(stream, baseAddress);
-    }
     
     @Override
     public float csgMinX()
@@ -463,12 +457,6 @@ public class StreamBackedPolygon implements IPolygon
         float minZ = getVertexZ(0);
         float maxZ = minZ;
         
-        // Distance to plane of poly can be computed from any vertex.
-        // At this point min/max values are the same as vertex 0 xyz
-        // so can avoid looking them up by computing distance here.
-        polyEncoder.setCsgDist(stream, baseAddress, 
-                getFaceNormalX() * minX + getFaceNormalY() * minY + getFaceNormalZ() * minZ); 
-        
         final int limit = vertexCount() - 1;
         for(int i = 1; i < limit; i++)
         {
@@ -493,4 +481,12 @@ public class StreamBackedPolygon implements IPolygon
         
         polyEncoder.setCsgBounds(stream, baseAddress, minX, minY, minZ, maxX, maxY, maxZ);
     }
+
+    @Override
+    public int streamAddress()
+    {
+        return baseAddress;
+    }
+    
+    
 }

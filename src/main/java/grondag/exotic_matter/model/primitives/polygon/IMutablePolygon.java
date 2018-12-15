@@ -689,7 +689,9 @@ public interface IMutablePolygon extends IPolygon
 
     /**
      * Will copy all poly and poly layer attributes. Layer counts must match.
-     * Will copy vertices if requested, but vertex counts must match or will throw exception.
+     * Will copy vertices if requested, but vertex counts must match or will throw exception.<p>
+     * 
+     * Does not copy links, marks, tags or deleted status.  
      */
     void copyFrom(IPolygon polyIn, boolean includeVertices);
 }

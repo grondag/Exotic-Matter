@@ -10,7 +10,7 @@ public class PolyStreams
     
     private static final ArrayBlockingQueue<WritablePolyStream> writables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<MutablePolyStream> mutables = new ArrayBlockingQueue<>(128);
-    private static final ArrayBlockingQueue<CSGPolyStream> csgStreams = new ArrayBlockingQueue<>(128);
+    private static final ArrayBlockingQueue<CsgPolyStream> csgStreams = new ArrayBlockingQueue<>(128);
     private static final ArrayBlockingQueue<ReadOnlyPolyStream> readables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<DispatchPolyStream> dispatches = new ArrayBlockingQueue<>(256);
     
@@ -75,22 +75,22 @@ public class PolyStreams
         dispatches.offer(freeStream);
     }
     
-    public static CSGPolyStream claimCSG()
+    public static CsgPolyStream claimCSG()
     {
-        CSGPolyStream result = csgStreams.poll();
+        CsgPolyStream result = csgStreams.poll();
         if(result == null)
-            result = new CSGPolyStream();
+            result = new CsgPolyStream();
         result.prepare();
         return result;
     }
     
-    public static CSGPolyStream claimCSG(IPolyStream stream)
+    public static CsgPolyStream claimCSG(IPolyStream stream)
     {
-        CSGPolyStream result = claimCSG();
+        CsgPolyStream result = claimCSG();
         result.appendAll(stream);
         return result;
     }
-    static void release(CSGPolyStream freeStream)
+    static void release(CsgPolyStream freeStream)
     {
         csgStreams.offer(freeStream);
     }

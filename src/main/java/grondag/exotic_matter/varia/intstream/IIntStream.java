@@ -6,6 +6,16 @@ public interface IIntStream
     
     void set(int address, int value);
     
+    default void setFloat(int address, float value)
+    {
+        set(address, Float.floatToRawIntBits(value));
+    }
+    
+    default float getFloat(int address)
+    {
+        return Float.intBitsToFloat(get(address));
+    }
+    
     default void copyFrom(int targetAddress, IIntStream source, int sourceAddress, int length)
     {
         for(int i = 0; i < length; i++)
