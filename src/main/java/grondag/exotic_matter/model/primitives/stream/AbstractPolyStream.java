@@ -279,6 +279,14 @@ public abstract class AbstractPolyStream implements IPolyStream
     }
 
     @Override
+    public int getLink(int address)
+    {
+        validateAddress(address);
+        internal.moveTo(address);
+        return internal.getLink();
+    }
+    
+    @Override
     public void setLink(int linkAddress)
     {
         reader.setLink(linkAddress);

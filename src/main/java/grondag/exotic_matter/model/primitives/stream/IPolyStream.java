@@ -174,6 +174,14 @@ public interface IPolyStream
     }
     
     /**
+     * Returns link value for poly at given address.
+     */
+    default int getLink(int address)
+    {
+        return IPolygon.NO_LINK_OR_TAG;
+    }
+    
+    /**
      * Sets link for this poly at the current reader.  Used to create sublists within a stream.<p>
      * 
      * This, along with {@link #setMark(boolean)} are the only 
