@@ -6,11 +6,13 @@ package grondag.exotic_matter.model.primitives.polygon;
  */
 public interface IStreamPolygon
 {
-    public static final int NO_ADDRESS = -1;
-    
+    /**
+     * Address of this poly within its stream.<br>
+     * Will throw exception if not a stream-back poly.
+     */
     public default int streamAddress()
     {
-        return NO_ADDRESS;
+        throw new UnsupportedOperationException();
     }
     
     default boolean isMarked()
