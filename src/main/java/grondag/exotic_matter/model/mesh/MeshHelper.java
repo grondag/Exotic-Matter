@@ -265,6 +265,7 @@ public class MeshHelper
 
     /**
      * Collection version of {@link #makePaintableBox(AxisAlignedBB, IPolygon, Consumer)}
+     * TODO: remove
      */
     @Deprecated // use the consumer version
     public static List<IMutablePolygon> makePaintableBox(AxisAlignedBB box, IMutablePolygon template)
@@ -274,6 +275,8 @@ public class MeshHelper
         return result;
     }
     
+    // TODO: remove
+    @Deprecated
     public static void makePaintableBox(AxisAlignedBB box, IMutablePolygon template, Consumer<IMutablePolygon> target)
     {
         IMutablePolygon quad = template.claimCopy(4);
@@ -303,6 +306,41 @@ public class MeshHelper
         quad = template.claimCopy(4);
         quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
         target.accept(quad);
+    }
+    
+    /**
+     * Adds box to stream using current stream defaults.
+     */
+    public static void makePaintableBox(AxisAlignedBB box, IWritablePolyStream stream)
+    {
+        IMutablePolygon quad = stream.writer();
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.UP, 1 - box.maxX, box.minZ, 1 - box.minX, box.maxZ, 1 - box.maxY, EnumFacing.SOUTH);
+        stream.append();
+    
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.DOWN, box.minX, box.minZ, box.maxX, box.maxZ, box.minY, EnumFacing.SOUTH);
+        stream.append();
+    
+        //-X
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.WEST, box.minZ, box.minY, box.maxZ, box.maxY, box.minX, EnumFacing.UP);
+        stream.append();
+        
+        //+X
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.EAST, 1 - box.maxZ, box.minY, 1 - box.minZ, box.maxY, 1 - box.maxX, EnumFacing.UP);
+        stream.append();
+        
+        //-Z
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.NORTH, 1 - box.maxX, box.minY, 1 - box.minX, box.maxY, box.minZ, EnumFacing.UP);
+        stream.append();
+        
+        //+Z
+        stream.setVertexCount(4);
+        quad.setupFaceQuad(EnumFacing.SOUTH, box.minX, box.minY, box.maxX, box.maxY, 1 - box.maxZ, EnumFacing.UP);
+        stream.append();
     }
     
     /**

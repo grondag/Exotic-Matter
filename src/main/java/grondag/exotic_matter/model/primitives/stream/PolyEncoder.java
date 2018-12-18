@@ -64,40 +64,17 @@ public class PolyEncoder
     
     private static final ObjectHandle<String> textureHandler = new ObjectHandle<String>(String.class);
     
-    private static final PolyEncoder MUTABLE;
-    
     private static final float MISSING_NORMAL = Float.NaN;
     
     static
     {
         for(int i = 0; i < POLY_FORMAT_COUNT; i++)
             ENCODERS[i] = new PolyEncoder(i << POLY_FORMAT_SHIFT);
-        
-        int mutableFormat = 0;
-        mutableFormat = setLinked(mutableFormat, true);
-        mutableFormat = setTagged(mutableFormat, true);
-        mutableFormat = setFaceNormalFormat(mutableFormat, FACE_NORMAL_FORMAT_COMPUTED);
-        mutableFormat = setHalfPrecisionPolyUV(mutableFormat, false);
-        mutableFormat = setLayerCount(mutableFormat, 3);
-        mutableFormat = setVertexColorFormat(mutableFormat, VERTEX_COLOR_PER_VERTEX_LAYER);
-        
-        assert isLinked(mutableFormat);
-        assert isTagged(mutableFormat);
-        assert getFaceNormalFormat(mutableFormat) == FACE_NORMAL_FORMAT_COMPUTED;
-        assert !isHalfPrecisionPolyUV(mutableFormat);
-        assert getLayerCount(mutableFormat) == 3;
-        assert getVertexColorFormat(mutableFormat) == VERTEX_COLOR_PER_VERTEX_LAYER;
-        
-        MUTABLE = ENCODERS[polyFormatKey(mutableFormat)];
-        
     }
     
-    /**
-     * All mutable formats have same full-feature binary format for data-compatibility with format changes
-     */
     public static PolyEncoder get(int format)
     {
-        return isMutable(format) ? MUTABLE : ENCODERS[polyFormatKey(format)];
+        return ENCODERS[polyFormatKey(format)];
     }
    
     private final int stride;

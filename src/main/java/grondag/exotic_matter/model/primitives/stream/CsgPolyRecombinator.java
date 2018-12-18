@@ -52,26 +52,24 @@ public class CsgPolyRecombinator
     {
         IPolygon polyA = input.polyA(polyAddress);
         final int vCount = polyA.vertexCount();
-        final boolean isMarked = polyA.isMarked();
-        boolean needsSplit  = vCount > 4 || (vCount == 4 && polyA.isConvex());
+        final boolean isFlipped = input.isInverted();
+        boolean needsSplit  = vCount > 4 || (vCount == 4 && !polyA.isConvex());
         
-        if(!(isMarked || needsSplit))
+        if(!(isFlipped || needsSplit))
         {
             output.appendCopy(polyA);
             return;
         }
         
         // invert if needed
-        if(isMarked)
+        if(isFlipped)
         {
             polyAddress = input.writerAddress();
             input.setVertexCount(polyA.vertexCount());
             final IMutablePolygon writer = input.writer();
             writer.copyFrom(polyA, true);
             writer.flip();
-            // new poly should not be marked flipped, because it has actually been inverted
-            writer.setMark(false);
-            input.append();
+            input.appendRaw();
             
             // output recombined should be terminal op, but delete original for consistency
             polyA.setDeleted();
@@ -188,6 +186,7 @@ public class CsgPolyRecombinator
         {
             long tag = reader.getTag();
             assert tag > 0;
+            assert !reader.isDeleted();
             tagPolyPairs.add((tag << TAG_SHIFT) | reader.streamAddress());
         } while(input.next());
         
@@ -208,6 +207,9 @@ public class CsgPolyRecombinator
             long pair0 = tagPolyPairs.getLong(0);
             long pair1 = tagPolyPairs.getLong(1);
             
+            assert !input.isDeleted((int)(pair0 & POLY_MASK));
+            assert !input.isDeleted((int)(pair1 & POLY_MASK));
+            
             if ((pair0 & TAG_MASK) == (pair1 & TAG_MASK))
                 combineTwoPolys(input, output, (int)(POLY_MASK & pair0), (int)(POLY_MASK & pair1));
             else
@@ -222,6 +224,7 @@ public class CsgPolyRecombinator
         
         long pair = tagPolyPairs.getLong(0);
         long lastTag = pair & TAG_MASK;
+        assert !input.isDeleted((int)(pair & POLY_MASK));
         polys.add((int)(pair & POLY_MASK));
         
         for(int i = 1; i < count; i++)
@@ -236,6 +239,7 @@ public class CsgPolyRecombinator
                 lastTag = tag;
             }
             
+            assert !input.isDeleted((int)(pair & POLY_MASK));
             polys.add((int)(pair & POLY_MASK));
         }
         
@@ -255,17 +259,12 @@ public class CsgPolyRecombinator
         IPolygon polyA = input.polyA(polyAddress0);
         IPolygon polyB = input.polyB(polyAddress1);
         
-        // polys must be same orientation to be joined
-        if(polyA.isMarked() != polyB.isMarked())
-        {
-            handleOutput(input, polyAddress0, output);
-            handleOutput(input, polyAddress1, output);
-            return;
-        }
-        
         final int aLimit = polyA.vertexCount();
         final int bLimit = polyB.vertexCount();
         
+        assert !polyA.isDeleted();
+        assert !polyB.isDeleted();
+
         for(int a = 0; a < aLimit; a++)
         {
             final float aX = polyA.getVertexX(a);
@@ -280,10 +279,16 @@ public class CsgPolyRecombinator
                 
                 if(aX == bX && aY == bY && aZ == bZ)
                 {
+                    
+                    
                     final int newPolyAddress = joinAtVertex(input, polyA, a, polyB, b);
                     if(newPolyAddress == IPolygon.NO_LINK_OR_TAG)
+                    {
                         // join failed
+                        assert !polyA.isDeleted();
+                        assert !polyB.isDeleted();
                         break;
+                    }
                     else
                     {
                         assert polyA.isDeleted();
@@ -458,7 +463,7 @@ public class CsgPolyRecombinator
             else
                 writer.copyVertexFrom(i, polyB, -j - 1);
         }
-        input.append();
+        input.appendRaw();
         
         //mark inputs deleted
         polyA.setDeleted();
@@ -512,7 +517,8 @@ public class CsgPolyRecombinator
         {
             Vec3f v = poly.getPos(i);
             IntArrayList bucket = vertexMap.get(v);
-            if(bucket != null) bucket.add(poly.streamAddress());
+            if(bucket != null)
+                bucket.add(poly.streamAddress());
         }
     }
     
@@ -522,10 +528,16 @@ public class CsgPolyRecombinator
         for(int i = 0; i < limit; i++)
         {
             Vec3f v = poly.getPos(i);
-            if(excludingVertex.equals(v)) continue;
+            if(excludingVertex.equals(v))
+                continue;
+            
             IntArrayList bucket = vertexMap.get(v);
-            if(bucket == null) continue;
-            bucket.rem(poly.streamAddress());
+            
+            if(bucket == null)
+                continue;
+            
+            boolean check  = bucket.rem(poly.streamAddress());
+            assert check;
         }
     }
     /**
@@ -586,10 +598,12 @@ public class CsgPolyRecombinator
                         // we won't see a CME because not removing any vertices at this point except via the iterator
                         it.remove();
                         
-                        polys.remove(first);
+                        boolean check = polys.remove(first);
+                        assert check;
                         removePolyFromVertexMap(vertexMap, input.polyA(first), v);
                         
-                        polys.remove(second);
+                        check = polys.remove(second);
+                        assert check;
                         removePolyFromVertexMap(vertexMap, input.polyA(second), v);
                         
                         polys.add(newPoly);

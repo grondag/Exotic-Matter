@@ -50,6 +50,29 @@ public class PolyStreamFormat
         return NOMINAL_FACE.setValue(face, formatIn);
     }
     
+   private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_MARKED = BITPACKER.createBooleanElement();
+    
+    public static boolean isMarked(int formatIn)
+    {
+        return IS_MARKED.getValue(formatIn);
+    }
+    
+    public static int setMarked(int formatIn, boolean isMarked)
+    {
+        return IS_MARKED.setValue(isMarked, formatIn);
+    }
+    
+    private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_DELETED = BITPACKER.createBooleanElement();
+    
+    public static boolean isDeleted(int formatIn)
+    {
+        return IS_DELETED.getValue(formatIn);
+    }
+    
+    public static int setDeleted(int formatIn, boolean isDeleted)
+    {
+        return IS_DELETED.setValue(isDeleted, formatIn);
+    }
     
     // Note the packers below that affect poly / vertex layouts need to be adjacent to
     // each other so that masks can be used as keys for encoders.
@@ -240,53 +263,39 @@ public class PolyStreamFormat
         return VERTEX_GLOW_FORMAT.setValue(glowFormat, formatIn);
     }
     
-    private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_MARKED = BITPACKER.createBooleanElement();
-    
-    public static boolean isMarked(int formatIn)
-    {
-        return IS_MARKED.getValue(formatIn);
-    }
-    
-    public static int setMarked(int formatIn, boolean isMarked)
-    {
-        return IS_MARKED.setValue(isMarked, formatIn);
-    }
-    
-    private static final BitPacker32<PolyStreamFormat>.BooleanElement IS_DELETED = BITPACKER.createBooleanElement();
-    
-    public static boolean isDeleted(int formatIn)
-    {
-        return IS_DELETED.getValue(formatIn);
-    }
-    
-    public static int setDeleted(int formatIn, boolean isDeleted)
-    {
-        return IS_DELETED.setValue(isDeleted, formatIn);
-    }
-    
+    // static features
 //    isMutable   2   1       poly    yes yes
 //    vertexCount 128 7       vertex  no  no
 //    nominalFace 6   3       poly    no  no
+//    isMarked    2   1   stream metadata poly    no  no
+//    isDeleted   2   1   stream metadata poly    no  no
 
+    // poly-encoder features
 //    isLinked
 //    isTagged
 //    isCSG
 //    faceNormal  4   2   Dynamic/Cached/Quantized/Nominal    poly    yes no
 //    uvFormat    2   1   full/half   layer   yes no
     
+    // poly and vertex features
 //    layerCount  3   2   if mutable, how many layers are used    layer   yes yes
 //    vertexColor 4   2   white/same/same by layer/each   vertex layer    yes yes
+    
+    // vertex encoder features
 //    vertexPos   2   1   Regular/Quantized   vertex  no  yes
 //    vertexNormals   3   2   Face/Regular/Quantized  vertex  no  yes
 //    vertexUV    4   2   Same/Per Layer/Same Half/Per Layer Half vertex layer    no  yes
     
+    // glow encoder features
 //    vertexGlow  3   2   None/Same/Per Vertex    vertex layer    no  no
-//    isMarked    2   1   stream metadata poly    no  no
-//    isDeleted   2   1   stream metadata poly    no  no
+    
     
     final static int POLY_FORMAT_MASK;
     final static int POLY_FORMAT_SHIFT;
     final static int POLY_FORMAT_COUNT;
+    
+    final static int POLY_FORMAT_MUTABLE_MASK;
+    final static int POLY_FORMAT_MUTABLE_BITS;
     
     final static int VERTEX_FORMAT_MASK;
     final static int VERTEX_FORMAT_SHIFT;
@@ -306,6 +315,23 @@ public class PolyStreamFormat
         POLY_FORMAT_MASK = polyMask >> POLY_FORMAT_SHIFT;
         POLY_FORMAT_COUNT = POLY_FORMAT_MASK + 1;
         
+        // force certain features to full flexibility for mutable formats
+        // doesn't include CSG bounds
+        POLY_FORMAT_MUTABLE_MASK = ~(HAS_LINK.comparisonMask()
+                | HAS_TAG.comparisonMask()
+                | FACE_NORMAL_FORMAT.comparisonMask()
+                | HALF_PRECISION_POLY_UV.comparisonMask()
+                | LAYER_COUNT.comparisonMask()
+                | VERTEX_COLOR_FORMAT.comparisonMask());
+        
+        int mutableBits = setLinked(0, true);
+        mutableBits = setTagged(mutableBits, true);
+        mutableBits = setFaceNormalFormat(mutableBits, FACE_NORMAL_FORMAT_COMPUTED);
+        mutableBits = setHalfPrecisionPolyUV(mutableBits, false);
+        mutableBits = setLayerCount(mutableBits, 3);
+        mutableBits = setVertexColorFormat(mutableBits, VERTEX_COLOR_PER_VERTEX_LAYER);
+        POLY_FORMAT_MUTABLE_BITS = mutableBits;
+        
         final int vertexMask = LAYER_COUNT.comparisonMask()
                 | VERTEX_COLOR_FORMAT.comparisonMask()
                 | QUANTIZED_POS.comparisonMask()
@@ -319,6 +345,9 @@ public class PolyStreamFormat
     
     public static int polyFormatKey(int formatIn)
     {
+        // force certain features to full flexibility for mutable formats
+        if(isMutable(formatIn))
+            formatIn = (formatIn & POLY_FORMAT_MUTABLE_MASK) | POLY_FORMAT_MUTABLE_BITS;
         return (formatIn >> POLY_FORMAT_SHIFT) & POLY_FORMAT_MASK;
     }
     

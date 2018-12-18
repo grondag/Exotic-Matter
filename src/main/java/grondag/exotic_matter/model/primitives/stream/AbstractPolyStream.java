@@ -212,7 +212,7 @@ public abstract class AbstractPolyStream implements IPolyStream
     public void movePolyB(int address)
     {
         validateAddress(address);
-        polyA.moveTo(address);
+        polyB.moveTo(address);
     }
     
     @Override

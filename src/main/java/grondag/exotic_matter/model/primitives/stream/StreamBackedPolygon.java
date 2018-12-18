@@ -413,6 +413,12 @@ public class StreamBackedPolygon implements IPolygon
     }
     
     @Override
+    public boolean  isCSG()
+    {
+        return PolyStreamFormat.isCSG(format());
+    }
+    
+    @Override
     public float csgMinX()
     {
         return polyEncoder.getCsgMinX(stream, baseAddress);

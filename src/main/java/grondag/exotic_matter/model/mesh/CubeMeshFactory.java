@@ -44,15 +44,14 @@ public class CubeMeshFactory extends ShapeMeshGenerator
     @Override
     public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
-        if(cachedQuads.isEmpty())
-            return;
-        
-        cachedQuads.origin();
-        IPolygon reader = cachedQuads.reader();
-        
-        do
-            target.accept(reader);
-        while(cachedQuads.next());
+        if(cachedQuads.origin())
+        {
+            IPolygon reader = cachedQuads.reader();
+            
+            do
+                target.accept(reader);
+            while(cachedQuads.next());
+        }
     }
     
     private IPolyStream getCubeQuads()

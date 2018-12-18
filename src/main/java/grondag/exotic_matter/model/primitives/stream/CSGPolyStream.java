@@ -22,6 +22,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  */
 public class CsgPolyStream extends MutablePolyStream
 {
+    private static final AtomicInteger NEXT_TAG = new AtomicInteger(1);
+    
     private static final int COPLANAR = 0;
     private static final int FRONT = 1;
     private static final int BACK = 2;
@@ -101,12 +103,18 @@ public class CsgPolyStream extends MutablePolyStream
     
     private int nextNodeAddress = 0;
     
-    void prepare()
+    private boolean isComplete = false;
+    
+    private boolean isInverted = false;
+    
+    protected void prepare()
     {
-        super.prepare(IntStreams.claim());
+        super.prepare(PolyStreamFormat.CSG_FLAG);
         clearStreamBounds();
         nodeStream = IntStreams.claim();
         nextNodeAddress = 0;
+        isComplete = false;
+        isInverted = false;
     }
     
     @Override
@@ -153,26 +161,50 @@ public class CsgPolyStream extends MutablePolyStream
         return maxZ;
     }
     
-    private static final AtomicInteger NEXT_TAG = new AtomicInteger(1);
+    public final float normalX(int nodeAddress)
+    {
+        return isInverted ? -nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_X) : nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_X);
+    }
+    
+    public final float normalY(int nodeAddress)
+    {
+        return isInverted ? -nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Y) : nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Y);
+    }
+    
+    public final float normalZ(int nodeAddress)
+    {
+        return isInverted ? -nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Z) : nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Z);
+    }
+    
+    public final float dist(int nodeAddress)
+    {
+        return isInverted ? -nodeStream.getFloat(nodeAddress + NODE_PLANE_DIST) : nodeStream.getFloat(nodeAddress + NODE_PLANE_DIST);
+    }
     
     /**
      * {@inheritDoc}
      * 
-     * CSG streams copy marks, assuming they represent "inverted" status
-     * and also copy tag values > 0, assuming they represent a CSG poly ID.<p>
-     * 
-     * Polys that have a tag value <= 0 will be assigned a unique ID in the
+     * CSG streams that aren't locked will assigned a unique ID in the
      * tag to facilitate recombination of split polys after CSG operations complete.
      */
     @Override
     protected void appendCopy(IPolygon polyIn, int withFormat)
     {
+        // anything after complete should be calling raw version
+        assert !isComplete;
+        
         appendRawCopy(polyIn, withFormat);
         
         // relies on internal being at new poly after exit from appendRawCopy
+        assert internal.isCSG();
         internal.updateBounds();
         expandStreamBounds(internal);
-        buildBSP(internal.baseAddress, 0);
+        
+        // create BSP root node if it doesn't exist
+        if(this.nextNodeAddress == 0)
+            this.createNode(internal.baseAddress);
+        else
+            buildBSP(internal.baseAddress, 0);
     }
     
     /**
@@ -180,7 +212,7 @@ public class CsgPolyStream extends MutablePolyStream
      * yet have vertices and thus shouldn't have bounds updated and
      * should not be added to the BSP tree yet.<p>
      * 
-     * Does copy marks and tags.<p>
+     * Does copy tags.<p>
      * 
      * Guarantees internal poly is set at new poly on exit.
      */
@@ -194,7 +226,17 @@ public class CsgPolyStream extends MutablePolyStream
         if(tag <= 0)
             tag = NEXT_TAG.getAndIncrement();
         internal.setTag(tag);
-        internal.setMark(polyIn.isMarked());
+    }
+    
+    /**
+     * Like {@link #append()} but doesn't update bounds, etc.
+     * Uses {@link #appendRawCopy(IPolygon, int)} internally.
+     * See that method for more info.
+     */
+    void appendRaw()
+    {
+        appendRawCopy(writer, formatFlags);
+        loadDefaults();
     }
     
     /**
@@ -268,6 +310,15 @@ public class CsgPolyStream extends MutablePolyStream
         reader.moveTo(readerPos);
     }
     
+    /**
+     * Signals that all original polys have been added and subsequent operations
+     * will only clip or invert the existing tree.<p>
+     */
+    public void complete()
+    {
+        isComplete = true;
+    }
+    
     private void buildBSP(int polyAddress, int nodeAddress)
     {
         IntArrayList stack = STACK.get();
@@ -285,15 +336,15 @@ public class CsgPolyStream extends MutablePolyStream
     private void buildBSPInner(IntArrayList stack, final int polyAddress, int nodeAddress)
     {
         polyB.moveTo(polyAddress);
+        // polys being added should not already be linked
+        assert polyB.getLink() ==  IPolygon.NO_LINK_OR_TAG;
+        
         do
         {
-            // polys being added should not already be linked
-            assert polyB.getLink() ==  IPolygon.NO_LINK_OR_TAG;
-            
-            final float normalX = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_X);
-            final float normalY = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Y);
-            final float normalZ = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Z);
-            final float dist = nodeStream.getFloat(nodeAddress + NODE_PLANE_DIST);
+            final float normalX = normalX(nodeAddress);
+            final float normalY = normalY(nodeAddress);
+            final float normalZ = normalZ(nodeAddress);
+            final float dist = dist(nodeAddress);
             final int vCount = polyB.vertexCount();
             int combinedCount = 0;
             
@@ -542,42 +593,23 @@ public class CsgPolyStream extends MutablePolyStream
      * Conceptually, converts solid space to empty space and vice versa
      * for all nodes in this stream / BSP tree. <p>
      * 
-     * In practical terms, flips the "marked" flag on all polys
-     * which, for CSG meshes, indicates the polygon is inverted.<p>
-     * 
      * Does not actually reverse winding order or normals, because
      * that would be expensive and not actually needed until
      * we need to produce renderable quads.<p>
      * 
-     * However, this means logic elsewhere must interpret isMarked to
-     * mean the poly is inverted and interpret the plane normal accordingly.
+     * However, this means logic elsewhere must interpret isFlipped to
+     * mean the tree is inverted and interpret the node normals accordingly.
      */
     public void invert()
     {
-        final int saveReadAddress = reader.baseAddress;
+        assert isComplete;
         
-        if(origin())
-            do
-                reader.flipMark();
-            while(next());
-        
-        reader.moveTo(saveReadAddress);
-        
-        // Flip node normals
-        int nodeAddress = 0;
-        while(nodeAddress < nextNodeAddress)
-        {
-            int a = nodeAddress + NODE_PLANE_NORMAL_X;
-            nodeStream.setFloat(a, -nodeStream.getFloat(a));
-            a = nodeAddress + NODE_PLANE_NORMAL_Y;
-            nodeStream.setFloat(a, -nodeStream.getFloat(a));
-            a = nodeAddress + NODE_PLANE_NORMAL_Z;
-            nodeStream.setFloat(a, -nodeStream.getFloat(a));
-            a = nodeAddress + NODE_PLANE_DIST;
-            nodeStream.setFloat(a, -nodeStream.getFloat(a));
-            
-            nodeAddress += NODE_STRIDE;
-        }
+        isInverted = !isInverted;
+    }
+    
+    public boolean isInverted()
+    {
+        return isInverted;
     }
 
     /**
@@ -588,6 +620,7 @@ public class CsgPolyStream extends MutablePolyStream
      */
     public void clipTo(CsgPolyStream clippingStream)
     {
+        assert isComplete;
         clip(this, clippingStream);
     }
     
@@ -595,10 +628,6 @@ public class CsgPolyStream extends MutablePolyStream
     {
         final StreamBackedPolygon reader = targetStream.reader;
         final int saveReadAddress = reader.baseAddress;
-        
-        // PERF traverse tree instead of list - will have to traverse tree
-        // anyway if polys are clipped to strip deleted polys - could do
-        // it immediately and avoid second pass if drive calls from traversal
         
         /**
          * Clip can create new polys, and we don't need to clip those.
@@ -613,7 +642,7 @@ public class CsgPolyStream extends MutablePolyStream
                     didClip = true;
             while(targetStream.next() && reader.baseAddress < limitAddress);
         
-        if(didClip)
+        if(didClip)  // PERF make stream bounds lazy - not always needed
             targetStream.rebuildStreamBounds();
         
         reader.moveTo(saveReadAddress);
@@ -655,16 +684,12 @@ public class CsgPolyStream extends MutablePolyStream
         final StreamBackedPolygon polyB = targetStream.polyB;
         polyB.moveTo(polyAddress);
         
-        // Need to use the clipping stream's node, not ours.  Easiest way to 
-        // prevent a mistake is to locally hide the field in our instance.
-        final IIntStream nodeStream = clippingStream.nodeStream;
-        
         do
         {
-            final float normalX = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_X);
-            final float normalY = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Y);
-            final float normalZ = nodeStream.getFloat(nodeAddress + NODE_PLANE_NORMAL_Z);
-            final float dist = nodeStream.getFloat(nodeAddress + NODE_PLANE_DIST);
+            final float normalX = clippingStream.normalX(nodeAddress);
+            final float normalY = clippingStream.normalY(nodeAddress);
+            final float normalZ = clippingStream.normalZ(nodeAddress);
+            final float dist = clippingStream.dist(nodeAddress);
             final int vCount = polyB.vertexCount();
             int combinedCount = 0;
             
@@ -682,11 +707,10 @@ public class CsgPolyStream extends MutablePolyStream
                 {
                     final Vec3f faceNorm = polyB.getFaceNormal();
                     float t = faceNorm.x() * normalX + faceNorm.y() * normalY + faceNorm.z() * normalZ;
-                    if(polyB.isMarked()) t = -t; // check for inverted
                     
                     if(t > 0) 
                     {
-                        // coplanar front counts as front
+                        // coplanar front counts as front - leave be
                         // no need to check front node because coplanar
                         return false;
                     }
@@ -829,6 +853,7 @@ public class CsgPolyStream extends MutablePolyStream
                     // Note we don't need to update mesh bounds - that
                     // will have happened when poly was added to mesh and building
                     // the BSP tree doesn't change the mesh bounds overall.
+                    // PERF: is this necessary after tree completed?
                     targetStream.editor.moveTo(frontAddress);
                     targetStream.editor.updateBounds();
                     
@@ -889,7 +914,7 @@ public class CsgPolyStream extends MutablePolyStream
     
     private int getBackNode(int nodeAddress)
     {
-        return nodeStream.get(nodeAddress * NODE_STRIDE + NODE_BACK_NODE_ADDRESS);
+        return nodeStream.get(nodeAddress + NODE_BACK_NODE_ADDRESS);
     }
     
     private void setBackNode(int targetNodeAddress, int backNodeAddress)
@@ -922,12 +947,12 @@ public class CsgPolyStream extends MutablePolyStream
         final int newNodeAddress = nextNodeAddress;
         nextNodeAddress += NODE_STRIDE;
         
-        nodeStream.set(NODE_FRONT_NODE_ADDRESS, NO_NODE_ADDRESS);
-        nodeStream.set(NODE_BACK_NODE_ADDRESS, NO_NODE_ADDRESS);
-        nodeStream.setFloat(NODE_PLANE_DIST, normal.dotProduct(sampleX, sampleY, sampleZ));
-        nodeStream.setFloat(NODE_PLANE_NORMAL_X, normal.x());
-        nodeStream.setFloat(NODE_PLANE_NORMAL_Y, normal.y());
-        nodeStream.setFloat(NODE_PLANE_NORMAL_Z, normal.z());
+        nodeStream.set(newNodeAddress + NODE_FRONT_NODE_ADDRESS, NO_NODE_ADDRESS);
+        nodeStream.set(newNodeAddress + NODE_BACK_NODE_ADDRESS, NO_NODE_ADDRESS);
+        nodeStream.setFloat(newNodeAddress + NODE_PLANE_DIST, normal.dotProduct(sampleX, sampleY, sampleZ));
+        nodeStream.setFloat(newNodeAddress + NODE_PLANE_NORMAL_X, normal.x());
+        nodeStream.setFloat(newNodeAddress + NODE_PLANE_NORMAL_Y, normal.y());
+        nodeStream.setFloat(newNodeAddress + NODE_PLANE_NORMAL_Z, normal.z());
         return newNodeAddress;
     }
 }

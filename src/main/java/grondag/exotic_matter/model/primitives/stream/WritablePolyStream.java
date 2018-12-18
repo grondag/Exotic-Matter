@@ -37,9 +37,9 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writer.baseAddress = 0;
     }
     
-    protected void prepare(int formatFlags)
+    protected final void prepare(IIntStream stream, int formatFlags)
     {
-        super.prepare(IntStreams.claim());
+        super.prepare(stream);
         copyFrom.stream = stream;
         defaultStream = IntStreams.claim();
         writerStream = IntStreams.claim();
@@ -48,7 +48,18 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         clearDefaults();
         loadDefaults();
     }
+    
+    protected void prepare(int formatFlags)
+    {
+        prepare(IntStreams.claim(), formatFlags);
+    }
 
+    @Override
+    protected final void prepare(IIntStream stream)
+    {
+        prepare(stream, 0);
+    }
+    
     @Override
     protected void doRelease()
     {
@@ -153,12 +164,13 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     public int splitIfNeeded(int targetAddress)
     {
         internal.moveTo(targetAddress);
-        if(internal.vertexCount() <= 4 && internal.isConvex())
+        final int inCount  = internal.vertexCount();
+        if(inCount == 3  || (inCount == 4 && internal.isConvex()))
             return IPolygon.NO_LINK_OR_TAG;
         
         int firstSplitAddress = this.writerAddress();
 
-        int head = internal.vertexCount() - 1;
+        int head = inCount - 1;
         int tail = 2;
         setVertexCount(4);
         writer.copyFrom(internal, false);

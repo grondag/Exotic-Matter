@@ -15,16 +15,22 @@ public interface IStreamPolygon
         throw new UnsupportedOperationException();
     }
     
+    //TODO: remove
+    @Deprecated
     default boolean isMarked()
     {
         return false;
     }
     
+    //TODO: remove
+    @Deprecated
     default void flipMark()
     {
         this.setMark(!this.isMarked());
     }
     
+    //TODO: remove
+    @Deprecated
     default void setMark(boolean isMarked)
     {
         throw new UnsupportedOperationException();

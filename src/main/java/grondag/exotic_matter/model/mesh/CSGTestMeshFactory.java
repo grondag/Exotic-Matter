@@ -8,15 +8,17 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 import grondag.exotic_matter.block.ISuperBlock;
-import grondag.exotic_matter.model.CSG.CSGMesh;
+import grondag.exotic_matter.model.CSG2.CSG;
 import grondag.exotic_matter.model.collision.CollisionBoxDispatcher;
 import grondag.exotic_matter.model.collision.ICollisionHandler;
 import grondag.exotic_matter.model.painting.PaintLayer;
 import grondag.exotic_matter.model.painting.Surface;
 import grondag.exotic_matter.model.painting.SurfaceTopology;
-import grondag.exotic_matter.model.primitives.PolyFactory;
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.polygon.IPolygon;
+import grondag.exotic_matter.model.primitives.stream.CsgPolyStream;
+import grondag.exotic_matter.model.primitives.stream.IPolyStream;
+import grondag.exotic_matter.model.primitives.stream.IWritablePolyStream;
+import grondag.exotic_matter.model.primitives.stream.PolyStreams;
 import grondag.exotic_matter.model.state.ISuperModelState;
 import grondag.exotic_matter.model.state.StateFormat;
 import grondag.exotic_matter.model.varia.SideShape;
@@ -38,7 +40,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     
     
     /** never changes so may as well save it */
-    private final List<IPolygon> cachedQuads;
+    private final IPolyStream cachedQuads;
     
     public CSGTestMeshFactory()
     {
@@ -49,18 +51,18 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
     @Override
     public void produceShapeQuads(ISuperModelState modelState, Consumer<IPolygon> target)
     {
-        final int limit = cachedQuads.size();
-        for(int i = 0; i < limit; i++)
-            target.accept(cachedQuads.get(i));
+        if(cachedQuads.origin())
+        {
+            IPolygon reader = cachedQuads.reader();
+            
+            do
+                target.accept(reader);
+            while(cachedQuads.next());
+        }
     }
     
-    private List<IPolygon> getTestQuads()
+    private IPolyStream getTestQuads()
     {
-        IMutablePolygon template = PolyFactory.COMMON_POOL.newPaintable(4);
-        template.setLockUV(0, true);
-        template.setSurface(SURFACE_MAIN);
-  
-      
       //union opposite overlapping coplanar faces
 //      result = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0, .4, .5, 1, 1, 1), template));
 //      delta = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(.3, 0, 0, .7, .6, .5), template));
@@ -79,24 +81,27 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
       // icosahedron (sphere) test
 //    result = new CSGShape(QuadFactory.makeIcosahedron(new Vec3d(.5, .5, .5), 0.5, template));
 
+        
+      CsgPolyStream quadsA = PolyStreams.claimCSG();
+      quadsA.writer().setLockUV(0, true);
+      quadsA.writer().setSurface(SURFACE_MAIN);
+      quadsA.saveDefaults();
+      MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), quadsA);
       
-      List<IMutablePolygon> quadsA = MeshHelper.makePaintableBox(new AxisAlignedBB(0, 0.4, 0.4, 1.0, 0.6, 0.6), template);
-      template.setSurface(SURFACE_LAMP);
-      List<IMutablePolygon> quadsB = MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), template);
+      CsgPolyStream quadsB = PolyStreams.claimCSG();
+      quadsB.writer().setLockUV(0, true);
+      quadsB.writer().setSurface(SURFACE_LAMP);
+      quadsB.saveDefaults();
+      MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), quadsB);
 
-//      CSGShape quadsA = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0.0, 0.0, 0.0, 1, 1, 1), template));
-//      template.color = borderColor.getColorMap(EnumColorMap.BORDER);
-//      CSGShape quadsB = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0, .1, .45, .05, 0.9, .55), template));
-
-//      CSGMesh result = quadsA.intersect(quadsB);
-//      CSGMesh result = quadsA.union(quadsB);
-      List<IPolygon> result = IMutablePolygon.paintAndRelease(CSGMesh.difference(quadsA, quadsB));
+      IWritablePolyStream output = PolyStreams.claimWritable();
+      CSG.difference(quadsA, quadsB, output);
       
-      IMutablePolygon.releaseAll(quadsA);
-      IMutablePolygon.releaseAll(quadsB);
-      template.release();
+      quadsA.release();
+      quadsB.release();
+      
+      return output.releaseAndConvertToReader();
     
-//      
 //      quadsB = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0, 0, 0.3, 1, 1, .7), template));
 //      result = result.difference(quadsB);
       
@@ -109,8 +114,6 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
 //      result = result.difference(quadsB);
       
 //      result.recolor();
-      
-      return result;
     }
 
 
