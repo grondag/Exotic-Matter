@@ -74,43 +74,36 @@ public abstract class CSG
      * Version of {@link #difference(IPolyStream, IPolyStream, IWritablePolyStream)} to use
      * when you've already built CSG streams. Marks the streams complete but does not release them.
      * Both input streams are modified.
-     * 
-     * The "a" tree isn't clipped, but using a CSG stream gives us pre-computed bounds.
      */
     public static void difference(CsgPolyStream a, CsgPolyStream b, IWritablePolyStream output)
     {
         a.complete();
         b.complete();
         
-        CsgPolyStream intersect = PolyStreams.claimCSG();
-
-        // PERF: can avoid allocating intersect if delete A polys that pass to output
-        // and using the remainder as the intersection
-        
-        // add all of A outside of B bounds
+        // A outside of B bounds can be passed directly to output
         IPolygon p = a.reader();
         if(a.origin()) do
         {
-            if (b.intersectsWith(p))
-                intersect.appendCopy(p);
-            else
+            if (!b.intersectsWith(p))
+            {
                 output.appendCopy(p);
+                p.setDeleted();
+            }
         } while(a.next());
-        
-        intersect.complete();
+        else
+            // if A is empty there is nothing to subtract from
+            return;
         
         // add portions of A within B bounds but not inside B mesh
-        intersect.invert();
-        intersect.clipTo(b);
-        b.clipTo(intersect);
+        a.invert();
+        a.clipTo(b);
+        b.clipTo(a);
         b.invert();
-        b.clipTo(intersect);
-        intersect.invert();
+        b.clipTo(a);
+        a.invert();
         
+        a.outputRecombinedQuads(output);
         b.outputRecombinedQuads(output);
-        intersect.outputRecombinedQuads(output);
-        
-        intersect.release();
     }
     
     /**
