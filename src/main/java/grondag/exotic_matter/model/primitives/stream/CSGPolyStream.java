@@ -9,7 +9,6 @@ import grondag.exotic_matter.varia.intstream.IIntStream;
 import grondag.exotic_matter.varia.intstream.IntStreams;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-
 /**
  * Implements a BSP tree for CSG operations as part of mutable mesh/stream.<p>
  * 
@@ -22,6 +21,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  */
 public class CsgPolyStream extends MutablePolyStream
 {
+    // PERF - can probably use stream address for new polys as local key - won't recombine across meshes
     private static final AtomicInteger NEXT_TAG = new AtomicInteger(1);
     
     private static final int COPLANAR = 0;
@@ -336,8 +336,6 @@ public class CsgPolyStream extends MutablePolyStream
     private void buildBSPInner(IntArrayList stack, final int polyAddress, int nodeAddress)
     {
         polyB.moveTo(polyAddress);
-        // polys being added should not already be linked
-        assert polyB.getLink() ==  IPolygon.NO_LINK_OR_TAG;
         
         do
         {
@@ -531,7 +529,6 @@ public class CsgPolyStream extends MutablePolyStream
         } while(true);
     }
     
-    
     /**
      * For CSG operations we consider a point on the edge to be intersecting.  
      */
@@ -705,8 +702,16 @@ public class CsgPolyStream extends MutablePolyStream
             {
                 if(combinedCount == 0)  // coplanar
                 {
-                    final Vec3f faceNorm = polyB.getFaceNormal();
-                    float t = faceNorm.x() * normalX + faceNorm.y() * normalY + faceNorm.z() * normalZ;
+                    float faceNormX  = polyB.getFaceNormalX();
+                    float faceNormY  = polyB.getFaceNormalY();
+                    float faceNormZ  = polyB.getFaceNormalZ();
+                    if(targetStream.isInverted())
+                    {
+                        faceNormX = -faceNormX;
+                        faceNormY = -faceNormY;
+                        faceNormZ = -faceNormZ;
+                    }
+                    final float t = faceNormX * normalX + faceNormY * normalY + faceNormZ * normalZ;
                     
                     if(t > 0) 
                     {
@@ -814,7 +819,8 @@ public class CsgPolyStream extends MutablePolyStream
                                 
                                 targetStream.editor(frontAddress).copyInterpolatedVertexFrom(iFront, polyB, i, polyB, j, t);
                                 if(backAddress != IPolygon.NO_LINK_OR_TAG)
-                                    targetStream.editor(backAddress).copyVertexFrom(iBack++, targetStream.polyA(frontAddress), iFront++);
+                                    targetStream.editor(backAddress).copyVertexFrom(iBack++, targetStream.polyA(frontAddress), iFront);
+                                iFront++;
                                 
                                 break;
                             }  
@@ -840,7 +846,8 @@ public class CsgPolyStream extends MutablePolyStream
                                 
                                 targetStream.editor(frontAddress).copyInterpolatedVertexFrom(iFront, polyB, i, polyB, j, t);
                                 if(backAddress != IPolygon.NO_LINK_OR_TAG)
-                                    targetStream.editor(backAddress).copyVertexFrom(iBack++, targetStream.polyA(frontAddress), iFront++);
+                                    targetStream.editor(backAddress).copyVertexFrom(iBack++, targetStream.polyA(frontAddress), iFront);
+                                iFront++;
                                 break;
                             }
                         }
@@ -857,10 +864,6 @@ public class CsgPolyStream extends MutablePolyStream
                     targetStream.editor.moveTo(frontAddress);
                     targetStream.editor.updateBounds();
                     
-                    // splice into node link chain
-                    targetStream.editor.setLink(polyB.getLink());
-                    polyB.setLink(frontAddress);
-                    
                     // if not a front-side leaf, put nw poly on stack with front node and come back to it
                     final int frontNodeAddress = clippingStream.getFrontNode(nodeAddress);
                     if(frontNodeAddress != NO_NODE_ADDRESS)
@@ -873,10 +876,6 @@ public class CsgPolyStream extends MutablePolyStream
                     {
                         targetStream.editor.moveTo(backAddress);
                         targetStream.editor.updateBounds();
-                        
-                        // splice into node link chain
-                        targetStream.editor.setLink(polyB.getLink());
-                        polyB.setLink(backAddress);
                         
                         // no need to check / find back node address 
                         // if we get here, means there is a back node
@@ -914,22 +913,28 @@ public class CsgPolyStream extends MutablePolyStream
     
     private int getBackNode(int nodeAddress)
     {
-        return nodeStream.get(nodeAddress + NODE_BACK_NODE_ADDRESS);
+        return isInverted 
+                ? nodeStream.get(nodeAddress + NODE_FRONT_NODE_ADDRESS)
+                : nodeStream.get(nodeAddress + NODE_BACK_NODE_ADDRESS);
     }
     
     private void setBackNode(int targetNodeAddress, int backNodeAddress)
     {
-        nodeStream.set(targetNodeAddress + NODE_BACK_NODE_ADDRESS,  backNodeAddress);
+        final int offset = isInverted ? NODE_FRONT_NODE_ADDRESS : NODE_BACK_NODE_ADDRESS;
+        nodeStream.set(targetNodeAddress + offset,  backNodeAddress);
     }
 
     private int getFrontNode(int nodeAddress)
     {
-        return nodeStream.get(nodeAddress + NODE_FRONT_NODE_ADDRESS);
+        return isInverted
+                ? nodeStream.get(nodeAddress + NODE_BACK_NODE_ADDRESS)
+                : nodeStream.get(nodeAddress + NODE_FRONT_NODE_ADDRESS);
     }
     
     private void setFrontNode(int targetNodeAddress, int frontNodeAddress)
     {
-        nodeStream.set(targetNodeAddress + NODE_FRONT_NODE_ADDRESS,  frontNodeAddress);
+        final int offset = isInverted ? NODE_BACK_NODE_ADDRESS : NODE_FRONT_NODE_ADDRESS;
+        nodeStream.set(targetNodeAddress + offset,  frontNodeAddress);
     }
     
     private int createNode(int polyAddress)

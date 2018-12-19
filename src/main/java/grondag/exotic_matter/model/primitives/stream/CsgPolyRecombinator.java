@@ -168,10 +168,12 @@ public class CsgPolyRecombinator
     {
         if(input.origin())
         {
+            // output routine can add polys, so need to stop when we get to current end
+            final int limit = input.writerAddress();
             IPolygon reader = input.reader();
             do 
                 handleOutput(input, reader.streamAddress(), output);
-            while(input.next());
+            while(input.next() && reader.streamAddress() < limit);
         }
     }
     

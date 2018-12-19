@@ -106,14 +106,16 @@ public interface IWritablePolyStream extends IPolyStream
 
     default void appendAll(IPolyStream stream)
     {
-        if(stream.isEmpty())
-                return;
-        
-        IPolygon reader = stream.reader();
-        stream.origin();
-        do
-            this.appendCopy(reader);
-        while(stream.next());
+        if(stream.origin())
+        {
+            IPolygon reader = stream.reader();
+            do
+            {
+                assert !reader.isDeleted();
+                this.appendCopy(reader);
+            }
+            while(stream.next());
+        }
     }
     
     /**
