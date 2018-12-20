@@ -81,16 +81,7 @@ public abstract class CSG
         b.complete();
         
         // A outside of B bounds can be passed directly to output
-        IPolygon p = a.reader();
-        if(a.origin()) do
-        {
-            if (!b.intersectsWith(p))
-            {
-                output.appendCopy(p);
-                p.setDeleted();
-            }
-        } while(a.next());
-        else
+        if(outputDisjointA(a, b, output))
             // if A is empty there is nothing to subtract from
             return;
         
@@ -127,25 +118,38 @@ public abstract class CSG
         CsgPolyStream aCSG = PolyStreams.claimCSG(a);
         CsgPolyStream bCSG = PolyStreams.claimCSG(b);
         
-        aCSG.complete();
-        bCSG.complete();
-        
-        aCSG.invert();
-        bCSG.clipTo(aCSG);
-        bCSG.invert();
-        aCSG.clipTo(bCSG);
-        bCSG.clipTo(aCSG);
-        
-        aCSG.invert();
-        bCSG.invert();
-        
-        aCSG.outputRecombinedQuads(output);
-        bCSG.outputRecombinedQuads(output);
+        intersect(aCSG, bCSG, output);
 
         aCSG.release();
         bCSG.release();
     }
 
+    /**
+     * Version of {@link #intersect(IPolyStream, IPolyStream, IWritablePolyStream)} to use
+     * when you've already built CSG streams. Marks the streams complete but does not release them.
+     * Both input streams are modified.
+     */
+    public static void intersect(CsgPolyStream a, CsgPolyStream b, IWritablePolyStream output)
+    {
+        a.complete();
+        b.complete();
+        
+        a.complete();
+        b.complete();
+        
+        a.invert();
+        b.clipTo(a);
+        b.invert();
+        a.clipTo(b);
+        b.clipTo(a);
+        
+        a.invert();
+        b.invert();
+        
+        a.outputRecombinedQuads(output);
+        b.outputRecombinedQuads(output);
+    }
+    
     /**
      * Output a new mesh representing the union of the input meshes.
      *
@@ -165,23 +169,27 @@ public abstract class CSG
      */
     public static void union(IPolyStream a, IPolyStream b, IWritablePolyStream output)
     {
+        CsgPolyStream aCSG = PolyStreams.claimCSG(a);
         CsgPolyStream bCSG = PolyStreams.claimCSG(b);
-        bCSG.complete();
-        CsgPolyStream intersect = PolyStreams.claimCSG();
         
-        // output all of A outside of B
-        IPolygon p = a.reader();
-        if(a.origin()) do
-        {
-            if (bCSG.intersectsWith(p))
-                intersect.appendCopy(p);
-            else
-                output.appendCopy(p);
-        } while(a.next());
-
-        intersect.complete();
-
-        if (intersect.isEmpty())
+        union(aCSG, bCSG, output);
+        
+        aCSG.release();
+        bCSG.release();
+    }
+    
+    /**
+     * Version of {@link #union(IPolyStream, IPolyStream, IWritablePolyStream)} to use
+     * when you've already built CSG streams. Marks the streams complete but does not release them.
+     * Both input streams are modified.
+     */
+    public static void union(CsgPolyStream a, CsgPolyStream b, IWritablePolyStream output)
+    {
+        a.complete();
+        b.complete();
+        
+        // A outside of B bounds can be passed directly to output
+        if(outputDisjointA(a, b, output))
         {
             // A and B bounds don't overlap, so output all of original b
             output.appendAll(b);
@@ -191,17 +199,38 @@ public abstract class CSG
             // some potential overlap
             // add union of the overlapping bits, 
             // which will include any parts of B that need to be included
-            intersect.clipTo(bCSG);
-            bCSG.clipTo(intersect);
-            bCSG.invert();
-            bCSG.clipTo(intersect);
-            bCSG.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
             
-            intersect.outputRecombinedQuads(output);
-            bCSG.outputRecombinedQuads(output);
-        } 
+            a.outputRecombinedQuads(output);
+            b.outputRecombinedQuads(output);
+        }
+    }
+    
+    /**
+     * Polygons in A that do not intersect with B are sent to output and then deleted.
+     * Returns true if A is empty, either because it was empty at the start, or 
+     * because all A polygons have been deleted.
+     */
+    private static boolean outputDisjointA(CsgPolyStream a, CsgPolyStream b, IWritablePolyStream output)
+    {
+        boolean aIsEmpty = true;
         
-        bCSG.release();
-        intersect.release();
+        IPolygon p = a.reader();
+        if(a.origin()) do
+        {
+            if (!b.intersectsWith(p))
+            {
+                output.appendCopy(p);
+                p.setDeleted();
+            }
+            else
+                aIsEmpty = false;
+        } while(a.next());
+        
+        return aIsEmpty;
     }
 }

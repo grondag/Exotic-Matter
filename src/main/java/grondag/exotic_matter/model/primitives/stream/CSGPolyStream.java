@@ -21,7 +21,12 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  */
 public class CsgPolyStream extends MutablePolyStream
 {
-    // PERF - can probably use stream address for new polys as local key - won't recombine across meshes
+    /**
+     * Ensures poly tags for recombination are globally unique. <br>
+     * Could probably use stream address, but to be certain would have 
+     * to check/maintain all cases where stream polys are copied from one 
+     * stream to another and this makes that unnecessary.
+     */
     private static final AtomicInteger NEXT_TAG = new AtomicInteger(1);
     
     private static final int COPLANAR = 0;
@@ -346,7 +351,6 @@ public class CsgPolyStream extends MutablePolyStream
             final int vCount = polyB.vertexCount();
             int combinedCount = 0;
             
-            // PERF: save vertex type on stack and avoid second pass on split case
             for(int i = 0; i < vCount; i++)
             {
                 combinedCount += vertexIncrement(polyB.getVertexX(i), polyB.getVertexY(i), polyB.getVertexZ(i), 
