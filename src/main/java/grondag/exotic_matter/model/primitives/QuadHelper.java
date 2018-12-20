@@ -1,10 +1,6 @@
 package grondag.exotic_matter.model.primitives;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Quat4f;
@@ -12,7 +8,6 @@ import javax.vecmath.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
-import grondag.exotic_matter.model.primitives.polygon.IMutablePolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.IVertexCollection;
 import grondag.exotic_matter.model.primitives.vertex.Vec3Function;
@@ -239,34 +234,6 @@ public class QuadHelper
        	}
        	return retVal;
        }
-    
-     /**
-     * Randomly recolors all the polygons as an aid to debugging.
-     * Polygons must be mutable and are mutated by this operation.
-     */
-    public static void recolor(Collection<IMutablePolygon> target)
-    {
-        Stream<IMutablePolygon> quadStream;
-    
-        if (target.size() > 200) {
-            quadStream = target.parallelStream();
-        } else {
-            quadStream = target.stream();
-        }
-    
-        quadStream.forEach((IMutablePolygon quad) -> quad.setColor(0, (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000));
-    }
-
-    //UGLY: move to mesh helper
-    public static Consumer<IMutablePolygon> makeRecoloring(Consumer<IMutablePolygon> wrapped)
-    {
-        return p -> 
-        {
-            int c = (ThreadLocalRandom.current().nextInt(0x1000000) & 0xFFFFFF) | 0xFF000000;
-            p.setColor(0, c);
-            wrapped.accept(p);
-        };
-    }
 
     public static boolean isConvex(IVertexCollection vertices)
     {
