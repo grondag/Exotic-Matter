@@ -393,6 +393,7 @@ public interface IMutablePolygon extends IPolygon
     /**
      * Reverses winding order, clears face normal and flips vertex normals if present.
      * Used by CSG.
+     * TODO: eliminate use of IMutableVertex and then remove them
      */
     default IMutablePolygon flip()
     {

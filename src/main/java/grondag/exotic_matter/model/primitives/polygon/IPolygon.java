@@ -287,36 +287,6 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
         return null;
     }
     
-    /**
-     * Transfers mutable copies of this poly's vertices to the provided array.<br>
-     * Array size must be >= {@link #vertexCount()}.<br>
-     * Retains no reference to the copies, which should be released when no longer used.<br>
-     * For use in CSG operations.<br>
-     */
-    default void claimVertexCopiesToArray(IMutableVertex[] vertex)
-    {
-        final int layerCount = this.layerCount();
-        final int vertexCount = this.vertexCount();
-        assert vertex.length >= vertexCount;
-        for(int v = 0; v < vertexCount; v++)
-        {
-            IMutableVertex vNew = factory().claimMutableVertex();
-            vertex[v] = vNew;
-            
-            vNew.setPos(getVertexX(v), getVertexY(v), getVertexZ(v));
-            vNew.setNormal(getVertexNormalX(v), getVertexNormalY(v), getVertexNormalZ(v));
-            vNew.setLayerCount(layerCount);
-            
-            vNew.setGlow(getVertexGlow(v));
-            //PERF: unwind this loop
-            for(int l = 0; l < layerCount; l++)
-            {
-                vNew.setColor(l, getVertexColor(l, v));
-                vNew.setUV(l, getVertexU(l, v), getVertexV(l, v));
-            }
-        }
-    }
-    
     float getMaxU(int layerIndex);
 
     float getMaxV(int layerIndex);
