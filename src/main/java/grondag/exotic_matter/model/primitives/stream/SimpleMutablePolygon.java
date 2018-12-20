@@ -26,16 +26,14 @@ public class SimpleMutablePolygon extends StreamBackedMutablePolygon
         assert isMutable(format);
         format = PolyStreamFormat.setVertexCount(format, vertexCount);
         this.setFormat(format);
+        loadStandardDefaults();
     }
 
     @Override
     public void release()
     {
         super.release();
-        //PERF - if keep this need to release int stream
-        // currently doing so breaks unit tests due to bad handling in test
-//        stream.release();
-//        stream = null;
+        stream.release();
+        stream = null;
     }
-    
 }

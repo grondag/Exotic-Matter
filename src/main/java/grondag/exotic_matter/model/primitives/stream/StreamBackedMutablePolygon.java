@@ -330,4 +330,17 @@ public class StreamBackedMutablePolygon extends StreamBackedPolygon implements I
         setTag(polyIn.getTag());
         setMark(polyIn.isMarked());
     }
+
+    public void loadStandardDefaults()
+    {
+        setMaxU(0, 1f);
+        setMaxU(1, 1f);
+        setMaxU(2, 1f);
+        
+        setMaxV(0, 1f);
+        setMaxV(1, 1f);
+        setMaxV(2, 1f);
+        
+        clearFaceNormal();        
+    }
 }

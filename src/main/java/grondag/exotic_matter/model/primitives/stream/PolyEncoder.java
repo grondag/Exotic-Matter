@@ -381,10 +381,10 @@ public class PolyEncoder
     }
     
     /**
-     * Replaces zeros with NO_LINK_OR_TAG and
-     * replaces NO_LINK_OR_TAG with zeros.
+     * Replaces zeros with NaN and
+     * replaces NaN with zeros.
      */
-    protected static int swapLinkTagValue(int valueIn)
+    protected static int swapZeroNaNValues(int valueIn)
     {
         return valueIn == 0 
                 ? IPolygon.NO_LINK_OR_TAG
@@ -396,25 +396,25 @@ public class PolyEncoder
     public final int getTag(IIntStream stream, int baseAddress)
     {
         // want to return NO_TAG if never set, so swap with default (zero) value here
-        return swapLinkTagValue(getTag.get(stream, baseAddress + tagOffset));
+        return swapZeroNaNValues(getTag.get(stream, baseAddress + tagOffset));
     }
 
     public final void setTag(IIntStream stream, int baseAddress, int tag)
     {
         // want to return NO_TAG if never set, so swap with default (zero) value here
-        setTag.set(stream, baseAddress + tagOffset, swapLinkTagValue(tag));
+        setTag.set(stream, baseAddress + tagOffset, swapZeroNaNValues(tag));
     }
 
     public final int getLink(IIntStream stream, int baseAddress)
     {
         // want to return NO_LINK if never set, so swap with default (zero) value here
-        return swapLinkTagValue(getLink.get(stream, baseAddress + linkOffset));
+        return swapZeroNaNValues(getLink.get(stream, baseAddress + linkOffset));
     }
 
     public final void setLink(IIntStream stream, int baseAddress, int link)
     {
         // want to return NO_LINK if never set, so swap with default (zero) value here
-        setLink.set(stream, baseAddress + linkOffset, swapLinkTagValue(link));
+        setLink.set(stream, baseAddress + linkOffset, swapZeroNaNValues(link));
     }
     
     public final float getMaxU(IIntStream stream, int baseAddress, int layerIndex)

@@ -18,11 +18,10 @@ import net.minecraft.util.EnumFacing;;
 
 public class PolyTest
 {
-    private final SimpleMutablePolygon streamPoly = new SimpleMutablePolygon();
-    
     private IMutablePolygon newPoly(int vertexCount)
     {
         //return COMMON_POOL.newPaintable(4);
+        SimpleMutablePolygon streamPoly = new SimpleMutablePolygon();
         streamPoly.prepare(1, vertexCount);
         return streamPoly;
     }
@@ -176,11 +175,9 @@ public class PolyTest
             assert poly.hasVertexNormal(v);
             
             poly.setVertexNormal(v, null);
-            vec = poly.getVertexNormal(v);
-            assert vec == null;
-            assert poly.getVertexNormalX(v) == 0;
-            assert poly.getVertexNormalX(v) == 0;
-            assert poly.getVertexNormalX(v) == 0;
+            assert poly.getVertexNormalX(v) == poly.getFaceNormalX();
+            assert poly.getVertexNormalY(v) == poly.getFaceNormalY();
+            assert poly.getVertexNormalZ(v) == poly.getFaceNormalZ();
             assert !poly.hasVertexNormal(v);
             
             poly.setVertexNormal(v, Vec3f.create(x, y, z));

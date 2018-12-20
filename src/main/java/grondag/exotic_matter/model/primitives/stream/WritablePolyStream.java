@@ -112,15 +112,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
         writer.stream = defaultStream;
         writer.loadFormat();
         
-        writer.setMaxU(0, 1f);
-        writer.setMaxU(1, 1f);
-        writer.setMaxU(2, 1f);
-        
-        writer.setMaxV(0, 1f);
-        writer.setMaxV(1, 1f);
-        writer.setMaxV(2, 1f);
-        
-        writer.clearFaceNormal();
+        writer.loadStandardDefaults();
         
         writer.stream = writerStream;
         writer.loadFormat();
