@@ -411,88 +411,10 @@ public class StreamBackedPolygon implements IPolygon
     {
         return StaticEncoder.getPipelineIndex(stream, baseAddress);
     }
-    
-    @Override
-    public boolean  isCSG()
-    {
-        return PolyStreamFormat.isCSG(format());
-    }
-    
-    @Override
-    public float csgMinX()
-    {
-        return polyEncoder.getCsgMinX(stream, baseAddress);
-    }
-    
-    @Override
-    public float csgMinY()
-    {
-        return polyEncoder.getCsgMinY(stream, baseAddress);
-    }
-    
-    @Override
-    public float csgMinZ()
-    {
-        return polyEncoder.getCsgMinZ(stream, baseAddress);
-    }
-    
-    @Override
-    public float csgMaxX()
-    {
-        return polyEncoder.getCsgMaxX(stream, baseAddress);
-    }
-    
-    @Override
-    public float csgMaxY()
-    {
-        return polyEncoder.getCsgMaxY(stream, baseAddress);
-    }
-    
-    @Override
-    public float csgMaxZ()
-    {
-        return polyEncoder.getCsgMaxZ(stream, baseAddress);
-    }
-    
-    public void updateBounds()
-    {
-        float minX = getVertexX(0);
-        float maxX = minX;
-        float minY = getVertexY(0);
-        float maxY = minY;
-        float minZ = getVertexZ(0);
-        float maxZ = minZ;
-        
-        final int limit = vertexCount() - 1;
-        for(int i = 1; i < limit; i++)
-        {
-            float f = getVertexX(i);
-            if(f < minX)
-                minX = f;
-            else if(f > maxX)
-                maxX = f;
-            
-            f = getVertexY(i);
-            if(f < minY)
-                minY = f;
-            else if(f > maxY)
-                maxY = f;
-            
-            f = getVertexZ(i);
-            if(f < minZ)
-                minZ = f;
-            else if(f > maxZ)
-                maxZ = f;
-        }
-        
-        polyEncoder.setCsgBounds(stream, baseAddress, minX, minY, minZ, maxX, maxY, maxZ);
-    }
 
     @Override
     public int streamAddress()
     {
         return baseAddress;
     }
-    
-    
 }

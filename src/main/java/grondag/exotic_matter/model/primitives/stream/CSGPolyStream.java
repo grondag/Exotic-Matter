@@ -97,13 +97,6 @@ public class CsgPolyStream extends MutablePolyStream
         }
     };
     
-    private float minX;
-    private float minY;
-    private float minZ;
-    private float maxX;
-    private float maxY;
-    private float maxZ;
-    
     private IIntStream nodeStream;
     
     private int nextNodeAddress = 0;
@@ -114,8 +107,7 @@ public class CsgPolyStream extends MutablePolyStream
     
     protected void prepare()
     {
-        super.prepare(PolyStreamFormat.CSG_FLAG);
-        clearStreamBounds();
+        super.prepare(0);
         nodeStream = IntStreams.claim();
         nextNodeAddress = 0;
         isComplete = false;
@@ -134,36 +126,6 @@ public class CsgPolyStream extends MutablePolyStream
     protected void returnToPool()
     {
         PolyStreams.release(this);
-    }
-    
-    public float boundsMinX()
-    {
-        return minX;
-    }
-    
-    public float boundsMinY()
-    {
-        return minY;
-    }
-    
-    public float boundsMinZ()
-    {
-        return minZ;
-    }
-    
-    public float boundsMaxX()
-    {
-        return maxX;
-    }
-    
-    public float boundsMaxY()
-    {
-        return maxY;
-    }
-    
-    public float boundsMaxZ()
-    {
-        return maxZ;
     }
     
     public final float normalX(int nodeAddress)
@@ -199,11 +161,6 @@ public class CsgPolyStream extends MutablePolyStream
         assert !isComplete;
         
         appendRawCopy(polyIn, withFormat);
-        
-        // relies on internal being at new poly after exit from appendRawCopy
-        assert internal.isCSG();
-        internal.updateBounds();
-        expandStreamBounds(internal);
         
         // create BSP root node if it doesn't exist
         if(this.nextNodeAddress == 0)
@@ -257,62 +214,6 @@ public class CsgPolyStream extends MutablePolyStream
         appendRawCopy(writer, formatFlags);
         loadDefaults();
         return newAddress;
-    }
-    
-    private void clearStreamBounds()
-    {
-        minX = Float.MAX_VALUE;
-        minY = Float.MAX_VALUE;
-        minZ = Float.MAX_VALUE;
-        maxX = Float.MIN_VALUE;
-        maxY = Float.MIN_VALUE;
-        maxZ = Float.MIN_VALUE;
-    }
-    
-    private void expandStreamBounds(IPolygon withPoly)
-    {
-        float f = internal.csgMinX();
-        if(f < minX)
-            minX = f;
-        
-        f = internal.csgMinY();
-        if(f < minY)
-            minY = f;
-        
-        f = internal.csgMinZ();
-        if(f < minZ)
-            minZ = f;
-        
-        f = internal.csgMaxX();
-        if(f > maxX)
-            maxX = f;
-        
-        f = internal.csgMaxY();
-        if(f > maxY)
-            maxY = f;
-        
-        f = internal.csgMaxZ();
-        if(f > maxZ)
-            maxZ = f;
-    }
-    
-    /**
-     * Call after polys are deleted and the deletion
-     * may have significantly reduced overall mesh bounds.
-     */
-    public void rebuildStreamBounds()
-    {
-        final int readerPos = reader.baseAddress;
-        
-        clearStreamBounds();
-        if(origin())
-        {
-            do
-                expandStreamBounds(reader);
-            while(next());
-        }
-        
-        reader.moveTo(readerPos);
     }
     
     /**
@@ -491,15 +392,6 @@ public class CsgPolyStream extends MutablePolyStream
                         iType = jType;
                     }
                     
-                    // Update poly bounds for polys now that they have vertices.
-                    // Note we don't need to update mesh bounds - that
-                    // will have happened when poly was added to mesh and building
-                    // the BSP tree doesn't change the mesh bounds overall.
-                    editor.moveTo(frontAddress);
-                    editor.updateBounds();
-                    editor.moveTo(backAddress);
-                    editor.updateBounds();
-                    
                     // put front node in BSP tree
                     final int frontNodeAddress = getFrontNode(nodeAddress);
                     if(frontNodeAddress == NO_NODE_ADDRESS)
@@ -531,63 +423,6 @@ public class CsgPolyStream extends MutablePolyStream
                 }
             }
         } while(true);
-    }
-    
-    /**
-     * For CSG operations we consider a point on the edge to be intersecting.  
-     */
-    public boolean intersectsWith(double xMin, double yMin, double zMin, double xMax, double yMax, double zMax)
-    {
-        return this.minX <= xMax && this.maxX >= xMin && this.minY <= yMax && this.maxY >= yMin && this.minZ <= zMax && this.maxZ >= zMin;
-    }
-    
-    /**
-     * For CSG operations we consider a point on the edge to be intersecting.  
-     */
-    public boolean intersectsWith(IPolygon poly)
-    {
-        if(poly.isCSG())
-            return intersectsWith(poly.csgMinX(), poly.csgMinY(), poly.csgMinZ(), poly.csgMaxX(), poly.csgMaxY(), poly.csgMaxZ());
-        else
-        {
-            float minX = poly.getVertexX(0);
-            float minY = poly.getVertexY(0);
-            float minZ = poly.getVertexZ(0);
-            float maxX = minX;
-            float maxY = minY;
-            float maxZ = minZ;
-            
-            final int vCount = poly.vertexCount();
-            for(int i = 1; i < vCount; i++)
-            {
-                final float x = poly.getVertexX(i);
-                if(x < minX)  
-                    minX = x;
-                else if(x > maxX)
-                    maxX = x;
-                
-                final float y = poly.getVertexY(i);
-                if(y < minY)  
-                    minY = y;
-                else if(y > maxY)
-                    maxY = y;
-                
-                final float z = poly.getVertexZ(i);
-                if(z < minZ)  
-                    minZ = z;
-                else if(z > maxZ)
-                    maxZ = z;
-            }
-            return intersectsWith(minX, minY, minZ, maxX, maxY, maxZ);
-        }
-    }
-    
-    /**
-     * For CSG operations we consider a point on the edge to be intersecting.  
-     */
-    public boolean intersectsWith(CsgPolyStream stream)
-    {
-        return intersectsWith(stream.boundsMinX(), stream.boundsMinY(), stream.boundsMinZ(), stream.boundsMaxX(), stream.boundsMaxY(), stream.boundsMaxZ());
     }
 
     /**
@@ -635,16 +470,11 @@ public class CsgPolyStream extends MutablePolyStream
          */
         final int limitAddress = targetStream.writerAddress();
         
-        boolean didClip = false;
         
         if(targetStream.origin())
             do
-                if(clipPoly(targetStream, clippingStream, reader.baseAddress))
-                    didClip = true;
+                clipPoly(targetStream, clippingStream, reader.baseAddress);
             while(targetStream.next() && reader.baseAddress < limitAddress);
-        
-        if(didClip)  // PERF make stream bounds lazy - not always needed
-            targetStream.rebuildStreamBounds();
         
         reader.moveTo(saveReadAddress);
         
@@ -655,32 +485,26 @@ public class CsgPolyStream extends MutablePolyStream
      * If the poly is "behind" (inside) the mesh it will be removed.<br>
      * If spanning will be split and the "behind" portion removed.<p>
      * 
-     * Returns true if the poly was split or removed.<p>
-     * 
      * Static to avoid ambiguity/confusion on which stream is being used for what.
      */
-    private static boolean clipPoly(CsgPolyStream targetStream, CsgPolyStream clippingStream, int polyAddress)
+    private static void clipPoly(CsgPolyStream targetStream, CsgPolyStream clippingStream, int polyAddress)
     {
         IntArrayList stack = STACK.get();
         assert stack.isEmpty();
-        boolean didClip = false;
         int nodeAddress = 0;
         
-        if(clipPolyInner(stack, targetStream, clippingStream, polyAddress, 0))
-            didClip = true;
+        clipPolyInner(stack, targetStream, clippingStream, polyAddress, 0);
         
         while(!stack.isEmpty())
         {
             nodeAddress = stack.popInt();
             polyAddress = stack.popInt();
-            if(clipPolyInner(stack, targetStream, clippingStream, polyAddress, nodeAddress))
-                didClip = true;
+            clipPolyInner(stack, targetStream, clippingStream, polyAddress, nodeAddress);
         }
         
-        return didClip;
     }
     
-    private static boolean clipPolyInner(IntArrayList stack, CsgPolyStream targetStream, final CsgPolyStream clippingStream, final int polyAddress, int nodeAddress)
+    private static void clipPolyInner(IntArrayList stack, CsgPolyStream targetStream, final CsgPolyStream clippingStream, final int polyAddress, int nodeAddress)
     {
         final StreamBackedPolygon polyB = targetStream.polyB;
         polyB.moveTo(polyAddress);
@@ -694,7 +518,6 @@ public class CsgPolyStream extends MutablePolyStream
             final int vCount = polyB.vertexCount();
             int combinedCount = 0;
             
-            // PERF: save vertex type on stack and avoid second pass on split case
             for(int i = 0; i < vCount; i++)
             {
                 combinedCount += vertexIncrement(polyB.getVertexX(i), polyB.getVertexY(i), polyB.getVertexZ(i), 
@@ -721,14 +544,14 @@ public class CsgPolyStream extends MutablePolyStream
                     {
                         // coplanar front counts as front - leave be
                         // no need to check front node because coplanar
-                        return false;
+                        return;
                     }
                     else
                     {
                         // coplanar back counts as back - remove
                         // no need to check front node because coplanar
                         polyB.setDeleted();
-                        return true;
+                        return;
                     }
                 }
                 else // not front, not coplanar, therefore must be back
@@ -738,7 +561,7 @@ public class CsgPolyStream extends MutablePolyStream
                     {
                         // this is a leaf node, so we are in back of all nodes - poly is clipped
                         polyB.setDeleted();
-                        return true;
+                        return;
                     }
                     else
                         // loop at back node
@@ -752,7 +575,7 @@ public class CsgPolyStream extends MutablePolyStream
                     final int frontNodeAddress = clippingStream.getFrontNode(nodeAddress);
                     if(frontNodeAddress == NO_NODE_ADDRESS)
                         // this is a leaf node, so we are in front of all tree nodes so we are done - no clip
-                        return false;
+                        return;
                     else
                         // loop at front node
                         nodeAddress = frontNodeAddress;
@@ -860,15 +683,7 @@ public class CsgPolyStream extends MutablePolyStream
                         iType = jType;
                     }
                     
-                    // Update poly bounds for polys now that they have vertices.
-                    // Note we don't need to update mesh bounds - that
-                    // will have happened when poly was added to mesh and building
-                    // the BSP tree doesn't change the mesh bounds overall.
-                    // PERF: is this necessary after tree completed?
-                    targetStream.editor.moveTo(frontAddress);
-                    targetStream.editor.updateBounds();
-                    
-                    // if not a front-side leaf, put nw poly on stack with front node and come back to it
+                    // if not a front-side leaf, put new poly on stack with front node and come back to it
                     final int frontNodeAddress = clippingStream.getFrontNode(nodeAddress);
                     if(frontNodeAddress != NO_NODE_ADDRESS)
                     {
@@ -878,9 +693,6 @@ public class CsgPolyStream extends MutablePolyStream
                     
                     if(backAddress != IPolygon.NO_LINK_OR_TAG)
                     {
-                        targetStream.editor.moveTo(backAddress);
-                        targetStream.editor.updateBounds();
-                        
                         // no need to check / find back node address 
                         // if we get here, means there is a back node
                         // put new poly on stack with back node and come back to it
@@ -890,8 +702,7 @@ public class CsgPolyStream extends MutablePolyStream
                     
                     // delete original poly that was split
                     polyB.setDeleted();
-                    
-                    return true;
+                    return;
                 }
             }
         } while(true);

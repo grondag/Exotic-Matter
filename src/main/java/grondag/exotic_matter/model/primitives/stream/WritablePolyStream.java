@@ -12,7 +12,7 @@ public class WritablePolyStream extends AbstractPolyStream implements IWritableP
     static
     {
         final int maxFormat = PolyStreamFormat.MUTABLE_FLAG | PolyStreamFormat.HAS_LINK_FLAG
-            | PolyStreamFormat.HAS_TAG_FLAG | PolyStreamFormat.CSG_FLAG;
+            | PolyStreamFormat.HAS_TAG_FLAG;
         
         MAX_STRIDE = 1 + StaticEncoder.INTEGER_WIDTH + PolyEncoder.get(maxFormat).stride();
     }

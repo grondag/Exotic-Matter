@@ -6,7 +6,6 @@ public class PolyStreams
 {
     public static final int FORMAT_TAGS = PolyStreamFormat.HAS_TAG_FLAG;
     public static final int FORMAT_LINKS = PolyStreamFormat.HAS_LINK_FLAG;
-    public static final int FORMAT_BOUNDS = PolyStreamFormat.CSG_FLAG;
     
     private static final ArrayBlockingQueue<WritablePolyStream> writables = new ArrayBlockingQueue<>(256);
     private static final ArrayBlockingQueue<MutablePolyStream> mutables = new ArrayBlockingQueue<>(128);
