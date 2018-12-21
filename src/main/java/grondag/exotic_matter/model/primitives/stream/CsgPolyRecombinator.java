@@ -145,6 +145,8 @@ public class CsgPolyRecombinator
     {
         assert quad.vertexCount() == 4;
         
+        assert !quad.isConvex();
+        
         IMutablePolygon writer = output.writer();
         output.setVertexCount(3);
         writer.copyFrom(quad, false);
@@ -311,12 +313,8 @@ public class CsgPolyRecombinator
     private int joinAtVertex(CsgPolyStream input, int addressA, int addressB, Vec3f v)
     {
         IPolygon polyA = input.polyA(addressA);
-        IPolygon polyB = input.polyA(addressA);
+        IPolygon polyB = input.polyB(addressB);
         
-        // quads must be same orientation to be joined
-        if(polyA.isMarked() != polyB.isMarked())
-            return IPolygon.NO_LINK_OR_TAG;
-
         final int aTargetIndex = polyA.indexForVertex(v);
         // shouldn't happen, but won't work if does
         if(aTargetIndex == IPolygon.VERTEX_NOT_FOUND) 
@@ -332,6 +330,10 @@ public class CsgPolyRecombinator
     
     private int joinAtVertex(CsgPolyStream input, IPolygon polyA, int aTargetIndex, IPolygon polyB, int bTargetIndex)
     {
+        assert polyA.getVertexX(aTargetIndex) ==  polyB.getVertexX(bTargetIndex);
+        assert polyA.getVertexY(aTargetIndex) ==  polyB.getVertexY(bTargetIndex);
+        assert polyA.getVertexZ(aTargetIndex) ==  polyB.getVertexZ(bTargetIndex);
+        
         final int aSize = polyA.vertexCount();
         final int bSize = polyB.vertexCount();
         final int aMaxIndex = aSize - 1;
@@ -424,7 +426,7 @@ public class CsgPolyRecombinator
                 {
                     int bIndex = bAfterSharedIndex + b;
                     if(bIndex > bMaxIndex) bIndex -= bSize;
-                    joinedVertex.add(-(b + 1));
+                    joinedVertex.add(-(bIndex + 1));
                 }
             }
             else if(a == aSecondSharedIndex)
@@ -457,6 +459,7 @@ public class CsgPolyRecombinator
         IMutablePolygon writer = input.writer();
         input.setVertexCount(size);
         writer.copyFrom(polyA, false);
+        writer.setTag(polyA.getTag());
         for(int i = 0; i < size; i++)
         {
             int j = joinedVertex.getInt(i);
@@ -465,6 +468,7 @@ public class CsgPolyRecombinator
             else
                 writer.copyVertexFrom(i, polyB, -j - 1);
         }
+        
         input.appendRaw();
         
         //mark inputs deleted

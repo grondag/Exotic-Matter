@@ -210,7 +210,8 @@ public class CsgPolyStream extends MutablePolyStream
     {
         int newAddress = writerAddress();
         setVertexCount(vertexCount);
-        writer.copyFromCSG(polyB);
+        writer.copyFromCSG(template);
+        writer.setTag(template.getTag());
         appendRawCopy(writer, formatFlags);
         loadDefaults();
         return newAddress;
