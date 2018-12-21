@@ -100,6 +100,9 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
       quadsA.release();
       quadsB.release();
       
+//      IPolyStream result = PolyStreams.claimRecoloredCopy(output);
+//      output.release();
+//      return result;
       return output.releaseAndConvertToReader();
     
 //      quadsB = new CSGShape(QuadFactory.makeBox(new AxisAlignedBB(0, 0, 0.3, 1, 1, .7), template));
