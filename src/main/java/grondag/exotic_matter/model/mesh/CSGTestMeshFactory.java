@@ -95,7 +95,7 @@ public class CSGTestMeshFactory extends ShapeMeshGenerator implements ICollision
       MeshHelper.makePaintableBox(new AxisAlignedBB(0.2, 0, 0.4, 0.6, 1.0, 0.8), quadsB);
 
       IWritablePolyStream output = PolyStreams.claimWritable();
-      CSG.difference(quadsA, quadsB, output);
+      CSG.union(quadsA, quadsB, output);
       
       quadsA.release();
       quadsB.release();
