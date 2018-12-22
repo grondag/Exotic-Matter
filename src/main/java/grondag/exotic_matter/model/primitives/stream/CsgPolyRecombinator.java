@@ -9,7 +9,6 @@ import grondag.exotic_matter.model.primitives.polygon.IPolygon;
 import grondag.exotic_matter.model.primitives.vertex.IVec3f;
 import grondag.exotic_matter.model.primitives.vertex.Vec3f;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 
@@ -238,7 +237,7 @@ public class CsgPolyRecombinator
             final long tag = pair & TAG_MASK;
             if(tag != lastTag)
             {
-                combinePolys(input, output, polys);
+                combinePolys(input, output);
                 polys.clear();
                 lastTag = tag;
             }
@@ -247,7 +246,7 @@ public class CsgPolyRecombinator
             polys.add((int)(pair & POLY_MASK));
         }
         
-        combinePolys(input, output, polys);
+        combinePolys(input, output);
         polys.clear();
         
     }
@@ -482,7 +481,7 @@ public class CsgPolyRecombinator
     /**
      * Assumes polys in list all have same tag.
      */
-    private void combinePolys(CsgPolyStream input, IWritablePolyStream output, IntArrayList polys)
+    private void combinePolys(CsgPolyStream input, IWritablePolyStream output)
     {
         assert !polys.isEmpty();
         
@@ -493,7 +492,7 @@ public class CsgPolyRecombinator
         else if(count == 2)
             combineTwoPolys(input, output, polys.getInt(0), polys.getInt(1));
         else
-            combinePolysInner(input, output, polys);
+            combinePolysInner(input, output);
     }
     
     private static void addPolyToVertexMap(HashMap<Vec3f, IntArrayList> vertexMap, IPolygon poly)
@@ -551,19 +550,18 @@ public class CsgPolyRecombinator
      *
      * PERF: consider making polysIn a set in the caller
      */
-    private void combinePolysInner(CsgPolyStream input, IWritablePolyStream output, IntArrayList polysIn)
+    private void combinePolysInner(CsgPolyStream input, IWritablePolyStream output)
     {
         /**
          * Index of all polys by vertex
          */
         HashMap<Vec3f, IntArrayList> vertexMap = new HashMap<>();
         
-        final int limit = polysIn.size();
-        for(int i = 0; i < limit; i++)
-            addPolyToVertexMap(vertexMap, input.polyA(polysIn.getInt(i)));
-        
-        IntOpenHashSet polys = new IntOpenHashSet();
-        polys.addAll(polysIn);
+        {
+            final int limit = polys.size();
+            for(int i = 0; i < limit; i++)
+                addPolyToVertexMap(vertexMap, input.polyA(polys.getInt(i)));
+        }
         
         /** 
          * Cleared at top of each loop and set to true if and only if 
@@ -604,11 +602,11 @@ public class CsgPolyRecombinator
                         // we won't see a CME because not removing any vertices at this point except via the iterator
                         it.remove();
                         
-                        boolean check = polys.remove(first);
+                        boolean check = polys.rem(first);
                         assert check;
                         removePolyFromVertexMap(vertexMap, input.polyA(first), v);
                         
-                        check = polys.remove(second);
+                        check = polys.rem(second);
                         assert check;
                         removePolyFromVertexMap(vertexMap, input.polyA(second), v);
                         
@@ -618,6 +616,9 @@ public class CsgPolyRecombinator
                 }
             }
         }
-        polys.forEach(p -> handleOutput(input, p, output));
+        
+        final int limit = polys.size();
+        for(int i = 0; i < limit; i++)
+            handleOutput(input, polys.getInt(i), output);
     }
 }
