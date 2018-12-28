@@ -742,4 +742,14 @@ public class Useful
     //           cells[3] = highest;
     //       }
     //   }
+    
+    /**
+     * Returns the smallest power of two that can hold the given value.
+     * Meant for positive, non-zero values.
+     */
+    public static int smallestPowerOfTwo(int value)
+    {
+        assert value > 0;
+        return 1 << (bitLength(value));
+    }
 }
