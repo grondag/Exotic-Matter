@@ -2,6 +2,7 @@
 
 **Exotic Matter** is the common utility library for Grondag's Minecraft Mods
 
+*Looking for the Fabric Exotic Matter 2 Library? go [here](https://github.com/grondag/exotic-matter-2).*
 
 # Mod Packs and Support
 This mod is in active development and is not feature-complete nor stable.  You MAY use this mod in ModPacks but be aware that future releases may require a world reset. It is therefore not recommended for servers or worlds you intend to keep for a long time.
