@@ -369,8 +369,7 @@ public interface IPolygon extends IVertexCollection, IPipelinedQuad, IStreamPoly
         }
     }
     
-    public default void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem)
-    {
+    public default void addBakedQuadsToBuilder(int layerIndex, Builder<BakedQuad> builder, boolean isItem) {
         assert vertexCount() <= 4;
         builder.add(QuadBakery.createBakedQuad(this, isItem));
     }

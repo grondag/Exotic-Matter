@@ -27,8 +27,6 @@ import net.minecraft.util.math.MathHelper;
  *  3) Removal methods are NOT thread-safe.  Caller must ensure other methods are not called while removal is in progress. 
  *  4) Insertion order is NOT maintained if items are removed.
  *   
- *   * @author grondag
- *
  */
 
 public class SimpleConcurrentList<T> implements Iterable<T>

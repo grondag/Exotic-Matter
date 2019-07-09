@@ -105,7 +105,7 @@ public abstract class AbstractIntStreamMap<V extends AbstractStreamCursor<V>> ex
         while(cursor.hasValue())
         {
             // Assuming as fast or faster to compare the key directly without checking hash first
-            // because underlying comparison(s) will be int/int either way
+            // because underlying comparison(s) will be int / int either way
             if(cursor.doesKeyMatch(toMatch))
                 return;
             

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import org.junit.Test;
 
 import grondag.exotic_matter.concurrency.SimpleConcurrentList;
-import grondag.exotic_matter.concurrency.ScatterGatherThreadPool;
+import grondag.exotic_matter.concurrency.ScatterGatherThreadPoolImpl;
 
 public class ThreadPoolTest
 {
@@ -69,7 +69,7 @@ public class ThreadPoolTest
                 }}, 
             true);
     
-    final ScatterGatherThreadPool SIMPLE_POOL = new ScatterGatherThreadPool();
+    final ScatterGatherThreadPoolImpl SIMPLE_POOL = new ScatterGatherThreadPoolImpl();
     
     
     

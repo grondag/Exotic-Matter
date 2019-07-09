@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 
 import grondag.exotic_matter.ExoticMatter;
-import grondag.exotic_matter.concurrency.ScatterGatherThreadPool;
+import grondag.exotic_matter.concurrency.ScatterGatherThreadPoolImpl;
 import grondag.exotic_matter.serialization.NBTDictionary;
 import grondag.exotic_matter.simulator.persistence.AssignedNumbersAuthority;
 import grondag.exotic_matter.simulator.persistence.IPersistenceNode;
@@ -89,7 +89,7 @@ public class Simulator  implements IPersistenceNode, ForgeChunkManager.OrderedLo
         nodeTypes.add(nodeType);
     }
     
-    public static final ScatterGatherThreadPool SCATTER_GATHER_POOL = new ScatterGatherThreadPool();
+    public static final ScatterGatherThreadPoolImpl SCATTER_GATHER_POOL = new ScatterGatherThreadPoolImpl();
 
     /**
      * Main simulation control thread - runs outside server thread.
